@@ -206,3 +206,13 @@ local.properties
 # Code Recommenders
 .recommenders/
 
+# MacOS temp files
+*.DS_Store
+.AppleDouble
+.LSOverride
+
+# node_js files
+node_modules
+jspm_packages
+.npm
+.eslintcache
