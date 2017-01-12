@@ -1,0 +1,98 @@
+# This compose file will deploy the services, and bootup a mongo server.
+# Local `/opt/cello/mongo` will be used for the db storage.
+#  dashbard: dashbard service of cello, listen on 8080
+#  app: app service of cello, listen on 80
+#  nginx: front end
+#  mongo: mongo db
+
+version: '2'
+services:
+  # cello dashbard service
+  dashboard:
+    build:
+      context: src
+      dockerfile: Dockerfile-dashboard
+    image: cello-dashbard
+    container_name: dashbard
+    hostname: cello-dashbard
+    restart: unless-stopped
+    environment:
+      - MONGO_URL=mongodb://mongo:27017
+      - MONGO_DB=dev
+      - DEBUG=True    # in debug mode, service will auto-restart
+      - LOG_LEVEL=DEBUG  # what level log will be output
+    expose:
+      - "8080"
+    volumes:  # This should be removed in product env
+      - ./src:/app
+
+  # cello restserver service
+  restserver:
+    build:
+      context: src
+      dockerfile: Dockerfile-restserver
+    image: cello-restserver
+    container_name: restserver
+    hostname: cello-restserver
+    restart: unless-stopped
+    environment:
+      - MONGO_URL=mongodb://mongo:27017
+      - MONGO_DB=dev
+      - DEBUG=True    # in debug mode, service will auto-restart
+      - LOG_LEVEL=DEBUG  # what level log will be output
+    expose:
+      - "80"
+    volumes:  # This should be removed in product env
+      - ./src:/app
+
+  # cello watchdog service
+  watchdog:
+    build:
+      context: src
+      dockerfile: Dockerfile-watchdog
+    image: cello-watchdog
+    container_name: watchdog
+    hostname: cello-watchdog
+    restart: unless-stopped
+    environment:
+      - MONGO_URL=mongodb://mongo:27017
+      - MONGO_DB=dev
+      - DEBUG=True    # in debug mode, service will auto-restart
+      - LOG_LEVEL=DEBUG  # what level log will be output
+    volumes:  # This should be removed in product env
+      - ./src:/app
+
+  # mongo database, may use others in future
+  mongo:
+    image: mongo:3.2
+    hostname: mongo
+    container_name: mongo
+    restart: unless-stopped
+    mem_limit: 2048m
+    ports:
+      #- "27017:27017"  # use follow line instead in production env
+      - "127.0.0.1:27017:27017"
+      - "127.0.0.1:27018:27018"
+    environment:
+      - NO_USED=0
+    volumes:
+      - /opt/cello/mongo:/data/db
+
+  # nginx to forward front request, may split it out in future
+  nginx:
+    image: yeasy/nginx
+    hostname: nginx
+    container_name: nginx
+    restart: always
+    mem_limit: 2048m
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.default.conf
+      #- /opt/cello/nginx/log/:/var/log/nginx/
+    ports:
+      - "80:80"
+      - "8080:8080"
+    environment:
+      - BACKEND=dashbard
+      - PORT=8080
+      - USERNAME=admin
+      - PASSWORD=pass

@@ -1,0 +1,106 @@
+# this is an example of the Cello API
+# as a demonstration of an API spec in YAML
+swagger: '2.0'
+info:
+  title: Cello API
+  description: Cello API for the rest server calling
+  contact:
+    name: Baohua Yang
+    url: https://github.com/yeasy/cello
+    email: yangbaohua@gmail.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: "1.1.0"
+# the domain of the service
+host: 9.186.100.88:80
+# array of all schemes that your API supports
+schemes:
+  - http
+# will be prefixed to all paths
+basePath: /v2
+produces:
+  - application/json
+paths:
+  /cluster_apply:
+    get:
+      summary: Apply a new cluster for use.
+      description: |
+        The endpoint returns information about the new cluster
+        The response includes the uuid, display name and other details .
+      parameters:
+        - name: user_id
+          in: query
+          description: The id to specify the user.
+          required: true
+          type: string
+      tags:
+        - Cluster_apply
+      responses:
+        200:
+          description: An instance of clusters.
+          schema:
+            $ref: '#/definitions/Cluster'
+        404:
+          description: Entity not found.
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /cluster_release:
+    get:
+        summary: Release a cluster, no use it more.
+        description: |
+          The endpoint returns information about the action.
+          The response includes message about result.
+        parameters:
+          - name: user_id
+            in: query
+            description: The id to specify the user.
+            required: true
+            type: string
+        tags:
+          - Cluster_release
+        responses:
+          200:
+            description: message tell success.
+            schema:
+              type: string
+          404:
+            description: Entity not found.
+          default:
+            description: Unexpected error
+            schema:
+              $ref: '#/definitions/Error'
+
+definitions:
+  Cluster:
+    type: object
+    required: [id, user_id, api_url]
+    properties:
+      id:
+        type: string
+        description: Unique identifier representing a specific cluster.
+      user_id:
+        type: string
+        description: User id who owns this cluster, empty by default
+      api_url:
+        type: string
+        description: Cluster REST URL representing the cluster.
+      host_id:
+        type: string
+        description: Which host the cluster is at.
+      name:
+        type: string
+        description: Display name of cluster.
+  Error:
+    type: object
+    required: [code]
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+      fields:
+        type: string

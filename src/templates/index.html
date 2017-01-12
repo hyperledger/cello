@@ -1,0 +1,69 @@
+{% extends "layout.html" %}
+{% block title %}Cello Dashboard{% endblock %}
+{% block body %}
+    {{ super() }}
+    <h3 class="page-header">System Overview</h3>
+    <div class="container-fluid">
+        <ul class="list-group col-sm-6 col-md-4">
+            <li class="list-group-item  list-group-item-danger">
+                <a href="/view/hosts"><span class="label label-pill label-default
+                label-pill
+                 ">{{hosts|length}}</span> Working Hosts</a>
+                <button class="btn btn-sm btn-success btn-default pull-sm-right"
+                        style="float: right;" data-toggle="modal"
+                        data-target="#newHostModal">
+                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                </button>
+
+            </li>
+            <li class="list-group-item  list-group-item-success">
+                <a href="/view/clusters?type=active"><span class="label label-default label-pill ">{{clusters_active}}</span> Active Chains</a>
+                {% if hosts_free|length > 0 %}
+                    <button type="button" class="btn btn-sm btn-success
+                    btn-default pull-xs-right" style="float: right;" data-toggle="modal" data-target="#newClusterModal">
+                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                    </button>
+                {% else %}
+                    <button type="button" class="btn btn-sm btn-success
+                    btn-default pull-xs-right" style="float: right;" data-toggle="modal" data-target="#newClusterModal" disabled>
+                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                    </button>
+                {% endif %}
+            </li>
+            <li class="list-group-item list-group-item-info">
+                <a href="/view/clusters?type=released"><span class="label label-default label-pill">{{clusters_released}}</span> Released Chains</a>
+            </li>
+        </ul>
+    </div>
+
+    <h3 class="page-header">Host Status</h3>
+    <div class="container-fluid">
+        <font color="green">Active:</font>
+        {% for h in hosts_active %}
+            <a href="/view/host/{{h.id}}">{{ h.name }}</a>
+        {% endfor %}
+        <p></p>
+        <font color="red"> Inactive: </font>
+        {% for h in hosts_inactive %}
+            <a href="/view/host/{{h.id}}">{{ h.name }}</a>
+        {% endfor %}
+    </div>
+
+    <h3 class="page-header">Chain Status</h3>
+    <div class="container-fluid">
+        Utilization:
+        {% if clusters_free <= 0 %}
+            <font color="red">All {{ clusters_active }} occupied!</font>
+        {% else %}
+            <font color="green">{{ clusters_inuse }}/{{clusters_active}}</font>
+        {% endif %}
+        <p></p>
+        In Processing:
+        {% if clusters_temp > 0 %}
+            <font color="yellow">{{ clusters_temp }}</font>
+        {% else %}
+            <font color="green">{{ clusters_temp }}</font>
+        {% endif %}
+    </div>
+
+{% endblock %}

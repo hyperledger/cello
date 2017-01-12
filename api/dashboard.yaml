@@ -1,0 +1,158 @@
+# this is an example of the Cello API
+# as a demonstration of an API spec in YAML
+swagger: '2.0'
+info:
+  title: Cello API
+  description: Cello API to manage cluster
+  contact:
+    name: Baohua Yang
+    url: https://github.com/yeasy/cello
+    email: yangbaohua@gmail.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: "1.0.0"
+# the domain of the service
+host: 9.186.100.88:80
+# array of all schemes that your API supports
+schemes:
+  - http
+# will be prefixed to all paths
+basePath: /admin
+produces:
+  - application/json
+paths:
+  /clusters:
+    get:
+      summary: A list of all clusters
+      description: |
+        The Clusters endpoint returns information about all existing clusters.
+        The response includes the display name
+        and other details about each cluster, and lists the clusters in the
+        proper display order.
+      parameters:
+        - name: daemon_url
+          in: query
+          description: Filter clusters with specific daemon_url.
+          required: false
+          type: string
+        - name: user_id
+          in: query
+          description: Filter clusters with specific user_id.
+          required: false
+          type: string
+      tags:
+        - Clusters
+      responses:
+        200:
+          description: An array of clusters
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Cluster'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /cluster:
+    get:
+      summary: Retrieve a special cluster
+      description: |
+        The endpoint returns information about specific cluster.
+        The response includes necessary info.
+      parameters:
+        - name: cluster_id
+          in: query
+          description: Filter clusters with specific cluster_id.
+          required: true
+          type: string
+      tags:
+        - Cluster
+      responses:
+        200:
+          description: A cluster instance
+          schema:
+            $ref: '#/definitions/Cluster'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      summary: Create a special cluster
+      description: |
+        The endpoint create a specific cluster
+        The response includes necessary info.
+      parameters:
+        - name: daemon_url
+          in: query
+          description: Given the daemon_url to create at
+          required: true
+          type: string
+        - name: cluster_name
+          in: query
+          description: Given the name
+          required: false
+          type: string
+      tags:
+        - Cluster
+      responses:
+        200:
+          description: A cluster instance created
+          schema:
+            $ref: '#/definitions/Cluster'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      summary: Delete a special cluster
+      description: |
+        The endpoint deletes a specific cluster
+        The response includes necessary info.
+      parameters:
+        - name: cluster_id
+          in: query
+          description: Filter clusters with specific cluster_id.
+          required: true
+          type: string
+      tags:
+        - Cluster
+      responses:
+        200:
+          description: A cluster instance delete info
+          type: string (TODO)
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+definitions:
+  Cluster:
+    type: object
+    required: [id, user_id, api_url]
+    properties:
+      id:
+        type: string
+        description: Unique identifier representing a specific cluster.
+      user_id:
+        type: string
+        description: User id who owns this cluster, empty by default
+      api_url:
+        type: string
+        description: Cluster REST URL representing the cluster.
+      daemon_url:
+        type: string
+        description: Docker host daemon url
+      name:
+        type: string
+        description: Display name of cluster.
+  Error:
+    type: object
+    required: [code]
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+      fields:
+        type: string

@@ -1,0 +1,177 @@
+{% extends "layout.html" %}
+{% block title %}Chains{% endblock %}
+{% block body %}
+    {{ super() }}
+    <!-- Glyphicon in a H1 tag -->
+    <h2 class="page-header">Hosts: {{ items_count }}
+        <button
+                type="button" class="btn btn-primary btn-success btn-default
+            pull-sm-right" style="float:right" data-toggle="modal"
+                data-target="#newHostModal">Add Host
+        </button>
+    </h2>
+
+    {% if items_count > 0 %}
+        <div class="row">
+            <table id="table_hosts"
+                   class="hover table table-striped table-bordered table_sorted">
+                <thead align="center">
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Chains</th>
+                    <th>Cap</th>
+                    <th>Log Config</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for item in items %}
+                    {% if item.schedulable == "false" %}
+                        <tr style="background-color:lightgray">
+                            {% else %}
+                        <tr>
+                    {% endif %}
+                <td><a href="/view/host/{{ item.id }}">{{ item.name }}</a></td>
+                <td>{{ item.type|upper }}</td>
+                <td>
+                    {% if item.status == "active" %}
+                        <font color="green">{{ item.status }}</font>
+                    {% else %}
+                        <font color="red">{{ item.status }}</font>
+                    {% endif %}
+                </td>
+                <td>{{ item.clusters|length }}</td>
+                <td>{{ item.capacity|string }}</td>
+                <td>{{ item.log_level }}/{{ item.log_type }}</td>
+                <td>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-primary btn-info btn-default dropdown-toggle"
+                                type="button" id="host_actions"
+                                data-toggle="dropdown">
+                            Actions
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" role="menu">
+                            <li>
+                                <a href="#"
+                                   class="host_action_fillup"
+                                   data-id="{{ item.id }}"
+                                    {% if item.clusters|length >= item.capacity %}
+                                   disabled
+                                    {% endif %}
+                                   title="Fill the host to chains = {{ item.capacity|string }}"
+                                >
+                                  <span class="glyphicon glyphicon-chevron-up"
+                              aria-hidden="true"></span> Fillup
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#"
+                                   class="host_action_clean"
+                                   data-id="{{ item.id }}"
+                                {% if item.clusters|length <= 0 %}
+                                   disabled
+                                {% endif %}
+                                    title="Try best to clean unused clusters at this host"
+                                >
+                                 <span class="glyphicon glyphicon-chevron-down"
+                              aria-hidden="true"></span> Clean
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#"
+                                   class="host_action_config"
+                                   data-id="{{ item.id }}"
+                                   title="Config the host"
+                                >
+                                <span class="glyphicon glyphicon-cog"
+                              aria-hidden="true"></span> Config
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="#"
+                                   data-id="{{item.id}}"
+                                   data-title="{{ item.name }}"
+                                   data-toggle="modal"
+                                   data-target="#reset_host_confirm_modal"
+                                   title="Resetting the host when no cluster at it."
+                                    {% if item.clusters|length > 0 %}
+                                   disabled
+                                    {% endif %}
+                                >
+                                    <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+                                    Reset
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#"
+                                   data-id="{{item.id}}"
+                                   data-title="{{ item.name }}"
+                                   data-toggle="modal"
+                                   data-target="#delete_host_confirm_modal"
+                                   title="Remove the host when no cluster at it."
+                                    {% if item.clusters|length > 0 %}
+                                   disabled
+                                    {% endif %}
+                                >
+                                    <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                                    Delete
+                                </a>
+                            </li>
+
+                        </ul>
+                    </div>
+                </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+
+
+<div class="modal fade" id="reset_host_confirm_modal" tabindex="-1" role="dialog" aria-labelledby="mymodallabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h4 class="modal-title">confirm reset</h4>
+                </div>
+                <div class="modal-body">
+                    <p>you are about to <font color="red">reset</font> the
+                        host <font color="red"><i id="title"></i></font>, this
+                            procedure is irreversible.</p>
+                    <p>do you want to proceed?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">cancel</button>
+                    <button type="button" class="btn btn-danger
+                    btn-ok">confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+<div class="modal fade" id="delete_host_confirm_modal" tabindex="-1" role="dialog"
+     aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title">Confirm Delete</h4>
+            </div>
+            <div class="modal-body">
+                <p>You are about to <font color="red">remove</font> the host <font color="red"><i id="title"></i></font>, this procedure is irreversible.</p>
+                <p>Do you want to proceed?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger btn-ok">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

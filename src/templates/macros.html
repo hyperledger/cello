@@ -1,0 +1,8 @@
+{% macro nav_link(endpoint, text) %}
+{% if request.endpoint.endswith(endpoint) and request.args.get("type",
+"")==kwargs.get("type", "") %}
+    <li class="active"><a href="{{ url_for(endpoint, **kwargs) }}">{{text}}</a></li>
+{% else %}
+    <li><a href="{{ url_for(endpoint, **kwargs) }}">{{text}}</a></li>
+{% endif %}
+{% endmacro %}
