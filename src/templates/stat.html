@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+{% block title %}System Status{% endblock %}
+{% block body %}
+{{ super() }}
+
+<h2 class="page-header">Platform Status</h2>
+    <div class="container-fluid" style="width:50%; float:left">
+        <div id="stat_hosts_type" style="width:45%; height:300px; margin:
+         0 auto; float:left"></div>
+        <div id="stat_hosts_status" style="width:45%; height:300px;
+        margin: 0 auto; float:right"></div>
+    </div>
+    <div class="container-fluid" style="width:50%; float:right">
+        <div id="stat_clusters_type" style="width:45%; height:300px; margin:
+         0 auto; float:left"></div>
+        <div id="stat_clusters_status" style="width:45%; height:300px;
+        margin: 0 auto; float:right"></div>
+    </div>
+<!--
+<h2 class="page-header">Host Status</h2>
+
+<ul class="list-group col-xs-2 col-sm-4">
+    {% for host in hosts %}
+  <li class="list-group-item">
+    <span class="badge">{{ host.clusters|length }}</span>
+      <a target="_blank" href="{{ '/host_monitor/'+host.daemon_url[6:-5] }}">{{ host.name
+              }}</a>
+  </li>
+    {% endfor %}
+</ul>
+-->
+
+{% endblock %}

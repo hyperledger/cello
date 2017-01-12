@@ -1,0 +1,6 @@
+docker-compose>=1.7.0
+Flask>=0.11.0
+greenlet>=0.4.5
+gunicorn>=19.0.0
+pymongo>=3.2.0
+requests>=2.0.0

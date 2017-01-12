@@ -1,0 +1,20 @@
+{% extends "layout.html" %}
+{% block title %}About{% endblock %}
+{% block body %}
+{{ super() }}
+<h3 class="page-header">About</h3>
+<div class="container-fluid">
+    Platform to manage blockchains, and targets automating deployment, operations, and scaling.
+</div>
+<p></p>
+<h3 class="page-header">Release Information</h3>
+<div class="container-fluid">
+<p>Written-By: <a href="{{ homepage }}">{{ author }}</a></p>
+<p>Version: {{ version }}</p>
+</div>
+<h3 class="page-header">Terms</h3>
+<div class="container-fluid">
+<p>Host: An aggregation of some physical/virtual machines to hold the clusters.</p>
+<p>Cluster: A blockchain with numbers of peer nodes.</p>
+</div>
+{% endblock %}
