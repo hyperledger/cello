@@ -37,6 +37,7 @@ You can also find more [scenarios](docs/scenario.md).
 * [Architecture Design](docs/arch.md)
 * [Database Model](docs/db.md)
 * [API](api/restserver_v2.md)
+* [How to contribute](docs/CONTRIBUTING.md)
 
 ## TODO
 * restserver: update api definitions yml files.
