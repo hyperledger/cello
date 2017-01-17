@@ -3,6 +3,9 @@ WHITE  := $(shell tput -Txterm setaf 7)
 YELLOW := $(shell tput -Txterm setaf 3)
 RESET  := $(shell tput -Txterm sgr0)
 
+STATIC_FOLDER?=themes\/react\/static
+TEMPLATE_FOLDER?=themes\/react\/templates
+
 .PHONY: \
 	all \
 	check \
@@ -32,7 +35,12 @@ logs:
 redeploy: ##@Service Redeploy single service, Use like "make redeploy service=dashboard"
 	bash scripts/redeploy.sh ${service}
 
+initial-env: ##@Configuration Initial Configuration for dashboard
+	sed -i 's/\(STATIC_FOLDER=\).*/\1${STATIC_FOLDER}/' .env
+	sed -i 's/\(TEMPLATE_FOLDER=\).*/\1${TEMPLATE_FOLDER}/' .env
+
 start: ##@Service Start service
+	@$(MAKE) initial-env
 	bash scripts/start.sh
 
 stop: ##@Service Stop service
