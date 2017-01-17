@@ -3,8 +3,9 @@ WHITE  := $(shell tput -Txterm setaf 7)
 YELLOW := $(shell tput -Txterm setaf 3)
 RESET  := $(shell tput -Txterm sgr0)
 
-STATIC_FOLDER?=themes\/react\/static
-TEMPLATE_FOLDER?=themes\/react\/templates
+THEME?=basic
+STATIC_FOLDER?=themes\/${THEME}\/static
+TEMPLATE_FOLDER?=themes\/${THEME}\/templates
 
 .PHONY: \
 	all \
@@ -51,6 +52,15 @@ restart: ##@Service Restart service
 
 setup: ##@Environment Setup dependency for service environment
 	bash scripts/setup.sh
+
+build-js: ##@Nodejs Build js files for react
+	bash scripts/build_reactjs.sh
+
+watch-mode: ##@Nodejs Run watch mode with js files for react
+	bash scripts/watch_mode.sh
+
+npm-install: ##@Nodejs Install modules with npm package management
+	bash scripts/npm_install.sh
 
 HELP_FUN = \
 	%help; \

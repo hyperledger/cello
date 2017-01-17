@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Block Chain Cloud Service">
+    <meta name="author" content="Baohua Yang">
+    <link rel="icon" href="../static/img/favicon.ico">
+    <link rel="stylesheet" href="{{ url_for('static', filename='js/dist/index.css') }}">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    {% block head %}
+        <title>Cello Dashboard</title>
+    {% endblock %}
+
+</head>
+
+<body>
+
+<div id="root"></div>
+<script src="{{ url_for('static', filename='js/dist/index.js') }}"> </script>
+
+</body>
+</html>
