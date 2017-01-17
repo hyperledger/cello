@@ -1,6 +1,9 @@
 # Scenarios
 
 ## Admin
+After start up, Cello provides a dashboar for administrators, which listens on localhost:8080.
+
+The default login user name and password are `admin:pass`, you can modify this by changing the variables `USERNAME` and `PASSWORD` in the `nginx` section of the [docker-compose file](../docker-compose.yml).
 
 ### Add/Delete a host
 
