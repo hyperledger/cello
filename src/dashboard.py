@@ -8,7 +8,8 @@ from resources import bp_index, \
 
 STATIC_FOLDER = os.getenv("STATIC_FOLDER", "themes/basic/static")
 TEMPLATE_FOLDER = os.getenv("TEMPLATE_FOLDER", "themes/basic/templates")
-app = Flask(__name__, static_folder=STATIC_FOLDER, template_folder=TEMPLATE_FOLDER)
+app = Flask(__name__, static_folder=STATIC_FOLDER,
+            template_folder=TEMPLATE_FOLDER)
 
 app.config.from_object('config.DevelopmentConfig')
 app.config.from_envvar('CELLO_CONFIG_FILE', silent=True)
