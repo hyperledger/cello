@@ -1,13 +1,13 @@
 # This compose file will deploy the services, and bootup a mongo server.
 # Local `/opt/cello/mongo` will be used for the db storage.
-#  dashbard: dashbard service of cello, listen on 8080
+#  dashboard: dashboard service of cello, listen on 8080
 #  app: app service of cello, listen on 80
 #  nginx: front end
 #  mongo: mongo db
 
 version: '2'
 services:
-  # cello dashbard service
+  # cello dashboard service
   npm-install:
     image: node
     container_name: npm-install
