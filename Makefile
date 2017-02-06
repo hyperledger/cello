@@ -16,6 +16,8 @@ TEMPLATE_FOLDER?=themes\/${THEME}\/templates
 	redeploy \
 	restart \
 	setup \
+	start \
+	stop \
 
 all: check
 
@@ -47,8 +49,7 @@ start: ##@Service Start service
 stop: ##@Service Stop service
 	bash scripts/stop.sh
 
-restart: ##@Service Restart service
-	stop start
+restart: stop start ##@Service Restart service
 
 setup: ##@Environment Setup dependency for service environment
 	bash scripts/setup.sh
