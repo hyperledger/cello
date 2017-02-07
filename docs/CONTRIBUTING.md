@@ -9,7 +9,7 @@ Before taking actions, we highly recommend reading the [docs](../README.md).
 We now have two channels for bug and questions:
 
 * [Jira](https://jira.hyperledger.org/secure/RapidBoard.jspa?rapidView=111): report bug issues, create to-do tasks.
-* [Slack](https://hyperledgerproject.slack.com/archives/cello): technical discussions and questions.
+* [Chat](https://chat.hyperledger.org/channel/cello): technical discussions and questions.
 
 Jira tasks with `To Do` status are available for picking. If you want to handle one, assign it to yourself, and update the status to `In Progress`. Remember to mark it to `Done` when the patch is merged.
 
