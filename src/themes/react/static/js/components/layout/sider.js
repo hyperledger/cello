@@ -18,7 +18,7 @@ function Sider ({ siderFold, darkTheme, location, changeTheme }) {
       <Menus {...menusProps} />
       {!siderFold ? <div className={styles.switchtheme}>
         <span><Icon type='bulb' />Theme</span>
-        <Switch onChange={changeTheme} defaultChecked={darkTheme} checkedChildren='黑' unCheckedChildren='白' />
+        <Switch onChange={changeTheme} defaultChecked={darkTheme} checkedChildren='black' unCheckedChildren='white' />
       </div> : ''}
     </div>
   )
