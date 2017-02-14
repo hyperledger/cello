@@ -114,7 +114,7 @@ You may check `git` and `make` are installed to clone the code.
 
 ```sh
 $ sudo aptitude install git make -y
-$ git clone https://github.com/yeasy/cello && cd cello
+$ git clone http://gerrit.hyperledger.org/r/cello && cd cello
 ```
 
 ### Docker images pulling
