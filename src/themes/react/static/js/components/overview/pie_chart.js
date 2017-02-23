@@ -5,16 +5,31 @@ import React, { PropTypes } from 'react'
 import { Card, Spin } from 'antd'
 import styles from './pie_chart.less'
 import echarts from 'echarts'
+import ReactEcharts from 'echarts-for-react'
+import westeros from '../echarts/theme/westeros.json'
 
 class ChartCard extends React.Component {
   constructor(props) {
     super(props)
     this.state = {}
+    this.getOptions = this.getOptions.bind(this)
   }
-  setupChart(chartId, title, names, data) {
-      let myChart = echarts.init(document.getElementById(chartId));
-      myChart.setOption({
-          title: { text: title, x: 'right' },
+  registerTheme() {
+    echarts.registerTheme('westeros', westeros)
+  }
+  getOptions() {
+      const { title, data } = this.props
+      let names = []
+      let chartData = []
+      data.map((currentObject, i) => {
+          names.push(currentObject.name)
+          chartData.push({
+              name: currentObject.name,
+              value: currentObject.y
+          })
+      })
+      return {
+          title: { text: title, x: 'right', y: 'bottom' },
           tooltip : {
               trigger: 'item',
               formatter: "{a} <br/>{b} : {c} ({d}%)"
@@ -30,7 +45,7 @@ class ChartCard extends React.Component {
                   type: 'pie',
                   radius : '55%',
                   center: ['50%', '60%'],
-                  data: data,
+                  data: chartData,
                   itemStyle: {
                       emphasis: {
                           shadowBlur: 10,
@@ -40,27 +55,22 @@ class ChartCard extends React.Component {
                   }
               }
           ]
-      });
-  }
-  componentDidUpdate() {
-      const { title, chartId, data } = this.props
-      let names = []
-      let chartData = []
-      data.map((currentObject, i) => {
-          names.push(currentObject.name)
-          chartData.push({
-              name: currentObject.name,
-              value: currentObject.y
-          })
-      })
-      this.setupChart(chartId, title, names, chartData)
+      }
   }
   render() {
       const { chartId, loading } = this.props
+      this.registerTheme()
+      console.log(chartId)
       return (
           <Spin spinning={loading}>
               <Card className={styles.chartCard}  bordered={false} bodyStyle={{padding:0}}>
-                  <div id={chartId} style={{width: "100%", height: 240}}></div>
+                  <ReactEcharts
+                      ref={chartId}
+                      style={{width: "100%", height: 240}}
+                      notMerge={true}
+                      lazyUpdate={true}
+                      theme="westeros"
+                      option={this.getOptions()}/>
               </Card>
           </Spin>
       )
