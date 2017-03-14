@@ -1,17 +1,18 @@
 ![Cello](docs/imgs/logo.png)
 
+Blockchain as a Service!
+
 **Note:** This is a **read-only mirror** of the formal [Gerrit](https://gerrit.hyperledger.org/r/#/admin/projects/cello) repository,
-where active development is ongoing. Issue tracking is handled in [Jira](https://jira.hyperledger.org/secure/RapidBoard.jspa?rapidView=111)
+where active development is ongoing. Issue tracking is handled in [Jira](https://jira.hyperledger.org/projects/CE/issues/).
 
 ## Incubation Notice
 
 This project is a Hyperledger project in _Incubation_. It was proposed to the community and documented [here](https://docs.google.com/document/d/1E2i5GRqWsIag7KTxjQ_jQdDiWcuikv3KqXeuw7NaceM/edit), and was approved by [Hyperledger TSC at 2017-01-07](https://lists.hyperledger.org/pipermail/hyperledger-tsc/2017-January/000535.html). Information on what _Incubation_ entails can be found in the [Hyperledger Project Lifecycle document](https://goo.gl/4edNRc).
 
-Platform to provide Blockchain as a Service!
 
 Using Cello, we can
 
-* Provision customizable Blockchains instantly, e.g., a 6-node chain using PBFT consensus.
+* Provision customizable Blockchains instantly, e.g., a 6-node fabric chain using PBFT consensus.
 * Maintain a pool of running blockchains healthy with no manual operations.
 * Check the system status, scale the chain numbers, change resources... through a dashboard.
 
@@ -28,13 +29,11 @@ You can also find more [scenarios](docs/scenario.md).
 * Support heterogeneous architecture, e.g., Z, Power and X86, from bare-metal servers to virtual machines.
 * Extend with monitor/log/health features by employing additional components.
 
-## Docs
+## Documentation
 
-### User Docs
-* [Dashboard](docs/dashboard.md)
-
-### Operator Docs
+### Operational Docs
 * [Installation & Deployment](docs/deployment.md)
+* [Dashboard](docs/dashboard.md)
 * [Scenarios](docs/scenario.md)
 * [Production Configuration](docs/production_config.md)
 
