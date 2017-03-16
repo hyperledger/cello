@@ -1,50 +1,81 @@
 # Dashboard
 
-System operators can utilize dashboard service to check system status or change configurations.
+By default, the dashboard will listen on port `8080` at the Master Node.
 
-The dashboard service will listen on port `8080`.
+The left panel gives quick link to various functions, including `overview`, `system status`, `Hosts`, `Active Clusters`, `Inused Clusters`, `Release History` and `About`.
+
+| Name | URL | Function |
+| --- | --- | --- |
+| Overview | `/index` | See a high-level overview on system status |
+| System Status | `/stat` | See statistics on the system |
+| Hosts | `/hosts` | Operate on the hosts managed by the system |
+| Active Clusters | `/clusters?type=active` | Operate on existing running chains in the pool |
+| Inused Clusters | `/clusters?type=inused` | Operate on user occupied chains in the system |
+| Released History  | `/clusters?type=released` | See cluster releasing history data |
+
 
 ## Overview
 
-URL: `/index`.
+![Dashboard Overview](imgs/dashboard_overview.png)
 
-See a high-level overview on system status.
 
-## System Status
+The default overview page show the overall status of the system, e.g., how many hosts are deployed within the system, how many clusters are running on those hosts. And there are status numbers for both hosts and clusters.
 
-URL: `/stat`.
 
-See statistics on the system.
+## System Status Page
+
+![dashboard status](imgs/dashboard_status.png)
+
+The system status page shows the host and cluster statistics in terms of types and active/inactive in the system.
 
 ## Hosts
 
-URL: `/hosts`.
+![dashboard hosts](imgs/dashboard_hosts.png)
 
-Operate on the hosts managed by the system.
+In Host page, you can manage all the existing hosts in the pool, and add new hosts. The host shows its `Type` (e.g., SINGLE for Native Docker, or SWARM for Docker Swarm), `Status` (active or not) , `Chains` (How many chains running in the host), `Cap` (Capacity) and `Log Config` (level, receiver). Those non-schedulable host will have a grey line
 
-## Clusters_active
+In the Action dropdown menu, you can
 
-URL: `/clusters?type=active`.
+* Fillup: Fill a host with chains till it's full `capacity`.
+* Clean: Clean all unused chains at the host.
+* Config: Set configurations of the host, e.g., `name` or `capacity`. 
+* Reset: Reset everything on the host, useful when u meet problems of running chains on the host. Notice a host can be `reset` only when there's no inused chains on it.
+* Delete: Remove the host from the pool, then the system will not care about it.
 
-Operate on existing running chains in the pool.
+### Add Host
 
-## Clusters_inused
+You can click the `Add Host` button to add more hosts into the pool.
 
-URL: `/clusters?type=inused`.
+![dashboard add-host](imgs/dashboard_add_host.png)
 
-Operate on user occupied chains in the system.
 
-## Clusters_released
+## Active Chains
 
-URL: `/clusters?type=released`.
+The `Active Chains` page shows all existing running chains in the system, with their Name, Type, Status, Health, Size and Host. Those inused chains will have a grey line.
 
-See cluster releasing history data.
 
-## Screenshots
+![dashboard clusters](imgs/dashboard_clusters.png)
 
-![dashboard-main](imgs/dashboard_main.png)
-![dashboard-status](imgs/dashboard_status.png)
-![dashboard-hosts](imgs/dashboard_hosts.png)
-![dashboard-clusters](imgs/dashboard_clusters.png)
-![dashboard-add-host](imgs/dashboard_add_host.png)
-![dashboard-add-cluster](imgs/dashboard_add_cluster.png)
+In the Action dropdown menu, you can
+
+* Start: Start a chain that is not running.
+* Stop: Stop a running chain to stopped status.
+* Restart: Restart a chain. 
+* Delete: Delete the chain.
+* Release: Release a user-occupuied chain back to the pool, which will be deleted later.
+
+You can click the `Add Chain` button to add more chains into the pool if there are non-full hosts.
+
+![dashboard add-cluster](imgs/dashboard_add_cluster.png)
+
+
+## Inused Chains
+
+Filter out those running chains that are occupied by users.
+
+## Release History
+
+Record all the user releasing chain history.
+
+
+

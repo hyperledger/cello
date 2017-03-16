@@ -32,8 +32,9 @@ You can also find more [scenarios](docs/scenario.md).
 ## Documentation
 
 ### Operational Docs
-* [Installation & Deployment](docs/deployment.md)
-* [Dashboard](docs/dashboard.md)
+* [Installation & Deployment](docs/install.md)
+* [Terminologies](docs/terminology.md)
+* [Tutorial](docs/tutorial.md)
 * [Scenarios](docs/scenario.md)
 * [Production Configuration](docs/production_config.md)
 

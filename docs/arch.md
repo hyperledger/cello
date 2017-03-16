@@ -2,11 +2,7 @@
 
 Here we discuss the architecture design for the mangement services on the Master node.
 
-## Terminology
-* Cluster | Chain: A blockchain with unique access API address, including several peer nodes. May support Hyperledger Fabric, SawthoothLake and Iroha.
-* Host: A resource server, usually it can be a naive Docker host or a Swarm cluster.
-* Master Node: Running the cello platform, to manage the compute nodes.
-* Compute | Worker Node: The servers to have blockchains running inside.
+
 
 ## Philosophy and principles
 The architecture will follow the following principles:
