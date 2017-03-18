@@ -44,6 +44,11 @@ module.exports = function (webpackConfig, env) {
       loader.test = /\.css$/
     }
   })
+  webpackConfig.externals = {
+    'react': 'React',
+    'react-dom': 'ReactDOM',
+    'echarts': true
+  }
 
   return webpackConfig
 }

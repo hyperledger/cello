@@ -22,6 +22,16 @@ bp_host_api = Blueprint('bp_host_api', __name__,
                         url_prefix='/{}'.format("api"))
 
 
+@bp_host_api.route('/hosts', methods=['GET'])
+def hosts_list():
+    logger.info("/hosts_list method=" + r.method)
+    request_debug(r, logger)
+    col_filter = dict((key, r.args.get(key)) for key in r.args)
+    items = list(host_handler.list(filter_data=col_filter))
+
+    return make_ok_response(data=items)
+
+
 @bp_host_api.route('/host/<host_id>', methods=['GET'])
 def host_query(host_id):
     request_debug(r, logger)
