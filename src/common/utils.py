@@ -2,8 +2,6 @@ import json
 import os
 
 
-COMPOSE_FILE_PATH = os.getenv("COMPOSE_FILE_PATH", "./_compose_files")
-
 CLUSTER_NETWORK = "cello_net"
 CLUSTER_SIZES = [4, 6]
 
@@ -45,7 +43,7 @@ CONSENSUS_TYPES = [
 ]
 
 
-HOST_TYPES = ['single', 'swarm']
+HOST_TYPES = ['docker', 'swarm', 'kubernetes']  # all supported host types
 
 CLUSTER_LOG_TYPES = ['local', 'syslog']
 

@@ -7,7 +7,6 @@ from .response import make_ok_response, make_fail_response, CODE_NOT_FOUND,\
 from .log import log_handler, LOG_LEVEL
 from .utils import \
     PEER_SERVICE_PORTS, CA_SERVICE_PORTS, SERVICE_PORTS, \
-    COMPOSE_FILE_PATH, \
     CONSENSUS_PLUGINS, CONSENSUS_MODES, CONSENSUS_TYPES, \
     HOST_TYPES, \
     CLUSTER_PORT_START, CLUSTER_PORT_STEP, CLUSTER_SIZES, \

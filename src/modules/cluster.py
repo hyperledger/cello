@@ -1,24 +1,25 @@
 import datetime
 import logging
 import os
-import requests
 import sys
 import time
-
 from threading import Thread
+
+import requests
 from pymongo.collection import ReturnDocument
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from common import db, log_handler, LOG_LEVEL
 
-from agent import get_swarm_node_ip, \
-    compose_up, compose_clean, compose_start, compose_stop, compose_restart
+from agent import get_swarm_node_ip
 
 from common import CLUSTER_PORT_START, CLUSTER_PORT_STEP, CONSENSUS_PLUGINS, \
     CONSENSUS_MODES, HOST_TYPES, SYS_CREATOR, SYS_DELETER, SYS_USER, \
     SYS_RESETTING, CLUSTER_SIZES, PEER_SERVICE_PORTS, CA_SERVICE_PORTS
 
 from modules import host
+
+from agent import ClusterOnDocker
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
@@ -29,10 +30,15 @@ class ClusterHandler(object):
     """ Main handler to operate the cluster in pool
 
     """
+
     def __init__(self):
         self.col_active = db["cluster_active"]
         self.col_released = db["cluster_released"]
         self.host_handler = host.host_handler
+        self.cluster_agents = {
+            'docker': ClusterOnDocker(),
+            'swarm': ClusterOnDocker()
+        }
 
     def list(self, filter_data={}, col_name="active"):
         """ List clusters with given criteria
@@ -154,13 +160,13 @@ class ClusterHandler(object):
 
         # start compose project, failed then clean and return
         logger.debug("Start compose project with name={}".format(cid))
-        containers = compose_up(
-            name=cid, mapped_ports=mapped_ports, host=h,
-            consensus_plugin=consensus_plugin, consensus_mode=consensus_mode,
-            cluster_size=size)
-        if not containers or len(containers) != size:
-            logger.warning("failed containers={}, then delete cluster".format(
-                containers))
+        containers = self.cluster_agents[h.get('type')]\
+            .create(cid, mapped_ports, h, user_id=user_id,
+                    consensus_plugin=consensus_plugin,
+                    consensus_mode=consensus_mode, size=size)
+        if not containers:
+            logger.warning("failed to start cluster={}, then delete"
+                           .format(name))
             self.delete(id=cid, record=False, forced=True)
             return None
 
@@ -189,6 +195,7 @@ class ClusterHandler(object):
         def check_health_work(cid):
             time.sleep(5)
             self.refresh_health(cid)
+
         t = Thread(target=check_health_work, args=(cid,))
         t.start()
 
@@ -222,7 +229,7 @@ class ClusterHandler(object):
                                        {"$set": {"user_id": user_id}})
             return False
 
-        #  0. forced
+        # 0. forced
         #  1. user_id == SYS_DELETER or ""
         #  Then, add deleting flag to the db, and start deleting
         if not user_id.startswith(SYS_DELETER):
@@ -233,14 +240,15 @@ class ClusterHandler(object):
             c.get("host_id"), c.get("daemon_url"), \
             c.get("consensus_plugin", CONSENSUS_PLUGINS[0])
         # port = api_url.split(":")[-1] or CLUSTER_PORT_START
-
-        if not self.host_handler.get_active_host_by_id(host_id):
+        h = self.host_handler.get_active_host_by_id(host_id)
+        if not h:
             logger.warning("Host {} inactive".format(host_id))
             self.col_active.update_one({"id": id},
                                        {"$set": {"user_id": user_id}})
             return False
 
-        if not compose_clean(id, daemon_url, consensus_plugin):
+        if not self.cluster_agents[h.get('type')]\
+                .delete(id, daemon_url, consensus_plugin):
             logger.warning("Error to run compose clean work")
             self.col_active.update_one({"id": id},
                                        {"$set": {"user_id": user_id}})
@@ -356,7 +364,7 @@ class ClusterHandler(object):
         if not h:
             logger.warning('No host found with id={}'.format(h_id))
             return False
-        result = compose_start(
+        result = self.cluster_agents[h.get('type')].start(
             name=cluster_id, daemon_url=h.get('daemon_url'),
             mapped_ports=c.get('mapped_ports', PEER_SERVICE_PORTS),
             consensus_plugin=c.get('consensus_plugin'),
@@ -388,7 +396,7 @@ class ClusterHandler(object):
         if not h:
             logger.warning('No host found with id={}'.format(h_id))
             return False
-        result = compose_restart(
+        result = self.cluster_agents[h.get('type')].restart(
             name=cluster_id, daemon_url=h.get('daemon_url'),
             mapped_ports=c.get('mapped_ports', PEER_SERVICE_PORTS),
             consensus_plugin=c.get('consensus_plugin'),
@@ -420,14 +428,14 @@ class ClusterHandler(object):
         if not h:
             logger.warning('No host found with id={}'.format(h_id))
             return False
-        result = compose_stop(
+        result = self.cluster_agents[h.get('type')].stop(
             name=cluster_id, daemon_url=h.get('daemon_url'),
             mapped_ports=c.get('mapped_ports', PEER_SERVICE_PORTS),
             consensus_plugin=c.get('consensus_plugin'),
             consensus_mode=c.get('consensus_mode'),
             log_type=h.get('log_type'),
             log_level=h.get('log_level'),
-            log_server="",
+            log_server='',
             cluster_size=c.get('size'),
         )
         if result:
@@ -450,8 +458,8 @@ class ClusterHandler(object):
         c = self.get_by_id(cluster_id)
         logger.debug("Run recreate_work in background thread")
         cluster_name, host_id, mapped_ports, consensus_plugin, \
-            consensus_mode, size \
-            = c.get("name"), c.get("host_id"), \
+            consensus_mode, size = \
+            c.get("name"), c.get("host_id"), \
             c.get("mapped_ports"), c.get("consensus_plugin"), \
             c.get("consensus_mode"), c.get("size")
         if not self.delete(cluster_id, record=record, forced=True):

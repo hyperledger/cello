@@ -11,6 +11,20 @@ The architecture will follow the following principles:
 * Fault-resilience: Means the service should be tolerant for fault, such as database crash. 
 * Scalability: Try best to distribute the services, to mitigate centralized bottle neck.
 
+## Functional Layers
+
+Following the decouple design, there are 3 layers in Cello.
+
+* Access layer: including those Web UI dashboards operated by users.
+* Orchestration layer: received the request form Access layer, and make call to correct agents to operate the blockchain resources.
+* Agent layer: real workers that interact with underly infrastructures like Docker, Swarm, K8s.
+
+Each layer should maintain stable APIs for upper layers, to achieve pluggability without changing upper layer code.
+
+### Agent layer APIs
+
+* Host management: create, query/list, update, delete, fillup, clean, reset
+* Cluster management: create, query/list, start/stop/restart, delete, reset
 
 ## Components
 

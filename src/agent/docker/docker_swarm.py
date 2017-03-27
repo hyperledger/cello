@@ -13,11 +13,14 @@ from common import log_handler, LOG_LEVEL
 from common import \
     HOST_TYPES, \
     CLUSTER_NETWORK, \
-    COMPOSE_FILE_PATH, \
     CONSENSUS_PLUGINS, CONSENSUS_MODES, \
     CLUSTER_LOG_TYPES, CLUSTER_LOG_LEVEL, \
     CLUSTER_SIZES, \
     SERVICE_PORTS
+
+COMPOSE_FILE_PATH = os.getenv("COMPOSE_FILE_PATH",
+                              "./agent/docker/_compose_files")
+
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
@@ -336,7 +339,7 @@ def compose_up(name, host, mapped_ports,
                consensus_plugin=CONSENSUS_PLUGINS[0],
                consensus_mode=CONSENSUS_MODES[0],
                cluster_size=CLUSTER_SIZES[0],
-               timeout=5):
+               timeout=5, cluster_version='fabric-0.6'):
     """ Compose up a cluster
 
     :param name: The name of the cluster
@@ -363,7 +366,8 @@ def compose_up(name, host, mapped_ports,
                      consensus_mode, cluster_size, log_level, log_type,
                      log_server)
     try:
-        project = get_project(COMPOSE_FILE_PATH + "/" + log_type)
+        project = get_project(COMPOSE_FILE_PATH +
+                              "/{}/".format(cluster_version) + log_type)
         containers = project.up(detached=True, timeout=timeout)
     except Exception as e:
         logger.warning("Exception when compose start={}".format(e))
@@ -417,7 +421,8 @@ def compose_start(name, daemon_url, mapped_ports=SERVICE_PORTS,
                   consensus_mode=CONSENSUS_MODES[0],
                   log_type=CLUSTER_LOG_TYPES[0], log_server="",
                   log_level=CLUSTER_LOG_LEVEL[0],
-                  cluster_size=CLUSTER_SIZES[0]):
+                  cluster_size=CLUSTER_SIZES[0],
+                  cluster_version='fabric-0.6'):
     """ Start the cluster
 
     :param name: The name of the cluster
@@ -438,7 +443,8 @@ def compose_start(name, daemon_url, mapped_ports=SERVICE_PORTS,
                      consensus_mode, cluster_size, log_level, log_type,
                      log_server)
     # project = get_project(COMPOSE_FILE_PATH+"/"+consensus_plugin)
-    project = get_project(COMPOSE_FILE_PATH + "/" + log_type)
+    project = get_project(COMPOSE_FILE_PATH +
+                          "/{}/".format(cluster_version) + log_type)
     try:
         project.start()
         start_containers(daemon_url, name + '-')
@@ -453,7 +459,8 @@ def compose_restart(name, daemon_url, mapped_ports=SERVICE_PORTS,
                     consensus_mode=CONSENSUS_MODES[0],
                     log_type=CLUSTER_LOG_TYPES[0], log_server="",
                     log_level=CLUSTER_LOG_LEVEL[0],
-                    cluster_size=CLUSTER_SIZES[0]):
+                    cluster_size=CLUSTER_SIZES[0],
+                    cluster_version='fabric-0.6'):
     """ Restart the cluster
 
     :param name: The name of the cluster
@@ -474,7 +481,8 @@ def compose_restart(name, daemon_url, mapped_ports=SERVICE_PORTS,
                      consensus_mode, cluster_size, log_level, log_type,
                      log_server)
     # project = get_project(COMPOSE_FILE_PATH+"/"+consensus_plugin)
-    project = get_project(COMPOSE_FILE_PATH + "/" + log_type)
+    project = get_project(COMPOSE_FILE_PATH +
+                          "/{}/".format(cluster_version) + log_type)
     try:
         project.restart()
         start_containers(daemon_url, name + '-')
@@ -489,7 +497,8 @@ def compose_stop(name, daemon_url, mapped_ports=SERVICE_PORTS,
                  consensus_mode=CONSENSUS_MODES[0],
                  log_type=CLUSTER_LOG_TYPES[0], log_server="",
                  log_level=CLUSTER_LOG_LEVEL[0],
-                 cluster_size=CLUSTER_SIZES[0], timeout=5):
+                 cluster_size=CLUSTER_SIZES[0], timeout=5,
+                 cluster_version='fabric-0.6'):
     """ Stop the cluster
 
     :param name: The name of the cluster
@@ -512,7 +521,8 @@ def compose_stop(name, daemon_url, mapped_ports=SERVICE_PORTS,
     _compose_set_env(name, daemon_url, mapped_ports, consensus_plugin,
                      consensus_mode, cluster_size, log_level, log_type,
                      log_server)
-    project = get_project(COMPOSE_FILE_PATH + "/" + log_type)
+    project = get_project(COMPOSE_FILE_PATH +
+                          "/{}/".format(cluster_version) + log_type)
     try:
         project.stop(timeout=timeout)
     except Exception as e:
@@ -526,7 +536,8 @@ def compose_down(name, daemon_url, mapped_ports=SERVICE_PORTS,
                  consensus_mode=CONSENSUS_MODES[0],
                  log_type=CLUSTER_LOG_TYPES[0], log_server="",
                  log_level=CLUSTER_LOG_LEVEL[0],
-                 cluster_size=CLUSTER_SIZES[0], timeout=5):
+                 cluster_size=CLUSTER_SIZES[0], timeout=5,
+                 cluster_version='fabric-0.6'):
     """ Stop the cluster and remove the service containers
 
     :param name: The name of the cluster
@@ -542,13 +553,16 @@ def compose_down(name, daemon_url, mapped_ports=SERVICE_PORTS,
     """
     logger.debug("Compose remove {} with daemon_url={}, "
                  "consensus={}".format(name, daemon_url, consensus_plugin))
+    # import os, sys
     # compose use this
     _compose_set_env(name, daemon_url, mapped_ports, consensus_plugin,
                      consensus_mode, cluster_size, log_level, log_type,
                      log_server)
 
     # project = get_project(COMPOSE_FILE_PATH+"/"+consensus_plugin)
-    project = get_project(COMPOSE_FILE_PATH + "/" + log_type)
+    project = get_project(COMPOSE_FILE_PATH +
+                          "/{}/".format(cluster_version) + log_type)
+
     # project.down(remove_orphans=True)
     project.stop(timeout=timeout)
     project.remove_stopped(one_off=OneOffFilter.include, force=True)

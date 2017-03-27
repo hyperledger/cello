@@ -32,19 +32,19 @@ You can also find more [scenarios](docs/scenario.md).
 ## Documentation
 
 ### Operational Docs
-* [Installation & Deployment](install.md)
-* [Terminologies](terminology.md)
-* [Tutorial](tutorial.md)
-* [Scenarios](scenario.md)
-* [Production Configuration](production_config.md)
+* [Installation & Deployment](docs/install.md)
+* [Terminologies](docs/terminology.md)
+* [Tutorial](docs/tutorial.md)
+* [Scenarios](docs/scenario.md)
+* [Production Configuration](docs/production_config.md)
 
 ### Development Docs
-* [How to contribute](CONTRIBUTING.md)
-* We're following [pep8 style guide](https://www.python.org/dev/peps/pep-0008/), [Coding Style](code_style.md)
-* [Architecture Design](arch.md)
-* [Database Model](db.md)
-* [API](../api/restserver_v2.md)
-* [Develop react js](reactjs.md)
+* [How to contribute](docs/CONTRIBUTING.md)
+* We're following [pep8 style guide](https://www.python.org/dev/peps/pep-0008/), [Coding Style](docs/code_style.md)
+* [Architecture Design](docs/arch.md)
+* [Database Model](docs/db.md)
+* [API](api/restserver_v2.md)
+* [Develop react js](docs/reactjs.md)
 
 ## Why named Cello?
 Can u find anyone better at playing chains? :)

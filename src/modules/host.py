@@ -4,8 +4,8 @@ import os
 import random
 import sys
 import time
-
 from threading import Thread
+
 from pymongo.collection import ReturnDocument
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -13,10 +13,9 @@ from common import \
     db, log_handler, \
     LOG_LEVEL, CLUSTER_LOG_TYPES, CLUSTER_LOG_LEVEL, \
     CLUSTER_SIZES, CLUSTER_PORT_START, CLUSTER_PORT_STEP, \
-    CONSENSUS_TYPES
+    CONSENSUS_TYPES, HOST_TYPES
 
-from agent import cleanup_host, check_daemon, detect_daemon_type, \
-    reset_container_host, setup_container_host
+from agent import DockerHost, KubernetesHost
 
 from modules import cluster
 
@@ -36,15 +35,23 @@ def check_status(func):
 
 
 class HostHandler(object):
-    """ Main handler to operate the Docker hosts
+    """ Main handler to operate the hosts.
+
+    Host can be platforms like Docker, Swarm or Kubernetes
     """
     def __init__(self):
         self.col = db["host"]
+        self.host_agents = {
+            'docker': DockerHost(),
+            'swarm': DockerHost(),
+            'kubernetes': KubernetesHost()
+        }
 
     def create(self, name, daemon_url, capacity=1,
                log_level=CLUSTER_LOG_LEVEL[0],
                log_type=CLUSTER_LOG_TYPES[0], log_server="", autofill="false",
-               schedulable="false", serialization=True):
+               schedulable="false", serialization=True,
+               host_type=HOST_TYPES[0]):
         """ Create a new docker host node
 
         A docker host is potentially a single node or a swarm.
@@ -76,16 +83,8 @@ class HostHandler(object):
             log_server = "udp://" + log_server
         if log_type == CLUSTER_LOG_TYPES[0]:
             log_server = ""
-        if check_daemon(daemon_url):
-            logger.warning("The daemon_url is active:" + daemon_url)
-            status = "active"
-        else:
-            logger.warning("The daemon_url is inactive:" + daemon_url)
-            status = "inactive"
 
-        detected_type = detect_daemon_type(daemon_url)
-
-        if not setup_container_host(detected_type, daemon_url):
+        if not self.host_agents[host_type].create(daemon_url):
             logger.warning("{} cannot be setup".format(name))
             return {}
 
@@ -95,9 +94,9 @@ class HostHandler(object):
             'daemon_url': daemon_url,
             'create_ts': datetime.datetime.now(),
             'capacity': capacity,
-            'status': status,
+            'status': 'active',
             'clusters': [],
-            'type': detected_type,
+            'type': host_type,
             'log_level': log_level,
             'log_type': log_type,
             'log_server': log_server,
@@ -131,7 +130,7 @@ class HostHandler(object):
         return self._serialize(ins)
 
     def update(self, id, d):
-        """ Update a host
+        """ Update a host's property
 
         TODO: may check when changing host type
 
@@ -169,7 +168,7 @@ class HostHandler(object):
         hosts = self.col.find(filter_data)
         return list(map(self._serialize, hosts))
 
-    def delete(self, id):
+    def delete(self, id, host_type=HOST_TYPES[0]):
         """ Delete a host instance
 
         :param id: id of the host to delete
@@ -184,7 +183,8 @@ class HostHandler(object):
         if h.get("clusters", ""):
             logger.warning("There are clusters on that host, cannot delete.")
             return False
-        cleanup_host(h.get("daemon_url"))
+
+        self.host_agents[host_type].delete(h.get("daemon_url"))
         self.col.delete_one({"id": id})
         return True
 
@@ -260,7 +260,6 @@ class HostHandler(object):
 
         return True
 
-    @check_status
     def reset(self, id):
         """
         Clean a host's free clusters.
@@ -273,8 +272,8 @@ class HostHandler(object):
         if not host or len(host.get("clusters")) > 0:
             logger.warning("No find resettable host with id ={}".format(id))
             return False
-        return reset_container_host(host_type=host.get("type"),
-                                    daemon_url=host.get("daemon_url"))
+        return self.host_agents[host.get("type")].reset(
+            host_type=host.get("type"), daemon_url=host.get("daemon_url"))
 
     def refresh_status(self, id):
         """
@@ -287,7 +286,8 @@ class HostHandler(object):
         if not host:
             logger.warning("No host found with id=" + id)
             return False
-        if not check_daemon(host.get("daemon_url")):
+        if not self.host_agents[host.get("type")]\
+                .refresh_status(host.get("daemon_url")):
             logger.warning("Host {} is inactive".format(id))
             self.db_set_by_id(id, status="inactive")
             return False

@@ -23,6 +23,7 @@ all: check
 
 check: ##@Code Check code format
 	tox
+	make start && sleep 10 && make stop
 
 clean: ##@Code Clean tox result
 	rm -rf .tox
