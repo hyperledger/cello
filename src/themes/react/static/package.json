@@ -15,6 +15,8 @@
     "react-dom": "^15.4.1",
     "recharts": "^0.19.0",
     "echarts-for-react": "^1.1.6",
+    "react-draft-wysiwyg": "^1.8.1",
+    "react-helmet": "^5.0.0",
     "echarts": "^3.4.0"
   },
   "devDependencies": {
@@ -38,14 +40,16 @@
     "mockjs": "^1.0.1-beta3",
     "redbox-react": "^1.2.10",
     "robe-ajax": "^1.0.0",
-    "watchjs": "^0.0.0"
+    "watchjs": "^0.0.0",
+    "axios": "^0.15.3",
+    "validator": "^7.0.0"
   },
   "scripts": {
     "start": "dora --plugins \"proxy,webpack,webpack-hmr\"",
     "dev": "dora --plugins \"webpack,webpack-hmr\"",
     "lint": "eslint --fix --ext .js,.jsx src/components/layout",
     "build": "atool-build -o /app/js/dist --publicPath /static/js/dist/",
-    "watch-mode": "atool-build -w --no-compress -o /app/js/dist --publicPath /static/js/dist/"
+    "watch-mode": "atool-build --no-compress -o /app/js/dist --publicPath /static/js/dist/"
   },
   "theme": "./js/theme.js",
   "standard": {

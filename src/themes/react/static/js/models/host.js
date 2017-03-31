@@ -1,19 +1,22 @@
 /**
  * Created by yuehaitao on 2017/1/18.
  */
-import {getHosts} from '../services/hosts'
+import {getHosts} from '../services/host'
 import {message} from 'antd'
 
 export default {
     namespace: 'host',
     state: {
         loadingHosts: false,
-        hosts: []
+        hosts: [],
+        modalVisible: false,
+        modalType: 'create',
+        currentHost: {}
     },
     subscriptions: {
         setup({dispatch, history}) {
             history.listen(location => {
-                if (location.pathname == '/hosts') {
+                if (location.pathname === '/hosts') {
                     dispatch({type: 'getHosts'})
                 }
             })
@@ -24,7 +27,7 @@ export default {
             yield put({type: 'showLoadingHosts'})
             try {
                 const data = yield call(getHosts)
-                if (data && data.status == "OK") {
+                if (data && data.status === "OK") {
                     yield put({type: 'getHostsSuccess', payload: {
                         hosts: data.data
                     }})
@@ -47,6 +50,12 @@ export default {
         },
         getHostsSuccess(state, action) {
             return {...state, ...action.payload, loadingHosts: false}
+        },
+        showModal(state, action) {
+            return {...state, ...action.payload, modalVisible: true}
+        },
+        hideModal(state) {
+            return {...state, modalVisible: false}
         }
     }
 }

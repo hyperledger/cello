@@ -5,7 +5,10 @@ module.exports = {
   footerText: 'Cello Dashboard',
   logoText: 'Cello',
   urls: {
-    queryStat: apiBase + '/stat',
-    hosts: apiBase + '/hosts'
+      overview: {
+        stat: apiBase + '/stat',
+      },
+      hosts: apiBase + '/hosts',
+      host: apiBase + '/host'
   }
 }

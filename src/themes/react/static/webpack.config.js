@@ -47,7 +47,8 @@ module.exports = function (webpackConfig, env) {
   webpackConfig.externals = {
     'react': 'React',
     'react-dom': 'ReactDOM',
-    'echarts': true
+    'echarts': true,
+    'validator': true
   }
 
   return webpackConfig

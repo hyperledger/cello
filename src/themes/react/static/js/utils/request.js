@@ -1,27 +1,43 @@
-const Ajax = require('robe-ajax')
+import axios from 'axios'
+import qs from 'qs'
+import config from './config'
 
-/**
- * Requests a URL, returning a promise.
- *
- * @param  {string} url       The URL we want to request
- * @param  {object} [options] The options we want to pass to "fetch"
- * @return {object}           An object containing either "data" or "err"
- */
-export default function request (url, options) {
-  if (options.cross) {
-    return Ajax.getJSON('http://query.yahooapis.com/v1/public/yql', {
-      q: "select * from json where url='" + url + '?' + Ajax.param(options.data) + "'",
-      format: 'json'
-    })
-  } else {
-    return Ajax.ajax({
-      url: url,
-      method: options.method || 'get',
-      data: options.data || {},
-      processData: options.method === 'get',
-      dataType: 'JSON'
-    }).done((data) => {
-      return data
-    })
+const fetch = (options) => {
+  const {
+    method = 'get',
+    data,
+    url,
+  } = options
+  switch (method.toLowerCase()) {
+    case 'get':
+      return axios.get(`${url}${options.data ? `?${qs.stringify(options.data)}` : ''}`)
+    case 'delete':
+      return axios.delete(url, { data })
+    case 'head':
+      return axios.head(url, data)
+    case 'post':
+      return axios.post(url, data)
+    case 'put':
+      return axios.put(url, data)
+    case 'patch':
+      return axios.patch(url, data)
+    default:
+      return axios(options)
   }
+}
+
+export default function request (options) {
+  return fetch(options).then((response) => {
+    const { statusText, status } = response
+    let data = options.isCross ? response.data.query.results.json : response.data
+    return {
+      code: 0,
+      status,
+      message: statusText,
+      ...data,
+    }
+  }).catch((error) => {
+    const { response = { statusText: 'Network Error' } } = error
+    return { code: 1, message: response.statusText }
+  })
 }
