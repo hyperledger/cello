@@ -34,3 +34,11 @@ export async function updateHost(params) {
 		data: params
 	})
 }
+
+export async function opHost(params) {
+	return request({
+		url: config.urls.host.operation,
+		method: 'post',
+		data: params
+	})
+}

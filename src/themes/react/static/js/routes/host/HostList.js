@@ -8,34 +8,67 @@ import { DropOption } from '../../components'
 
 const confirm = Modal.confirm
 
-function list({loadingList, dataSource, onDelete, onEdit, onSelectTagItem}) {
+function list({loadingList, dataSource, onDelete, onEdit, onOperation}) {
     const handleMenuClick = (record, e, index) => {
         if (e.key === 'edit') {
             onEdit(record)
-        }else if (e.key === 'delete') {
+        } else if (e.key === 'delete') {
             confirm({
                 title: 'Confirm to delete?',
                 onOk () {
                     onDelete(record, index)
                 },
             })
+        } else {
+            if (e.key === 'reset') {
+                confirm({
+                    title: 'Want to reset?',
+                    content: <div><p>you are about to <span style={{color: 'red'}}>reset</span> the host node1, this procedure is irreversible.</p></div>,
+                    okText: 'Confirm',
+                    cancelText: 'Cancel',
+                    onOk () {
+                        onOperation(record, e.key)
+                    },
+                })
+            } else {
+                onOperation(record, e.key)
+            }
         }
     }
+    const loadingText = ["operating"]
     const columns = [
         {
             title: 'Name',
             dataIndex: 'name',
-            key: 'name',
-            render: (text, record) => (
-                <a onClick={() => onSelectItem(record.id)}>{text}</a>
-            )
+            key: 'name'
         },
         {
             title: 'Status',
             dataIndex: 'status',
             key: 'status',
+            render: (text) => {
+                let status = "success"
+                if (loadingText.indexOf(text) >= 0) {
+                    status = "processing"
+                } else if (text !== "active") {
+                    status = "warning"
+                }
+                return (
+                    <span><Badge status={status} text={text} /></span>
+                )
+            }
+        },
+        {
+            title: 'Capacity',
+            dataIndex: 'capacity',
+            key: 'capacity'
+        },
+        {
+            title: 'Chains',
+            dataIndex: 'clusters',
+            key: 'clusters',
             render: (text) => (
-                <span>{text === "active" ? <Badge status="success" text={text}/> : <Badge status="warning" text={text} />}</span>
+                <span>{text.length}</span>
             )
         },
         {
@@ -65,7 +98,10 @@ function list({loadingList, dataSource, onDelete, onEdit, onSelectTagItem}) {
             render: (text, record, index) => {
                 const menuOptions = [
                     {key: 'edit', name: 'Edit'},
-                    {key: 'delete', name: 'Delete'}
+                    {key: 'delete', name: 'Delete'},
+                    {key: 'fillup', name: 'Fill Up'},
+                    {key: 'clean', name: 'Clean'},
+                    {key: 'reset', name: 'Reset'}
                 ]
                 return <DropOption onMenuClick={e => handleMenuClick(record, e, index)} menuOptions={menuOptions} />
             }

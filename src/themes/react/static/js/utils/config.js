@@ -12,7 +12,8 @@ module.exports = {
         list: apiBase + '/hosts',
         create: apiBase + '/host',
         delete: apiBase + '/host',
-        update: apiBase + '/host'
+        update: apiBase + '/host',
+        operation: apiBase + '/host_op'
       }
   }
 }

@@ -39,6 +39,15 @@ class Hosts extends React.Component {
                       currentHost: record
                   }
               })
+          },
+          onOperation(record, operation) {
+              dispatch({
+                  type: 'host/opHost',
+                  payload: {
+                      id: record.id,
+                      action: operation
+                  }
+              })
           }
       }
       const modalProps = {
