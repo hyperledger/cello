@@ -30,6 +30,8 @@ class HostModal extends React.Component {
                 getFieldsValue,
                 setFields
             },
+            item,
+            type
         } = this.props
         validateFields((errors) => {
             if (errors) {
@@ -72,6 +74,9 @@ class HostModal extends React.Component {
             if (!('log_server' in data)) {
                 data.log_server = '';
             }
+            if (type !== 'create') {
+                data.id = item.id
+            }
             onOk(data)
         })
 }
@@ -96,6 +101,8 @@ class HostModal extends React.Component {
             onOk: this.handleOk,
             onCancel,
             confirmLoading: posting,
+            okText: 'Confirm',
+            cancelText: 'Cancel',
             wrapClassName: 'vertical-center-modal',
         }
         const formItemLayout = {
@@ -127,7 +134,7 @@ class HostModal extends React.Component {
                     </Tooltip>
                 </span>} hasFeedback {...formItemLayout}>
                         {getFieldDecorator('daemon_url', {
-                            initialValue: type === "create" ? "" : item.daemon_url,
+                            initialValue: type === "create" ? "" : item.daemon_url.split("//")[1],
                             rules: [
                                 {
                                     required: true,
@@ -198,7 +205,7 @@ class HostModal extends React.Component {
                     </Tooltip>
                 </span>} hasFeedback {...formItemLayout}>
                         {getFieldDecorator('schedulable', {
-                            initialValue: type === 'create' ? false : item.schedulable,
+                            initialValue: type === 'create' ? false : item.schedulable === "true",
                             valuePropName: 'checked'
                         })(<Switch />)}
                     </FormItem>
@@ -208,7 +215,7 @@ class HostModal extends React.Component {
                     </Tooltip>
                 </span>} hasFeedback {...formItemLayout}>
                         {getFieldDecorator('autofill', {
-                            initialValue: type === 'create' ? false : item.autofill,
+                            initialValue: type === 'create' ? false : item.autofill === "true",
                             valuePropName: 'checked'
                         })(<Switch />)}
                     </FormItem>

@@ -1,7 +1,7 @@
 /**
  * Created by yuehaitao on 2017/1/18.
  */
-import {getHosts, createHost, deleteHost} from '../services/host'
+import {getHosts, createHost, deleteHost, updateHost} from '../services/host'
 import {message} from 'antd'
 
 export default {
@@ -66,6 +66,23 @@ export default {
                 })
             } else {
                 message.error("Delete Host failed")
+            }
+        },
+        *updateHost({payload}, {call, put}) {
+            const data = yield call(updateHost, payload)
+            if (data && data.status === "OK") {
+                yield put({
+                    type: 'hideModal'
+                })
+                message.success("Update host successful")
+                yield put({
+                    type: 'getHosts'
+                })
+            } else {
+                yield put({
+                    type: 'hideModal'
+                })
+                message.error("Update host failed")
             }
         }
     },

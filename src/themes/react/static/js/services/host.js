@@ -26,3 +26,11 @@ export async function deleteHost(params) {
 		data: params
 	})
 }
+
+export async function updateHost(params) {
+	return request({
+		url: config.urls.host.update,
+		method: 'put',
+		data: params
+	})
+}

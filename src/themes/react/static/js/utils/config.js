@@ -11,7 +11,8 @@ module.exports = {
       host: {
         list: apiBase + '/hosts',
         create: apiBase + '/host',
-        delete: apiBase + '/host'
+        delete: apiBase + '/host',
+        update: apiBase + '/host'
       }
   }
 }

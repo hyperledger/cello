@@ -18,7 +18,7 @@ class Hosts extends React.Component {
       })
   }
   render() {
-      const {host: {loadingHosts, hosts, modalVisible, modalType, currentItem}, dispatch} = this.props;
+      const {host: {loadingHosts, hosts, modalVisible, modalType, currentHost}, dispatch} = this.props;
       const hostsListProps = {
           dataSource: hosts,
           loadingList: loadingHosts,
@@ -30,19 +30,35 @@ class Hosts extends React.Component {
                       index
                   }
               })
+          },
+          onEdit(record) {
+              dispatch({
+                  type: 'host/showModal',
+                  payload: {
+                      modalType: 'update',
+                      currentHost: record
+                  }
+              })
           }
       }
       const modalProps = {
-          item: modalType === 'create' ? {} : currentItem,
+          item: modalType === 'create' ? {} : currentHost,
           type: modalType,
           visible: modalVisible,
           onOk(data) {
-              console.log(data)
-              dispatch({
-                  type: 'host/createHost',
-                  payload: data
+              if (modalType === 'create') {
+                  dispatch({
+                      type: 'host/createHost',
+                      payload: data
 
-              })
+                  })
+              } else {
+                  dispatch({
+                      type: 'host/updateHost',
+                      payload: data
+
+                  })
+              }
           },
           onCancel() {
               dispatch({
