@@ -21,7 +21,16 @@ class Hosts extends React.Component {
       const {host: {loadingHosts, hosts, modalVisible, modalType, currentItem}, dispatch} = this.props;
       const hostsListProps = {
           dataSource: hosts,
-          loadingList: loadingHosts
+          loadingList: loadingHosts,
+          onDelete(record, index) {
+              dispatch({
+                  type: 'host/deleteHost',
+                  payload: {
+                      id: record.id,
+                      index
+                  }
+              })
+          }
       }
       const modalProps = {
           item: modalType === 'create' ? {} : currentItem,
@@ -29,6 +38,11 @@ class Hosts extends React.Component {
           visible: modalVisible,
           onOk(data) {
               console.log(data)
+              dispatch({
+                  type: 'host/createHost',
+                  payload: data
+
+              })
           },
           onCancel() {
               dispatch({

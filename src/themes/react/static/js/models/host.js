@@ -1,7 +1,7 @@
 /**
  * Created by yuehaitao on 2017/1/18.
  */
-import {getHosts} from '../services/host'
+import {getHosts, createHost, deleteHost} from '../services/host'
 import {message} from 'antd'
 
 export default {
@@ -38,6 +38,34 @@ export default {
             } catch (e) {
                 message.error("get hosts list failed")
                 yield put({type: 'hideLoadingHosts'})
+            }
+        },
+        *createHost({payload}, {call, put}) {
+            const data = yield call(createHost, payload)
+            if (data && data.status === "OK") {
+                yield put({
+                    type: 'hideModal'
+                })
+                message.success("Create host successful")
+                yield put({
+                    type: 'getHosts'
+                })
+            } else {
+                yield put({
+                    type: 'hideModal'
+                })
+                message.error("Create host failed")
+            }
+        },
+        *deleteHost({payload}, {select, call, put}) {
+            const data = yield call(deleteHost, payload)
+            if (data && data.status === "OK") {
+                message.success("Delete Host successful")
+                yield put({
+                    type: 'getHosts'
+                })
+            } else {
+                message.error("Delete Host failed")
             }
         }
     },

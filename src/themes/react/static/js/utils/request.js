@@ -16,7 +16,7 @@ const fetch = (options) => {
     case 'head':
       return axios.head(url, data)
     case 'post':
-      return axios.post(url, data)
+      return axios.post(url, qs.stringify(data))
     case 'put':
       return axios.put(url, data)
     case 'patch':

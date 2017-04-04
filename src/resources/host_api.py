@@ -4,6 +4,7 @@ import sys
 
 from flask import jsonify, Blueprint, render_template
 from flask import request as r
+import json
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from common import log_handler, LOG_LEVEL, \
@@ -113,18 +114,23 @@ def host_update():
 @bp_host_api.route('/host', methods=['PUT', 'DELETE'])
 def host_delete():
     request_debug(r, logger)
-    if "id" not in r.form or not r.form["id"]:
+    request_data = r.get_json(force=True, silent=True)
+    if "id" in r.form:
+        host_id = r.form["id"]
+    elif "id" in request_data:
+        host_id = request_data.get("id")
+    else:
         error_msg = "host delete without enough data"
         logger.warning(error_msg)
         return make_fail_response(error=error_msg, data=r.form)
+
+    logger.debug("host delete with id={0}".format(host_id))
+    if host_handler.delete(id=host_id):
+        return make_ok_response()
     else:
-        logger.debug("host delete with id={0}".format(r.form["id"]))
-        if host_handler.delete(id=r.form["id"]):
-            return make_ok_response()
-        else:
-            error_msg = "Failed to delete host {}".format(r.form["id"])
-            logger.warning(error_msg)
-            return make_fail_response(error=error_msg)
+        error_msg = "Failed to delete host {}".format(host_id)
+        logger.warning(error_msg)
+        return make_fail_response(error=error_msg)
 
 
 @bp_host_api.route('/host_op', methods=['POST'])
