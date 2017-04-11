@@ -1,25 +1,38 @@
 # Contribution
-Any kind of contribution is encouraged, e.g., bug report, question answer, and submit pull-request.
+Any kind of contribution is encouraged, e.g., bug fix and question report.
 
 Before taking actions, we highly recommend reading the [docs](../README.md).
 
+## LF ID Application
 
-## Bug and Questions
+All the tools require an Linux Foundation (LF) ID.
 
-We now have two channels for bug and questions:
+If you do not have an LF ID, can [apply one](https://identity.linuxfoundation.org) for free.
 
-* [Jira](https://jira.hyperledger.org/secure/RapidBoard.jspa?rapidView=111): report bug issues, create to-do tasks.
-* [Chat](https://chat.hyperledger.org/channel/cello): technical discussions and questions.
+## Jira board usage
 
-Jira tasks with `To Do` status are available for picking. If you want to handle one, assign it to yourself, and update the status to `In Progress`. Remember to mark it to `Done` when the patch is merged.
+We are using [Jira](https://jira.hyperledger.org/projects/CE) to track the project progress, and welcome to report bug issues or create to-do tasks there. Each item should try keeping simple and focused, hence easy to fix and review.
 
-## Code Commit
+After login with your LF ID, you can see those task items may have 4 status:
 
-*Before committing code, please go to [Jira](https://jira.hyperledger.org/secure/RapidBoard.jspa?rapidView=85) to check existing tasks.*
+* `To Do`: Available for picking.
+* `In Progress`: Picked by someone (check the assignee) to work on.
+* `Under Review`: Related patchset has been submitted for review.
+* `Done`: Patchset merged, the item is done.
+
+In brief, if you want to contribute, create or find some `To Do` item, and assign it to yourself, then update its status to `In Progress`. After the item is fixed, remember to mark it as `Under Review` and `Done` when the patch is submitted and merged.
+
+## Questions and discussions
+
+* [RocketChat](https://chat.hyperledger.org/channel/cello): technical discussions and questions, login with your LFID.
+
+## Code Commit Steps
 
 The project employs [Gerrit](https://gerrit.hyperledger.org) as the code commit/review system.
 
-* Clone the project with your Linux Foundation ID (`LFID`), we suggest clone it into the `$GOPATH/src/github.com/hyperledger` directory so that it will build.
+*Before committing code, please go to [Jira](https://jira.hyperledger.org/projects/CE) to create a new task or check if there's related existing one, then assign yourself as the assignee. Notice each task will get a Jira number like [CE-26](https://jira.hyperledger.org/browse/CE-26).
+
+* Clone the project to your working directory with your `LFID`. 
 
 ```sh
 $ git clone ssh://LFID@gerrit.hyperledger.org:29418/cello && scp -p -P 29418 LFID@gerrit.hyperledger.org:hooks/commit-msg cello/.git/hooks/
@@ -37,14 +50,14 @@ $ git config user.email "your email"
 $ git review -s
 ```
 
-* Create a descriptively-named branch off of your cloned repository
+* Assign yourself a `To Do` Jira task, mark it as `In progress`, then create a branch with the Jira task number off of your cloned repository, e.g., for CE-26, it can be:
 
 ```sh
 $ cd cello
-$ git checkout -b issue-NNNN
+$ git checkout -b CE-26
 ```
 
-* After change, run `make check` to make sure the checking is passed. Then Commit your code with `-s` to sign-off, and `-a` to automatically add changes.
+* After modifying the code, run `make check` to make sure all the checking is passed. Then Commit your code with `-s` to sign-off, and `-a` to automatically add changes (or run `git add .` to include all changes manually).
 
 ```sh
 $ make check
@@ -61,23 +74,34 @@ $ git commit -s -a
 Example commit msg may look like:
 
 ```sh
-A short description of your change with no period at the end
+[CE-26] A short description of your change with no period at the end
 
 You can add more details here in several paragraphs, but please keep each line
 width less than 80 characters. A bug fix should include the issue number.
 
-Fix Issue #7050.
+Fix https://jira.hyperledger.org/browse/CE-26.
 
-Change-Id: IF7b6ac513b2eca5f2bab9728ebd8b7e504d3cebe1
+Change-Id: If2e142ea1a21bc4b42f702f9a27d70d31edff20d
 Signed-off-by: Your Name <committer@email.address>
 ```
 
-* Submit your commit using `git review`.
+* Submit your commit using `git review`, and mark the corresponding Jira item as `Under Review`.
 
 ```sh
 $ git review
+remote: Processing changes: new: 1, refs: 1, done
+remote:
+remote: New Changes:
+remote:   http://gerrit.hyperledger.org/r/7915 [CE-26] Update the contribution documentation
+remote:
+To ssh://gerrit.hyperledger.org:29418/cello
+ * [new branch]      HEAD -> refs/publish/master/CE-26
+Switched to branch 'master'
+Your branch is up-to-date with 'origin/master'.
 ```
 
-After the review is uploaded successfully, you can open [Gerrit Dashboard](https://gerrit.hyperledger.org/r/#/dashboard/self) to invite reviewers for checking. The patch will be merged into the `master` branch if passing the reviewer checking.
+Notice you will get a [gerrit item url](http://gerrit.hyperledger.org/r/7915), open and check the status.
 
-* If you need to refine the patch further, you can commit the new code with `git commit -a --amend`, and then repeat the `git review` command.
+After the ci checking passed, add [reviewers](https://wiki.hyperledger.org/projects/cello#contributors) to the reviewer list and also post the gerrit item url at the [RocketChat channel](https://chat.hyperledger.org/channel/cello). The patch will be merged into the `master` branch after passing the review, then mark the Jira item as `Done`.
+
+* If you need to refine the patch further as the reviewers may suggest, you can change on the same branch, and commit the new code with `git commit -a --amend`, and then use the `git review` command again.

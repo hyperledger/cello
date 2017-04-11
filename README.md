@@ -2,6 +2,8 @@
 
 Blockchain as a Service!
 
+Cello is a blockchain provision and operation system.
+
 **Note:** This is a **read-only mirror** of the formal [Gerrit](https://gerrit.hyperledger.org/r/#/admin/projects/cello) repository,
 where active development is ongoing. Issue tracking is handled in [Jira](https://jira.hyperledger.org/projects/CE/issues/).
 
@@ -31,10 +33,12 @@ You can also find more [scenarios](docs/scenario.md).
 
 ## Documentation
 
+### Tutorials
+* [Tutorial](docs/tutorial.md)
+
 ### Operational Docs
 * [Installation & Deployment](docs/install.md)
 * [Terminologies](docs/terminology.md)
-* [Tutorial](docs/tutorial.md)
 * [Scenarios](docs/scenario.md)
 * [Production Configuration](docs/production_config.md)
 
@@ -50,4 +54,4 @@ You can also find more [scenarios](docs/scenario.md).
 Can u find anyone better at playing chains? :)
 
 ## License <a name="license"></a>
-The Hyperledger Project uses the [Apache License Version 2.0](LICENSE) software license.
+The Hyperledger Cello project uses the [Apache License Version 2.0](LICENSE) software license.
