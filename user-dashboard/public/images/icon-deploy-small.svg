@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 3.8.3 (29802) - http://www.bohemiancoding.com/sketch -->
+    <title>Group</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Chain-Main" transform="translate(-1052.000000, -286.000000)" fill="#000000">
+            <g id="Group" transform="translate(1052.000000, 286.000000)">
+                <path d="M15.8437333,3.8896 L12.2666667,0.312533333 L8.6896,3.8896 L9.44373333,4.64373333 L11.7333333,2.35413333 L11.7333333,9.6 C11.7333333,12.5408 9.3408,14.9333333 6.4,14.9333333 C3.4592,14.9333333 1.06666667,12.5408 1.06666667,9.6 C1.06666667,8.17546667 1.62133333,6.83626667 2.6288,5.8288 L1.87466667,5.07466667 C0.6656,6.28373333 0,7.89066667 0,9.6 C0,13.1290667 2.87093333,16 6.4,16 C9.92906667,16 12.8,13.1290667 12.8,9.6 L12.8,2.35413333 L15.0896,4.64373333 L15.8437333,3.8896 L15.8437333,3.8896 Z" id="Shape"></path>
+                <ellipse id="Oval" cx="6.4" cy="9.6" rx="1.6" ry="1.6"></ellipse>
+            </g>
+        </g>
+    </g>
+</svg>

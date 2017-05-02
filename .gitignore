@@ -107,6 +107,7 @@ pip-selfcheck.json
 
 # All .idea stuff:
 .idea/*
+.idea/
 
 # User-specific stuff:
 .idea/workspace.xml
@@ -215,3 +216,4 @@ node_modules
 jspm_packages
 .npm
 .eslintcache
+!/**/lib

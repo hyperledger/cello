@@ -1,0 +1,12 @@
+<svg width="652px" height="19px" viewBox="134 0 331 19" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 3.8.3 (29802) - http://www.bohemiancoding.com/sketch -->
+    <desc>Created with Sketch.</desc>
+	<line x1="0" y1="10" x2="130" y2="10"
+	style="stroke:#C3C3C3;stroke-width:2"/>
+
+    <text x="155" y="15" textLength="295" fill="#fff" font-family=" Arial,Helvetica,sans-serif" font-size="16" >
+        BY HYPERLEDGER FABRIC
+    </text>
+    <line x1="475" y1="10" x2="605" y2="10"
+	style="stroke:#C3C3C3;stroke-width:2"/>
+</svg>

@@ -1,0 +1,22 @@
+{
+  "name": "bc-dashboard",
+  "version": "1.0.0",
+  "description": "It is the nodeJS version of blockchain dashboard",
+  "main": "app.js",
+  "dependencies": {
+    "cookie-parser": "^1.4.3",
+    "body-parser": "^1.17.1",
+    "express": "^4.15.2",
+    "express-session": "^1.15.2",
+    "pug": "^2.0.0-rc.1",
+    "request-promise": "^4.2.0",
+    "request": "^2.81.0",
+    "node-uuid": "^1.4.8"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "li xu cheng",
+  "license": "ISC"
+}

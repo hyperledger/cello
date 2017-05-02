@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="29px" height="29px" viewBox="0 0 29 29" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 3.8.3 (29802) - http://www.bohemiancoding.com/sketch -->
+    <title>Group 4</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="SC-list" transform="translate(-57.000000, -902.000000)">
+            <g id="Group-4" transform="translate(57.000000, 902.000000)">
+                <ellipse id="Oval-5" fill="#FF5003" cx="14.5" cy="14.5" rx="14.5" ry="14.5"></ellipse>
+                <path d="M20.2676,12.4932727 C20.0018,9.94231818 17.8496,8 15.2,8 C12.7028,8 10.5854,9.82177273 10.1756,12.1871818 C9.9518,12.1535 9.7262,12.1363636 9.5,12.1363636 C7.0184,12.1363636 5,14.1241818 5,16.5681818 C5,19.0121818 7.0184,21 9.5,21 L18.5,21 C20.9816,21 23,19.0121818 23,16.5681818 C23,14.7741818 21.9176,13.1840455 20.2676,12.4932727 L20.2676,12.4932727 Z" id="Shape" fill="#FFFFFF"></path>
+                <path d="M15,12 L15,18.5" id="Line" stroke="#FF5003" stroke-width="2" stroke-linecap="round" stroke-linejoin="bevel"></path>
+                <path d="M14.5,11.5 L12.5,14.5" id="Line" stroke="#FF5003" stroke-linecap="round"></path>
+                <path d="M15.5,11.5 L17.5,14.5" id="Line" stroke="#FF5003" stroke-linecap="round"></path>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,68 @@
+<div class="uk-modal">
+	<div class="uk-modal-dialog" style="width:400px;">
+		<form id="loginForm" class="sign-pop uk-panel uk-panel-box uk-form uk-form-stacked">
+			<fieldset>
+				<legend>
+					Log in<br>
+					<span>with your SuperVessel account</span>
+				</legend>
+				<div class="uk-form-row">
+					<div class="uk-form-controls">
+						<input id="form-email" class="uk-width-1-1 uk-form-large" type="text" placeholder="Email">
+					</div>
+				</div>
+				<div class="uk-form-row">
+					<div class="uk-form-controls">
+						<input id="form-pwd" class="uk-width-1-1 uk-form-large" type="password" placeholder="Password">
+					</div>
+				</div>
+				<div class="uk-form-row uk-text-small">
+					<label><input id="form-rememberme" type="checkbox"> Remember Me</label>
+					<a id="register-link" class="uk-float-right uk-link-muted" style="color:#757575;">Register</a>
+				</div>
+				<div class="uk-form-row">
+					<button id="login-btn"
+						class="uk-width-1-1 uk-button uk-button-primary uk-button-large" type="button">
+						Log in
+					</button>
+				</div>
+				<div class="uk-form-row"></div>
+			</fieldset>
+		</form>
+		<form id="registerForm" class="sign-pop uk-panel uk-panel-box uk-form uk-form-stacked" style="display:none;">
+			<fieldset>
+            	<legend>
+                   	Register<br>
+                   	<span>Create your SuperVessel account</span>
+				</legend>
+				<div class="uk-form-row">
+                   	<div class="uk-form-controls">
+                   		<input id="reg-email" class="uk-width-1-1 uk-form-large" type="text" placeholder="Email">
+                   	</div>
+				</div>
+				<div class="uk-form-row">
+                   	<div class="uk-form-controls">
+                   		<input id="reg-pwd" class="uk-width-1-1 uk-form-large" type="password" placeholder="Password">
+                   	</div>
+				</div>
+				<div class="uk-form-row">
+                   	<div class="uk-form-controls">
+                   		<input id="reg-re-pwd" class="uk-width-1-1 uk-form-large" type="password" placeholder="Retype Password">
+                   	</div>
+				</div>
+				<div class="uk-form-row uk-text-small">
+                   	<label>
+                   		<input id="termofuse" type="checkbox" checked="checked">
+                   		I have read and agree with the <a href="https://ptopenlab.com/cloudlabconsole/#/termofuse" target="_blank">Term of Use</a>
+                   	</label>
+				</div>
+				<div class="uk-form-row">
+                   	<button id="register-btn"
+                   		class="uk-width-1-1 uk-button uk-button-primary uk-button-large" type="button">
+                   		Register
+                   	</button>
+				</div>
+			</fieldset>
+		</form>
+	</div>
+</div>

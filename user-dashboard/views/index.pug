@@ -1,0 +1,79 @@
+extends layout
+
+block css
+    link(rel="stylesheet", href="/css/index.css")
+block js
+    script(data-main="/js/index" src="/js/lib/require.js")
+block body
+    body.uk-height-viewport
+block content
+    #banner.uk-height-1-1
+        #sign.uk-align-right.uk-margin-top.uk-margin-large-right
+            if username
+                a.uk-align-right(href="/bc/logout") Log out
+                label
+                    if !isActivated
+                        i.uk-icon-star-o.star-gray(data-uk-tooltip="{pos:'bottom'}", title="Not Activated User")
+                    else
+                        i.uk-icon-star-o.star-orange(data-uk-tooltip="{pos:'bottom'}", title="Activated User")
+                    = "\n"
+                    = username
+            else
+                a#signin Log in
+        .try-box
+            .sv-title
+                img(src="/images/sv-logo.svg", alt="SuperVessel")
+                p Powered by SuperVessel, IBM Research - China
+            .home-title
+                label #[span Blockchain] for Developers
+            .home-subtitle
+                img(src="/images/sub.svg")
+            form(name="form1" method="post" action="")
+                input(type="hidden" id="apikey" name="apikey" value=apikey)
+                .uk-form-row(style="margin-top:38px;")
+                    button#tryBtn(type="button") My dashboard
+    section.intro.uk-text-center.uk-margin-large
+        .intro-title.uk-container-center
+            h1
+                span Blockchain for Developers
+            h2 Have your own blockchain immediately with single click.
+        .attr.uk-grid.uk-container-center.uk-margin-large
+            .uk-width-1-3
+                img(src="/images/devops.jpg", alt="DevOps")
+                .attr-title.uk-vertical-align
+                    h3.uk-vertical-align-bottom DevOps
+                    .attr-border
+                p
+                    | Reduce work cycles, speed up delivery and improve integration.
+                    br
+                    | Embrace the transformation of the way to provision your brilliant idea.
+            .uk-width-1-3
+                img(src="/images/hplg.jpg", alt="Hyperledger Fabric")
+                .attr-title.uk-vertical-align
+                    h3.uk-vertical-align-bottom Hyperledger Fabric
+                    .attr-border
+                p
+                    | Unveil Hyperledger Fabric, which fabricates your blockchain,
+                    | and play with smart contracts, which make your blockchain real for business.
+            .uk-width-1-3
+                img(src="/images/oppw.jpg", alt="Power")
+                .attr-title.uk-vertical-align
+                    h3.uk-vertical-align-bottom POWER
+                    .attr-border
+                p Open and Powerful platforms for optimization and innovation.
+    footer
+        #urls
+            ul.uk-subnav.uk-margin-large-left.uk-link-muted
+                li
+                    a(href="http://ptopenlab.com", target="_blank")
+                        img(src="/images/sv-logo.svg")
+                        |  SuperVessel
+                li
+                    a(href="https://www.hyperledger.org/", target="_blank")
+                        img(src="/images/hl-logo.svg")
+                        |  Hyperledger
+                li
+                    a(href="http://ptopenlab.com", target="_blank") Contact
+                li
+                    a(href="#") FAQs
+        label @ 2016
