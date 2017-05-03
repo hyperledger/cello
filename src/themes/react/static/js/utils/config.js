@@ -14,6 +14,11 @@ module.exports = {
         delete: apiBase + '/host',
         update: apiBase + '/host',
         operation: apiBase + '/host_op'
+      },
+      cluster: {
+        list: apiBase + '/clusters',
+        create: apiBase + '/cluster',
+        delete: apiBase + '/cluster'
       }
   }
 }

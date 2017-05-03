@@ -254,22 +254,29 @@ def cluster_delete():
     :return: response obj
     """
     logger.info("/cluster action=" + r.method)
+    request_data = r.get_json(force=True, silent=True)
+    if r.form:
+        cluster_id = r.form["id"]
+        col_name = r.form["col_name"]
+    else:
+        cluster_id = request_data.get("id")
+        col_name = request_data.get("col_name")
     request_debug(r, logger)
-    if not r.form["id"] or not r.form["col_name"]:
+    if not cluster_id or not col_name:
         error_msg = "cluster operation post without enough data"
         logger.warning(error_msg)
         return make_fail_response(error=error_msg, data=r.form)
     else:
         logger.debug("cluster delete with id={0}, col_name={1}".format(
-            r.form["id"], r.form["col_name"]))
-        if r.form["col_name"] == "active":
-            result = cluster_handler.delete(id=r.form["id"])
+            cluster_id, col_name))
+        if col_name == "active":
+            result = cluster_handler.delete(id=cluster_id)
         else:
-            result = cluster_handler.delete_released(id=r.form["id"])
+            result = cluster_handler.delete_released(id=cluster_id)
         if result:
             return make_ok_response()
         else:
-            error_msg = "Failed to delete cluster {}".format(r.form["id"])
+            error_msg = "Failed to delete cluster {}".format(cluster_id)
             logger.warning(error_msg)
             return make_fail_response(error=error_msg)
 
