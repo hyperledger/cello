@@ -88,7 +88,7 @@ define([
     		$(this).append($spinner);
     		$.ajax({
     			type: "POST",
-    			url: "/bc/api/login",
+    			url: "/api/login",
     			data: {
     				username: $loginEmail.val(),
     				password: $loginPassword.val(),
@@ -144,7 +144,7 @@ define([
     		$(this).append($spinner);
     		$.ajax({
     			type: "POST",
-    			url: "/bc/api/register",
+    			url: "/api/register",
     			data: {
     				username: $registerEmail.val(),
     				password: $registerPassword.val()

@@ -12,7 +12,7 @@ define([
     			login.show();
     		} else {
     			$(this).attr("disabled", true).append($("<i class='uk-icon-spinner uk-icon-spin'></i>"));
-    			$(location).attr("href", "/bc/dashboard");
+    			$(location).attr("href", "/dashboard");
     		}
     	});
     });

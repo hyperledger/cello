@@ -23,8 +23,10 @@ app.use(session({
     cookie: { maxAge: 24*60*60*1000 }
 }));
 app.use(express.static(path.join(__dirname, "public")));
-app.use("/bc/api", require("./routes/api"));
-app.use("/bc", require("./routes/index"));
+app.use("/api", require("./routes/api"));
+app.use("/", require("./routes/index"));
+app.use("/dashboard", require("./routes/dashboard/filter"));
+app.use("/dashboard", require("./routes/dashboard/home"));
 app.use(function(err, req, res, next) {
     res.status(err.status || 500);
     res.send(err.message);

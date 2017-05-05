@@ -4,6 +4,7 @@
 var express = require("express");
 var config = require("../modules/configuration");
 var User = require("../modules/user");
+var Profile = require("../modules/profile");
 
 var router = express.Router();
 
@@ -47,6 +48,27 @@ router.post("/register", function(req, res) {
         //将用户信息暂存到cookie
         res.cookie(config.cookieName, JSON.stringify(userInfo));
         res.json(Object.assign(userInfo, { success: true }));
+    }).catch(function(err) {
+        res.json(err);
+    });
+});
+router.get("/:apikey/profile", function(req, res) {
+    var profile = new Profile(req.params.apikey);
+    profile.load().then(function(result) {
+        res.json(result);
+    }).catch(function(err) {
+        res.json(err);
+    });
+});
+router.post("/:apikey/profile/update", function(req, res) {
+    var profile = new Profile(req.params.apikey);
+    profile.update(req.body.name,
+                   req.body.email,
+                   req.body.bio,
+                   req.body.url,
+                   req.body.location)
+    .then(function(result) {
+        res.json(result);
     }).catch(function(err) {
         res.json(err);
     });
