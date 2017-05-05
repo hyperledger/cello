@@ -27,6 +27,7 @@ app.use("/api", require("./routes/api"));
 app.use("/", require("./routes/index"));
 app.use("/dashboard", require("./routes/dashboard/filter"));
 app.use("/dashboard", require("./routes/dashboard/home"));
+app.use("/dashboard", require("./routes/dashboard/chain"));
 app.use(function(err, req, res, next) {
     res.status(err.status || 500);
     res.send(err.message);
