@@ -5,6 +5,7 @@ var express = require("express");
 var config = require("../modules/configuration");
 var User = require("../modules/user");
 var Profile = require("../modules/profile");
+var Chain = require("../modules/chain");
 
 var router = express.Router();
 
@@ -68,6 +69,51 @@ router.post("/:apikey/profile/update", function(req, res) {
                    req.body.url,
                    req.body.location)
     .then(function(result) {
+        res.json(result);
+    }).catch(function(err) {
+        res.json(err);
+    });
+});
+router.get("/:apikey/chain/list", function(req, res) {
+    var chain = new Chain(req.params.apikey);
+    chain.list(req.query.page).then(function(result) {
+        res.json(result);
+    }).catch(function(err) {
+        res.json(err);
+    });
+});
+router.post("/:apikey/chain/apply", function(req, res) {
+    var chain = new Chain(req.params.apikey);
+    chain.apply(req.body.name,
+                req.body.description,
+                req.body.plugin,
+                req.body.mode,
+                req.body.size)
+    .then(function(result) {
+        res.json(result);
+    }).catch(function(err) {
+        res.json(err);
+    });
+});
+router.post("/:apikey/chain/:id/edit", function(req, res) {
+    var chain = new Chain(req.params.apikey);
+    chain.edit(req.params.id, req.body.name, req.body.description).then(function(result) {
+        res.json(result);
+    }).catch(function(err) {
+        res.json(err);
+    });
+});
+router.post("/:apikey/chain/:id/release", function(req, res) {
+    var chain = new Chain(req.params.apikey);
+    chain.release(req.params.id).then(function(result) {
+        res.json(result);
+    }).catch(function(err) {
+        res.json(err);
+    });
+});
+router.get("/chain/:id/operate", function(req, res) {
+    var chain = new Chain();
+    chain.operate(req.params.id, req.query.action).then(function(result) {
         res.json(result);
     }).catch(function(err) {
         res.json(err);
