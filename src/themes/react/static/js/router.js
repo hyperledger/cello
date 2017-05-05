@@ -42,6 +42,17 @@ const Routers = function ({ history, app }) {
                   }, 'hosts')
               }
           },
+          {
+              path: 'chains/active',
+              name: 'chains/active',
+              getComponent (nextState, cb) {
+                  require.ensure([], require => {
+                      registerModel(app, require('./models/cluster'))
+                      registerModel(app, require('./models/host'))
+                      cb(null, require('./routes/cluster/active'))
+                  }, 'chains-active')
+              }
+          },
         {
           path: '*',
           name: 'error',
