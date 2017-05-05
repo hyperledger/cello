@@ -2,37 +2,16 @@ module.exports = [
   {
     key: 'overview',
     name: 'Overview',
-    icon: 'laptop'
+    icon: 'pie-chart'
   },
   {
     key: 'hosts',
     name: 'Hosts',
-    icon: 'user'
+    icon: 'desktop'
   },
   {
     key: 'chains',
     name: 'Chains',
-    icon: 'camera-o',
-    clickable: false,
-    child: [
-      {
-        key: 'active',
-        name: 'Active Chains'
-      },
-      {
-        key: 'inused',
-        name: 'Inused Chains'
-      }
-    ]
-  },
-  {
-    key: 'release',
-    name: 'Release History',
-    icon: 'user'
-  },
-  {
-    key: 'about',
-    name: 'About',
-    icon: 'user'
+    icon: 'link',
   }
 ]

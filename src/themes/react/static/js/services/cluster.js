@@ -26,3 +26,11 @@ export async function deleteCluster(params) {
 		data: params
 	})
 }
+
+export async function operation(params) {
+	return request({
+		url: config.urls.cluster.operation,
+		method: 'post',
+		data: params
+	})
+}

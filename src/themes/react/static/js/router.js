@@ -43,14 +43,14 @@ const Routers = function ({ history, app }) {
               }
           },
           {
-              path: 'chains/active',
-              name: 'chains/active',
+              path: 'chains',
+              name: 'chains',
               getComponent (nextState, cb) {
                   require.ensure([], require => {
                       registerModel(app, require('./models/cluster'))
                       registerModel(app, require('./models/host'))
                       cb(null, require('./routes/cluster/active'))
-                  }, 'chains-active')
+                  }, 'chains')
               }
           },
         {
