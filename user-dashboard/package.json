@@ -4,14 +4,18 @@
   "description": "It is the nodeJS version of blockchain dashboard",
   "main": "app.js",
   "dependencies": {
-    "cookie-parser": "^1.4.3",
     "body-parser": "^1.17.1",
+    "cookie-parser": "^1.4.3",
     "express": "^4.15.2",
     "express-session": "^1.15.2",
+    "gridfs-stream": "^1.1.1",
+    "mongodb": "^2.2.26",
+    "multer": "^1.3.0",
+    "multer-gridfs-storage": "^1.1.1",
+    "node-uuid": "^1.4.8",
     "pug": "^2.0.0-rc.1",
-    "request-promise": "^4.2.0",
     "request": "^2.81.0",
-    "node-uuid": "^1.4.8"
+    "request-promise": "^4.2.0"
   },
   "devDependencies": {},
   "scripts": {
