@@ -2,10 +2,14 @@
  * Created by lixuc on 2017/5/2.
  */
 var express = require("express");
+var multer  = require("multer");
+var GridFsStorage = require("multer-gridfs-storage");
 var config = require("../modules/configuration");
 var User = require("../modules/user");
 var Profile = require("../modules/profile");
 var Chain = require("../modules/chain");
+var mongoClient = require("../modules/mongoclient");
+var Contract = require("../modules/contract");
 
 var router = express.Router();
 
@@ -114,6 +118,127 @@ router.post("/:apikey/chain/:id/release", function(req, res) {
 router.get("/chain/:id/operate", function(req, res) {
     var chain = new Chain();
     chain.operate(req.params.id, req.query.action).then(function(result) {
+        res.json(result);
+    }).catch(function(err) {
+        res.json(err);
+    });
+});
+router.post("/:apikey/contract/upload", function(req, res) {
+    mongoClient.getGridFS().then(function(gfs) {
+        return new Promise(function(resolve, reject) {
+            var storage = GridFsStorage({
+                gfs: gfs,
+                root: "smartcontract",
+                filename: function(req, file, cb) {
+                    cb(null, file.originalname);
+                },
+                metadata: function(req, file, cb) {
+                    cb(null, { apikey: req.params.apikey });
+                }
+            });
+            var upload = multer({ storage: storage }).single("smartcontract");
+            upload(req, res, function (err) {
+                if (err) {
+                    reject(err);
+                } else {
+                    res.json({
+                        result: true,
+                        name: req.file.filename,
+                        url: req.baseUrl + "/contract?id=" + req.file.id
+                    })
+                }
+            });
+        });
+    }).catch(function(err) {
+        res.json({
+            result: false,
+            message: err.name + ": " + err.message
+        });
+    });
+});
+router.get("/contract", function(req, res) {
+    mongoClient.getGridFS().then(function(gfs) {
+        return new Promise(function(resolve, reject) {
+            var readstream = gfs.createReadStream({
+                _id: req.query.id,
+                root: "smartcontract"
+            });
+            readstream.on("error", function (err) {
+                reject(err);
+            });
+            readstream.pipe(res);
+        });
+    }).catch(function(err) {
+        res.json({
+            result: false,
+            message: err.name + ": " + err.message
+        });
+    });
+});
+router.post("/:apikey/contract/create", function(req, res) {
+    var contract = new Contract(req.params.apikey);
+    contract.create(req.body.author,
+                    req.body.name,
+                    req.body.description,
+                    req.body.version,
+                    req.body.url)
+    .then(function(result) {
+        res.json(result);
+    }).catch(function(err) {
+        res.json(err);
+    });
+});
+router.get("/:apikey/contract/list/:group", function(req, res) {
+    var contract = new Contract(req.params.apikey);
+    contract.list(req.params.group, req.query.page).then(function(result) {
+        res.json(result);
+    }).catch(function(err) {
+        res.json(err);
+    });
+});
+router.get("/:apikey/contract/list", function(req, res) {
+    var contracts = {};
+    var contract = new Contract(req.params.apikey);
+    contract.list("public", -1).then(function(result) {
+        contracts["public"] = result.contracts;
+        return contract.list("private", -1);
+    }).then(function(result) {
+        contracts["private"] = result.contracts;
+        res.json(Object.assign(contracts, { success: true }));
+    }).catch(function(err) {
+        res.json(err);
+    });
+});
+router.post("/contract/:id/deploy", function(req, res) {
+    var contract = new Contract();
+    contract.deploy(req.body.chain,
+                    req.params.id,
+                    req.body.name,
+                    req.body.func,
+                    req.body.args)
+    .then(function(result) {
+        res.json(result);
+    }).catch(function(err) {
+        res.json(err);
+    });
+});
+router.post("/:apikey/contract/:id/edit", function(req, res) {
+    var contract = new Contract(req.params.apikey);
+    contract.edit(req.params.id,
+                  req.body.name,
+                  req.body.description,
+                  req.body.version,
+                  req.body.author,
+                  req.body.url)
+    .then(function(result) {
+        res.json(result);
+    }).catch(function(err) {
+        res.json(err);
+    });
+});
+router.post("/:apikey/contract/:id/delete", function(req, res) {
+    var contract = new Contract(req.params.apikey);
+    contract.delete(req.params.id).then(function(result) {
         res.json(result);
     }).catch(function(err) {
         res.json(err);
