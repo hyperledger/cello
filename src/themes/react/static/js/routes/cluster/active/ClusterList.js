@@ -8,10 +8,11 @@ import { DropOption } from '../../../components'
 
 const confirm = Modal.confirm
 
-function list({loadingList, dataSource, onDelete, onEdit, onOperation}) {
+function list({loadingList, dataSource, onDelete, onOperate}) {
     const handleMenuClick = (record, e, index) => {
-        if (e.key === 'edit') {
-            onEdit(record)
+        const operationKeys = ['release', 'start', 'stop', 'restart']
+        if (operationKeys.indexOf(e.key)>=0) {
+            onOperate(e.key, record, index);
         } else if (e.key === 'delete') {
             confirm({
                 title: 'Confirm to delete?',
@@ -19,20 +20,6 @@ function list({loadingList, dataSource, onDelete, onEdit, onOperation}) {
                     onDelete(record, index)
                 },
             })
-        } else {
-            if (e.key === 'reset') {
-                confirm({
-                    title: 'Want to reset?',
-                    content: <div><p>you are about to <span style={{color: 'red'}}>reset</span> the host node1, this procedure is irreversible.</p></div>,
-                    okText: 'Confirm',
-                    cancelText: 'Cancel',
-                    onOk () {
-                        onOperation(record, e.key)
-                    },
-                })
-            } else {
-                onOperation(record, e.key)
-            }
         }
     }
     const loadingText = ["operating"]
@@ -87,11 +74,11 @@ function list({loadingList, dataSource, onDelete, onEdit, onOperation}) {
             width: 100,
             render: (text, record, index) => {
                 const menuOptions = [
-                    {key: 'edit', name: 'Edit'},
                     {key: 'delete', name: 'Delete'},
-                    {key: 'fillup', name: 'Fill Up'},
-                    {key: 'clean', name: 'Clean'},
-                    {key: 'reset', name: 'Reset'}
+                    {key: 'release', name: 'Release'},
+                    {key: 'stop', name: 'Stop'},
+                    {key: 'start', name: 'Start'},
+                    {key: 'restart', name: 'Restart'}
                 ]
                 return <DropOption onMenuClick={e => handleMenuClick(record, e, index)} menuOptions={menuOptions} />
             }
