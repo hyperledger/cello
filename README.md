@@ -12,7 +12,7 @@ where active development is ongoing. Issue tracking is handled in [Jira](https:/
 This project is a Hyperledger project in _Incubation_. It was proposed to the community and documented [here](https://docs.google.com/document/d/1E2i5GRqWsIag7KTxjQ_jQdDiWcuikv3KqXeuw7NaceM/edit), and was approved by [Hyperledger TSC at 2017-01-07](https://lists.hyperledger.org/pipermail/hyperledger-tsc/2017-January/000535.html). Information on what _Incubation_ entails can be found in the [Hyperledger Project Lifecycle document](https://goo.gl/4edNRc).
 
 
-Using Cello, we can
+Using Cello, we can:
 
 * Provision customizable Blockchains instantly, e.g., a 6-node fabric chain using PBFT consensus.
 * Maintain a pool of running blockchains healthy with no manual operations.
@@ -51,7 +51,7 @@ You can also find more [scenarios](docs/scenario.md).
 * [Develop react js](docs/reactjs.md)
 
 ## Why named Cello?
-Can u find anyone better at playing chains? :)
+Can you find anyone better at playing chains? :)
 
 ## License <a name="license"></a>
 The Hyperledger Cello project uses the [Apache License Version 2.0](LICENSE) software license.
