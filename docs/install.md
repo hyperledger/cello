@@ -9,7 +9,7 @@ Cell follows a typical Master-Worker architecture. Hence there will be two types
 
 ![Deployment topology](imgs/deployment_topo.png)
 
-For each Node, it is suggested as a Linux-based (e.g., Ubuntu 14.04+) server/vm: 
+For each Node, it is suggested as a Linux-based (e.g., Ubuntu 14.04+) server/vm:
 
 
 ## Worker Node
@@ -29,9 +29,9 @@ For the Worker Node with meeting the [system requirements](#system-requirements)
 
 ### Docker Daemon Setup
 
-Let Docker daemon listen on port 2375, and make sure Master can reach Worker Node through this port. 
+Let Docker daemon listen on port 2375, and make sure Master can reach Worker Node through this port.
 
-#### Ubuntu 14.04 
+#### Ubuntu 14.04
 Simple add this line into your Docker config file `/etc/default/docker`.
 
 ```sh
@@ -45,7 +45,7 @@ $ sudo service docker restart
 ```
 
 #### Ubuntu 16.04
-Update `/etc/systemd/system/docker.service.d/override.conf` like
+Update `/lib/systemd/system/docker.service` like
 
 ```
 [Service]
@@ -56,7 +56,7 @@ ExecStart=/usr/bin/dockerd -H fd:// $DOCKER_OPTS
 ```
 
 Regenerate the docker service script and restart the docker engine:
- 
+
 ```sh
 $ sudo systemctl daemon-reload
 $ sudo systemctl restart docker.service
@@ -89,7 +89,7 @@ $ sysctl -w net.ipv4.ip_forward=1
 And check the os iptables config, to make sure host ports are open (e.g., 2375, 7050~10000)
 
 ## Master Node
-The Master Node includes several services: 
+The Master Node includes several services:
 
 * dashboard: Provide Web UI for operators.
 * restserver: Provide RESTful APIs for chain consumers.
@@ -176,6 +176,6 @@ The application configuration can be imported from file named `CELLO_CONFIG_FILE
 By default, it also loads the `config.py` file as the configurations.
 
 ### Data Storage
-The mongo container will use local `/opt/cello/mongo` directory for persistent storage. 
+The mongo container will use local `/opt/cello/mongo` directory for persistent storage.
 
 Please keep it safe by backups or using more high-available solutions.
