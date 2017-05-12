@@ -1,0 +1,129 @@
+extends ../../layout
+
+block css
+    link(rel="stylesheet", href="/css/addon/sticky.almost-flat.min.css")
+    link(rel="stylesheet", href="/css/ol.css")
+    link(rel="stylesheet", href="/css/dashboard/overlayer.css")
+    link(rel="stylesheet", href="/css/dashboard/navbar.css")
+    link(rel="stylesheet", href="/css/dashboard/chain-detail.css")
+block js
+    script(data-main="/js/entry/chain/detail" src="/js/lib/require.js")
+block content
+    include ../includes/navbar.pug
+    +active("chain")
+    section.ds-chain-main-container.uk-container.uk-container-center
+        h1
+            a(href="/dashboard/chain") My Chains
+            | &nbsp;/&nbsp;
+            span= chain.name
+            label.uk-margin-left= chain.description
+        .uk-grid
+            .ds-chain-main.uk-width-3-4
+                h2#topo
+                    img.uk-margin-right(src="/images/nav-topo.png")
+                    | Overview
+                    i.uk-icon-expand.uk-float-right.expand-compress-icon
+                #map.uk-panel.uk-panel-box(
+                    style="padding:5px 5px 20px 5px;height:300px;" data-uk-scrollspy="{repeat:true}")
+                    label.latency-show
+                        input#showLatency(type="checkbox" checked)
+                        | Show latency
+                h2#log(style="margin-top:80px;")
+                    img.uk-margin-right(src="/images/nav-log.png")
+                    | Log
+                    i.uk-icon-expand.uk-float-right.expand-compress-icon
+                #logPanel.uk-panel.uk-panel-box(
+                    style="height:300px;padding:5px 0px 10px 5px;"
+                    data-uk-scrollspy="{cls:'uk-animation-fade', repeat:true}")
+                    ul.uk-grid.uk-grid-collapse.log-badge
+                    label.log-show
+                        input#showLatestLogs(type="checkbox" checked)
+                        | Always show the latest logs
+                h2#bc(style="margin-top:80px;")
+                    i.uk-icon-th-large.uk-margin-right
+                    | Blocks
+                    i.uk-icon-expand.uk-float-right.expand-compress-icon
+                #blockchain.uk-panel.uk-panel-box(
+                    style="padding:5px;height:300px;" data-uk-scrollspy="{cls:'uk-animation-fade', repeat:true}")
+                h2#api(style="margin-top:80px;")
+                    i.uk-icon-exchange.uk-margin-right
+                    | APIs
+                    i.uk-icon-expand.uk-float-right.expand-compress-icon
+                #apiPanel.uk-panel.uk-panel-box(
+                    style="padding:5px;height:300px;" data-uk-scrollspy="{cls:'uk-animation-fade', repeat:true}")
+                    table.uk-table.uk-table-hover
+                        thead
+                            tr
+                                th Type
+                                th Service URL
+                        tbody
+                            each url, type in apis
+                                tr
+                                    td= type
+                                    td= url
+                            else
+                                tr
+                                    td.no-result(colspan="2") No result.
+                h2#sc-instance(style="margin-top:80px;")
+                    i.uk-icon-th-list.uk-margin-right
+                    | Smart Contract Instances
+                #chaincodePanel.uk-panel.uk-panel-box(
+                    style="min-height:50px;" data-uk-scrollspy="{cls:'uk-animation-fade', repeat:true}")
+                    - var cache = [];
+                    table.uk-table.uk-table-hover
+                        thead
+                            tr
+                                th(style="width:150px;") Name
+                                th Smart Contract
+                                th Deployment Time
+                        tbody
+                            each chaincode in chaincodes.list
+                                -
+                                    cache.push({
+                                        id: chain.id + "_" + chaincode.id,
+                                        invoke: chaincode.contract.invoke,
+                                        query: chaincode.contract.query
+                                    });
+                                tr
+                                    td
+                                        label= chaincode.name
+                                        .uk-button-dropdown.uk-float-right.uk-margin-right(data-uk-dropdown)
+                                            div
+                                                i.uk-icon-chevron-circle-down(style="color:#ff5003;")
+                                            .uk-dropdown.uk-dropdown-small
+                                                ul.uk-nav.uk-nav-dropdown
+                                                    li
+                                                        a(data-type="invoke" data-chaincode-id=`${chaincode.id}`)
+                                                            img.img-dropdown(src="/images/icon-invoke-small.svg")
+                                                            | Invoke
+                                                    li
+                                                        a(data-type="query" data-chaincode-id=`${chaincode.id}`)
+                                                            i.uk-icon-search.uk-margin-right
+                                                            | Query
+                                    td= chaincode.contract.name
+                                    td= chaincode.deployTime
+                            else
+                                tr
+                                    td.no-result(colspan="3") No result.
+                    ul#chaincodeListPagination.uk-pagination.uk-pagination-right(
+                        data-uk-pagination=`{pages:${chaincodes.pages}}`)&attributes(
+                        chaincodes.list.length ? {} : {"style": "display:none;"})
+                    input#cache(type="hidden" value=cache)
+                div(style="height:150px;")
+            .uk-width-1-4(data-uk-sticky)
+                ul.listico.uk-padding-remove
+                    li(style="width:200px;")
+                        a.ico3(href="#topo" data-uk-smooth-scroll) Overview
+                    li(style="width:200px;")
+                        a.ico4(href="#log" data-uk-smooth-scroll) Log
+                    li(style="width:200px;")
+                        a.ico5(href="#bc" data-uk-smooth-scroll) Blocks
+                    li(style="width:200px;")
+                        a.ico6(href="#api" data-uk-smooth-scroll) APIs
+                    li
+                        a.ico0(href="#sc-instance" data-uk-smooth-scroll) Deploy
+                    li
+                        a.ico1(href="#sc-instance" data-uk-smooth-scroll) Invoke
+                    li
+                        a.ico2(href="#sc-instance" data-uk-smooth-scroll) Query
+        input#chainId(type="hidden" value=chain.id)
