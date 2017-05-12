@@ -1,8 +1,8 @@
 # Tutorial
 
-**Notice: Please have a look at the [terminologies](docs/terminology.md) if you haven't yet.**
+**Notice: Please have a look at the [terminologies](./terminology.md) if you haven't yet.**
 
-After the [installation](docs/install.md), operators can interact with Cello through dashboard.
+After the [installation](./install.md), operators can interact with Cello through dashboard.
 
 By default, the dashboard will listen on port `8080` at the Master Node.
 
@@ -51,5 +51,4 @@ It will be difficult if you have numbers of chains to create manually. Cello pro
 
 Try these methods as you like.
 
-
-If you want to know more advanced operational skills, please continue to the [Dashboard](docs/dashboard.md).
+If you want to know more advanced operational skills, please continue to the [Dashboard](./dashboard.md).
