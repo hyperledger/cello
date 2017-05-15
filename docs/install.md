@@ -62,6 +62,14 @@ $ sudo systemctl daemon-reload
 $ sudo systemctl restart docker.service
 ```
 
+### Alternatively (for all Linux distro):
+This will run the docker-daemon on port 2375 as long as the system is restarted or docker-daemon is killed.
+
+```sh
+$ sudo systemctl stop docker.service
+$ sudo dockerd -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock --api-cors-header='*' --default-ulimit=nofile=8192:16384 --default-ulimit=nproc=8192:16384 -D &
+```
+
 At last, run the follow test at Master node and get OK response, to make sure it can access Worker node successfully.
 
 ```sh
