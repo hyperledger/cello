@@ -11,6 +11,7 @@ var Chain = require("../modules/chain");
 var Chaincode = require("../modules/chaincode");
 var mongoClient = require("../modules/mongoclient");
 var Contract = require("../modules/contract");
+var Analytics = require("../modules/analytics");
 
 var router = express.Router();
 
@@ -328,6 +329,46 @@ router.post("/:apikey/contract/:id/edit", function(req, res) {
 router.post("/:apikey/contract/:id/delete", function(req, res) {
     var contract = new Contract(req.params.apikey);
     contract.delete(req.params.id).then(function(result) {
+        res.json(result);
+    }).catch(function(err) {
+        res.json(err);
+    });
+});
+router.get("/chain/:id/analytics", function(req, res) {
+    var analytics = new Analytics(req.params.id);
+    analytics.overview().then(function(result) {
+        res.json(result);
+    }).catch(function(err) {
+        res.json(err);
+    });
+});
+router.get("/chain/:id/analytics/chaincode/list", function(req, res) {
+    var analytics = new Analytics(req.params.id);
+    analytics.chaincodeList().then(function(result) {
+        res.json(result);
+    }).catch(function(err) {
+        res.json(err);
+    });
+});
+router.get("/chain/:chainId/analytics/chaincode/:chaincodeId/operations", function(req, res) {
+    var analytics = new Analytics(req.params.chainId);
+    analytics.chaincodeOperations(req.params.chaincodeId, req.query.timestamp).then(function(result) {
+        res.json(result);
+    }).catch(function(err) {
+        res.json(err);
+    });
+});
+router.get("/chain/:id/analytics/fabric", function(req, res) {
+    var analytics = new Analytics(req.params.id);
+    analytics.fabric(req.query.timestamp).then(function(result) {
+        res.json(result);
+    }).catch(function(err) {
+        res.json(err);
+    });
+});
+router.get("/chain/:id/analytics/infrastructure", function(req, res) {
+    var analytics = new Analytics(req.params.id);
+    analytics.infrastructure(req.query.size).then(function(result) {
         res.json(result);
     }).catch(function(err) {
         res.json(err);

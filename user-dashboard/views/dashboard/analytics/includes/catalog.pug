@@ -1,0 +1,31 @@
+mixin active(name)
+    - var overview_cls, chaincode_cls, fabric_cls, infrastructure_cls
+    case name
+        when "overview"
+            - overview_cls = "uk-active"
+        when "chaincode"
+            - chaincode_cls = "uk-active"
+        when "fabric"
+            - fabric_cls = "uk-active"
+        when "infrastructure"
+            - infrastructure_cls = "uk-active"
+    .uk-panel.uk-panel-box(data-uk-sticky="{top:20}")
+        h3.uk-panel-title Catalog
+        ul.uk-nav.uk-nav-side
+            li.uk-nav-divider
+            li(class=overview_cls)
+                a(href="/dashboard/analytics")
+                    i.uk-icon-globe.uk-margin-small-right
+                    | Overview
+            li(class=chaincode_cls)
+                a(href="/dashboard/analytics/chaincode")
+                    i.uk-icon-file-code-o.uk-margin-small-right
+                    | Chaincode
+            li(class=fabric_cls)
+                a(href="/dashboard/analytics/fabric")
+                    i.uk-icon-cubes.uk-margin-small-right
+                    | Fabric
+            li(class=infrastructure_cls)
+                a(href="/dashboard/analytics/infrastructure")
+                    i.uk-icon-server.uk-margin-small-right
+                    | Infrastructure

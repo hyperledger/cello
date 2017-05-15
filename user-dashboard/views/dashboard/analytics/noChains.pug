@@ -1,0 +1,14 @@
+extends ../../layout
+
+block css
+    link(rel="stylesheet", href="/css/dashboard/navbar.css")
+    link(rel="stylesheet", href="/css/dashboard/analytics.css")
+block js
+    script(data-main="/js/entry/analytics/nochains" src="/js/lib/require.js")
+block content
+    include ../includes/navbar.pug
+    +active("analytics")
+    section.ds-analytics.uk-container.uk-container-center
+        .uk-alert.uk-text-large.uk-container-center.uk-animation-slide-top(style="width:26%")
+            i.uk-icon-warning.uk-margin-small-right
+            | Please #[a.warning_link(href="/dashboard/chain") apply a new chain] first.
