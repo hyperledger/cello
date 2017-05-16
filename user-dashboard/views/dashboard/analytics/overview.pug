@@ -1,0 +1,73 @@
+extends ../../layout
+
+block css
+    link(rel="stylesheet", href="/css/addon/sticky.almost-flat.min.css")
+    link(rel="stylesheet", href="/css/dashboard/overlayer.css")
+    link(rel="stylesheet", href="/css/dashboard/navbar.css")
+    link(rel="stylesheet", href="/css/dashboard/analytics.css")
+block js
+    script(data-main="/js/entry/analytics/overview" src="/js/lib/require.js")
+block content
+    include ../includes/navbar.pug
+    +active("analytics")
+    section.ds-analytics.uk-container.uk-container-center.uk-padding-remove
+        .uk-grid
+            .uk-width-1-5
+                include includes/catalog.pug
+                +active("overview")
+            .uk-width-4-5
+                include includes/chainSelector.pug
+                #analyticsPanel.uk-margin-top
+                    .uk-grid.uk-margin-large-top
+                        .uk-text-center
+                            mixin div(val)
+                                - var health_cls, health_label_cls, health_label
+                                if (val >= 90)
+                                    - health_cls = "perfect-health-circle"
+                                    - health_label_cls = "perfect-label"
+                                    - health_label = "Perfect"
+                                else if (val >= 80)
+                                    - health_cls = "good-health-circle"
+                                    - health_label_cls = "good-label"
+                                    - health_label = "Good"
+                                else
+                                    - health_cls = "attention-health-circle"
+                                    - health_label_cls = "attention-label"
+                                    - health_label = "Attention"
+                                .uk-vertical-align.uk-margin-bottom(class=[health_cls])
+                                    label.uk-vertical-align-middle(class=[health_label_cls])= health_label
+                            +div(health)
+                            label.font-size-20 Health
+                        .uk-vertical-align
+                            .uk-vertical-align-middle.vertical-line(style="margin-bottom:37px;")
+                        .uk-text-center
+                            .uk-vertical-align.uk-margin-bottom(style="height:171px;")
+                                label.uk-vertical-align-middle
+                                    if (runTime.length == 4)
+                                        span.font-size-50= runTime[0]
+                                        | &nbsp;
+                                        span.uk-margin-right.font-size-20= runTime[1]
+                                        | &nbsp;
+                                        span.font-size-50= runTime[2]
+                                        | &nbsp;
+                                        span.font-size-20= runTime[3]
+                                    else
+                                        span.font-size-50= runTime[0]
+                                        | &nbsp;
+                                        span.font-size-20= runTime[1]
+                            label.font-size-20 Run Time
+                        .uk-vertical-align
+                            .uk-vertical-align-middle.vertical-line(style="margin-bottom:37px;")
+                        .uk-text-center
+                            .uk-vertical-align.uk-margin-bottom(style="height:171px;")
+                                label.uk-vertical-align-middle
+                                    span.font-size-50= chaincodes
+                            label.font-size-20 Chaincodes
+                        .uk-vertical-align
+                            .uk-vertical-align-middle.vertical-line(style="margin-bottom:37px;")
+                        .uk-text-center
+                            .uk-vertical-align.uk-margin-bottom(style="height:171px;")
+                                label.uk-vertical-align-middle
+                                    span.font-size-50= blocks
+                            label.font-size-20 Blocks
+        div(style="height:80px;")

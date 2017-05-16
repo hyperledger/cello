@@ -1,0 +1,13 @@
+#chainSelector.uk-button-dropdown(data-uk-dropdown="{remaintime:100}")
+    button.uk-button.dropdown-button(data-uk-tooltip="{pos:'right'}" title="Select a chain")
+        i.uk-icon-chain
+        | &nbsp;
+        label(data-id=chains[0].id)= chains[0].name
+        i.uk-icon-caret-down.uk-margin-left
+    .uk-dropdown.uk-dropdown-small
+        ul.uk-nav.uk-nav-dropdown
+            each chain in chains
+                li(data-id=chain.id data-name=chain.name)
+                    a
+                        i.uk-icon-chain
+                        |  #{chain.name}
