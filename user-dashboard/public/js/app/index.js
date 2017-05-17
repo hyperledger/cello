@@ -1,8 +1,9 @@
 define([
     "jquery",
+	"cookie",
     "app/index/login",
     "uikit"
-], function($, login) {
+], function($, Cookies, login) {
     $(function() {
     	$("#signin").click(function() {
     		login.show();
@@ -11,8 +12,10 @@ define([
     		if ($("#apikey").val() == "") {
     			login.show();
     		} else {
+				var referer = Cookies.get("referer");
+				Cookies.remove("referer");
     			$(this).attr("disabled", true).append($("<i class='uk-icon-spinner uk-icon-spin'></i>"));
-    			$(location).attr("href", "/dashboard");
+    			$(location).attr("href", referer || "/dashboard");
     		}
     	});
     });

@@ -33,6 +33,7 @@ router.get([
             next(e);
         });
     } else {
+        res.cookie("referer", req.originalUrl);
         res.redirect("/");
     }
 });
