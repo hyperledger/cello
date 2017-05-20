@@ -1,0 +1,15 @@
+extends ../layout
+
+block css
+    link(rel="stylesheet", href="/css/dashboard/navbar.css")
+    link(rel="stylesheet", href="/css/dashboard/store.css")
+block js
+    script(data-main="/js/entry/store" src="/js/lib/require.js")
+block content
+    include includes/navbar.pug
+    +active("store")
+    section.ds-store-list.uk-container.uk-container-center
+        .dashboard-bgi
+        label(style="font-size:52px;font-style:italic;color:#4178BE;")
+            i.uk-icon-warning.uk-margin-right
+            | Under construction...

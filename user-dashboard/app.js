@@ -30,6 +30,7 @@ app.use("/dashboard", require("./routes/dashboard/home"));
 app.use("/dashboard", require("./routes/dashboard/chain"));
 app.use("/dashboard", require("./routes/dashboard/contract"));
 app.use("/dashboard", require("./routes/dashboard/analytics"));
+app.use("/dashboard", require("./routes/dashboard/store"));
 app.use(function(err, req, res, next) {
     res.status(err.status || 500);
     res.send(err.message);
