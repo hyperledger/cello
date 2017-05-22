@@ -11,10 +11,10 @@ module.exports = {
     Log_Server: process.env.Log_Server || "9.186.91.29:8080",
     Log_BaseURL: "/v1/log",
     mongodb: {
-        ip: "127.0.0.1",
+        ip: "dashboard_mongo",
         port: 27017,
         name: "bc_dashboard",
-        auth: true,
+        auth: false,
         username: "admin",
         password: "passw0rd"
     },
