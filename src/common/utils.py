@@ -3,7 +3,7 @@ import os
 
 
 CLUSTER_NETWORK = "cello_net"
-CLUSTER_SIZES = [4, 6]
+CLUSTER_SIZES = [4, 6, 7]
 
 # first port that can be assigned as cluster API
 CLUSTER_PORT_START = int(os.getenv("CLUSTER_PORT_START", 7050))
@@ -30,8 +30,9 @@ CA_SERVICE_PORTS = {
 SERVICE_PORTS = dict(list(PEER_SERVICE_PORTS.items()) +
                      list(CA_SERVICE_PORTS.items()))
 
+FABRIC_VERSION = ['1.0.0', '0.6.0']  # first one is the default one
 
-CONSENSUS_PLUGINS = ['noops', 'pbft']  # first one is the default one
+CONSENSUS_PLUGINS = ['noops', 'pbft', 'solo']  # first one is the default one
 # CONSENSUS_MODES = ['classic', 'batch', 'sieve']  # pbft has various modes
 CONSENSUS_MODES = ['batch']  # pbft has various modes
 

@@ -8,7 +8,7 @@ from common import log_handler, LOG_LEVEL
 from agent import compose_up, compose_clean, compose_start, compose_stop, \
     compose_restart
 
-from common import CONSENSUS_PLUGINS, \
+from common import FABRIC_VERSION, CONSENSUS_PLUGINS, \
     CONSENSUS_MODES, CLUSTER_SIZES
 
 from ..cluster_base import ClusterBase
@@ -27,6 +27,7 @@ class ClusterOnDocker(ClusterBase):
         pass
 
     def create(self, cid, mapped_ports, host, user_id="",
+               fabric_version=FABRIC_VERSION[0],
                consensus_plugin=CONSENSUS_PLUGINS[0],
                consensus_mode=CONSENSUS_MODES[0], size=CLUSTER_SIZES[0]):
         """ Create a cluster based on given data
@@ -38,6 +39,7 @@ class ClusterOnDocker(ClusterBase):
         :param start_port: first service port for cluster, will generate
          if not given
         :param user_id: user_id of the cluster if start to be applied
+        :param fabric_version: fabric images version
         :param consensus_plugin: type of the consensus type
         :param size: size of the cluster, int type
         :return: Id of the created cluster or None
@@ -49,6 +51,7 @@ class ClusterOnDocker(ClusterBase):
         logger.debug("Start compose project with name={}".format(cid))
         containers = compose_up(
             name=cid, mapped_ports=mapped_ports, host=host,
+            fabric_version=fabric_version,
             consensus_plugin=consensus_plugin, consensus_mode=consensus_mode,
             cluster_size=size)
         if not containers or len(containers) != size:
@@ -58,24 +61,30 @@ class ClusterOnDocker(ClusterBase):
         else:
             return containers
 
-    def delete(self, id, daemon_url, consensus_plugin):
-        return compose_clean(id, daemon_url, consensus_plugin)
+    def delete(self, id, daemon_url, fabric_version, consensus_plugin,
+               cluster_size):
+        return compose_clean(id, daemon_url, fabric_version,
+                             consensus_plugin, cluster_size)
 
-    def start(self, name, daemon_url, mapped_ports, consensus_plugin,
+    def start(self, name, daemon_url, mapped_ports, fabric_version,
+              consensus_plugin,
               consensus_mode, log_type, log_level, log_server, cluster_size):
-        return compose_start(name, daemon_url, mapped_ports, consensus_plugin,
-                             consensus_mode, log_type, log_level, log_server,
-                             cluster_size)
+        return compose_start(name, daemon_url, mapped_ports, fabric_version,
+                             consensus_plugin, consensus_mode, log_type,
+                             log_level, log_server, cluster_size)
 
-    def restart(self, name, daemon_url, mapped_ports, consensus_plugin,
-                consensus_mode, log_type, log_level, log_server, cluster_size):
-        return compose_restart(name, daemon_url, mapped_ports,
+    def restart(self, name, daemon_url, mapped_ports, fabric_version,
+                consensus_plugin, consensus_mode, log_type, log_level,
+                log_server, cluster_size):
+        return compose_restart(name, daemon_url, mapped_ports, fabric_version,
                                consensus_plugin, consensus_mode, log_type,
                                log_level, log_server, cluster_size)
 
-    def stop(self, name, daemon_url, mapped_ports, consensus_plugin,
-             consensus_mode, log_type, log_level, log_server, cluster_size):
-        return compose_stop(name, daemon_url, mapped_ports, consensus_plugin,
+    def stop(self, name, daemon_url, mapped_ports, fabric_version,
+             consensus_plugin, consensus_mode, log_type, log_level,
+             log_server, cluster_size):
+        return compose_stop(name, daemon_url, mapped_ports, fabric_version,
+                            consensus_plugin,
                             consensus_mode, log_type, log_level, log_server,
                             cluster_size)
 

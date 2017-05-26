@@ -7,7 +7,7 @@ from flask import request as r
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from common import log_handler, LOG_LEVEL, \
-    request_debug, \
+    request_debug, FABRIC_VERSION, \
     CONSENSUS_PLUGINS, CONSENSUS_MODES, CLUSTER_SIZES
 from modules import cluster_handler, host_handler
 
@@ -68,6 +68,7 @@ def clusters_show():
     return render_template("clusters.html", type=show_type, col_name=col_name,
                            items_count=total_items, items=clusters,
                            hosts_available=hosts_avail,
+                           fabric_version=FABRIC_VERSION,
                            consensus_plugins=CONSENSUS_PLUGINS,
                            consensus_modes=CONSENSUS_MODES,
                            cluster_sizes=CLUSTER_SIZES)

@@ -49,7 +49,7 @@
                     <td>
                         <a href="/view/cluster/{{ item.id }}?released=0">{{ item.name }}</a>
                     </td>
-                    {% if item.consensus_plugin== consensus_plugins[0] %}
+                    {% if item.consensus_plugin== consensus_plugins[0] or item.consensus_plugin== consensus_plugins[2] %}
                         <td>{{ item.consensus_plugin }}</td>
                     {% else %}
                         <td>{{ item.consensus_plugin }}/{{ item.consensus_mode }}</td>
@@ -184,7 +184,7 @@
                                 <a href="/view/cluster/{{ item.id }}?released=0">{{ item.name }}</a>
                             </td>
                             <td>{{ item.user_id }}</td>
-                            {% if item.consensus_plugin== consensus_plugins[0] %}
+                            {% if item.consensus_plugin== consensus_plugins[0] or item.consensus_plugin== consensus_plugins[2] %}
                                 <td>{{ item.consensus_plugin }}</td>
                             {% else %}
                                 <td>{{ item.consensus_plugin }}/{{ item.consensus_mode }}</td>
@@ -301,7 +301,7 @@
                             <td>
                                 <a href="/view/cluster/{{ item.id }}?released=1">{{ item.name }}</a>
                             </td>
-                            {% if item.consensus_plugin== consensus_plugins[0] %}
+                            {% if item.consensus_plugin== consensus_plugins[0] or item.consensus_plugin== consensus_plugins[2] %}
                                 <td>{{ item.consensus_plugin }}</td>
                             {% else %}
                                 <td>{{ item.consensus_plugin }}/{{ item.consensus_mode }}</td>

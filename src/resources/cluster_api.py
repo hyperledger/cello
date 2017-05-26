@@ -9,7 +9,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from common import log_handler, LOG_LEVEL, \
     request_get, make_ok_response, make_fail_response, \
     request_debug, request_json_body, \
-    CODE_CREATED, CODE_NOT_FOUND, \
+    CODE_CREATED, CODE_NOT_FOUND, FABRIC_VERSION, \
     CONSENSUS_PLUGINS, CONSENSUS_MODES, CLUSTER_SIZES
 from modules import cluster_handler, host_handler
 
@@ -206,22 +206,24 @@ def cluster_create():
     """
     logger.info("/cluster action=" + r.method)
     request_debug(r, logger)
-    if not r.form["name"] or not r.form["host_id"] or not \
-            r.form["consensus_plugin"] or not r.form["size"]:
+    if not r.form["name"] or not r.form["host_id"] \
+            or not r.form["fabric_version"] \
+            or not r.form["consensus_plugin"] or not r.form["size"]:
         error_msg = "cluster post without enough data"
         logger.warning(error_msg)
         return make_fail_response(error=error_msg, data=r.form)
     else:
-        name, host_id, consensus_plugin, consensus_mode, size = \
-            r.form['name'], r.form['host_id'], r.form['consensus_plugin'],\
-            r.form['consensus_mode'] or '', int(r.form[
-                "size"])
+        name, host_id, fabric_version, consensus_plugin, \
+            consensus_mode, size = r.form['name'], r.form['host_id'], \
+            r.form['fabric_version'], r.form['consensus_plugin'], \
+            r.form['consensus_mode'] or '', int(r.form["size"])
         if consensus_plugin not in CONSENSUS_PLUGINS:
             logger.debug("Unknown consensus_plugin={}".format(
                 consensus_plugin))
             return make_fail_response()
-        if consensus_plugin != CONSENSUS_PLUGINS[0] and consensus_mode \
-                not in CONSENSUS_MODES:
+        if consensus_plugin != CONSENSUS_PLUGINS[0] \
+           and consensus_plugin != CONSENSUS_PLUGINS[2] \
+           and consensus_mode not in CONSENSUS_MODES:
             logger.debug("Invalid consensus, plugin={}, mode={}".format(
                 consensus_plugin, consensus_mode))
             return make_fail_response()
@@ -230,6 +232,7 @@ def cluster_create():
             logger.debug("Unknown cluster size={}".format(size))
             return make_fail_response()
         if cluster_handler.create(name=name, host_id=host_id,
+                                  fabric_version=fabric_version,
                                   consensus_plugin=consensus_plugin,
                                   consensus_mode=consensus_mode,
                                   size=size):

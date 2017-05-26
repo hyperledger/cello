@@ -8,7 +8,7 @@
         <dt>Id<dt> <dd>{{item.id}}</dd>
         <dt>Name<dt> <dd>{{item.name}}</dd>
 
-        {% if item.consensus_plugin== consensus_plugins[0] %}
+        {% if item.consensus_plugin== consensus_plugins[0] or item.consensus_plugin== consensus_plugins[2]%}
             <dt>Consensus<dt> <dd>{{item.consensus_plugin}}</dd>
         {% else %}
             <dt>Consensus<dt> <dd>{{item.consensus_plugin}}/{{ item.consensus_mode }}</dd>

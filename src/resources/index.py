@@ -5,7 +5,7 @@ from flask import Blueprint, render_template
 from flask import request as r
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-from common import log_handler, LOG_LEVEL, CONSENSUS_PLUGINS, \
+from common import log_handler, LOG_LEVEL, FABRIC_VERSION, CONSENSUS_PLUGINS, \
     CONSENSUS_MODES, HOST_TYPES, CLUSTER_SIZES, request_debug, \
     CLUSTER_LOG_TYPES, CLUSTER_LOG_LEVEL
 from version import version, homepage, author
@@ -50,6 +50,7 @@ def show():
                            clusters_inuse=clusters_inuse,
                            clusters_temp=clusters_temp,
                            cluster_sizes=CLUSTER_SIZES,
+                           fabric_version=FABRIC_VERSION,
                            consensus_plugins=CONSENSUS_PLUGINS,
                            consensus_modes=CONSENSUS_MODES,
                            host_types=HOST_TYPES,

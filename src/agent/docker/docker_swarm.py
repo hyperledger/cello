@@ -12,7 +12,7 @@ from docker import Client
 from common import log_handler, LOG_LEVEL
 from common import \
     HOST_TYPES, \
-    CLUSTER_NETWORK, \
+    CLUSTER_NETWORK, FABRIC_VERSION, \
     CONSENSUS_PLUGINS, CONSENSUS_MODES, \
     CLUSTER_LOG_TYPES, CLUSTER_LOG_LEVEL, \
     CLUSTER_SIZES, \
@@ -308,7 +308,8 @@ def get_project(template_path):
 
 
 def _compose_set_env(name, daemon_url, mapped_ports=SERVICE_PORTS,
-                     consensus_plugin=CONSENSUS_PLUGINS[0],
+                     fabric_version=FABRIC_VERSION[0],
+                     consensus_plugin=[0],
                      consensus_mode=CONSENSUS_MODES[0],
                      cluster_size=CLUSTER_SIZES[0],
                      log_level=CLUSTER_LOG_LEVEL[0],
@@ -322,6 +323,7 @@ def _compose_set_env(name, daemon_url, mapped_ports=SERVICE_PORTS,
         'VM_DOCKER_HOSTCONFIG_NETWORKMODE':
             CLUSTER_NETWORK + "_{}".format(consensus_plugin),
         'PEER_VALIDATOR_CONSENSUS_PLUGIN': consensus_plugin,
+        'FABRIC_VERSION': fabric_version,
         'PBFT_GENERAL_MODE': consensus_mode,
         'PBFT_GENERAL_N': str(cluster_size),
         'PEER_NETWORKID': name,
@@ -337,15 +339,17 @@ def _compose_set_env(name, daemon_url, mapped_ports=SERVICE_PORTS,
 
 
 def compose_up(name, host, mapped_ports,
+               fabric_version=FABRIC_VERSION[0],
                consensus_plugin=CONSENSUS_PLUGINS[0],
                consensus_mode=CONSENSUS_MODES[0],
                cluster_size=CLUSTER_SIZES[0],
-               timeout=5, cluster_version='fabric-0.6'):
+               timeout=5):
     """ Compose up a cluster
 
     :param name: The name of the cluster
     :param mapped_ports: The mapped ports list of the cluster
     :param host: Docker host obj
+    :param fabric_version: Fabric version
     :param consensus_plugin: Cluster consensus plugin
     :param consensus_mode: Cluster consensus mode
     :param cluster_size: the size of the cluster
@@ -363,9 +367,16 @@ def compose_up(name, host, mapped_ports,
     if log_type != CLUSTER_LOG_TYPES[0]:  # not local
         os.environ['SYSLOG_SERVER'] = log_server
 
-    _compose_set_env(name, daemon_url, mapped_ports, consensus_plugin,
-                     consensus_mode, cluster_size, log_level, log_type,
-                     log_server)
+    _compose_set_env(name, daemon_url, mapped_ports, fabric_version,
+                     consensus_plugin, consensus_mode, cluster_size,
+                     log_level, log_type, log_server)
+
+    if fabric_version == FABRIC_VERSION[1]:
+        cluster_version = 'fabric-0.6'
+    else:
+        logger.debug("log_type={}".format(log_type))
+        cluster_version = 'fabric-1.0'
+
     try:
         project = get_project(COMPOSE_FILE_PATH +
                               "/{}/".format(cluster_version) + log_type)
@@ -382,7 +393,8 @@ def compose_up(name, host, mapped_ports,
     return result
 
 
-def compose_clean(name, daemon_url, consensus_plugin):
+def compose_clean(name, daemon_url, fabric_version,
+                  consensus_plugin, cluster_size):
     """
     Try best to clean a compose project and clean related containers.
 
@@ -394,7 +406,9 @@ def compose_clean(name, daemon_url, consensus_plugin):
     has_exception = False
     try:
         compose_down(name=name, daemon_url=daemon_url,
-                     consensus_plugin=consensus_plugin)
+                     fabric_version=fabric_version,
+                     consensus_plugin=consensus_plugin,
+                     cluster_size=cluster_size)
     except Exception as e:
         logger.error("Error in stop compose project, will clean")
         logger.debug(e)
@@ -418,7 +432,8 @@ def compose_clean(name, daemon_url, consensus_plugin):
 
 
 def compose_start(name, daemon_url, mapped_ports=SERVICE_PORTS,
-                  consensus_plugin=CONSENSUS_PLUGINS[0],
+                  fabric_version=FABRIC_VERSION[0],
+                  consensus_plugin=[0],
                   consensus_mode=CONSENSUS_MODES[0],
                   log_type=CLUSTER_LOG_TYPES[0], log_server="",
                   log_level=CLUSTER_LOG_LEVEL[0],
@@ -429,6 +444,7 @@ def compose_start(name, daemon_url, mapped_ports=SERVICE_PORTS,
     :param name: The name of the cluster
     :param mapped_ports: The mapped port list
     :param daemon_url: Docker host daemon
+    :param fabric_version: fabric version
     :param consensus_plugin: Cluster consensus type
     :param consensus_mode: Cluster consensus mode
     :param log_type: which log plugin for host
@@ -437,12 +453,20 @@ def compose_start(name, daemon_url, mapped_ports=SERVICE_PORTS,
     :return:
     """
     logger.debug("Compose Start {} with daemon_url={}, mapped_ports={} "
-                 "consensus={}".format(name, daemon_url, mapped_ports,
-                                       consensus_plugin))
+                 "fabric_version={} consensus={}".format(name, daemon_url,
+                                                         mapped_ports,
+                                                         fabric_version,
+                                                         consensus_plugin))
 
-    _compose_set_env(name, daemon_url, mapped_ports, consensus_plugin,
-                     consensus_mode, cluster_size, log_level, log_type,
-                     log_server)
+    _compose_set_env(name, daemon_url, mapped_ports, fabric_version,
+                     consensus_plugin, consensus_mode, cluster_size,
+                     log_level, log_type, log_server)
+
+    if fabric_version == FABRIC_VERSION[1]:
+        cluster_version = 'fabric-0.6'
+    else:
+        cluster_version = 'fabric-1.0'
+
     # project = get_project(COMPOSE_FILE_PATH+"/"+consensus_plugin)
     project = get_project(COMPOSE_FILE_PATH +
                           "/{}/".format(cluster_version) + log_type)
@@ -456,7 +480,8 @@ def compose_start(name, daemon_url, mapped_ports=SERVICE_PORTS,
 
 
 def compose_restart(name, daemon_url, mapped_ports=SERVICE_PORTS,
-                    consensus_plugin=CONSENSUS_PLUGINS[0],
+                    fabric_version=FABRIC_VERSION[0],
+                    consensus_plugin=[0],
                     consensus_mode=CONSENSUS_MODES[0],
                     log_type=CLUSTER_LOG_TYPES[0], log_server="",
                     log_level=CLUSTER_LOG_LEVEL[0],
@@ -467,6 +492,7 @@ def compose_restart(name, daemon_url, mapped_ports=SERVICE_PORTS,
     :param name: The name of the cluster
     :param mapped_ports: The mapped port list
     :param daemon_url: Docker host daemon
+    :param fabric_version: fabric image version
     :param consensus_plugin: Cluster consensus type
     :param consensus_mode: Cluster consensus mode
     :param log_type: which log plugin for host
@@ -475,12 +501,21 @@ def compose_restart(name, daemon_url, mapped_ports=SERVICE_PORTS,
     :return:
     """
     logger.debug("Compose restart {} with daemon_url={}, mapped_ports={} "
-                 "consensus={}".format(name, daemon_url, mapped_ports,
-                                       consensus_plugin))
+                 "fabric_version={} consensus={}".format(name, daemon_url,
+                                                         mapped_ports,
+                                                         fabric_version,
+                                                         consensus_plugin))
 
-    _compose_set_env(name, daemon_url, mapped_ports, consensus_plugin,
+    _compose_set_env(name, daemon_url, mapped_ports, fabric_version,
+                     consensus_plugin,
                      consensus_mode, cluster_size, log_level, log_type,
                      log_server)
+
+    if fabric_version == FABRIC_VERSION[1]:
+        cluster_version = 'fabric-0.6'
+    else:
+        cluster_version = 'fabric-1.0'
+
     # project = get_project(COMPOSE_FILE_PATH+"/"+consensus_plugin)
     project = get_project(COMPOSE_FILE_PATH +
                           "/{}/".format(cluster_version) + log_type)
@@ -494,7 +529,8 @@ def compose_restart(name, daemon_url, mapped_ports=SERVICE_PORTS,
 
 
 def compose_stop(name, daemon_url, mapped_ports=SERVICE_PORTS,
-                 consensus_plugin=CONSENSUS_PLUGINS[0],
+                 fabric_version=FABRIC_VERSION[0],
+                 consensus_plugin=[0],
                  consensus_mode=CONSENSUS_MODES[0],
                  log_type=CLUSTER_LOG_TYPES[0], log_server="",
                  log_level=CLUSTER_LOG_LEVEL[0],
@@ -505,6 +541,7 @@ def compose_stop(name, daemon_url, mapped_ports=SERVICE_PORTS,
     :param name: The name of the cluster
     :param mapped_ports: The mapped ports list
     :param daemon_url: Docker host daemon
+    :param fabric_version: Fabric image version
     :param consensus_plugin: Cluster consensus type
     :param consensus_mode: Cluster consensus mode
     :param log_type: which log plugin for host
@@ -519,9 +556,16 @@ def compose_stop(name, daemon_url, mapped_ports=SERVICE_PORTS,
                                                     consensus_plugin,
                                                     log_type))
 
-    _compose_set_env(name, daemon_url, mapped_ports, consensus_plugin,
+    _compose_set_env(name, daemon_url, mapped_ports, fabric_version,
+                     consensus_plugin,
                      consensus_mode, cluster_size, log_level, log_type,
                      log_server)
+
+    if fabric_version == FABRIC_VERSION[1]:
+        cluster_version = 'fabric-0.6'
+    else:
+        cluster_version = 'fabric-1.0'
+
     project = get_project(COMPOSE_FILE_PATH +
                           "/{}/".format(cluster_version) + log_type)
     try:
@@ -533,7 +577,8 @@ def compose_stop(name, daemon_url, mapped_ports=SERVICE_PORTS,
 
 
 def compose_down(name, daemon_url, mapped_ports=SERVICE_PORTS,
-                 consensus_plugin=CONSENSUS_PLUGINS[0],
+                 fabric_version=FABRIC_VERSION[0],
+                 consensus_plugin=[0],
                  consensus_mode=CONSENSUS_MODES[0],
                  log_type=CLUSTER_LOG_TYPES[0], log_server="",
                  log_level=CLUSTER_LOG_LEVEL[0],
@@ -544,6 +589,7 @@ def compose_down(name, daemon_url, mapped_ports=SERVICE_PORTS,
     :param name: The name of the cluster
     :param mapped_ports: The mapped ports list
     :param daemon_url: Docker host daemon
+    :param fabric_version: Fabric image version
     :param consensus_plugin: Cluster consensus type
     :param consensus_mode: Cluster consensus mode
     :param log_type: which log plugin for host
@@ -556,9 +602,15 @@ def compose_down(name, daemon_url, mapped_ports=SERVICE_PORTS,
                  "consensus={}".format(name, daemon_url, consensus_plugin))
     # import os, sys
     # compose use this
-    _compose_set_env(name, daemon_url, mapped_ports, consensus_plugin,
+    _compose_set_env(name, daemon_url, mapped_ports, fabric_version,
+                     consensus_plugin,
                      consensus_mode, cluster_size, log_level, log_type,
                      log_server)
+
+    if fabric_version == FABRIC_VERSION[1]:
+        cluster_version = 'fabric-0.6'
+    else:
+        cluster_version = 'fabric-1.0'
 
     # project = get_project(COMPOSE_FILE_PATH+"/"+consensus_plugin)
     project = get_project(COMPOSE_FILE_PATH +

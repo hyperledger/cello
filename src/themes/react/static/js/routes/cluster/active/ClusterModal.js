@@ -103,7 +103,7 @@ class ClusterModal extends React.Component {
                     </FormItem>
                     <FormItem label="Chain Size" hasFeedback {...formItemLayout}>
                         {getFieldDecorator('size', {
-                            initialValue: 4,
+                            initialValue: 7,
                             rules: [
                                 {
                                     required: true,
@@ -113,11 +113,12 @@ class ClusterModal extends React.Component {
                         })(<Select>
                             <Option value={4}>4</Option>
                             <Option value={6}>6</Option>
+                            <Option value={7}>7</Option>
                         </Select>)}
                     </FormItem>
                     <FormItem label="Consensus Plugin" hasFeedback {...formItemLayout}>
                         {getFieldDecorator('consensus_plugin', {
-                            initialValue: 'noops',
+                            initialValue: 'solo',
                             rules: [
                                 {
                                     required: true,
@@ -127,6 +128,8 @@ class ClusterModal extends React.Component {
                         })(<Select onChange={this.pluginChange}>
                             <Option value="noops">NOOPS</Option>
                             <Option value="pbft">PBFT</Option>
+                            <Option value="solo">SOLO</Option>
+
                         </Select>)}
                     </FormItem>
                     {pluginType === 'pbft' &&

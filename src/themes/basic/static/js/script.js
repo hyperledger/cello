@@ -1,4 +1,38 @@
 $(document).ready(function () {
+
+    $('#fabric_version').change(function() {
+
+        var $consensus_plugin = $('#consensus_plugin');
+        var $cluster_size = $('#cluster_size');
+        var $consensus_mode = $('#consensus_mode')
+        var $form_consensus_mode = $('#form_consensus_mode');
+
+        $consensus_plugin.empty();
+        $cluster_size.empty();
+
+        var value = $(this).val();
+        if (value == '0.6.0') {
+            $('#consensus_plugin_0_6 option').each(function() {
+                var $option = $(this);
+                $consensus_plugin.append('<option value="' + $option.val() + '">' + $option.text() + '</option>');
+            });
+            $('#cluster_sizes_0_6 option').each(function() {
+                var $option = $(this);
+                $cluster_size.append('<option value="' + $option.val() + '">' + $option.text() + '</option>');
+            });
+        } else {
+            $form_consensus_mode.hide();
+            $('#consensus_plugin_1_0 option').each(function() {
+                var $option = $(this);
+                $consensus_plugin.append('<option value="' + $option.val() + '">' + $option.text() + '</option>');
+            });
+            $('#cluster_sizes_1_0 option').each(function() {
+                var $option = $(this);
+                $cluster_size.append('<option value="' + $option.val() + '">' + $option.text() + '</option>');
+            });
+        }
+    });
+
   $('.table_sorted').DataTable(
     {}
   );

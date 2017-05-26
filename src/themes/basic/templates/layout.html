@@ -194,28 +194,56 @@
                         </select>
                     </div>
                 {% endif %}
+                {% if fabric_version|length > 0 %}
+                    <div class="form-group" id="form_fabric_version">
+                        <label for="fabric_version"> Fabric Version</label>
+                        <select id="fabric_version" class="c-select" name="fabric_version"
+                                    required>
+                            <option selected
+                                    value="{{fabric_version[0]}}">{{fabric_version[0]}}</option>
+                            {% for c in fabric_version[1:] %}
+                                    <option value="{{c}}">{{c}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                {% endif %}
                 {% if cluster_sizes|length > 0 %}
                     <div class="form-group" id="form_sizes">
                         <label for="cluster_size">Chain Size</label>
                         <select id="cluster_size" class="c-select" name="size"
                                  required>
                             <option selected
-                                    value="{{cluster_sizes[0]}}">{{cluster_sizes[0]}}</option>
-                            {% for c in cluster_sizes[1:] %}
-                                    <option value="{{c}}">{{c}}</option>
+                                    "{{cluster_sizes[2]}}">{{cluster_sizes[2]}}</option>
+                        </select>
+                        <select id="cluster_sizes_1_0" style="display: none">
+                            <option selected
+                                    "{{cluster_sizes[2]}}">{{cluster_sizes[2]|upper }}</option>
+                        </select>
+                        <select id="cluster_sizes_0_6" style="display: none">
+                            <option selected
+                                    value="{{cluster_sizes[0]}}">{{cluster_sizes[0]|upper }}</option>
+                            {% for c in cluster_sizes[1:2:1] %}
+                                    <option value="{{c}}">{{c|upper}}</option>
                             {% endfor %}
                         </select>
                     </div>
                 {% endif %}
-
                 {% if consensus_plugins|length > 0 %}
                     <div class="form-group" id="form_consensus_plugin">
                         <label for="consensus_plugin"> Consensus Plugin</label>
                         <select id="consensus_plugin" class="c-select" name="consensus_plugin"
                                  required>
                             <option selected
+                                    value="{{consensus_plugins[2]}}">{{consensus_plugins[2]|upper }}</option>
+                        </select>
+                        <select id="consensus_plugin_1_0" style="display: none">
+                            <option selected
+                                    value="{{consensus_plugins[2]}}">{{consensus_plugins[2]|upper }}</option>
+                        </select>
+                        <select id="consensus_plugin_0_6" style="display: none">
+                            <option selected
                                     value="{{consensus_plugins[0]}}">{{consensus_plugins[0]|upper }}</option>
-                            {% for c in consensus_plugins[1:] %}
+                            {% for c in consensus_plugins[1:2:1] %}
                                     <option value="{{c}}">{{c|upper}}</option>
                             {% endfor %}
                         </select>
@@ -373,6 +401,5 @@
 <script src="{{ url_for('static', filename='js/solid-gauge.js') }}"> </script>
 <script src="{{ url_for('static', filename='js/jquery.dataTables.min.js') }}"> </script>
 <script src="{{ url_for('static', filename='js/dataTables.bootstrap.min.js') }}"> </script>
-
 </body>
 </html>
