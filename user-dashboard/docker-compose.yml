@@ -1,0 +1,15 @@
+version: "2"
+services:
+  dashboard:
+    build: ./
+    image: cello-user-dashboard
+    container_name: user-dashboard
+    links:
+      - mongodb:dashboard_mongo
+    ports:
+      - "8080:8080"
+  mongodb:
+    image: mongo
+    container_name: mongo
+    ports:
+      - "27017:27017"
