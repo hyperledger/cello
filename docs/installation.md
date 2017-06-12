@@ -1,10 +1,10 @@
-# Deployment
+# Installation
 
-*Here we describe the deployment setups for development usage. If you want to deploy Cello for production, please also refer to the [Production Configuration](production_config.md).*
+*Here we describe the setups for development usage. If you want to deploy Cello for production, please also refer to the [Production Configuration](production_config.md).*
 
-Cell follows a typical Master-Worker architecture. Hence there will be two types of Nodes.
+Cello follows a typical Master-Worker architecture. Hence there will be two types of Nodes.
 
-* Master Node: Manage (e.g., create/delete) the chains inside Work Nodes, with Web dashboard on port `8080` and RESTful api on port `80`;
+* Master Node: Manage (e.g., create/delete) the chains inside Work Nodes, with Web dashboard listening on port `8080` and RESTful api on port `80`;
 * Worker Node: Chain providers, now support Docker Host or Swarm Cluster. The Docker service should be accessible from port `2375` from the Master Node.
 
 ![Deployment topology](imgs/deployment_topo.png)
@@ -103,7 +103,7 @@ The Master Node includes several services:
 * restserver: Provide RESTful APIs for chain consumers.
 * watchdog: Watch for health checking.
 
-More details can be found at the [architecture doc](docs/arch.md).
+*More details can be found at the [architecture doc](docs/arch.md).*
 
 It can be deployed by in 3 steps.
 
@@ -125,7 +125,7 @@ $ sudo aptitude install git make -y
 $ git clone http://gerrit.hyperledger.org/r/cello && cd cello
 ```
 
-### Docker images pulling
+### Docker Images Pulling
 
 Pull the following images
 
@@ -150,15 +150,18 @@ Make sure there is no error during the setup. Otherwise, please check the log ms
 
 ### Usage
 
-#### Start/Restart
-To (re)start the whole services, please run
+#### Start/Stop/Restart
+To start the whole services, please run
 
 ```sh
-$ make restart
+$ make start
 ```
 
-#### Deploy/Redploy
-To (re)deploy one specific service, e.g., dashboard, please run
+To stop or restart the whole services, run `make stop` or `make restart`.
+
+
+#### Redploy a service
+To redeploy one specific service, e.g., dashboard, please run
 
 ```sh
 $ make redeploy service=dashboard
@@ -187,3 +190,7 @@ By default, it also loads the `config.py` file as the configurations.
 The mongo container will use local `/opt/cello/mongo` directory for persistent storage.
 
 Please keep it safe by backups or using more high-available solutions.
+
+
+*Licensed under Creative Commons Attribution 4.0 International License
+   https://creativecommons.org/licenses/by/4.0/*

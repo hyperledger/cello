@@ -38,8 +38,8 @@ clean: ##@Code Clean tox result
 log: ##@Log tail special service log, Use like "make log service=dashboard"
 	docker-compose logs -f ${service} --tail=100
 
-logs:
-	docker-compose logs -f --tail=100
+logs: ##@Log tail for all service log
+	docker-compose logs -f --tail=200
 
 # Use like "make redeploy service=dashboard"
 redeploy: ##@Service Redeploy single service, Use like "make redeploy service=dashboard"
