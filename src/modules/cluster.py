@@ -14,7 +14,7 @@ from common import db, log_handler, LOG_LEVEL
 
 from agent import get_swarm_node_ip
 
-from common import CLUSTER_PORT_START, CLUSTER_PORT_STEP, FABRIC_VERSION, \
+from common import CLUSTER_PORT_START, CLUSTER_PORT_STEP, NETWORK_TYPES, \
     CONSENSUS_PLUGINS, CONSENSUS_MODES, HOST_TYPES, SYS_CREATOR, SYS_DELETER, \
     SYS_USER, SYS_RESETTING, CLUSTER_SIZES, \
     PEER_SERVICE_PORTS, CA_SERVICE_PORTS
@@ -81,7 +81,7 @@ class ClusterHandler(object):
         return self._serialize(cluster)
 
     def create(self, name, host_id, start_port=0, user_id="",
-               fabric_version=FABRIC_VERSION[0],
+               fabric_version=NETWORK_TYPES[0],
                consensus_plugin=CONSENSUS_PLUGINS[0],
                consensus_mode=CONSENSUS_MODES[0], size=CLUSTER_SIZES[0]):
         """ Create a cluster based on given data
@@ -249,7 +249,7 @@ class ClusterHandler(object):
                 {"$set": {"user_id": SYS_DELETER + user_id}})
         host_id, daemon_url, fabric_version, consensus_plugin, cluster_size = \
             c.get("host_id"), c.get("daemon_url"), \
-            c.get("fabric_version", FABRIC_VERSION[0]), \
+            c.get("fabric_version", NETWORK_TYPES[0]), \
             c.get("consensus_plugin", CONSENSUS_PLUGINS[0]), \
             c.get("size", CLUSTER_SIZES[0])
 
