@@ -1,3 +1,9 @@
+
+/* Copyright IBM Corp, All Rights Reserved.
+
+SPDX-License-Identifier: Apache-2.0
+ */
+
 @CHARSET "UTF-8";
 .ds-chain-main-container{width:80%;margin-top:60px;font-family:"Helvetica Neue",Arial,sans-serif;}
 .ds-chain-main-container h1{font-size:24px;color:#4178BE;margin-top:42px;border-bottom:none;}

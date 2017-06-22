@@ -1,3 +1,9 @@
+
+/* Copyright IBM Corp, All Rights Reserved.
+
+SPDX-License-Identifier: Apache-2.0
+ */
+
 @CHARSET "UTF-8";
 .header{background:#353535 none repeat scroll 0 0;padding:0px;border:none;}
 .header >ul li a{height:60px;line-height:60px;padding:0px 25px;color:#FCFCFC;text-shadow:none;}

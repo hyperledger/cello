@@ -38,3 +38,7 @@ This dashboard is a web based application for blockchain developers. It is espec
 | Chaincode Analytics | `/dashboard/analytics/chaincode` | Chaincode invoke functions and response time statistic analysis |
 | Fabric Analytics | `/dashboard/analytics/fabric` | Blocks amount and block time statistic analysis |
 | Infrastructure Analytics | `/dashboard/analytics/infrastructure` | Cluster's CPU, memory, disk and network statistic analysis |
+
+## License <a name="license"></a>.
+The Hyperledger Cello project uses the [Apache License Version 2.0](LICENSE) software license.
+
