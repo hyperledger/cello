@@ -1,3 +1,9 @@
+
+/* Copyright IBM Corp, All Rights Reserved.
+
+ SPDX-License-Identifier: Apache-2.0
+ */
+
 /**
  * Created by yuehaitao on 2017/4/4.
  */
@@ -90,5 +96,4 @@ function index({cluster, host, dispatch}) {
 }
 
 export default connect(({ cluster, host }) => ({ cluster, host }))(index)
-
 

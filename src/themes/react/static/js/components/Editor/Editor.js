@@ -1,3 +1,9 @@
+
+/* Copyright IBM Corp, All Rights Reserved.
+
+ SPDX-License-Identifier: Apache-2.0
+ */
+
 import React from 'react'
 import { Editor } from 'react-draft-wysiwyg'
 import styles from './Editor.less'

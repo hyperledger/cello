@@ -1,4 +1,8 @@
 # https://github.com/yeasy/docker-compose-files/tree/master/hyperledger
+# Copyright IBM Corp., All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
 # This compose file will start a Hyperledger Fabric 1.0 MVE, including
 # * ca
 # * orderer

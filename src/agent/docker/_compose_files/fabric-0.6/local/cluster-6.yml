@@ -1,4 +1,8 @@
 # This compose file will start 6 hyperledger peer nodes, and make a cluster
+# Copyright IBM Corp., All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
 #  vp0: validating node as root
 #  vp1 - vp5: validating node as peer
 # https://github.com/yeasy/docker-compose-files#hyperledger

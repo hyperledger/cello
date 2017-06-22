@@ -1,4 +1,8 @@
 # This compose file will start 4 hyperledger peer nodes, and make a cluster
+# Copyright IBM Corp., All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
 #  vp0: validating node as root
 #  vp1: validating node as peer
 #  vp2: validating node as peer
@@ -47,7 +51,6 @@ services:
     environment:
       - CORE_PEER_ID=vp2
       - CORE_PEER_DISCOVERY_ROOTNODE=${COMPOSE_PROJECT_NAME}_vp0:7051
-
 
   # validating node
   vp3:

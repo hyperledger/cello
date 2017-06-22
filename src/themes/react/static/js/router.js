@@ -1,3 +1,9 @@
+
+/* Copyright IBM Corp, All Rights Reserved.
+
+ SPDX-License-Identifier: Apache-2.0
+ */
+
 import React, { PropTypes } from 'react'
 import { Router } from 'dva/router'
 import App from './routes/app'

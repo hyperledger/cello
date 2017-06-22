@@ -1,3 +1,9 @@
+
+/* Copyright IBM Corp, All Rights Reserved.
+
+ SPDX-License-Identifier: Apache-2.0
+ */
+
 import React, { PropTypes } from 'react'
 import { Button, Row, Form, Input } from 'antd'
 import { config } from '../../utils'

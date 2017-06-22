@@ -1,5 +1,10 @@
 #!/bin/bash +x
 
+# Copyright IBM Corp., All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
 #set -e
 
 CHANNEL_NAME=$1
@@ -34,7 +39,6 @@ function replacePrivateKey () {
 	sed $OPTS "s/CA2_PRIVATE_KEY/${PRIV_KEY}/g" cluster-7.yml
 
     sed $OPTS "s#CRYPTO_PATH#${CRYPTO_PATH}#g" cluster-7.yml
-
 
     cp docker-compose-base-template.yaml docker-compose-base.yaml
     sed $OPTS "s#CRYPTO_PATH#${CRYPTO_PATH}#g" docker-compose-base.yaml

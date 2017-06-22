@@ -1,4 +1,8 @@
 
+# Copyright IBM Corp, All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
 from .db import db, col_host
 from .response import make_ok_response, make_fail_response, CODE_NOT_FOUND,\
     CODE_BAD_REQUEST, CODE_CONFLICT, CODE_CREATED, CODE_FORBIDDEN, \
