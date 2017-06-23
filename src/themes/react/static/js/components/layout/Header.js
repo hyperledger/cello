@@ -1,3 +1,9 @@
+
+/* Copyright IBM Corp, All Rights Reserved.
+
+ SPDX-License-Identifier: Apache-2.0
+ */
+
 import React, { PropTypes } from 'react'
 import { Menu, Icon, Popover } from 'antd'
 import styles from './Header.less'

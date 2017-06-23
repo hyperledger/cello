@@ -1,3 +1,9 @@
+
+/* Copyright IBM Corp, All Rights Reserved.
+
+ SPDX-License-Identifier: Apache-2.0
+ */
+
 /*
  * Base structure
  */
@@ -6,7 +12,6 @@
 body {
   padding-top: 50px;
 }
-
 
 /*
  * Global add-ons

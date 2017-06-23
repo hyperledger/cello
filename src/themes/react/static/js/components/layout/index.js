@@ -1,3 +1,9 @@
+
+/* Copyright IBM Corp, All Rights Reserved.
+
+ SPDX-License-Identifier: Apache-2.0
+ */
+
 import Header from './Header'
 import Menu from './Menu'
 import Bread from './Bread'

@@ -1,3 +1,9 @@
+
+/* Copyright IBM Corp, All Rights Reserved.
+
+ SPDX-License-Identifier: Apache-2.0
+ */
+
 import React from 'react'
 import HostsList from './HostList'
 import HostModal from './HostModal'

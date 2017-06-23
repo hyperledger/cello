@@ -1,3 +1,9 @@
+
+/* Copyright IBM Corp, All Rights Reserved.
+
+ SPDX-License-Identifier: Apache-2.0
+ */
+
 import { Modal, message } from 'antd'
 import React from 'react'
 import ReactDOM from 'react-dom'

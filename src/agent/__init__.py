@@ -1,3 +1,8 @@
+
+# Copyright IBM Corp, All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
 # Agent pkg provides drivers to those underly platforms, e.g., swarm/k8s.   jAS
 
 from .docker.docker_swarm import get_project, \

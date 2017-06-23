@@ -1,3 +1,9 @@
+
+/* Copyright IBM Corp, All Rights Reserved.
+
+ SPDX-License-Identifier: Apache-2.0
+ */
+
 import { login, userInfo, logout } from '../services/app'
 import { parse } from 'qs'
 

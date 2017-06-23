@@ -1,3 +1,8 @@
+
+# Copyright IBM Corp, All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
 import os
 from common import log_handler, LOG_LEVEL
 from flask import Flask, render_template
