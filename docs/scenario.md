@@ -47,7 +47,6 @@ User sends request to apply a cluster, Cello will try to find available chains i
 
 If found one, construct the response, otherwise, construct an error response.
 
-
 ### release a cluster
 
 User sends request to release a cluster, Cello will check if the request is valid.
@@ -55,3 +54,5 @@ User sends request to release a cluster, Cello will check if the request is vali
 If found applied chain, then release and recreate it with the same name, at the same host, and potentially move it to released db collections.
 
 If not found, then just ignore or response.
+
+<a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.

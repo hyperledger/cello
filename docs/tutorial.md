@@ -25,7 +25,6 @@ Suppose it's a Native Docker server to import as a host, input those fields
 
 After successful adding, you can find the `docker_host` shown in the Host page, with 0 chains and Cap is 5.
 
-
 ## Create a chain in the pool
 
 Now we have the free host in the pool, new chains can be create.
@@ -52,3 +51,5 @@ It will be difficult if you have numbers of chains to create manually. Cello pro
 Try these methods as you like.
 
 If you want to know more advanced operational skills, please continue to the [Dashboard](./dashboard.md).
+
+<a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.

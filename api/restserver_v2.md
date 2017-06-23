@@ -25,7 +25,7 @@ Or
 GET /cluster_op?action=xxx&key=value
 ```
 
-The supported actions can be 
+The supported actions can be
 * `apply`: apply a chain
 * `release`: release a chain, possibly only one peer
 * `start`: start a chain, possibly only one peer
@@ -109,7 +109,6 @@ user_id:xxxxxxxx
 
 The server will drop the corresponding cluster, recreate it and put into available pool for future requests.
 
-
 #### Cluster Start, Stop or Restart
 
 Take `start` for example, you can specify the node_id if to operate one node.
@@ -152,7 +151,6 @@ size:4,
 
 Query the clusters for a user.
 
-
 ```
 POST /clusters
 {
@@ -167,3 +165,5 @@ GET /cluster/xxxxxxx
 ```
 
 Will return the json object whose data may contain detailed information of cluster.
+
+<a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.

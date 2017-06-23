@@ -3,7 +3,7 @@
 We have several collections, as follows.
 
 ## Host
-Track the information of a Host. 
+Track the information of a Host.
 
 A typical host may look like:
 
@@ -22,7 +22,7 @@ xxx | host_0 | tcp://10.0.0.1:2375 | 20160430101010 | 20       | active | [c1,c2
 * log_level (str): logging level for chains on the host, e.g., 'debug', 'info', 'warn', 'error'
 * log_type (str): logging type for chains on the host, 'local' or 'syslog'
 * log_server (str): log server address, only valid when `log_type` is 'syslog'
-* autofill (str): whether to autofill the server to its capacity with chains, 'true' or 'false' 
+* autofill (str): whether to autofill the server to its capacity with chains, 'true' or 'false'
 * schedulable (str): whether to schedule a chain request to that host, 'true' or 'false', useful when maintain the host
 
 ## Cluster
@@ -49,3 +49,5 @@ xxx | {}   | cluster_A | ""       | host_xx |  tcp://10.0.0.1:2375 | pbft       
 * size (int): Peer nodes number of the chain
 * containers (list): List of the ids of those containers for the chain
 * health (str): 'OK' (healthy status) or 'Fail' (Not healthy)
+
+<a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.

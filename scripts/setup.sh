@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+
+# Copyright IBM Corp., All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
 # This script will try setup a valid environment for the docker-compose running.
 # It should be triggered at the upper directory, and safe to repeat.
 

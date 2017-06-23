@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# Copyright IBM Corp., All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
 docker run -d \
                --net=host \
                --cap-add SYS_PTRACE \

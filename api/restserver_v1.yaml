@@ -1,3 +1,8 @@
+
+# Copyright IBM Corp, All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
 # this is an example of the Cello API
 # as a demonstration of an API spec in YAML
 swagger: '2.0'

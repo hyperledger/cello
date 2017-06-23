@@ -1,4 +1,9 @@
 #!/bin/bash
+
+# Copyright IBM Corp., All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
 # NOT run this in production environment.
 # This script will start a mongo-express node for debugging.
 # It should be triggered at the upper directory

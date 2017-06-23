@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# Copyright IBM Corp., All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
 # This script will (re)start all services.
 # It should be triggered at the upper directory, and safe to repeat.
 

@@ -11,7 +11,6 @@ Cello follows a typical Master-Worker architecture. Hence there will be two type
 
 For each Node, it is suggested as a Linux-based (e.g., Ubuntu 14.04+) server/vm:
 
-
 ## Worker Node
 Currently we support Docker Host or Swarm Cluster as Worker Node. More types will be added soon.
 
@@ -159,7 +158,6 @@ $ make start
 
 To stop or restart the whole services, run `make stop` or `make restart`.
 
-
 #### Redploy a service
 To redeploy one specific service, e.g., dashboard, please run
 
@@ -191,6 +189,7 @@ The mongo container will use local `/opt/cello/mongo` directory for persistent s
 
 Please keep it safe by backups or using more high-available solutions.
 
-
 *Licensed under Creative Commons Attribution 4.0 International License
    https://creativecommons.org/licenses/by/4.0/*
+
+<a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
