@@ -1,7 +1,7 @@
 import logging
 import time
 from threading import Thread
-from common import LOG_LEVEL, HOST_TYPES, FABRIC_VERSION, CONSENSUS_PLUGINS, \
+from common import LOG_LEVEL, HOST_TYPES, NETWORK_TYPES, CONSENSUS_PLUGINS, \
     log_handler, CONSENSUS_MODES
 
 from modules import host_handler, cluster_handler

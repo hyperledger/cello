@@ -8,7 +8,7 @@ from common import log_handler, LOG_LEVEL
 from agent import compose_up, compose_clean, compose_start, compose_stop, \
     compose_restart
 
-from common import FABRIC_VERSION, CONSENSUS_PLUGINS, \
+from common import NETWORK_TYPES, CONSENSUS_PLUGINS, \
     CONSENSUS_MODES, CLUSTER_SIZES
 
 from ..cluster_base import ClusterBase
@@ -27,7 +27,7 @@ class ClusterOnDocker(ClusterBase):
         pass
 
     def create(self, cid, mapped_ports, host, user_id="",
-               fabric_version=FABRIC_VERSION[0],
+               fabric_version=NETWORK_TYPES[0],
                consensus_plugin=CONSENSUS_PLUGINS[0],
                consensus_mode=CONSENSUS_MODES[0], size=CLUSTER_SIZES[0]):
         """ Create a cluster based on given data
@@ -51,7 +51,7 @@ class ClusterOnDocker(ClusterBase):
         logger.debug("Start compose project with name={}".format(cid))
         containers = compose_up(
             name=cid, mapped_ports=mapped_ports, host=host,
-            fabric_version=fabric_version,
+            network_type=fabric_version,
             consensus_plugin=consensus_plugin, consensus_mode=consensus_mode,
             cluster_size=size)
         if not containers or len(containers) != size:

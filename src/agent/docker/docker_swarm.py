@@ -12,7 +12,7 @@ from docker import Client
 from common import log_handler, LOG_LEVEL
 from common import \
     HOST_TYPES, \
-    CLUSTER_NETWORK, FABRIC_VERSION, \
+    CLUSTER_NETWORK, NETWORK_TYPES, \
     CONSENSUS_PLUGINS, CONSENSUS_MODES, \
     CLUSTER_LOG_TYPES, CLUSTER_LOG_LEVEL, \
     CLUSTER_SIZES, \
@@ -308,7 +308,7 @@ def get_project(template_path):
 
 
 def _compose_set_env(name, daemon_url, mapped_ports=SERVICE_PORTS,
-                     fabric_version=FABRIC_VERSION[0],
+                     fabric_version=NETWORK_TYPES[0],
                      consensus_plugin=[0],
                      consensus_mode=CONSENSUS_MODES[0],
                      cluster_size=CLUSTER_SIZES[0],
@@ -323,7 +323,7 @@ def _compose_set_env(name, daemon_url, mapped_ports=SERVICE_PORTS,
         'VM_DOCKER_HOSTCONFIG_NETWORKMODE':
             CLUSTER_NETWORK + "_{}".format(consensus_plugin),
         'PEER_VALIDATOR_CONSENSUS_PLUGIN': consensus_plugin,
-        'FABRIC_VERSION': fabric_version,
+        'NETWORK_TYPES': fabric_version,
         'PBFT_GENERAL_MODE': consensus_mode,
         'PBFT_GENERAL_N': str(cluster_size),
         'PEER_NETWORKID': name,
@@ -339,7 +339,7 @@ def _compose_set_env(name, daemon_url, mapped_ports=SERVICE_PORTS,
 
 
 def compose_up(name, host, mapped_ports,
-               fabric_version=FABRIC_VERSION[0],
+               network_type=NETWORK_TYPES[0],
                consensus_plugin=CONSENSUS_PLUGINS[0],
                consensus_mode=CONSENSUS_MODES[0],
                cluster_size=CLUSTER_SIZES[0],
@@ -349,7 +349,7 @@ def compose_up(name, host, mapped_ports,
     :param name: The name of the cluster
     :param mapped_ports: The mapped ports list of the cluster
     :param host: Docker host obj
-    :param fabric_version: Fabric version
+    :param network_type: Fabric version
     :param consensus_plugin: Cluster consensus plugin
     :param consensus_mode: Cluster consensus mode
     :param cluster_size: the size of the cluster
@@ -367,19 +367,13 @@ def compose_up(name, host, mapped_ports,
     if log_type != CLUSTER_LOG_TYPES[0]:  # not local
         os.environ['SYSLOG_SERVER'] = log_server
 
-    _compose_set_env(name, daemon_url, mapped_ports, fabric_version,
+    _compose_set_env(name, daemon_url, mapped_ports, network_type,
                      consensus_plugin, consensus_mode, cluster_size,
                      log_level, log_type, log_server)
 
-    if fabric_version == FABRIC_VERSION[1]:
-        cluster_version = 'fabric-0.6'
-    else:
-        logger.debug("log_type={}".format(log_type))
-        cluster_version = 'fabric-1.0'
-
     try:
         project = get_project(COMPOSE_FILE_PATH +
-                              "/{}/".format(cluster_version) + log_type)
+                              "/{}/".format(network_type) + log_type)
         containers = project.up(detached=True, timeout=timeout)
     except Exception as e:
         logger.warning("Exception when compose start={}".format(e))
@@ -432,7 +426,7 @@ def compose_clean(name, daemon_url, fabric_version,
 
 
 def compose_start(name, daemon_url, mapped_ports=SERVICE_PORTS,
-                  fabric_version=FABRIC_VERSION[0],
+                  fabric_version=NETWORK_TYPES[0],
                   consensus_plugin=[0],
                   consensus_mode=CONSENSUS_MODES[0],
                   log_type=CLUSTER_LOG_TYPES[0], log_server="",
@@ -462,7 +456,7 @@ def compose_start(name, daemon_url, mapped_ports=SERVICE_PORTS,
                      consensus_plugin, consensus_mode, cluster_size,
                      log_level, log_type, log_server)
 
-    if fabric_version == FABRIC_VERSION[1]:
+    if fabric_version == NETWORK_TYPES[1]:
         cluster_version = 'fabric-0.6'
     else:
         cluster_version = 'fabric-1.0'
@@ -480,7 +474,7 @@ def compose_start(name, daemon_url, mapped_ports=SERVICE_PORTS,
 
 
 def compose_restart(name, daemon_url, mapped_ports=SERVICE_PORTS,
-                    fabric_version=FABRIC_VERSION[0],
+                    fabric_version=NETWORK_TYPES[0],
                     consensus_plugin=[0],
                     consensus_mode=CONSENSUS_MODES[0],
                     log_type=CLUSTER_LOG_TYPES[0], log_server="",
@@ -511,7 +505,7 @@ def compose_restart(name, daemon_url, mapped_ports=SERVICE_PORTS,
                      consensus_mode, cluster_size, log_level, log_type,
                      log_server)
 
-    if fabric_version == FABRIC_VERSION[1]:
+    if fabric_version == NETWORK_TYPES[1]:
         cluster_version = 'fabric-0.6'
     else:
         cluster_version = 'fabric-1.0'
@@ -529,7 +523,7 @@ def compose_restart(name, daemon_url, mapped_ports=SERVICE_PORTS,
 
 
 def compose_stop(name, daemon_url, mapped_ports=SERVICE_PORTS,
-                 fabric_version=FABRIC_VERSION[0],
+                 fabric_version=NETWORK_TYPES[0],
                  consensus_plugin=[0],
                  consensus_mode=CONSENSUS_MODES[0],
                  log_type=CLUSTER_LOG_TYPES[0], log_server="",
@@ -561,7 +555,7 @@ def compose_stop(name, daemon_url, mapped_ports=SERVICE_PORTS,
                      consensus_mode, cluster_size, log_level, log_type,
                      log_server)
 
-    if fabric_version == FABRIC_VERSION[1]:
+    if fabric_version == NETWORK_TYPES[1]:
         cluster_version = 'fabric-0.6'
     else:
         cluster_version = 'fabric-1.0'
@@ -577,7 +571,7 @@ def compose_stop(name, daemon_url, mapped_ports=SERVICE_PORTS,
 
 
 def compose_down(name, daemon_url, mapped_ports=SERVICE_PORTS,
-                 fabric_version=FABRIC_VERSION[0],
+                 fabric_version=NETWORK_TYPES[0],
                  consensus_plugin=[0],
                  consensus_mode=CONSENSUS_MODES[0],
                  log_type=CLUSTER_LOG_TYPES[0], log_server="",
@@ -607,7 +601,7 @@ def compose_down(name, daemon_url, mapped_ports=SERVICE_PORTS,
                      consensus_mode, cluster_size, log_level, log_type,
                      log_server)
 
-    if fabric_version == FABRIC_VERSION[1]:
+    if fabric_version == NETWORK_TYPES[1]:
         cluster_version = 'fabric-0.6'
     else:
         cluster_version = 'fabric-1.0'

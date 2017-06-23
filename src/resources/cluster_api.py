@@ -9,7 +9,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from common import log_handler, LOG_LEVEL, \
     request_get, make_ok_response, make_fail_response, \
     request_debug, request_json_body, \
-    CODE_CREATED, CODE_NOT_FOUND, FABRIC_VERSION, \
+    CODE_CREATED, CODE_NOT_FOUND, NETWORK_TYPES, \
     CONSENSUS_PLUGINS, CONSENSUS_MODES, CLUSTER_SIZES
 from modules import cluster_handler, host_handler
 
