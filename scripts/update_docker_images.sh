@@ -5,10 +5,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-echo "Pull yeasy/hyperledger:latest and retagging"
-docker pull yeasy/hyperledger:latest && \
-docker rmi hyperledger/fabric-baseimage:latest && \
-docker tag yeasy/hyperledger:latest hyperledger/fabric-baseimage:latest
+echo "This script will setup the docker images for master node"
+echo "Pull python:3.5, mongo:3.2, mongo-express:0.30 and yeasy/nginx"
 
-echo "Pull yeasy/hyperledger-peer:latest"
-docker pull yeasy/hyperledger-peer:latest
+docker pull python:3.5 \
+	&& docker pull mongo:3.2 \
+	&& docker pull mongo-express:0.30 \
+	&& docker pull yeasy/nginx:latest

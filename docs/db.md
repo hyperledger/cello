@@ -7,13 +7,13 @@ Track the information of a Host.
 
 A typical host may look like:
 
-id |  name   | daemon_url          | create_ts      | capacity | status | clusters  | type    | log_level | log_type | log_server  | autofill | schedulable
+id |  name   | worker_api          | create_ts      | capacity | status | clusters  | type    | log_level | log_type | log_server  | autofill | schedulable
 ---|  ------ | ------------------- | -------------- | -------- | -------- | ------- | ------- | --------- | -------- | ----------- | -------- | -----------
 xxx | host_0 | tcp://10.0.0.1:2375 | 20160430101010 | 20       | active | [c1,c2,c3] | single | debug     | syslog   | udp://10.0.0.2:5000 | true | true
 
 * id (str): uuid of the host instance
 * name (str): human-readable name
-* daemon_url (str): Through which url to access the Docker/Swarm Daemon
+* worker_api (str): Through which url to access the Docker/Swarm Daemon
 * create_ts (datetime): When to add the host
 * capacity (int): Maximum number of chains on that host
 * status (str): 'active' (Can access daemon service) or 'inactive' (disconnected from daemon service)
@@ -30,7 +30,7 @@ Track information of one blockchain.
 
 A typical cluster may look like:
 
-id  | service_url         | name      | user_id  | host_id | daemon_url          | consensus_plugin | consensus_mode | create_ts      | apply_ts | release_ts | duration | size | containers | health
+id  | service_url         | name      | user_id  | host_id | worker_api          | consensus_plugin | consensus_mode | create_ts      | apply_ts | release_ts | duration | size | containers | health
 --- | --------------- | --------- | -------- | ------- | ------------------- | ---------------- | -------------- | -------------  | -------- | ---------- | ------- | ------- | ------- | ------
 xxx | {}   | cluster_A | ""       | host_xx |  tcp://10.0.0.1:2375 | pbft            | batch          | 20160430101010 | 20160430101010 | | | 4  | [vp0,vp1,vp2,vp3] | OK
 
@@ -39,7 +39,7 @@ xxx | {}   | cluster_A | ""       | host_xx |  tcp://10.0.0.1:2375 | pbft       
 * name (str): human-readable name
 * user_id (str): Which user occupies this chain, empty for no occupation
 * host_id (str): Where the chain exists
-* daemon_url (str): Through which url to access the Docker/Swarm Daemon
+* worker_api (str): Through which url to access the Docker/Swarm Daemon
 * consensus_plugin (str): Consensus plugin name
 * consensus_mode (str): Consensus plugin mode name
 * create_ts (datetime): When to create the chain

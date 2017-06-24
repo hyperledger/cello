@@ -40,14 +40,14 @@ class DockerHost(HostBase):
     def __init__(self):
         self.col = db["host"]
 
-    def create(self, daemon_url):
+    def create(self, worker_api):
         """ Create a new docker host node
 
         A docker host is potentially a single node or a swarm.
         Will full fill with clusters of given capacity.
 
         :param name: name of the node
-        :param daemon_url: daemon_url of the host
+        :param worker_api: worker_api of the host
         :param capacity: The number of clusters to hold
         :param log_type: type of the log
         :param log_level: level of the log
@@ -58,38 +58,38 @@ class DockerHost(HostBase):
         :return: True or False
         """
 
-        if check_daemon(daemon_url):
-            logger.warning("The daemon_url is active:" + daemon_url)
+        if check_daemon(worker_api):
+            logger.warning("The worker_api is active:" + worker_api)
         else:
-            logger.warning("The daemon_url is inactive:" + daemon_url)
+            logger.warning("The worker_api is inactive:" + worker_api)
             return False
 
-        detected_type = detect_daemon_type(daemon_url)
+        detected_type = detect_daemon_type(worker_api)
 
         if detected_type not in ['docker', 'swarm']:
             logger.warning("Detected type={} is not docker or swarm".
                            format(detected_type))
             return False
 
-        if setup_container_host(detected_type, daemon_url):
+        if setup_container_host(detected_type, worker_api):
             return True
         else:
-            logger.warning("Cannot setup Docker host daemon_url={}"
-                           .format(daemon_url))
+            logger.warning("Cannot setup Docker host worker_api={}"
+                           .format(worker_api))
             return False
 
-    def delete(self, daemon_url):
+    def delete(self, worker_api):
         """ Delete a host instance
 
         :param id: id of the host to delete
         :return:
         """
 
-        cleanup_host(daemon_url)
+        cleanup_host(worker_api)
         return True
 
     @check_status
-    def reset(self, host_type, daemon_url):
+    def reset(self, host_type, worker_api):
         """
         Clean a host's free clusters.
 
@@ -97,16 +97,16 @@ class DockerHost(HostBase):
         :return: True or False
         """
         return reset_container_host(host_type=host_type,
-                                    daemon_url=daemon_url)
+                                    worker_api=worker_api)
 
-    def refresh_status(self, daemon_url):
+    def refresh_status(self, worker_api):
         """
         Refresh the status of the host by detection
 
         :param host: the host to update status
         :return: Updated host
         """
-        return check_daemon(daemon_url)
+        return check_daemon(worker_api)
 
 
 docker_host = DockerHost()

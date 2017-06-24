@@ -6,7 +6,7 @@
 
 $(document).ready(function () {
 
-    $('#fabric_version').change(function() {
+    $('#network_type').change(function() {
 
         var $consensus_plugin = $('#consensus_plugin');
         var $cluster_size = $('#cluster_size');
@@ -58,7 +58,7 @@ $(document).ready(function () {
 
   $('.create_host_button').click(function () {
     //var name = $(this).parents('form:first').find('[name="name"]').val();
-    //var daemon_url = $(this).parents('form:first').find('[name="daemon_url"]').val();
+    //var worker_api = $(this).parents('form:first').find('[name="worker_api"]').val();
     var form_data = $('#add_new_host_form').serialize();
 
     $.ajax({
@@ -157,7 +157,7 @@ $(document).ready(function () {
       $('#config_host_form')
         .find('[name="id"]').val(host.id).end()
         .find('[name="name"]').val(host.name).end()
-        .find('[name="daemon_url"]').val(host.daemon_url).end()
+        .find('[name="worker_api"]').val(host.worker_api).end()
         .find('[name="type"]').val(host.type).end()
         .find('[name="log_level"]').val(host.log_level).end()
         .find('[name="log_type"]').val(host.log_type).end()

@@ -1,29 +1,51 @@
-class BlockchainNetworkConfig(object):
+# Copyright IBM Corp, All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+
+class BlockchainNetworkConfig(dict):
     """
     BlockchainNetworkConfig includes those configuration data for a network.
     """
 
-    def __init__(self, data=None, metadata=None):
+    def __init__(self):
         """
         Init.
 
         Args:
-            data: config data related to network.
-            metadata: metadata is for cello usage.
+            None
+
+        >>> config = BlockchainNetworkConfig()
+        >>> config.get_data()
+        {}
+        >>> config['key'] = 'value'
+        >>> config['key']
+        'value'
+        >>> config.key
+        'value'
+        >>> config.get_data()
+        {'key': 'value'}
         """
-        self.data = data or {}  # include all config data we need for a network
-        self.metadata = metadata or {}  # metadata is for cello usage
+        super(BlockchainNetworkConfig, self).__init__()
+
+    def __getattr__(self, name):
+        try:
+            return self[name]
+        except KeyError as e:
+            raise AttributeError(e)
+
+    def __setattr__(self, name, value):
+        self[name] = value
 
     def get_data(self):
         """
         Get the configuration data for the blockchain network
         Returns: data dict
         """
-        return self.data
+        return dict(self)
 
-    def get_metadata(self):
-        """
-        Get the metadata
-        Returns: metadata dict
-        """
-        return self.metadata
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()

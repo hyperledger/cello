@@ -14,7 +14,7 @@ from agent import compose_up, compose_clean, compose_start, compose_stop, \
     compose_restart
 
 from common import NETWORK_TYPES, CONSENSUS_PLUGINS, \
-    CONSENSUS_MODES, CLUSTER_SIZES
+    CONSENSUS_MODES, NETWORK_SIZE_FABRIC_PRE_V1
 
 from ..cluster_base import ClusterBase
 
@@ -32,9 +32,8 @@ class ClusterOnDocker(ClusterBase):
         pass
 
     def create(self, cid, mapped_ports, host, user_id="",
-               fabric_version=NETWORK_TYPES[0],
-               consensus_plugin=CONSENSUS_PLUGINS[0],
-               consensus_mode=CONSENSUS_MODES[0], size=CLUSTER_SIZES[0]):
+               network_type=NETWORK_TYPES[0],
+               config=None):
         """ Create a cluster based on given data
 
         TODO: maybe need other id generation mechanism
@@ -44,9 +43,9 @@ class ClusterOnDocker(ClusterBase):
         :param start_port: first service port for cluster, will generate
          if not given
         :param user_id: user_id of the cluster if start to be applied
-        :param fabric_version: fabric images version
-        :param consensus_plugin: type of the consensus type
-        :param size: size of the cluster, int type
+        :param network_type: fabric images version
+        :param config: network config
+
         :return: Id of the created cluster or None
         """
 
@@ -54,44 +53,32 @@ class ClusterOnDocker(ClusterBase):
 
         # start compose project, failed then clean and return
         logger.debug("Start compose project with name={}".format(cid))
-        containers = compose_up(
-            name=cid, mapped_ports=mapped_ports, host=host,
-            network_type=fabric_version,
-            consensus_plugin=consensus_plugin, consensus_mode=consensus_mode,
-            cluster_size=size)
-        if not containers or len(containers) != size:
+        containers = compose_up(name=cid, mapped_ports=mapped_ports, host=host,
+                                network_type=network_type, config=None)
+        if not containers or len(containers) != config.size:
             logger.warning("failed to create cluster, with container={}"
                            .format(containers))
             return []
         else:
             return containers
 
-    def delete(self, id, daemon_url, fabric_version, consensus_plugin,
-               cluster_size):
-        return compose_clean(id, daemon_url, fabric_version,
-                             consensus_plugin, cluster_size)
+    def delete(self, id, worker_api, network_type, config):
+        return compose_clean(id, worker_api, network_type, config)
 
-    def start(self, name, daemon_url, mapped_ports, fabric_version,
-              consensus_plugin,
-              consensus_mode, log_type, log_level, log_server, cluster_size):
-        return compose_start(name, daemon_url, mapped_ports, fabric_version,
-                             consensus_plugin, consensus_mode, log_type,
-                             log_level, log_server, cluster_size)
+    def start(self, name, worker_api, mapped_ports, network_type,
+              log_type, log_level, log_server, config):
+        return compose_start(name, worker_api, mapped_ports, network_type,
+                             log_type, log_level, log_server, config)
 
-    def restart(self, name, daemon_url, mapped_ports, fabric_version,
-                consensus_plugin, consensus_mode, log_type, log_level,
-                log_server, cluster_size):
-        return compose_restart(name, daemon_url, mapped_ports, fabric_version,
-                               consensus_plugin, consensus_mode, log_type,
-                               log_level, log_server, cluster_size)
+    def restart(self, name, worker_api, mapped_ports, network_type,
+                log_type, log_level, log_server, config):
+        return compose_restart(name, worker_api, mapped_ports, network_type,
+                               log_type, log_level, log_server, config)
 
-    def stop(self, name, daemon_url, mapped_ports, fabric_version,
-             consensus_plugin, consensus_mode, log_type, log_level,
-             log_server, cluster_size):
-        return compose_stop(name, daemon_url, mapped_ports, fabric_version,
-                            consensus_plugin,
-                            consensus_mode, log_type, log_level, log_server,
-                            cluster_size)
+    def stop(self, name, worker_api, mapped_ports, network_type,
+             log_type, log_level, log_server, config):
+        return compose_stop(name, worker_api, mapped_ports, network_type,
+                            log_type, log_level, log_server, config)
 
 
 cluster_on_docker = ClusterOnDocker()

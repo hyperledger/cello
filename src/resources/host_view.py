@@ -12,7 +12,7 @@ from flask import request as r
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from common import log_handler, LOG_LEVEL, \
-    HOST_TYPES, request_debug, \
+    WORKER_TYPES, request_debug, \
     CLUSTER_LOG_TYPES, CLUSTER_LOG_LEVEL
 from modules import host_handler
 
@@ -37,7 +37,7 @@ def hosts_show():
     return render_template("hosts.html",
                            items_count=len(items),
                            items=items,
-                           host_types=HOST_TYPES,
+                           host_types=WORKER_TYPES,
                            log_types=CLUSTER_LOG_TYPES,
                            log_levels=CLUSTER_LOG_LEVEL,
                            )

@@ -17,8 +17,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from common import \
     db, log_handler, \
     LOG_LEVEL, CLUSTER_LOG_TYPES, CLUSTER_LOG_LEVEL, \
-    CLUSTER_SIZES, CLUSTER_PORT_START, CLUSTER_PORT_STEP, \
-    CONSENSUS_TYPES, HOST_TYPES
+    NETWORK_SIZE_FABRIC_PRE_V1, CLUSTER_PORT_START, CLUSTER_PORT_STEP, \
+    CONSENSUS_TYPES, WORKER_TYPES
 
 from agent import DockerHost, KubernetesHost
 
@@ -42,7 +42,7 @@ def check_status(func):
 class HostHandler(object):
     """ Main handler to operate the hosts.
 
-    Host can be platforms like Docker, Swarm or Kubernetes
+    A host can be a worker like Docker host, Swarm or Kubernetes
     """
     def __init__(self):
         self.col = db["host"]
@@ -52,18 +52,18 @@ class HostHandler(object):
             'kubernetes': KubernetesHost()
         }
 
-    def create(self, name, daemon_url, capacity=1,
+    def create(self, name, worker_api, capacity=1,
                log_level=CLUSTER_LOG_LEVEL[0],
                log_type=CLUSTER_LOG_TYPES[0], log_server="", autofill="false",
                schedulable="false", serialization=True,
-               host_type=HOST_TYPES[0]):
+               host_type=WORKER_TYPES[0]):
         """ Create a new docker host node
 
         A docker host is potentially a single node or a swarm.
         Will full fill with clusters of given capacity.
 
         :param name: name of the node
-        :param daemon_url: daemon_url of the host
+        :param worker_api: worker_api of the host
         :param capacity: The number of clusters to hold
         :param log_type: type of the log
         :param log_level: level of the log
@@ -73,15 +73,15 @@ class HostHandler(object):
         :param serialization: whether to get serialized result or object
         :return: True or False
         """
-        logger.debug("Create host: name={}, daemon_url={}, capacity={}, "
+        logger.debug("Create host: name={}, worker_api={}, capacity={}, "
                      "log={}/{}, autofill={}, schedulable={}"
-                     .format(name, daemon_url, capacity, log_type,
+                     .format(name, worker_api, capacity, log_type,
                              log_server, autofill, schedulable))
-        if not daemon_url.startswith("tcp://"):
-            daemon_url = "tcp://" + daemon_url
+        if not worker_api.startswith("tcp://"):
+            worker_api = "tcp://" + worker_api
 
-        if self.col.find_one({"daemon_url": daemon_url}):
-            logger.warning("{} already existed in db".format(daemon_url))
+        if self.col.find_one({"worker_api": worker_api}):
+            logger.warning("{} already existed in db".format(worker_api))
             return {}
 
         if "://" not in log_server:
@@ -89,14 +89,14 @@ class HostHandler(object):
         if log_type == CLUSTER_LOG_TYPES[0]:
             log_server = ""
 
-        if not self.host_agents[host_type].create(daemon_url):
+        if not self.host_agents[host_type].create(worker_api):
             logger.warning("{} cannot be setup".format(name))
             return {}
 
         h = {
             'id': '',
             'name': name,
-            'daemon_url': daemon_url,
+            'worker_api': worker_api,
             'create_ts': datetime.datetime.now(),
             'capacity': capacity,
             'status': 'active',
@@ -149,8 +149,8 @@ class HostHandler(object):
             logger.warning("No host found with id=" + id)
             return {}
 
-        if "daemon_url" in d and not d["daemon_url"].startswith("tcp://"):
-            d["daemon_url"] = "tcp://" + d["daemon_url"]
+        if "worker_api" in d and not d["worker_api"].startswith("tcp://"):
+            d["worker_api"] = "tcp://" + d["worker_api"]
 
         if "capacity" in d:
             d["capacity"] = int(d["capacity"])
@@ -173,7 +173,7 @@ class HostHandler(object):
         hosts = self.col.find(filter_data)
         return list(map(self._serialize, hosts))
 
-    def delete(self, id, host_type=HOST_TYPES[0]):
+    def delete(self, id, host_type=WORKER_TYPES[0]):
         """ Delete a host instance
 
         :param id: id of the host to delete
@@ -189,7 +189,7 @@ class HostHandler(object):
             logger.warning("There are clusters on that host, cannot delete.")
             return False
 
-        self.host_agents[host_type].delete(h.get("daemon_url"))
+        self.host_agents[host_type].delete(h.get("worker_api"))
         self.col.delete_one({"id": id})
         return True
 
@@ -218,7 +218,7 @@ class HostHandler(object):
                 host.get("name"),
                 int((start_port - CLUSTER_PORT_START) / CLUSTER_PORT_STEP))
             consensus_plugin, consensus_mode = random.choice(CONSENSUS_TYPES)
-            cluster_size = random.choice(CLUSTER_SIZES)
+            cluster_size = random.choice(NETWORK_SIZE_FABRIC_PRE_V1)
             cid = cluster.cluster_handler.create(
                 name=cluster_name, host_id=id, start_port=start_port,
                 consensus_plugin=consensus_plugin,
@@ -278,7 +278,7 @@ class HostHandler(object):
             logger.warning("No find resettable host with id ={}".format(id))
             return False
         return self.host_agents[host.get("type")].reset(
-            host_type=host.get("type"), daemon_url=host.get("daemon_url"))
+            host_type=host.get("type"), worker_api=host.get("worker_api"))
 
     def refresh_status(self, id):
         """
@@ -292,7 +292,7 @@ class HostHandler(object):
             logger.warning("No host found with id=" + id)
             return False
         if not self.host_agents[host.get("type")]\
-                .refresh_status(host.get("daemon_url")):
+                .refresh_status(host.get("worker_api")):
             logger.warning("Host {} is inactive".format(id))
             self.db_set_by_id(id, status="inactive")
             return False
@@ -327,7 +327,7 @@ class HostHandler(object):
             return {}
         return self._serialize(host)
 
-    def _serialize(self, doc, keys=['id', 'name', 'daemon_url', 'capacity',
+    def _serialize(self, doc, keys=['id', 'name', 'worker_api', 'capacity',
                                     'type', 'create_ts', 'status', 'autofill',
                                     'schedulable', 'clusters', 'log_level',
                                     'log_type', 'log_server']):

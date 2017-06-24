@@ -30,15 +30,15 @@ response_fail = {
 }
 
 
-def make_ok_response(error="", data={}, code=CODE_OK):
+def make_ok_resp(error="", data={}, code=CODE_OK):
     response_ok['code'] = code
     response_ok["error"] = error
     response_ok["data"] = data
     return jsonify(response_ok), CODE_OK
 
 
-def make_fail_response(error="Invalid request", data={},
-                       code=CODE_BAD_REQUEST):
+def make_fail_resp(error="Invalid request", data={},
+                   code=CODE_BAD_REQUEST):
     response_fail['code'] = code
     response_fail["error"] = error
     response_fail["data"] = data

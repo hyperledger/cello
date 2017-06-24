@@ -6,7 +6,7 @@
 import logging
 import time
 from threading import Thread
-from common import LOG_LEVEL, HOST_TYPES, NETWORK_TYPES, CONSENSUS_PLUGINS, \
+from common import LOG_LEVEL, WORKER_TYPES, NETWORK_TYPES, CONSENSUS_PLUGINS, \
     log_handler, CONSENSUS_MODES
 
 from modules import host_handler, cluster_handler
@@ -36,7 +36,7 @@ class StatHandler(object):
             {'name': 'active', 'y': len(actives)},
             {'name': 'inactive', 'y': len(inactive)}
         ]
-        for host_type in HOST_TYPES:
+        for host_type in WORKER_TYPES:
             hosts = list(host_handler.list(filter_data={'type': host_type}))
             result['type'].append({
                 'name': host_type,

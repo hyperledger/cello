@@ -8,7 +8,8 @@ import os
 
 
 CLUSTER_NETWORK = "cello_net"
-CLUSTER_SIZES = [4, 6, 7]
+
+NETWORK_SIZE_FABRIC_PRE_V1 = [4, 6, 7]
 
 # first port that can be assigned as cluster API
 CLUSTER_PORT_START = int(os.getenv("CLUSTER_PORT_START", 7050))
@@ -35,24 +36,37 @@ CA_SERVICE_PORTS = {
 SERVICE_PORTS = dict(list(PEER_SERVICE_PORTS.items()) +
                      list(CA_SERVICE_PORTS.items()))
 
-NETWORK_TYPES = ['fabric-0.6', 'fabric-1.0']  # first one is the default one
+NETWORK_TYPE_FABRIC_PRE_V1 = 'fabric-0.6'
+NETWORK_TYPE_FABRIC_V1 = 'fabric-1.0'
+NETWORK_TYPES = [NETWORK_TYPE_FABRIC_PRE_V1, NETWORK_TYPE_FABRIC_V1]
 
-CONSENSUS_PLUGINS = ['noops', 'pbft', 'solo']  # first one is the default one
+CONSENSUS_PLUGIN_NOOPS = 'noops'
+CONSENSUS_PLUGIN_PBFT = 'pbft'
+CONSENSUS_PLUGIN_SOLO = 'solo'
+CONSENSUS_PLUGIN_KAFKA = 'kafka'
+
+CONSENSUS_PLUGINS = [CONSENSUS_PLUGIN_NOOPS, CONSENSUS_PLUGIN_PBFT,
+                     CONSENSUS_PLUGIN_SOLO, CONSENSUS_PLUGIN_KAFKA]
 # CONSENSUS_MODES = ['classic', 'batch', 'sieve']  # pbft has various modes
-CONSENSUS_MODES = ['batch']  # pbft has various modes
+CONSENSUS_MODE_BATCH = 'batch'
+CONSENSUS_MODES = [CONSENSUS_MODE_BATCH]  # pbft has various modes
 
 CONSENSUS_TYPES = [
-    ('noops', ''),
-    ('pbft', 'batch'),
-    # ('pbft', 'classic'),
-    # ('pbft', 'sieve'),
+    (CONSENSUS_PLUGIN_NOOPS, ''),
+    (CONSENSUS_PLUGIN_PBFT, CONSENSUS_MODE_BATCH),
+    (CONSENSUS_PLUGIN_SOLO, ''),
+    (CONSENSUS_PLUGIN_KAFKA, '')
 ]
 
 
-HOST_TYPES = ['docker', 'swarm', 'kubernetes']  # all supported host types
+WORKER_TYPE_DOCKER = 'docker'
+WORKER_TYPE_SWARM = 'swarm'
+WORKER_TYPE_K8S = 'kubernetes'
+WORKER_TYPES = [WORKER_TYPE_DOCKER, WORKER_TYPE_SWARM, WORKER_TYPE_K8S]
 
+
+# TODO: might deprecate as can use agent to collect log seperately
 CLUSTER_LOG_TYPES = ['local', 'syslog']
-
 CLUSTER_LOG_LEVEL = ['DEBUG', 'INFO', 'NOTICE', 'WARNING', 'ERROR',
                      'CRITICAL']
 

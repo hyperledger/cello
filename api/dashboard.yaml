@@ -36,9 +36,9 @@ paths:
         and other details about each cluster, and lists the clusters in the
         proper display order.
       parameters:
-        - name: daemon_url
+        - name: worker_api
           in: query
-          description: Filter clusters with specific daemon_url.
+          description: Filter clusters with specific worker_api.
           required: false
           type: string
         - name: user_id
@@ -88,9 +88,9 @@ paths:
         The endpoint create a specific cluster
         The response includes necessary info.
       parameters:
-        - name: daemon_url
+        - name: worker_api
           in: query
-          description: Given the daemon_url to create at
+          description: Given the worker_api to create at
           required: true
           type: string
         - name: cluster_name
@@ -144,7 +144,7 @@ definitions:
       api_url:
         type: string
         description: Cluster REST URL representing the cluster.
-      daemon_url:
+      worker_api:
         type: string
         description: Docker host daemon url
       name:

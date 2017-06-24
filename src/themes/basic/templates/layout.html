@@ -109,8 +109,8 @@
               </div>
 
               <div class="form-group form-inline has-feedback">
-                  <label for="host_daemon_url" style="width: 20%">*Daemon URL</label>
-                  <input id="host_daemon_url" type="text" name="daemon_url" pattern="^(\d+)\.(\d+)\.(\d+)\.(\d+):(\d+)$"
+                  <label for="host_worker_api" style="width: 20%">*Daemon URL</label>
+                  <input id="host_worker_api" type="text" name="worker_api" pattern="^(\d+)\.(\d+)\.(\d+)\.(\d+):(\d+)$"
                          class="form-control" placeholder="192.168.0.1:2375"
                          data-error="That address is invalid" required>
               </div>
@@ -198,14 +198,14 @@
                         </select>
                     </div>
                 {% endif %}
-                {% if fabric_version|length > 0 %}
-                    <div class="form-group" id="form_fabric_version">
-                        <label for="fabric_version"> Fabric Version</label>
-                        <select id="fabric_version" class="c-select" name="fabric_version"
+                {% if network_type|length > 0 %}
+                    <div class="form-group" id="form_network_type">
+                        <label for="network_type"> Fabric Version</label>
+                        <select id="network_type" class="c-select" name="network_type"
                                     required>
                             <option selected
-                                    value="{{fabric_version[0]}}">{{fabric_version[0]}}</option>
-                            {% for c in fabric_version[1:] %}
+                                    value="{{network_type[0]}}">{{network_type[0]}}</option>
+                            {% for c in network_type[1:] %}
                                     <option value="{{c}}">{{c}}</option>
                             {% endfor %}
                         </select>
@@ -299,7 +299,7 @@
     <div class="form-group">
         <label class="col-sm-3 form-control-label">Daemon URL</label>
         <div class="col-sm-6">
-            <input type="text" class="form-control" name="daemon_url"
+            <input type="text" class="form-control" name="worker_api"
                    disabled="disabled" />
         </div>
     </div>

@@ -63,7 +63,7 @@ Accordingly, the server will return a json response (succeed or fail).
     "api_url": "http://192.168.7.62:5004",
     "consensus_mode": "batch",
     "consensus_plugin": "pbft",
-    "daemon_url": "tcp://192.168.7.62:2375",
+    "worker_api": "tcp://192.168.7.62:2375",
     "id": "576ba021414b0502864d0306",
     "name": "compute2_4",
     "size": 4,

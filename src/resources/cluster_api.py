@@ -1,4 +1,3 @@
-
 # Copyright IBM Corp, All Rights Reserved.
 #
 # SPDX-License-Identifier: Apache-2.0
@@ -12,10 +11,13 @@ from flask import request as r
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from common import log_handler, LOG_LEVEL, \
-    request_get, make_ok_response, make_fail_response, \
+    request_get, make_ok_resp, make_fail_resp, \
     request_debug, request_json_body, \
-    CODE_CREATED, CODE_NOT_FOUND, NETWORK_TYPES, \
-    CONSENSUS_PLUGINS, CONSENSUS_MODES, CLUSTER_SIZES
+    CODE_CREATED, CODE_NOT_FOUND, \
+    NETWORK_TYPES, NETWORK_TYPE_FABRIC_PRE_V1, NETWORK_TYPE_FABRIC_V1, \
+    CONSENSUS_PLUGINS, CONSENSUS_MODES, NETWORK_SIZE_FABRIC_PRE_V1, \
+    FabricPreNetworkConfig, FabricV1NetworkConfig
+
 from modules import cluster_handler, host_handler
 
 logger = logging.getLogger(__name__)
@@ -39,11 +41,11 @@ def cluster_start(r):
     cluster_id = request_get(r, "cluster_id")
     if not cluster_id:
         logger.warning("No cluster_id is given")
-        return make_fail_response("No cluster_id is given")
+        return make_fail_resp("No cluster_id is given")
     if cluster_handler.start(cluster_id):
-        return make_ok_response()
+        return make_ok_resp()
 
-    return make_fail_response("cluster start failed")
+    return make_fail_resp("cluster start failed")
 
 
 def cluster_restart(r):
@@ -55,11 +57,11 @@ def cluster_restart(r):
     cluster_id = request_get(r, "cluster_id")
     if not cluster_id:
         logger.warning("No cluster_id is given")
-        return make_fail_response("No cluster_id is given")
+        return make_fail_resp("No cluster_id is given")
     if cluster_handler.restart(cluster_id):
-        return make_ok_response()
+        return make_ok_resp()
 
-    return make_fail_response("cluster restart failed")
+    return make_fail_resp("cluster restart failed")
 
 
 def cluster_stop(r):
@@ -71,11 +73,11 @@ def cluster_stop(r):
     cluster_id = request_get(r, "cluster_id")
     if not cluster_id:
         logger.warning("No cluster_id is given")
-        return make_fail_response("No cluster_id is given")
+        return make_fail_resp("No cluster_id is given")
     if cluster_handler.stop(cluster_id):
-        return make_ok_response()
+        return make_ok_resp()
 
-    return make_fail_response("cluster stop failed")
+    return make_fail_resp("cluster stop failed")
 
 
 def cluster_apply(r):
@@ -88,7 +90,7 @@ def cluster_apply(r):
     user_id = request_get(r, "user_id")
     if not user_id:
         logger.warning("cluster_apply without user_id")
-        return make_fail_response("cluster_apply without user_id")
+        return make_fail_resp("cluster_apply without user_id")
 
     allow_multiple, condition = request_get(r, "allow_multiple"), {}
 
@@ -98,21 +100,21 @@ def cluster_apply(r):
     if consensus_plugin:
         if consensus_plugin not in CONSENSUS_PLUGINS:
             logger.warning("Invalid consensus_plugin")
-            return make_fail_response("Invalid consensus_plugin")
+            return make_fail_resp("Invalid consensus_plugin")
         else:
             condition["consensus_plugin"] = consensus_plugin
 
     if consensus_mode:
         if consensus_mode not in CONSENSUS_MODES:
             logger.warning("Invalid consensus_mode")
-            return make_fail_response("Invalid consensus_mode")
+            return make_fail_resp("Invalid consensus_mode")
         else:
             condition["consensus_mode"] = consensus_mode
 
     if cluster_size >= 0:
-        if cluster_size not in CLUSTER_SIZES:
+        if cluster_size not in NETWORK_SIZE_FABRIC_PRE_V1:
             logger.warning("Invalid cluster_size")
-            return make_fail_response("Invalid cluster_size")
+            return make_fail_resp("Invalid cluster_size")
         else:
             condition["size"] = cluster_size
 
@@ -121,9 +123,9 @@ def cluster_apply(r):
                                       allow_multiple=allow_multiple)
     if not c:
         logger.warning("cluster_apply failed")
-        return make_fail_response("No available res for {}".format(user_id))
+        return make_fail_resp("No available res for {}".format(user_id))
     else:
-        return make_ok_response(data=c)
+        return make_ok_resp(data=c)
 
 
 def cluster_release(r):
@@ -135,11 +137,11 @@ def cluster_release(r):
     cluster_id = request_get(r, "cluster_id")
     if not cluster_id:
         logger.warning("No cluster_id is given")
-        return make_fail_response("No cluster_id is given")
+        return make_fail_resp("No cluster_id is given")
     if cluster_handler.release_cluster(cluster_id):
-        return make_ok_response()
+        return make_ok_resp()
 
-    return make_fail_response("cluster release failed")
+    return make_fail_resp("cluster release failed")
 
 
 @front_rest_v2.route('/cluster_op', methods=['GET', 'POST'])
@@ -170,7 +172,7 @@ def cluster_actions():
     elif action == "restart":
         return cluster_restart(r)
     else:
-        return make_fail_response(error="Unknown action type")
+        return make_fail_resp(error="Unknown action type")
 
 
 @bp_cluster_api.route('/cluster/<cluster_id>', methods=['GET'])
@@ -186,12 +188,12 @@ def cluster_query(cluster_id):
     result = cluster_handler.get_by_id(cluster_id)
     logger.info(result)
     if result:
-        return make_ok_response(data=result)
+        return make_ok_resp(data=result)
     else:
         error_msg = "cluster not found with id=" + cluster_id
         logger.warning(error_msg)
-        return make_fail_response(error=error_msg, data=r.form,
-                                  code=CODE_NOT_FOUND)
+        return make_fail_resp(error=error_msg, data=r.form,
+                              code=CODE_NOT_FOUND)
 
 
 @bp_cluster_api.route('/cluster', methods=['POST'])
@@ -202,6 +204,7 @@ def cluster_create():
     {
     name: xxx,
     host_id: xxx,
+    network_type=fabric-0.6,
     consensus_plugin: pbft,
     consensus_mode: batch,
     size: 4,
@@ -211,42 +214,40 @@ def cluster_create():
     """
     logger.info("/cluster action=" + r.method)
     request_debug(r, logger)
-    if not r.form["name"] or not r.form["host_id"] \
-            or not r.form["fabric_version"] \
-            or not r.form["consensus_plugin"] or not r.form["size"]:
+    if not r.form["name"] or not r.form["host_id"] or \
+            not r.form["network_type"]:
         error_msg = "cluster post without enough data"
         logger.warning(error_msg)
-        return make_fail_response(error=error_msg, data=r.form)
-    else:
-        name, host_id, fabric_version, consensus_plugin, \
-            consensus_mode, size = r.form['name'], r.form['host_id'], \
-            r.form['fabric_version'], r.form['consensus_plugin'], \
-            r.form['consensus_mode'] or '', int(r.form["size"])
-        if consensus_plugin not in CONSENSUS_PLUGINS:
-            logger.debug("Unknown consensus_plugin={}".format(
-                consensus_plugin))
-            return make_fail_response()
-        if consensus_plugin != CONSENSUS_PLUGINS[0] \
-           and consensus_plugin != CONSENSUS_PLUGINS[2] \
-           and consensus_mode not in CONSENSUS_MODES:
-            logger.debug("Invalid consensus, plugin={}, mode={}".format(
-                consensus_plugin, consensus_mode))
-            return make_fail_response()
+        return make_fail_resp(error=error_msg, data=r.form)
 
-        if size not in CLUSTER_SIZES:
-            logger.debug("Unknown cluster size={}".format(size))
-            return make_fail_response()
-        if cluster_handler.create(name=name, host_id=host_id,
-                                  fabric_version=fabric_version,
-                                  consensus_plugin=consensus_plugin,
-                                  consensus_mode=consensus_mode,
-                                  size=size):
-            logger.debug("cluster POST successfully")
-            return make_ok_response(code=CODE_CREATED)
-        else:
-            logger.debug("cluster creation failed")
-            return make_fail_response(error="Failed to create cluster {}".
-                                      format(name))
+    name, host_id, network_type = \
+        r.form['name'], r.form['host_id'], r.form['network_type']
+
+    if network_type == NETWORK_TYPE_FABRIC_PRE_V1:
+        config = FabricPreNetworkConfig(
+            consensus_plugin=r.form['consensus_plugin'],
+            consensus_mode=r.form['consensus_mode'],
+            size=r.form['size'])
+    elif network_type == NETWORK_TYPE_FABRIC_V1:
+        config = FabricV1NetworkConfig(
+            size=r.form['size'])  # TODO: add more variables
+    else:
+        error_msg = "Unknown network_type={}".format(network_type)
+        logger.warning(error_msg)
+        return make_fail_resp()
+
+    if not config.validate():
+        return make_fail_resp(error="config not validated",
+                              data=config.get_data())
+
+    if cluster_handler.create(name=name, host_id=host_id,
+                              network_type=network_type, config=config):
+        logger.debug("cluster POST successfully")
+        return make_ok_resp(code=CODE_CREATED)
+    else:
+        logger.debug("cluster creation failed using handlder")
+        return make_fail_resp(error="Failed to create cluster {}".
+                              format(name))
 
 
 @bp_cluster_api.route('/cluster', methods=['DELETE'])
@@ -273,7 +274,7 @@ def cluster_delete():
     if not cluster_id or not col_name:
         error_msg = "cluster operation post without enough data"
         logger.warning(error_msg)
-        return make_fail_response(error=error_msg, data=r.form)
+        return make_fail_resp(error=error_msg, data=r.form)
     else:
         logger.debug("cluster delete with id={0}, col_name={1}".format(
             cluster_id, col_name))
@@ -282,11 +283,11 @@ def cluster_delete():
         else:
             result = cluster_handler.delete_released(id=cluster_id)
         if result:
-            return make_ok_response()
+            return make_ok_resp()
         else:
             error_msg = "Failed to delete cluster {}".format(cluster_id)
             logger.warning(error_msg)
-            return make_fail_response(error=error_msg)
+            return make_fail_resp(error=error_msg)
 
 
 @bp_cluster_api.route('/clusters', methods=['GET', 'POST'])
@@ -308,7 +309,7 @@ def cluster_list():
     logger.info(f)
     result = cluster_handler.list(filter_data=f)
     logger.error(result)
-    return make_ok_response(data=result)
+    return make_ok_resp(data=result)
 
 
 # will deprecate
@@ -323,7 +324,7 @@ def cluster_apply_dep():
     if not user_id:
         error_msg = "cluster_apply without user_id"
         logger.warning(error_msg)
-        return make_fail_response(error=error_msg)
+        return make_fail_resp(error=error_msg)
 
     allow_multiple, condition = request_get(r, "allow_multiple"), {}
 
@@ -334,7 +335,7 @@ def cluster_apply_dep():
         if consensus_plugin not in CONSENSUS_PLUGINS:
             error_msg = "Invalid consensus_plugin"
             logger.warning(error_msg)
-            return make_fail_response(error=error_msg)
+            return make_fail_resp(error=error_msg)
         else:
             condition["consensus_plugin"] = consensus_plugin
 
@@ -342,15 +343,15 @@ def cluster_apply_dep():
         if consensus_mode not in CONSENSUS_MODES:
             error_msg = "Invalid consensus_mode"
             logger.warning(error_msg)
-            return make_fail_response(error=error_msg)
+            return make_fail_resp(error=error_msg)
         else:
             condition["consensus_mode"] = consensus_mode
 
     if cluster_size >= 0:
-        if cluster_size not in CLUSTER_SIZES:
+        if cluster_size not in NETWORK_SIZE_FABRIC_PRE_V1:
             error_msg = "Invalid cluster_size"
             logger.warning(error_msg)
-            return make_fail_response(error=error_msg)
+            return make_fail_resp(error=error_msg)
         else:
             condition["size"] = cluster_size
 
@@ -360,9 +361,9 @@ def cluster_apply_dep():
     if not c:
         error_msg = "No available res for {}".format(user_id)
         logger.warning(error_msg)
-        return make_fail_response(error=error_msg)
+        return make_fail_resp(error=error_msg)
     else:
-        return make_ok_response(data=c)
+        return make_ok_resp(data=c)
 
 
 # will deprecate
@@ -377,7 +378,7 @@ def cluster_release_dep():
     if not user_id and not cluster_id:
         error_msg = "cluster_release without id"
         logger.warning(error_msg)
-        return make_fail_response(error=error_msg, data=r.args)
+        return make_fail_resp(error=error_msg, data=r.args)
     else:
         result = None
         if cluster_id:
@@ -392,6 +393,6 @@ def cluster_release_dep():
                 "user_id": user_id,
                 "cluster_id": cluster_id,
             }
-            return make_fail_response(error=error_msg, data=data)
+            return make_fail_resp(error=error_msg, data=data)
         else:
-            return make_ok_response()
+            return make_ok_resp()

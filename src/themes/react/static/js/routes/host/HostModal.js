@@ -44,7 +44,7 @@ class HostModal extends React.Component {
                 return
             }
             let data = getFieldsValue()
-            const url = data.daemon_url
+            const url = data.worker_api
             if (url.split(":").length !== 2) {
                 setFields({
                     url: {
@@ -139,8 +139,8 @@ class HostModal extends React.Component {
                         <Icon type="question-circle-o" />
                     </Tooltip>
                 </span>} hasFeedback {...formItemLayout}>
-                        {getFieldDecorator('daemon_url', {
-                            initialValue: type === "create" ? "" : item.daemon_url.split("//")[1],
+                        {getFieldDecorator('worker_api', {
+                            initialValue: type === "create" ? "" : item.worker_api.split("//")[1],
                             rules: [
                                 {
                                     required: true,

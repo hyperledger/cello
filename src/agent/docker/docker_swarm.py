@@ -16,11 +16,11 @@ from docker import Client
 
 from common import log_handler, LOG_LEVEL
 from common import \
-    HOST_TYPES, \
+    WORKER_TYPES, \
     CLUSTER_NETWORK, NETWORK_TYPES, \
     CONSENSUS_PLUGINS, CONSENSUS_MODES, \
     CLUSTER_LOG_TYPES, CLUSTER_LOG_LEVEL, \
-    CLUSTER_SIZES, \
+    NETWORK_SIZE_FABRIC_PRE_V1, \
     SERVICE_PORTS
 
 COMPOSE_FILE_PATH = os.getenv("COMPOSE_FILE_PATH",
@@ -32,16 +32,16 @@ logger.setLevel(LOG_LEVEL)
 logger.addHandler(log_handler)
 
 
-def _clean_chaincode_images(daemon_url, name_prefix, timeout=5):
+def _clean_chaincode_images(worker_api, name_prefix, timeout=5):
     """ Clean chaincode images, whose name should have cluster id as prefix
 
-    :param daemon_url: Docker daemon url
+    :param worker_api: Docker daemon url
     :param name_prefix: image name prefix
     :param timeout: Time to wait for the response
     :return: None
     """
     logger.debug("clean chaincode images with prefix={}".format(name_prefix))
-    client = Client(base_url=daemon_url, version="auto", timeout=timeout)
+    client = Client(base_url=worker_api, version="auto", timeout=timeout)
     images = client.images()
     id_removes = [e['Id'] for e in images if e['RepoTags'][0].startswith(
         name_prefix)]
@@ -51,20 +51,20 @@ def _clean_chaincode_images(daemon_url, name_prefix, timeout=5):
         client.remove_image(_, force=True)
 
 
-def _clean_project_containers(daemon_url, name_prefix, timeout=5):
+def _clean_project_containers(worker_api, name_prefix, timeout=5):
     """
     Clean cluster node containers and chaincode containers
 
     All containers with the name prefix will be removed.
 
-    :param daemon_url: Docker daemon url
+    :param worker_api: Docker daemon url
     :param name_prefix: image name prefix
     :param timeout: Time to wait for the response
     :return: None
     """
-    logger.debug("Clean project containers, daemon_url={}, prefix={}".format(
-        daemon_url, name_prefix))
-    client = Client(base_url=daemon_url, version="auto", timeout=timeout)
+    logger.debug("Clean project containers, worker_api={}, prefix={}".format(
+        worker_api, name_prefix))
+    client = Client(base_url=worker_api, version="auto", timeout=timeout)
     containers = client.containers(all=True)
     id_removes = [e['Id'] for e in containers if
                   e['Names'][0].split("/")[-1].startswith(name_prefix)]
@@ -73,19 +73,19 @@ def _clean_project_containers(daemon_url, name_prefix, timeout=5):
         logger.debug("Remove container {}".format(_))
 
 
-def start_containers(daemon_url, name_prefix, timeout=5):
+def start_containers(worker_api, name_prefix, timeout=5):
     """Start containers with given prefix
 
     The chaincode container usually has name with `name_prefix-` as prefix
 
-    :param daemon_url: Docker daemon url
+    :param worker_api: Docker daemon url
     :param name_prefix: image name prefix
     :param timeout: Time to wait for the response
     :return: None
     """
-    logger.debug("Get containers, daemon_url={}, prefix={}".format(
-        daemon_url, name_prefix))
-    client = Client(base_url=daemon_url, version="auto", timeout=timeout)
+    logger.debug("Get containers, worker_api={}, prefix={}".format(
+        worker_api, name_prefix))
+    client = Client(base_url=worker_api, version="auto", timeout=timeout)
     containers = client.containers(all=True)
     id_cc = [e['Id'] for e in containers if
              e['Names'][0].split("/")[-1].startswith(name_prefix)]
@@ -96,17 +96,17 @@ def start_containers(daemon_url, name_prefix, timeout=5):
 
 #  Deprecated
 #  Normal chaincode container may also become exited temporarily
-def _clean_exited_containers(daemon_url):
+def _clean_exited_containers(worker_api):
     """ Clean those containers with exited status
 
     This is dangerous, as it may delete temporary containers.
     Only trigger this when no one else uses the system.
 
-    :param daemon_url: Docker daemon url
+    :param worker_api: Docker daemon url
     :return: None
     """
     logger.debug("Clean exited containers")
-    client = Client(base_url=daemon_url, version="auto")
+    client = Client(base_url=worker_api, version="auto")
     containers = client.containers(quiet=True, all=True,
                                    filters={"status": "exited"})
     id_removes = [e['Id'] for e in containers]
@@ -118,69 +118,69 @@ def _clean_exited_containers(daemon_url):
             logger.error("Exception in clean_exited_containers {}".format(e))
 
 
-def check_daemon(daemon_url, timeout=5):
+def check_daemon(worker_api, timeout=5):
     """ Check if the daemon is active
 
     Only wait for timeout seconds.
 
-    :param daemon_url: Docker daemon url
+    :param worker_api: Docker daemon url
     :param timeout: Time to wait for the response
     :return: True for active, False for inactive
     """
-    if not daemon_url or not daemon_url.startswith("tcp://"):
+    if not worker_api or not worker_api.startswith("tcp://"):
         return False
-    segs = daemon_url.split(":")
+    segs = worker_api.split(":")
     if len(segs) != 3:
-        logger.error("Invalid daemon url = ", daemon_url)
+        logger.error("Invalid daemon url = ", worker_api)
         return False
     try:
-        client = Client(base_url=daemon_url, version="auto", timeout=timeout)
+        client = Client(base_url=worker_api, version="auto", timeout=timeout)
         return client.ping() == 'OK'
     except Exception as e:
         logger.error("Exception in check_daemon {}".format(e))
         return False
 
 
-def detect_daemon_type(daemon_url, timeout=5):
+def detect_daemon_type(worker_api, timeout=5):
     """ Try to detect the daemon type
 
     Only wait for timeout seconds.
 
-    :param daemon_url: Docker daemon url
+    :param worker_api: Docker daemon url
     :param timeout: Time to wait for the response
     :return: host type info
     """
-    if not daemon_url or not daemon_url.startswith("tcp://"):
+    if not worker_api or not worker_api.startswith("tcp://"):
         return None
-    segs = daemon_url.split(":")
+    segs = worker_api.split(":")
     if len(segs) != 3:
-        logger.error("Invalid daemon url = ", daemon_url)
+        logger.error("Invalid daemon url = ", worker_api)
         return None
     try:
-        client = Client(base_url=daemon_url, version="auto", timeout=timeout)
+        client = Client(base_url=worker_api, version="auto", timeout=timeout)
         server_version = client.info()['ServerVersion']
         server_swarm_cluster = client.info()['Swarm']['Cluster']['ID']
         if server_version.startswith('swarm') or server_swarm_cluster != '':
-            return HOST_TYPES[1]
+            return WORKER_TYPES[1]
         else:
-            return HOST_TYPES[0]
+            return WORKER_TYPES[0]
     except Exception as e:
         logger.error(e)
         return None
 
 
-def reset_container_host(host_type, daemon_url, timeout=15):
+def reset_container_host(host_type, worker_api, timeout=15):
     """ Try to detect the daemon type
 
     Only wait for timeout seconds.
 
     :param host_type: Type of host: single or swarm
-    :param daemon_url: Docker daemon url
+    :param worker_api: Docker daemon url
     :param timeout: Time to wait for the response
     :return: host type info
     """
     try:
-        client = Client(base_url=daemon_url, version="auto", timeout=timeout)
+        client = Client(base_url=worker_api, version="auto", timeout=timeout)
         containers = client.containers(quiet=True, all=True)
         logger.debug(containers)
         for c in containers:
@@ -207,7 +207,7 @@ def reset_container_host(host_type, daemon_url, timeout=15):
         logger.error(e)
         return False
 
-    return setup_container_host(host_type=host_type, daemon_url=daemon_url)
+    return setup_container_host(host_type=host_type, worker_api=worker_api)
 
 
 def get_swarm_node_ip(swarm_url, container_name, timeout=5):
@@ -231,23 +231,23 @@ def get_swarm_node_ip(swarm_url, container_name, timeout=5):
         return ''
 
 
-def setup_container_host(host_type, daemon_url, timeout=5):
+def setup_container_host(host_type, worker_api, timeout=5):
     """
     Setup a container host for deploying cluster on it
 
     :param host_type: Docker host type
-    :param daemon_url: Docker daemon url
+    :param worker_api: Docker daemon url
     :param timeout: timeout to wait
     :return: True or False
     """
-    if not daemon_url or not daemon_url.startswith("tcp://"):
-        logger.error("Invalid daemon_url={}".format(daemon_url))
+    if not worker_api or not worker_api.startswith("tcp://"):
+        logger.error("Invalid worker_api={}".format(worker_api))
         return False
-    if host_type not in HOST_TYPES:
+    if host_type not in WORKER_TYPES:
         logger.error("Invalid host_type={}".format(host_type))
         return False
     try:
-        client = Client(base_url=daemon_url, version="auto", timeout=timeout)
+        client = Client(base_url=worker_api, version="auto", timeout=timeout)
         net_names = [x["Name"] for x in client.networks()]
         for cs_type in CONSENSUS_PLUGINS:
             net_name = CLUSTER_NETWORK + "_{}".format(cs_type)
@@ -255,9 +255,9 @@ def setup_container_host(host_type, daemon_url, timeout=5):
                 logger.warning("Network {} already exists, use it!".format(
                     net_name))
             else:
-                if host_type == HOST_TYPES[0]:  # single
+                if host_type == WORKER_TYPES[0]:  # single
                     client.create_network(net_name, driver='bridge')
-                elif host_type == HOST_TYPES[1]:  # swarm
+                elif host_type == WORKER_TYPES[1]:  # swarm
                     client.create_network(net_name, driver='overlay')
                 else:
                     logger.error("No-supported host_type={}".format(host_type))
@@ -269,21 +269,21 @@ def setup_container_host(host_type, daemon_url, timeout=5):
     return True
 
 
-def cleanup_host(daemon_url, timeout=5):
+def cleanup_host(worker_api, timeout=5):
     """
     Cleanup a container host when use removes the host
 
     Maybe we will remove the networks?
 
-    :param daemon_url: Docker daemon url
+    :param worker_api: Docker daemon url
     :param timeout: timeout to wait
     :return:
     """
-    if not daemon_url or not daemon_url.startswith("tcp://"):
-        logger.error("Invalid daemon_url={}".format(daemon_url))
+    if not worker_api or not worker_api.startswith("tcp://"):
+        logger.error("Invalid worker_api={}".format(worker_api))
         return False
     try:
-        client = Client(base_url=daemon_url, version="auto", timeout=timeout)
+        client = Client(base_url=worker_api, version="auto", timeout=timeout)
         net_names = [x["Name"] for x in client.networks()]
         for cs_type in CONSENSUS_PLUGINS:
             net_name = CLUSTER_NETWORK + "_{}".format(cs_type)
@@ -312,69 +312,61 @@ def get_project(template_path):
     return project
 
 
-def _compose_set_env(name, daemon_url, mapped_ports=SERVICE_PORTS,
-                     fabric_version=NETWORK_TYPES[0],
-                     consensus_plugin=[0],
-                     consensus_mode=CONSENSUS_MODES[0],
-                     cluster_size=CLUSTER_SIZES[0],
+def _compose_set_env(name, worker_api, mapped_ports=SERVICE_PORTS,
+                     network_type=NETWORK_TYPES[0],
                      log_level=CLUSTER_LOG_LEVEL[0],
-                     log_type=CLUSTER_LOG_TYPES[0], log_server=""):
+                     log_type=CLUSTER_LOG_TYPES[0], log_server="",
+                     config=None):
 
-    envs = {
-        'DOCKER_HOST': daemon_url,
-        'COMPOSE_PROJECT_NAME': name,
-        'COMPOSE_FILE': "cluster-{}.yml".format(cluster_size),
-        'VM_ENDPOINT': daemon_url,
-        'VM_DOCKER_HOSTCONFIG_NETWORKMODE':
-            CLUSTER_NETWORK + "_{}".format(consensus_plugin),
-        'PEER_VALIDATOR_CONSENSUS_PLUGIN': consensus_plugin,
-        'NETWORK_TYPES': fabric_version,
-        'PBFT_GENERAL_MODE': consensus_mode,
-        'PBFT_GENERAL_N': str(cluster_size),
-        'PEER_NETWORKID': name,
-        'CLUSTER_NETWORK': CLUSTER_NETWORK + "_{}".format(consensus_plugin),
-        'CLUSTER_LOG_LEVEL': log_level,
-    }
-    os.environ.update(envs)
+    if network_type == NETWORK_SIZE_FABRIC_PRE_V1:
+        envs = {
+            'DOCKER_HOST': worker_api,
+            'COMPOSE_PROJECT_NAME': name,
+            'COMPOSE_FILE': "cluster-{}.yml".format(config['_size']),
+            'VM_ENDPOINT': worker_api,
+            'VM_DOCKER_HOSTCONFIG_NETWORKMODE':
+                CLUSTER_NETWORK + "_{}".format(config['consensus_plugin']),
+            'PEER_VALIDATOR_CONSENSUS_PLUGIN': config['consensus_plugin'],
+            'NETWORK_TYPES': network_type,
+            'PBFT_GENERAL_MODE': config['consensus_mode'],
+            'PBFT_GENERAL_N': str(config['size']),
+            'PEER_NETWORKID': name,
+            'CLUSTER_NETWORK': CLUSTER_NETWORK + "_{}".format(
+                config['consensus_plugin']),
+            'CLUSTER_LOG_LEVEL': log_level,
+        }
+        os.environ.update(envs)
 
-    for k, v in mapped_ports.items():
-        os.environ[k.upper() + '_PORT'] = str(v)
-    if log_type != CLUSTER_LOG_TYPES[0]:  # not local
-        os.environ['SYSLOG_SERVER'] = log_server
+        for k, v in mapped_ports.items():
+            os.environ[k.upper() + '_PORT'] = str(v)
+        if log_type != CLUSTER_LOG_TYPES[0]:  # not local
+            os.environ['SYSLOG_SERVER'] = log_server
 
 
-def compose_up(name, host, mapped_ports,
-               network_type=NETWORK_TYPES[0],
-               consensus_plugin=CONSENSUS_PLUGINS[0],
-               consensus_mode=CONSENSUS_MODES[0],
-               cluster_size=CLUSTER_SIZES[0],
-               timeout=5):
+def compose_up(name, host, mapped_ports, network_type=NETWORK_TYPES[0],
+               config=None, timeout=5):
     """ Compose up a cluster
 
     :param name: The name of the cluster
     :param mapped_ports: The mapped ports list of the cluster
     :param host: Docker host obj
     :param network_type: Fabric version
-    :param consensus_plugin: Cluster consensus plugin
-    :param consensus_mode: Cluster consensus mode
-    :param cluster_size: the size of the cluster
+    :param config: the blockchain network config
     :param timeout: Docker client timeout value
     :return: The name list of the started peer containers
     """
+
     logger.debug(
-        "Compose start: name={}, host={}, mapped_port={}, consensus={}/{},"
-        "size={}".format(
-            name, host.get("name"), mapped_ports, consensus_plugin,
-            consensus_mode, cluster_size))
-    daemon_url, log_type, log_server, log_level = \
-        host.get("daemon_url"), host.get("log_type"), host.get("log_server"), \
+        "Compose start: name={}, host={}, mapped_port={}, config={}".format(
+            name, host.get("name"), mapped_ports, config.getdata()))
+    worker_api, log_type, log_server, log_level = \
+        host.get("worker_api"), host.get("log_type"), host.get("log_server"), \
         host.get("log_level")
     if log_type != CLUSTER_LOG_TYPES[0]:  # not local
         os.environ['SYSLOG_SERVER'] = log_server
 
-    _compose_set_env(name, daemon_url, mapped_ports, network_type,
-                     consensus_plugin, consensus_mode, cluster_size,
-                     log_level, log_type, log_server)
+    _compose_set_env(name, worker_api, mapped_ports, network_type,
+                     config, log_level, log_type, log_server)
 
     try:
         project = get_project(COMPOSE_FILE_PATH +
@@ -383,7 +375,7 @@ def compose_up(name, host, mapped_ports,
     except Exception as e:
         logger.warning("Exception when compose start={}".format(e))
         return {}
-    if not containers or cluster_size != len(containers):
+    if not containers or config['size'] != len(containers):
         return {}
     result = {}
     for c in containers:
@@ -392,34 +384,31 @@ def compose_up(name, host, mapped_ports,
     return result
 
 
-def compose_clean(name, daemon_url, fabric_version,
-                  consensus_plugin, cluster_size):
+def compose_clean(name, worker_api, network_type, config):
     """
     Try best to clean a compose project and clean related containers.
 
     :param name: name of the project
-    :param daemon_url: Docker Host url
+    :param worker_api: Docker Host url
     :param consensus_plugin: which consensus plugin
     :return: True or False
     """
     has_exception = False
     try:
-        compose_down(name=name, daemon_url=daemon_url,
-                     fabric_version=fabric_version,
-                     consensus_plugin=consensus_plugin,
-                     cluster_size=cluster_size)
+        compose_down(name=name, worker_api=worker_api,
+                     network_type=network_type, config=config)
     except Exception as e:
         logger.error("Error in stop compose project, will clean")
         logger.debug(e)
         has_exception = True
     try:
-        _clean_project_containers(daemon_url=daemon_url, name_prefix=name)
+        _clean_project_containers(worker_api=worker_api, name_prefix=name)
     except Exception as e:
         logger.error("Error in clean compose project containers")
         logger.error(e)
         has_exception = True
     try:
-        _clean_chaincode_images(daemon_url=daemon_url, name_prefix=name)
+        _clean_chaincode_images(worker_api=worker_api, name_prefix=name)
     except Exception as e:
         logger.error("Error clean chaincode images")
         logger.error(e)
@@ -430,20 +419,17 @@ def compose_clean(name, daemon_url, fabric_version,
     return True
 
 
-def compose_start(name, daemon_url, mapped_ports=SERVICE_PORTS,
-                  fabric_version=NETWORK_TYPES[0],
-                  consensus_plugin=[0],
-                  consensus_mode=CONSENSUS_MODES[0],
+def compose_start(name, worker_api, mapped_ports=SERVICE_PORTS,
+                  network_type=NETWORK_TYPES[0],
                   log_type=CLUSTER_LOG_TYPES[0], log_server="",
                   log_level=CLUSTER_LOG_LEVEL[0],
-                  cluster_size=CLUSTER_SIZES[0],
-                  cluster_version='fabric-0.6'):
+                  config=None):
     """ Start the cluster
 
     :param name: The name of the cluster
     :param mapped_ports: The mapped port list
-    :param daemon_url: Docker host daemon
-    :param fabric_version: fabric version
+    :param worker_api: Docker host daemon
+    :param network_type: fabric version
     :param consensus_plugin: Cluster consensus type
     :param consensus_mode: Cluster consensus mode
     :param log_type: which log plugin for host
@@ -451,17 +437,15 @@ def compose_start(name, daemon_url, mapped_ports=SERVICE_PORTS,
     :param cluster_size: the size of the cluster
     :return:
     """
-    logger.debug("Compose Start {} with daemon_url={}, mapped_ports={} "
-                 "fabric_version={} consensus={}".format(name, daemon_url,
-                                                         mapped_ports,
-                                                         fabric_version,
-                                                         consensus_plugin))
+    logger.debug("Compose Start {} with worker_api={}, mapped_ports={} "
+                 "network_type={} config={}".format(name, worker_api,
+                                                    mapped_ports, network_type,
+                                                    config.get_data()))
 
-    _compose_set_env(name, daemon_url, mapped_ports, fabric_version,
-                     consensus_plugin, consensus_mode, cluster_size,
-                     log_level, log_type, log_server)
+    _compose_set_env(name, worker_api, mapped_ports, network_type,
+                     log_level, log_type, log_server, config)
 
-    if fabric_version == NETWORK_TYPES[1]:
+    if network_type == NETWORK_TYPES[1]:
         cluster_version = 'fabric-0.6'
     else:
         cluster_version = 'fabric-1.0'
@@ -471,27 +455,24 @@ def compose_start(name, daemon_url, mapped_ports=SERVICE_PORTS,
                           "/{}/".format(cluster_version) + log_type)
     try:
         project.start()
-        start_containers(daemon_url, name + '-')
+        start_containers(worker_api, name + '-')
     except Exception as e:
         logger.warning("Exception when compose start={}".format(e))
         return False
     return True
 
 
-def compose_restart(name, daemon_url, mapped_ports=SERVICE_PORTS,
-                    fabric_version=NETWORK_TYPES[0],
-                    consensus_plugin=[0],
-                    consensus_mode=CONSENSUS_MODES[0],
+def compose_restart(name, worker_api, mapped_ports=SERVICE_PORTS,
+                    network_type=NETWORK_TYPES[0],
                     log_type=CLUSTER_LOG_TYPES[0], log_server="",
                     log_level=CLUSTER_LOG_LEVEL[0],
-                    cluster_size=CLUSTER_SIZES[0],
-                    cluster_version='fabric-0.6'):
+                    config=None):
     """ Restart the cluster
 
     :param name: The name of the cluster
     :param mapped_ports: The mapped port list
-    :param daemon_url: Docker host daemon
-    :param fabric_version: fabric image version
+    :param worker_api: Docker host daemon
+    :param network_type: fabric image version
     :param consensus_plugin: Cluster consensus type
     :param consensus_mode: Cluster consensus mode
     :param log_type: which log plugin for host
@@ -499,18 +480,15 @@ def compose_restart(name, daemon_url, mapped_ports=SERVICE_PORTS,
     :param cluster_size: the size of the cluster
     :return:
     """
-    logger.debug("Compose restart {} with daemon_url={}, mapped_ports={} "
-                 "fabric_version={} consensus={}".format(name, daemon_url,
-                                                         mapped_ports,
-                                                         fabric_version,
-                                                         consensus_plugin))
+    logger.debug("Compose restart {} with worker_api={}, mapped_ports={} "
+                 "network_type={} config={}".format(name, worker_api,
+                                                    mapped_ports, network_type,
+                                                    config.get_data()))
 
-    _compose_set_env(name, daemon_url, mapped_ports, fabric_version,
-                     consensus_plugin,
-                     consensus_mode, cluster_size, log_level, log_type,
-                     log_server)
+    _compose_set_env(name, worker_api, mapped_ports, network_type,
+                     log_level, log_type, log_server, config)
 
-    if fabric_version == NETWORK_TYPES[1]:
+    if network_type == NETWORK_TYPES[1]:
         cluster_version = 'fabric-0.6'
     else:
         cluster_version = 'fabric-1.0'
@@ -520,27 +498,24 @@ def compose_restart(name, daemon_url, mapped_ports=SERVICE_PORTS,
                           "/{}/".format(cluster_version) + log_type)
     try:
         project.restart()
-        start_containers(daemon_url, name + '-')
+        start_containers(worker_api, name + '-')
     except Exception as e:
         logger.warning("Exception when compose restart={}".format(e))
         return False
     return True
 
 
-def compose_stop(name, daemon_url, mapped_ports=SERVICE_PORTS,
-                 fabric_version=NETWORK_TYPES[0],
-                 consensus_plugin=[0],
-                 consensus_mode=CONSENSUS_MODES[0],
+def compose_stop(name, worker_api, mapped_ports=SERVICE_PORTS,
+                 network_type=NETWORK_TYPES[0],
                  log_type=CLUSTER_LOG_TYPES[0], log_server="",
                  log_level=CLUSTER_LOG_LEVEL[0],
-                 cluster_size=CLUSTER_SIZES[0], timeout=5,
-                 cluster_version='fabric-0.6'):
+                 config=None, timeout=5):
     """ Stop the cluster
 
     :param name: The name of the cluster
     :param mapped_ports: The mapped ports list
-    :param daemon_url: Docker host daemon
-    :param fabric_version: Fabric image version
+    :param worker_api: Docker host daemon
+    :param network_type: Fabric image version
     :param consensus_plugin: Cluster consensus type
     :param consensus_mode: Cluster consensus mode
     :param log_type: which log plugin for host
@@ -549,18 +524,16 @@ def compose_stop(name, daemon_url, mapped_ports=SERVICE_PORTS,
     :param timeout: Docker client timeout
     :return:
     """
-    logger.debug("Compose stop {} with daemon_url={}, mapped_ports={}, "
-                 "consensus={}, log_type={}".format(name, daemon_url,
-                                                    mapped_ports,
-                                                    consensus_plugin,
-                                                    log_type))
+    logger.debug("Compose stop {} with worker_api={}, mapped_ports={}, "
+                 "config={}, log_type={}".format(name, worker_api,
+                                                 mapped_ports,
+                                                 config.get_data(),
+                                                 log_type))
 
-    _compose_set_env(name, daemon_url, mapped_ports, fabric_version,
-                     consensus_plugin,
-                     consensus_mode, cluster_size, log_level, log_type,
-                     log_server)
+    _compose_set_env(name, worker_api, mapped_ports, network_type,
+                     log_level, log_type, log_server, config)
 
-    if fabric_version == NETWORK_TYPES[1]:
+    if network_type == NETWORK_TYPES[1]:
         cluster_version = 'fabric-0.6'
     else:
         cluster_version = 'fabric-1.0'
@@ -575,20 +548,17 @@ def compose_stop(name, daemon_url, mapped_ports=SERVICE_PORTS,
     return True
 
 
-def compose_down(name, daemon_url, mapped_ports=SERVICE_PORTS,
-                 fabric_version=NETWORK_TYPES[0],
-                 consensus_plugin=[0],
-                 consensus_mode=CONSENSUS_MODES[0],
+def compose_down(name, worker_api, mapped_ports=SERVICE_PORTS,
+                 network_type=NETWORK_TYPES[0],
                  log_type=CLUSTER_LOG_TYPES[0], log_server="",
                  log_level=CLUSTER_LOG_LEVEL[0],
-                 cluster_size=CLUSTER_SIZES[0], timeout=5,
-                 cluster_version='fabric-0.6'):
+                 config=None, timeout=5):
     """ Stop the cluster and remove the service containers
 
     :param name: The name of the cluster
     :param mapped_ports: The mapped ports list
-    :param daemon_url: Docker host daemon
-    :param fabric_version: Fabric image version
+    :param worker_api: Docker host daemon
+    :param network_type: Fabric image version
     :param consensus_plugin: Cluster consensus type
     :param consensus_mode: Cluster consensus mode
     :param log_type: which log plugin for host
@@ -597,16 +567,14 @@ def compose_down(name, daemon_url, mapped_ports=SERVICE_PORTS,
     :param timeout: Docker client timeout
     :return:
     """
-    logger.debug("Compose remove {} with daemon_url={}, "
-                 "consensus={}".format(name, daemon_url, consensus_plugin))
+    logger.debug("Compose remove {} with worker_api={}, "
+                 "config={}".format(name, worker_api, config.get_data()))
     # import os, sys
     # compose use this
-    _compose_set_env(name, daemon_url, mapped_ports, fabric_version,
-                     consensus_plugin,
-                     consensus_mode, cluster_size, log_level, log_type,
-                     log_server)
+    _compose_set_env(name, worker_api, mapped_ports, network_type,
+                     log_level, log_type, log_server, config)
 
-    if fabric_version == NETWORK_TYPES[1]:
+    if network_type == NETWORK_TYPES[1]:
         cluster_version = 'fabric-0.6'
     else:
         cluster_version = 'fabric-1.0'

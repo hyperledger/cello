@@ -29,7 +29,7 @@
     {% for host in hosts %}
   <li class="list-group-item">
     <span class="badge">{{ host.clusters|length }}</span>
-      <a target="_blank" href="{{ '/host_monitor/'+host.daemon_url[6:-5] }}">{{ host.name
+      <a target="_blank" href="{{ '/host_monitor/'+host.worker_api[6:-5] }}">{{ host.name
               }}</a>
   </li>
     {% endfor %}
