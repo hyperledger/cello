@@ -76,7 +76,17 @@ At last, run the follow test at Master node and get OK response, to make sure it
 ```
 
 ### Docker Images Pulling
-Pulling the following images.
+Pulling the necessary images.
+
+#### Fabric v1.0
+
+```bash
+$ cd scripts/worker_node_setup && bash download_images.sh
+```
+
+#### Fabric v0.6 (TODO: deprecated soon)
+
+For fabric v0.6, need to run the following command.
 
 ```bash
 $ docker pull hyperledger/fabric-peer:x86_64-0.6.1-preview \
