@@ -18,4 +18,6 @@ services:
     container_name: npm-install
     volumes:  # This should be removed in product env
       - ./src/themes/react/static:/app
-    command: bash -c "cd /app && npm install --loglevel http"
+    environment:
+      - NPM_REGISTRY=$NPM_REGISTRY
+    command: bash -c "cd /app && npm install --loglevel http --registry https://$NPM_REGISTRY"

@@ -11,11 +11,28 @@ RESET  := $(shell tput -Txterm sgr0)
 THEME?=basic
 STATIC_FOLDER?=themes\/${THEME}\/static
 TEMPLATE_FOLDER?=themes\/${THEME}\/templates
+NPM_REGISTRY?=registry.npmjs.org
 SYSTEM=$(shell uname)
 ifeq ($(SYSTEM), Darwin)
 	SED = sed -ix
 else
 	SED = sed -i
+endif
+
+ifeq (${THEME}, react)
+	ifneq ($(wildcard ./src/themes/react/static/node_modules),)
+		INSTALL_NPM=
+	else
+		INSTALL_NPM=npm-install
+	endif
+	ifneq ($(wildcard ./src/themes/react/static/js/dist),)
+		BUILD_JS=
+	else
+		BUILD_JS=build-js
+	endif
+	START_OPTIONS = initial-env $(INSTALL_NPM) $(BUILD_JS)
+else
+	START_OPTIONS = initial-env
 endif
 
 .PHONY: \
@@ -53,9 +70,10 @@ redeploy: ##@Service Redeploy single service, Use like "make redeploy service=da
 initial-env: ##@Configuration Initial Configuration for dashboard
 	$(SED) 's/\(STATIC_FOLDER=\).*/\1${STATIC_FOLDER}/' .env
 	$(SED) 's/\(TEMPLATE_FOLDER=\).*/\1${TEMPLATE_FOLDER}/' .env
+	$(SED) 's/\(NPM_REGISTRY=\).*/\1${NPM_REGISTRY}/' .env
 
 start: ##@Service Start service
-	@$(MAKE) initial-env
+	@$(MAKE) $(START_OPTIONS)
 	bash scripts/start.sh
 
 stop: ##@Service Stop service
