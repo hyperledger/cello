@@ -23,7 +23,7 @@ For the Worker Node with meeting the [system requirements](#system-requirements)
 ### System Requirements
 * Hardware: 8c16g100g
 * Docker engine:
-    - 1.12.0+
+    - 1.10.0~1.13.0
 * aufs-tools (optional): Only required on ubuntu 14.04.
 
 ### Docker Daemon Setup
@@ -122,8 +122,8 @@ It can be deployed by in 3 steps.
 
 ### System Requirement
 * Hardware: 8c16g100g
-* Docker engine: 1.12.0+
-* docker-compose: 1.7.0+
+* Docker engine: 1.10.0~1.13.0
+* docker-compose: 1.8.0+
 
 ### Clone Code
 
