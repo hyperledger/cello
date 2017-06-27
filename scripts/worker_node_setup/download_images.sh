@@ -17,7 +17,7 @@ BASEIMAGE_RELEASE=0.3.1
 BASE_VERSION=1.0.0
 PROJECT_VERSION=1.0.0-rc1
 
-IMG_VERSION=1.0.0-rc1
+IMG_VERSION=v1.0.0-rc1
 # latest is only For testing latest images
 
 echo_b "Downloading images from DockerHub... need a while"
