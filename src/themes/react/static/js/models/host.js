@@ -22,7 +22,7 @@ export default {
     subscriptions: {
         setup({dispatch, history}) {
             history.listen(location => {
-                if (location.pathname === '/hosts' || location.pathname === '/chains/active') {
+                if (location.pathname === '/hosts' || location.pathname === '/chains') {
                     dispatch({type: 'getHosts'})
                 }
             })

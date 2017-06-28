@@ -28,6 +28,11 @@ class ClusterModal extends React.Component {
             pluginType: value
         })
     }
+    setPosting = (value) => {
+        this.setState({
+            posting: value
+        })
+    }
     handleOk() {
         const {
             onOk,
@@ -44,8 +49,13 @@ class ClusterModal extends React.Component {
                 this.setState({
                     posting: true
                 });
-                values.consensus_mode = "batch"
-                onOk(values)
+                values.consensus_mode = "batch";
+                values.network_type = values.fabric_version;
+                const data = {
+                    ...values,
+                    callback: this.setPosting
+                }
+                onOk(data)
             }
         })
 }
@@ -82,6 +92,11 @@ class ClusterModal extends React.Component {
         const hostsOptions = hosts.map((host, i) =>
             <Option value={host.id}>{host.name}</Option>
         )
+        const defaultHostValue = hosts.length ? hosts[0].id : '';
+        const fabricVersions = ["fabric-0.6", "fabric-1.0"];
+        const fabricVersionOptions = fabricVersions.map((fabricVersion, i) =>
+            <Option value={fabricVersion}>{fabricVersion}</Option>
+        )
         return (
             <Modal {...modalOpts}>
                 <Form layout="horizontal">
@@ -97,6 +112,7 @@ class ClusterModal extends React.Component {
                     </FormItem>
                     <FormItem label="Host" hasFeedback {...formItemLayout}>
                         {getFieldDecorator('host_id', {
+                            initialValue: defaultHostValue,
                             rules: [
                                 {
                                     required: true,
@@ -105,6 +121,19 @@ class ClusterModal extends React.Component {
                             ],
                         })(<Select>
                             {hostsOptions}
+                        </Select>)}
+                    </FormItem>
+                    <FormItem label="Fabric Version" hasFeedback {...formItemLayout}>
+                        {getFieldDecorator('fabric_version', {
+                            initialValue: fabricVersions[0],
+                            rules: [
+                                {
+                                    required: true,
+                                    message: 'Must select fabric version',
+                                },
+                            ],
+                        })(<Select>
+                            {fabricVersionOptions}
                         </Select>)}
                     </FormItem>
                     <FormItem label="Chain Size" hasFeedback {...formItemLayout}>

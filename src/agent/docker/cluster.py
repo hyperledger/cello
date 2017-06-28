@@ -54,7 +54,7 @@ class ClusterOnDocker(ClusterBase):
         # start compose project, failed then clean and return
         logger.debug("Start compose project with name={}".format(cid))
         containers = compose_up(name=cid, mapped_ports=mapped_ports, host=host,
-                                network_type=network_type, config=None)
+                                network_type=network_type, config=config)
         if not containers or len(containers) != config.size:
             logger.warning("failed to create cluster, with container={}"
                            .format(containers))

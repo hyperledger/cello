@@ -220,17 +220,18 @@ def cluster_create():
         logger.warning(error_msg)
         return make_fail_resp(error=error_msg, data=r.form)
 
-    name, host_id, network_type = \
-        r.form['name'], r.form['host_id'], r.form['network_type']
+    name, host_id, network_type, size = \
+        r.form['name'], r.form['host_id'],\
+        r.form['network_type'], int(r.form['size'])
 
     if network_type == NETWORK_TYPE_FABRIC_PRE_V1:
         config = FabricPreNetworkConfig(
             consensus_plugin=r.form['consensus_plugin'],
             consensus_mode=r.form['consensus_mode'],
-            size=r.form['size'])
+            size=size)
     elif network_type == NETWORK_TYPE_FABRIC_V1:
         config = FabricV1NetworkConfig(
-            size=r.form['size'])  # TODO: add more variables
+            size=size)  # TODO: add more variables
     else:
         error_msg = "Unknown network_type={}".format(network_type)
         logger.warning(error_msg)

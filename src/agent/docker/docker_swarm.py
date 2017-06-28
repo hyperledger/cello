@@ -21,7 +21,7 @@ from common import \
     CONSENSUS_PLUGINS, CONSENSUS_MODES, \
     CLUSTER_LOG_TYPES, CLUSTER_LOG_LEVEL, \
     NETWORK_SIZE_FABRIC_PRE_V1, \
-    SERVICE_PORTS
+    SERVICE_PORTS, NETWORK_TYPE_FABRIC_PRE_V1
 
 COMPOSE_FILE_PATH = os.getenv("COMPOSE_FILE_PATH",
                               "./agent/docker/_compose_files")
@@ -318,11 +318,11 @@ def _compose_set_env(name, worker_api, mapped_ports=SERVICE_PORTS,
                      log_type=CLUSTER_LOG_TYPES[0], log_server="",
                      config=None):
 
-    if network_type == NETWORK_SIZE_FABRIC_PRE_V1:
+    if network_type == NETWORK_TYPE_FABRIC_PRE_V1:
         envs = {
             'DOCKER_HOST': worker_api,
             'COMPOSE_PROJECT_NAME': name,
-            'COMPOSE_FILE': "cluster-{}.yml".format(config['_size']),
+            'COMPOSE_FILE': "cluster-{}.yml".format(config['size']),
             'VM_ENDPOINT': worker_api,
             'VM_DOCKER_HOSTCONFIG_NETWORKMODE':
                 CLUSTER_NETWORK + "_{}".format(config['consensus_plugin']),
@@ -357,8 +357,10 @@ def compose_up(name, host, mapped_ports, network_type=NETWORK_TYPES[0],
     """
 
     logger.debug(
-        "Compose start: name={}, host={}, mapped_port={}, config={}".format(
-            name, host.get("name"), mapped_ports, config.getdata()))
+        "Compose start: name={}, host={}, mapped_port={},"
+        "config={} network_type={}".format(
+            name, host.get("name"), mapped_ports,
+            config.get_data(), network_type))
     worker_api, log_type, log_server, log_level = \
         host.get("worker_api"), host.get("log_type"), host.get("log_server"), \
         host.get("log_level")
@@ -366,14 +368,15 @@ def compose_up(name, host, mapped_ports, network_type=NETWORK_TYPES[0],
         os.environ['SYSLOG_SERVER'] = log_server
 
     _compose_set_env(name, worker_api, mapped_ports, network_type,
-                     config, log_level, log_type, log_server)
+                     log_level, log_type, log_server, config)
 
     try:
-        project = get_project(COMPOSE_FILE_PATH +
-                              "/{}/".format(network_type) + log_type)
+        template_path = COMPOSE_FILE_PATH + "/{}/".\
+            format(network_type) + log_type
+        project = get_project(template_path)
         containers = project.up(detached=True, timeout=timeout)
     except Exception as e:
-        logger.warning("Exception when compose start={}".format(e))
+        logger.warning("Exception when compose start={}".format(e.message))
         return {}
     if not containers or config['size'] != len(containers):
         return {}

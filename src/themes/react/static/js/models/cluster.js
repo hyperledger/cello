@@ -58,6 +58,7 @@ export default {
             } else {
                 message.error('create chain failed')
             }
+            yield call(payload.callback, false);
         },
         *deleteCluster({payload}, {call, put}) {
         	const data = yield call(deleteCluster, payload)
