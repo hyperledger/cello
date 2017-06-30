@@ -448,7 +448,7 @@ def compose_start(name, worker_api, mapped_ports=SERVICE_PORTS,
     _compose_set_env(name, worker_api, mapped_ports, network_type,
                      log_level, log_type, log_server, config)
 
-    if network_type == NETWORK_TYPES[1]:
+    if network_type == NETWORK_TYPE_FABRIC_PRE_V1:
         cluster_version = 'fabric-0.6'
     else:
         cluster_version = 'fabric-1.0'
@@ -491,7 +491,7 @@ def compose_restart(name, worker_api, mapped_ports=SERVICE_PORTS,
     _compose_set_env(name, worker_api, mapped_ports, network_type,
                      log_level, log_type, log_server, config)
 
-    if network_type == NETWORK_TYPES[1]:
+    if network_type == NETWORK_TYPE_FABRIC_PRE_V1:
         cluster_version = 'fabric-0.6'
     else:
         cluster_version = 'fabric-1.0'
@@ -536,7 +536,7 @@ def compose_stop(name, worker_api, mapped_ports=SERVICE_PORTS,
     _compose_set_env(name, worker_api, mapped_ports, network_type,
                      log_level, log_type, log_server, config)
 
-    if network_type == NETWORK_TYPES[1]:
+    if network_type == NETWORK_TYPE_FABRIC_PRE_V1:
         cluster_version = 'fabric-0.6'
     else:
         cluster_version = 'fabric-1.0'
@@ -577,7 +577,7 @@ def compose_down(name, worker_api, mapped_ports=SERVICE_PORTS,
     _compose_set_env(name, worker_api, mapped_ports, network_type,
                      log_level, log_type, log_server, config)
 
-    if network_type == NETWORK_TYPES[1]:
+    if network_type == NETWORK_TYPE_FABRIC_PRE_V1:
         cluster_version = 'fabric-0.6'
     else:
         cluster_version = 'fabric-1.0'

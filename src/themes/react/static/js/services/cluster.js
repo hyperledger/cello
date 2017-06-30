@@ -36,7 +36,7 @@ export async function deleteCluster(params) {
 export async function operation(params) {
 	return request({
 		url: config.urls.cluster.operation,
-		method: 'post',
+		method: 'get',
 		data: params
 	})
 }
