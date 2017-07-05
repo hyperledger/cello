@@ -10,8 +10,11 @@ from flask import Blueprint, render_template
 from flask import request as r
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-from common import log_handler, LOG_LEVEL, NETWORK_TYPES, CONSENSUS_PLUGINS, \
-    CONSENSUS_MODES, WORKER_TYPES, NETWORK_SIZE_FABRIC_PRE_V1, request_debug, \
+from common import log_handler, LOG_LEVEL, NETWORK_TYPES, \
+    CONSENSUS_MODES, WORKER_TYPES, \
+    CONSENSUS_PLUGINS_FABRIC_V1, \
+    NETWORK_SIZE_FABRIC_PRE_V1, \
+    request_debug, \
     CLUSTER_LOG_TYPES, CLUSTER_LOG_LEVEL
 from version import version, homepage, author
 
@@ -56,7 +59,7 @@ def show():
                            clusters_temp=clusters_temp,
                            cluster_sizes=NETWORK_SIZE_FABRIC_PRE_V1,
                            network_type=NETWORK_TYPES,
-                           consensus_plugins=CONSENSUS_PLUGINS,
+                           consensus_plugins=CONSENSUS_PLUGINS_FABRIC_V1,
                            consensus_modes=CONSENSUS_MODES,
                            host_types=WORKER_TYPES,
                            log_types=CLUSTER_LOG_TYPES,

@@ -13,7 +13,7 @@ from flask import request as r
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from common import log_handler, LOG_LEVEL, \
     request_debug, NETWORK_TYPES, \
-    CONSENSUS_PLUGINS, CONSENSUS_MODES, NETWORK_SIZE_FABRIC_PRE_V1
+    CONSENSUS_PLUGINS_FABRIC_V1, CONSENSUS_MODES, NETWORK_SIZE_FABRIC_V1
 from modules import cluster_handler, host_handler
 
 logger = logging.getLogger(__name__)
@@ -34,12 +34,12 @@ def cluster_info_show(cluster_id):
     if not released:
         return render_template("cluster_info.html",
                                item=cluster_handler.get_by_id(cluster_id),
-                               consensus_plugins=CONSENSUS_PLUGINS)
+                               consensus_plugins=CONSENSUS_PLUGINS_FABRIC_V1)
     else:
         return render_template("cluster_info.html",
                                item=cluster_handler.get_by_id(
                                    cluster_id, col_name="released"),
-                               consensus_plugins=CONSENSUS_PLUGINS)
+                               consensus_plugins=CONSENSUS_PLUGINS_FABRIC_V1)
 
 
 # Return a web page with clusters
@@ -74,6 +74,6 @@ def clusters_show():
                            items_count=total_items, items=clusters,
                            hosts_available=hosts_avail,
                            network_type=NETWORK_TYPES,
-                           consensus_plugins=CONSENSUS_PLUGINS,
+                           consensus_plugins=CONSENSUS_PLUGINS_FABRIC_V1,
                            consensus_modes=CONSENSUS_MODES,
-                           cluster_sizes=NETWORK_SIZE_FABRIC_PRE_V1)
+                           cluster_sizes=NETWORK_SIZE_FABRIC_V1)

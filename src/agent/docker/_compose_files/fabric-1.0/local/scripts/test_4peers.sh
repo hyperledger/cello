@@ -1,6 +1,14 @@
 #!/bin/bash
 
+if [ -f ./header.sh ]; then
+ source ./header.sh
+elif [ -f scripts/header.sh ]; then
 source scripts/header.sh
+else
+ alias echo_r="echo"
+ alias echo_g="echo"
+ alias echo_b="echo"
+fi
 
 echo
 echo "  ______    __     __      _       _____    ____     _    ______      ______      ______      _____ "

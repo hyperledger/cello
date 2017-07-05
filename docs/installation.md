@@ -97,6 +97,15 @@ $ docker pull hyperledger/fabric-peer:x86_64-0.6.1-preview \
   && docker tag hyperledger/fabric-membersrvc:x86_64-0.6.1-preview hyperledger/fabric-membersrvc
 ```
 
+
+### Artifacts Preparation
+
+Copy required artifacts to the `/opt/cello`, e.g.,
+
+```bash
+$ cp -r src/agent/docker/_compose_files/fabric-1.0 /opt/cello
+```
+
 ### Firewall Setup
 Make sure ip forward is enabled, you can simply run the follow command.
 

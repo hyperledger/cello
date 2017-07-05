@@ -6,7 +6,7 @@
 import logging
 import time
 from threading import Thread
-from common import LOG_LEVEL, WORKER_TYPES, NETWORK_TYPES, CONSENSUS_PLUGINS, \
+from common import LOG_LEVEL, WORKER_TYPES, CONSENSUS_PLUGINS_FABRIC_V1, \
     log_handler, CONSENSUS_MODES
 
 from modules import host_handler, cluster_handler
@@ -61,8 +61,8 @@ class StatHandler(object):
             {'name': 'free', 'y': free_clusters_number},
             {'name': 'used', 'y': total_number - free_clusters_number}
         ]
-        for consensus_plugin in CONSENSUS_PLUGINS:
-            if consensus_plugin == CONSENSUS_PLUGINS[0]:
+        for consensus_plugin in CONSENSUS_PLUGINS_FABRIC_V1:
+            if consensus_plugin == CONSENSUS_PLUGINS_FABRIC_V1[0]:
                 consensus_type = consensus_plugin
                 clusters = list(cluster_handler.list(filter_data={
                     'consensus_plugin': consensus_plugin}))

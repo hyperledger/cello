@@ -6,8 +6,9 @@ import logging
 
 from common.blockchain_network_config import BlockchainNetworkConfig
 
-from common import CONSENSUS_PLUGINS, CONSENSUS_MODES, \
+from common import CONSENSUS_PLUGINS_FABRIC_V1, CONSENSUS_MODES, \
     NETWORK_SIZE_FABRIC_PRE_V1, \
+    NETWORK_SIZE_FABRIC_V1, \
     log_handler, LOG_LEVEL
 
 logger = logging.getLogger(__name__)
@@ -15,6 +16,7 @@ logger.setLevel(LOG_LEVEL)
 logger.addHandler(log_handler)
 
 
+# TODO: deprecated soon
 class FabricPreNetworkConfig(BlockchainNetworkConfig):
     """
     FabricPreNetworkConfig includes configs for fabric v0.6 network.
@@ -42,14 +44,14 @@ class FabricPreNetworkConfig(BlockchainNetworkConfig):
 
         Returns: Boolean
         """
-        if self.consensus_plugin not in CONSENSUS_PLUGINS:
+        if self.consensus_plugin not in CONSENSUS_PLUGINS_FABRIC_V1:
             error_msg = "Unknown consensus plugin={}".format(
                 self.consensus_plugin)
             logger.debug(error_msg)
             return False
 
-        if self.consensus_plugin != CONSENSUS_PLUGINS[0] \
-           and self.consensus_plugin != CONSENSUS_PLUGINS[2] \
+        if self.consensus_plugin != CONSENSUS_PLUGINS_FABRIC_V1[0] \
+           and self.consensus_plugin != CONSENSUS_PLUGINS_FABRIC_V1[2] \
            and self.consensus_mode not in CONSENSUS_MODES:
             logger.debug("Invalid consensus, plugin={}, mode={}".format(
                 self.consensus_plugin, self.consensus_mode))
@@ -66,13 +68,15 @@ class FabricV1NetworkConfig(BlockchainNetworkConfig):
     FabricV1NetworkConfig includes configs for fabric v1.0 network.
     """
 
-    def __init__(self, size):
+    def __init__(self, consensus_plugin, size):
         """
         Init.
 
         Args:
+            consensus_plugin: plugin of consensus, e.g., solo, kafka
             size: number of containers in the network
         """
+        self.consensus_plugin = consensus_plugin
         self.size = size
         super(FabricV1NetworkConfig, self).__init__()
 
@@ -82,7 +86,9 @@ class FabricV1NetworkConfig(BlockchainNetworkConfig):
 
         Returns: Boolean
         """
-        return True
+
+        return self.consensus_plugin in CONSENSUS_PLUGINS_FABRIC_V1 and \
+            self.size in NETWORK_SIZE_FABRIC_V1
 
 
 if __name__ == "__main__":

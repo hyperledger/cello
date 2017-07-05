@@ -200,13 +200,15 @@
                 {% endif %}
                 {% if network_type|length > 0 %}
                     <div class="form-group" id="form_network_type">
-                        <label for="network_type"> Fabric Version</label>
+                        <label for="network_type">Network Type</label>
                         <select id="network_type" class="c-select" name="network_type"
                                     required>
                             <option selected
-                                    value="{{network_type[0]}}">{{network_type[0]}}</option>
+                                    value="{{network_type[0]}}">{{network_type[0]}}
+                            </option>
                             {% for c in network_type[1:] %}
-                                    <option value="{{c}}">{{c}}</option>
+                                    <option value="{{c}}">{{c}}
+                                    </option>
                             {% endfor %}
                         </select>
                     </div>
@@ -217,11 +219,12 @@
                         <select id="cluster_size" class="c-select" name="size"
                                  required>
                             <option selected
-                                    "{{cluster_sizes[2]}}">{{cluster_sizes[2]}}</option>
+                                    value="{{cluster_sizes[0]}}">{{cluster_sizes[0]}}</option>
                         </select>
                         <select id="cluster_sizes_1_0" style="display: none">
                             <option selected
-                                    "{{cluster_sizes[2]}}">{{cluster_sizes[2]|upper }}</option>
+                                    value="{{cluster_sizes[0]}}">{{cluster_sizes[0]|upper }}
+	                        </option>
                         </select>
                         <select id="cluster_sizes_0_6" style="display: none">
                             <option selected
@@ -238,7 +241,13 @@
                         <select id="consensus_plugin" class="c-select" name="consensus_plugin"
                                  required>
                             <option selected
-                                    value="{{consensus_plugins[2]}}">{{consensus_plugins[2]|upper }}</option>
+                                    value="{{consensus_plugins[0]}}">{{consensus_plugins[0]|upper }}
+                            </option>
+	                        {% for c in consensus_plugins[1:] %}
+		                        <option
+			                        value="{{c}}">{{c|upper}}
+		                        </option>
+	                        {% endfor %}
                         </select>
                         <select id="consensus_plugin_1_0" style="display: none">
                             <option selected
@@ -246,9 +255,11 @@
                         </select>
                         <select id="consensus_plugin_0_6" style="display: none">
                             <option selected
-                                    value="{{consensus_plugins[0]}}">{{consensus_plugins[0]|upper }}</option>
+                                    value="{{consensus_plugins[0]}}">{{consensus_plugins[0]|upper }}
+                            </option>
                             {% for c in consensus_plugins[1:2:1] %}
-                                    <option value="{{c}}">{{c|upper}}</option>
+                                    <option value="{{c}}">{{c|upper}}
+                                    </option>
                             {% endfor %}
                         </select>
                     </div>

@@ -15,7 +15,7 @@ from common import log_handler, LOG_LEVEL, \
     request_debug, request_json_body, \
     CODE_CREATED, CODE_NOT_FOUND, \
     NETWORK_TYPES, NETWORK_TYPE_FABRIC_PRE_V1, NETWORK_TYPE_FABRIC_V1, \
-    CONSENSUS_PLUGINS, CONSENSUS_MODES, NETWORK_SIZE_FABRIC_PRE_V1, \
+    CONSENSUS_PLUGINS_FABRIC_V1, CONSENSUS_MODES, NETWORK_SIZE_FABRIC_PRE_V1, \
     FabricPreNetworkConfig, FabricV1NetworkConfig
 
 from modules import cluster_handler, host_handler
@@ -98,7 +98,7 @@ def cluster_apply(r):
     consensus_mode = request_get(r, "consensus_mode")
     cluster_size = int(request_get(r, "size") or -1)
     if consensus_plugin:
-        if consensus_plugin not in CONSENSUS_PLUGINS:
+        if consensus_plugin not in CONSENSUS_PLUGINS_FABRIC_V1:
             logger.warning("Invalid consensus_plugin")
             return make_fail_resp("Invalid consensus_plugin")
         else:
@@ -224,14 +224,15 @@ def cluster_create():
         r.form['name'], r.form['host_id'],\
         r.form['network_type'], int(r.form['size'])
 
-    if network_type == NETWORK_TYPE_FABRIC_PRE_V1:
+    if network_type == NETWORK_TYPE_FABRIC_PRE_V1:  # TODO: deprecated soon
         config = FabricPreNetworkConfig(
             consensus_plugin=r.form['consensus_plugin'],
             consensus_mode=r.form['consensus_mode'],
             size=size)
     elif network_type == NETWORK_TYPE_FABRIC_V1:
         config = FabricV1NetworkConfig(
-            size=size)  # TODO: add more variables
+            consensus_plugin=r.form['consensus_plugin'],
+            size=size)
     else:
         error_msg = "Unknown network_type={}".format(network_type)
         logger.warning(error_msg)
@@ -333,7 +334,7 @@ def cluster_apply_dep():
     consensus_mode = request_get(r, "consensus_mode")
     cluster_size = int(request_get(r, "size") or -1)
     if consensus_plugin:
-        if consensus_plugin not in CONSENSUS_PLUGINS:
+        if consensus_plugin not in CONSENSUS_PLUGINS_FABRIC_V1:
             error_msg = "Invalid consensus_plugin"
             logger.warning(error_msg)
             return make_fail_resp(error=error_msg)

@@ -6,7 +6,15 @@ echo " ==========initialize businesschannel========== "
 echo " ============================================== "
 echo
 
+if [ -f ./header.sh ]; then
+ source ./header.sh
+elif [ -f scripts/header.sh ]; then
 source scripts/header.sh
+else
+ alias echo_r="echo"
+ alias echo_g="echo"
+ alias echo_b="echo"
+fi
 
 CHANNEL_NAME="$1"
 : ${CHANNEL_NAME:="businesschannel"}

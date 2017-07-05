@@ -12,20 +12,25 @@ from compose.cli.command import get_project as compose_get_project, \
     get_config_path_from_options as compose_get_config_path_from_options
 from compose.config.environment import Environment
 from compose.project import OneOffFilter
-from docker import Client
+
+try:  # docker 2.x lib is recommended
+    from docker import APIClient as Client
+except ImportError:  # docker 1.x lib
+    from docker import Client
 
 from common import log_handler, LOG_LEVEL
 from common import \
     WORKER_TYPES, \
     CLUSTER_NETWORK, NETWORK_TYPES, \
-    CONSENSUS_PLUGINS, CONSENSUS_MODES, \
+    CONSENSUS_PLUGINS_FABRIC_V1, CONSENSUS_MODES, \
     CLUSTER_LOG_TYPES, CLUSTER_LOG_LEVEL, \
-    NETWORK_SIZE_FABRIC_PRE_V1, \
-    SERVICE_PORTS, NETWORK_TYPE_FABRIC_PRE_V1
+    NETWORK_SIZE_FABRIC_PRE_V1, NETWORK_SIZE_FABRIC_V1, \
+    SERVICE_PORTS, \
+    NETWORK_TYPE_FABRIC_PRE_V1, NETWORK_TYPE_FABRIC_V1
 
 COMPOSE_FILE_PATH = os.getenv("COMPOSE_FILE_PATH",
-                              "./agent/docker/_compose_files")
-
+                              "." + os.sep + "agent" + os.sep + "docker" +
+                              os.sep + "_compose_files")
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
@@ -43,10 +48,9 @@ def _clean_chaincode_images(worker_api, name_prefix, timeout=5):
     logger.debug("clean chaincode images with prefix={}".format(name_prefix))
     client = Client(base_url=worker_api, version="auto", timeout=timeout)
     images = client.images()
-    id_removes = [e['Id'] for e in images if e['RepoTags'][0].startswith(
-        name_prefix)]
-    if id_removes:
-        logger.debug("chaincode image id to removes=" + ", ".join(id_removes))
+    id_removes = [e['Id'] for e in images if e['RepoTags'] and
+                  e['RepoTags'][0].startswith(name_prefix)]
+    logger.debug("chaincode image id to removes=" + ", ".join(id_removes))
     for _ in id_removes:
         client.remove_image(_, force=True)
 
@@ -128,14 +132,17 @@ def check_daemon(worker_api, timeout=5):
     :return: True for active, False for inactive
     """
     if not worker_api or not worker_api.startswith("tcp://"):
+        logger.warning("invalid workder_api={}".format(worker_api))
         return False
     segs = worker_api.split(":")
     if len(segs) != 3:
-        logger.error("Invalid daemon url = ", worker_api)
+        logger.error("Invalid workder api = ", worker_api)
         return False
     try:
         client = Client(base_url=worker_api, version="auto", timeout=timeout)
-        return client.ping() == 'OK'
+        ping_result = client.ping()
+        logger.debug("ping_result={}".format(ping_result))
+        return ping_result == 'OK' or ping_result is True
     except Exception as e:
         logger.error("Exception in check_daemon {}".format(e))
         return False
@@ -249,7 +256,7 @@ def setup_container_host(host_type, worker_api, timeout=5):
     try:
         client = Client(base_url=worker_api, version="auto", timeout=timeout)
         net_names = [x["Name"] for x in client.networks()]
-        for cs_type in CONSENSUS_PLUGINS:
+        for cs_type in CONSENSUS_PLUGINS_FABRIC_V1:
             net_name = CLUSTER_NETWORK + "_{}".format(cs_type)
             if net_name in net_names:
                 logger.warning("Network {} already exists, use it!".format(
@@ -285,7 +292,7 @@ def cleanup_host(worker_api, timeout=5):
     try:
         client = Client(base_url=worker_api, version="auto", timeout=timeout)
         net_names = [x["Name"] for x in client.networks()]
-        for cs_type in CONSENSUS_PLUGINS:
+        for cs_type in CONSENSUS_PLUGINS_FABRIC_V1:
             net_name = CLUSTER_NETWORK + "_{}".format(cs_type)
             if net_name in net_names:
                 logger.debug("Remove network {}".format(net_name))
@@ -317,30 +324,40 @@ def _compose_set_env(name, worker_api, mapped_ports=SERVICE_PORTS,
                      log_level=CLUSTER_LOG_LEVEL[0],
                      log_type=CLUSTER_LOG_TYPES[0], log_server="",
                      config=None):
-
-    if network_type == NETWORK_TYPE_FABRIC_PRE_V1:
-        envs = {
-            'DOCKER_HOST': worker_api,
-            'COMPOSE_PROJECT_NAME': name,
-            'COMPOSE_FILE': "cluster-{}.yml".format(config['size']),
-            'VM_ENDPOINT': worker_api,
-            'VM_DOCKER_HOSTCONFIG_NETWORKMODE':
-                CLUSTER_NETWORK + "_{}".format(config['consensus_plugin']),
-            'PEER_VALIDATOR_CONSENSUS_PLUGIN': config['consensus_plugin'],
-            'NETWORK_TYPES': network_type,
-            'PBFT_GENERAL_MODE': config['consensus_mode'],
-            'PBFT_GENERAL_N': str(config['size']),
-            'PEER_NETWORKID': name,
+    envs = {
+        'DOCKER_HOST': worker_api,
+        'COMPOSE_PROJECT_NAME': name,
+        'CLUSTER_LOG_LEVEL': log_level,
+        'NETWORK_TYPES': network_type,
+        'VM_ENDPOINT': worker_api,
+        'VM_DOCKER_HOSTCONFIG_NETWORKMODE':
+            CLUSTER_NETWORK + "_{}".format(config['consensus_plugin']),
+        'PEER_NETWORKID': name,
+    }
+    if network_type == NETWORK_TYPE_FABRIC_V1:
+        envs.update({
+            'COMPOSE_FILE': "fabric-{}-{}.yaml".format(
+                config['consensus_plugin'],
+                config['size']),
             'CLUSTER_NETWORK': CLUSTER_NETWORK + "_{}".format(
                 config['consensus_plugin']),
-            'CLUSTER_LOG_LEVEL': log_level,
-        }
-        os.environ.update(envs)
+            'COMPOSE_PROJECT_PATH': '/opt/cello/fabric-1.0/local',
+        })
+    elif network_type == NETWORK_TYPE_FABRIC_PRE_V1:
+        envs.update({
+            'COMPOSE_FILE': "fabric-{}.yml".format(config['size']),
+            'PEER_VALIDATOR_CONSENSUS_PLUGIN': config['consensus_plugin'],
+            'PBFT_GENERAL_MODE': config['consensus_mode'],
+            'PBFT_GENERAL_N': str(config['size']),
+            'CLUSTER_NETWORK': CLUSTER_NETWORK + "_{}".format(
+                config['consensus_plugin']),
+        })
+    os.environ.update(envs)
 
-        for k, v in mapped_ports.items():
-            os.environ[k.upper() + '_PORT'] = str(v)
-        if log_type != CLUSTER_LOG_TYPES[0]:  # not local
-            os.environ['SYSLOG_SERVER'] = log_server
+    for k, v in mapped_ports.items():
+        os.environ[k.upper() + '_PORT'] = str(v)
+    if log_type != CLUSTER_LOG_TYPES[0]:  # not local  TODO: deprecated soon
+        os.environ['SYSLOG_SERVER'] = log_server
 
 
 def compose_up(name, host, mapped_ports, network_type=NETWORK_TYPES[0],
@@ -371,14 +388,15 @@ def compose_up(name, host, mapped_ports, network_type=NETWORK_TYPES[0],
                      log_level, log_type, log_server, config)
 
     try:
-        template_path = COMPOSE_FILE_PATH + "/{}/".\
-            format(network_type) + log_type
+        template_path = COMPOSE_FILE_PATH + os.sep + network_type + \
+            os.sep + log_type
         project = get_project(template_path)
         containers = project.up(detached=True, timeout=timeout)
     except Exception as e:
         logger.warning("Exception when compose start={}".format(e.message))
         return {}
-    if not containers or config['size'] != len(containers):
+    logger.debug("containers={}".format(containers))
+    if not containers or config['size'] > len(containers):
         return {}
     result = {}
     for c in containers:
@@ -570,21 +588,18 @@ def compose_down(name, worker_api, mapped_ports=SERVICE_PORTS,
     :param timeout: Docker client timeout
     :return:
     """
-    logger.debug("Compose remove {} with worker_api={}, "
-                 "config={}".format(name, worker_api, config.get_data()))
-    # import os, sys
-    # compose use this
+    logger.debug("Compose remove {} with worker_api={}, network_type={} "
+                 "config={}".format(name, worker_api, network_type,
+                                    config.get_data()))
+
     _compose_set_env(name, worker_api, mapped_ports, network_type,
                      log_level, log_type, log_server, config)
 
-    if network_type == NETWORK_TYPE_FABRIC_PRE_V1:
-        cluster_version = 'fabric-0.6'
-    else:
-        cluster_version = 'fabric-1.0'
-
     # project = get_project(COMPOSE_FILE_PATH+"/"+consensus_plugin)
-    project = get_project(COMPOSE_FILE_PATH +
-                          "/{}/".format(cluster_version) + log_type)
+    project_path = COMPOSE_FILE_PATH + "/{}/".format(network_type) + log_type
+    logger.debug("project_path = {}".format(project_path))
+    logger.debug(os.environ)
+    project = get_project(project_path)
 
     # project.down(remove_orphans=True)
     project.stop(timeout=timeout)

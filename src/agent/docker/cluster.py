@@ -13,7 +13,7 @@ from common import log_handler, LOG_LEVEL
 from agent import compose_up, compose_clean, compose_start, compose_stop, \
     compose_restart
 
-from common import NETWORK_TYPES, CONSENSUS_PLUGINS, \
+from common import NETWORK_TYPES, CONSENSUS_PLUGINS_FABRIC_V1, \
     CONSENSUS_MODES, NETWORK_SIZE_FABRIC_PRE_V1
 
 from ..cluster_base import ClusterBase
@@ -55,11 +55,12 @@ class ClusterOnDocker(ClusterBase):
         logger.debug("Start compose project with name={}".format(cid))
         containers = compose_up(name=cid, mapped_ports=mapped_ports, host=host,
                                 network_type=network_type, config=config)
-        if not containers or len(containers) != config.size:
+        if not containers:
             logger.warning("failed to create cluster, with container={}"
                            .format(containers))
             return []
         else:
+            logger.debug("Created containers={}".format(containers))
             return containers
 
     def delete(self, id, worker_api, network_type, config):

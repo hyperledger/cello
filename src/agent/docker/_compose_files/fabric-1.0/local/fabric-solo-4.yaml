@@ -10,7 +10,7 @@ version: '2.0'
 services:
   ca:
     image: hyperledger/fabric-ca
-    container_name: fabric-ca
+    container_name: ${COMPOSE_PROJECT_NAME}_fabric-ca
     hostname: ca
   #  command: /go/src/github.com/hyperledger/fabric-ca/bin/ca server start -ca testdata/ec.pem -ca-key testdata/ec-key.pem -config testdata/testconfig.json
     ports:
@@ -18,32 +18,37 @@ services:
     command: fabric-ca-server start -b admin:adminpw
 
   orderer.example.com:  # There  can be multiple orderers
+    container_name: ${COMPOSE_PROJECT_NAME}_orderer  # mongo does not allow dot in name
     extends:
       file: docker-compose-base.yaml
       service: orderer.example.com
 
   peer0.org1.example.com:
+    container_name: ${COMPOSE_PROJECT_NAME}_peer0-org1
     extends:
       file: docker-compose-base.yaml
       service: peer0.org1.example.com
 
   peer1.org1.example.com:
+    container_name: ${COMPOSE_PROJECT_NAME}_peer1-org1
     extends:
       file: docker-compose-base.yaml
       service: peer1.org1.example.com
 
   peer0.org2.example.com:
+    container_name: ${COMPOSE_PROJECT_NAME}_peer0-org2
     extends:
       file: docker-compose-base.yaml
       service: peer0.org2.example.com
 
   peer1.org2.example.com:
+    container_name: ${COMPOSE_PROJECT_NAME}_peer1-org2
     extends:
       file: docker-compose-base.yaml
       service: peer1.org2.example.com
 
   cli:
-    container_name: fabric-cli
+    container_name: ${COMPOSE_PROJECT_NAME}_fabric-cli
     hostname: fabric-cli
     image: hyperledger/fabric-tools
     tty: true
@@ -52,18 +57,18 @@ services:
       - CORE_LOGGING_LEVEL=DEBUG
       - CORE_PEER_ADDRESS=peer0.org1.example.com:7051 # default to operate on peer0.org1
       - CORE_PEER_LOCALMSPID=Org1MSP
-      - CORE_PEER_TLS_ENABLED=true  # to enable TLS, change to true
+      - CORE_PEER_TLS_ENABLED=false  # to enable TLS, change to true
       - CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/server.crt
       - CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/server.key
       - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
       - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
     volumes:
-        #- ./e2e_cli/examples:/opt/gopath/src/github.com/hyperledger/fabric/examples
-        - ./crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
-        - ./scripts:/opt/gopath/src/github.com/hyperledger/fabric/peer/scripts/
-        - ./channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
-        - ./configtx.yaml:/etc/hyperledger/fabric/configtx.yaml
-        - ./crypto-config.yaml:/etc/hyperledger/fabric/crypto-config.yaml
+        #- ${COMPOSE_PROJECT_PATH}/e2e_cli/examples:/opt/gopath/src/github.com/hyperledger/fabric/examples
+        - ${COMPOSE_PROJECT_PATH}/crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
+        - ${COMPOSE_PROJECT_PATH}/scripts:/opt/gopath/src/github.com/hyperledger/fabric/peer/scripts/
+        - ${COMPOSE_PROJECT_PATH}/channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
+        #- ${COMPOSE_PROJECT_PATH}/configtx.yaml:/etc/hyperledger/fabric/configtx.yaml
+        #- ${COMPOSE_PROJECT_PATH}/crypto-config.yaml:/etc/hyperledger/fabric/crypto-config.yaml
     depends_on:
       - orderer.example.com
       - peer0.org1.example.com
@@ -79,7 +84,7 @@ services:
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: bash -c 'while true; do sleep 20170504; done'
 
-#networks:
-#  default:
-#    external:
-#      name: hyperledger_fabric
+networks:
+  default:
+    external:
+      name: ${CLUSTER_NETWORK}

@@ -21,7 +21,7 @@ from agent import get_swarm_node_ip
 from common import db, log_handler, LOG_LEVEL
 from common import CLUSTER_PORT_START, CLUSTER_PORT_STEP, \
     NETWORK_TYPE_FABRIC_PRE_V1, NETWORK_TYPE_FABRIC_V1, \
-    CONSENSUS_PLUGINS, CONSENSUS_MODES, WORKER_TYPES, \
+    CONSENSUS_PLUGINS_FABRIC_V1, CONSENSUS_MODES, WORKER_TYPES, \
     SYS_CREATOR, SYS_DELETER, SYS_USER, SYS_RESETTING, \
     NETWORK_SIZE_FABRIC_PRE_V1, \
     PEER_SERVICE_PORTS, CA_SERVICE_PORTS
@@ -151,18 +151,18 @@ class ClusterHandler(object):
             'duration': '',
             'health': ''
         }
-        if network_type == NETWORK_TYPE_FABRIC_PRE_V1:  # fabric v0.6
+        if network_type == NETWORK_TYPE_FABRIC_V1:  # TODO: fabric v1.0
             net.update({
                 'mapped_ports': mapped_ports,
                 'service_url': {},  # e.g., {rest: xxx:7050, grpc: xxx:7051}
             })
-            net.update(config.get_data())
-        elif network_type == NETWORK_TYPE_FABRIC_V1:  # TODO: fabric v1.0
+        elif network_type == NETWORK_TYPE_FABRIC_PRE_V1:  # fabric v0.6
             net.update({
                 'mapped_ports': mapped_ports,
                 'service_url': {},  # e.g., {rest: xxx:7050, grpc: xxx:7051}
             })
-            net.update(config.get_data())
+
+        net.update(config.get_data())
 
         uuid = self.col_active.insert_one(net).inserted_id  # object type
         cid = str(uuid)
@@ -204,11 +204,6 @@ class ClusterHandler(object):
         for k, v in ca_mapped_ports.items():
             service_urls[k] = "{}:{}".format(ca_host_ip, v)
 
-        cpContainers = copy.copy(containers)
-        for key in cpContainers.keys():
-            value_bak = containers.pop(key)
-            key = key.replace(".", "_")
-            containers.update(key=value_bak)
         # update api_url, container, and user_id field
         self.db_update_one(
             {"id": cid},
@@ -263,7 +258,7 @@ class ClusterHandler(object):
         host_id, worker_api, network_type, consensus_plugin, cluster_size = \
             c.get("host_id"), c.get("worker_api"), \
             c.get("network_type", NETWORK_TYPE_FABRIC_PRE_V1), \
-            c.get("consensus_plugin", CONSENSUS_PLUGINS[0]), \
+            c.get("consensus_plugin", CONSENSUS_PLUGINS_FABRIC_V1[0]), \
             c.get("size", NETWORK_SIZE_FABRIC_PRE_V1[0])
 
         # port = api_url.split(":")[-1] or CLUSTER_PORT_START
@@ -274,12 +269,13 @@ class ClusterHandler(object):
                                        {"$set": {"user_id": user_id}})
             return False
 
-        if network_type == NETWORK_TYPE_FABRIC_PRE_V1:
+        if network_type == NETWORK_TYPE_FABRIC_V1:
+            config = FabricV1NetworkConfig(consensus_plugin=consensus_plugin,
+                                           size=cluster_size)
+        elif network_type == NETWORK_TYPE_FABRIC_PRE_V1:
             config = FabricPreNetworkConfig(consensus_plugin=consensus_plugin,
                                             consensus_mode='',
                                             size=cluster_size)
-        elif network_type == NETWORK_TYPE_FABRIC_V1:
-            config = FabricV1NetworkConfig(size=cluster_size)
         else:
             return False
 
@@ -408,7 +404,9 @@ class ClusterHandler(object):
                 consensus_mode=c.get('consensus_mode'),
                 size=c.get('size'))
         elif network_type == NETWORK_TYPE_FABRIC_V1:
-            config = FabricV1NetworkConfig(size=c.get('size'))
+            config = FabricV1NetworkConfig(
+                consensus_plugin=c.get('consensus_plugin'),
+                size=c.get('size'))
         else:
             return False
 
@@ -451,7 +449,9 @@ class ClusterHandler(object):
                 consensus_mode=c.get('consensus_mode'),
                 size=c.get('size'))
         elif network_type == NETWORK_TYPE_FABRIC_V1:
-            config = FabricV1NetworkConfig(size=c.get('size'))
+            config = FabricV1NetworkConfig(
+                consensus_plugin=c.get('consensus_plugin'),
+                size=c.get('size'))
         else:
             return False
 
@@ -493,7 +493,9 @@ class ClusterHandler(object):
                 consensus_mode=c.get('consensus_mode'),
                 size=c.get('size'))
         elif network_type == NETWORK_TYPE_FABRIC_V1:
-            config = FabricV1NetworkConfig(size=c.get('size'))
+            config = FabricV1NetworkConfig(
+                consensus_plugin=c.get('consensus_plugin'),
+                size=c.get('size'))
         else:
             return False
         result = self.cluster_agents[h.get('type')].stop(
@@ -538,7 +540,9 @@ class ClusterHandler(object):
                 consensus_mode=c.get('consensus_mode'),
                 size=c.get('size'))
         elif network_type == NETWORK_TYPE_FABRIC_V1:
-            config = FabricV1NetworkConfig(size=c.get('size'))
+            config = FabricV1NetworkConfig(
+                consensus_plugin=c.get('consensus_plugin'),
+                size=c.get('size'))
         else:
             return False
         if not self.create(name=cluster_name, host_id=host_id,
