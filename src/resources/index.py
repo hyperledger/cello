@@ -17,6 +17,7 @@ from common import log_handler, LOG_LEVEL, NETWORK_TYPES, \
     request_debug, \
     CLUSTER_LOG_TYPES, CLUSTER_LOG_LEVEL
 from version import version, homepage, author
+from flask_login import login_required, current_user
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
@@ -29,6 +30,7 @@ bp_index = Blueprint('bp_index', __name__)
 
 @bp_index.route('/', methods=['GET'])
 @bp_index.route('/index', methods=['GET'])
+@login_required
 def show():
     request_debug(r, logger)
     hosts = list(host_handler.list(filter_data={}))
@@ -46,6 +48,7 @@ def show():
 
     clusters_temp = len(list(cluster_handler.list(filter_data={
         "user_id": "/^__/"}, col_name="active")))
+    username, is_admin = current_user.username, current_user.isAdmin
 
     return render_template("index.html", hosts=hosts,
                            hosts_free=hosts_free,
@@ -64,6 +67,8 @@ def show():
                            host_types=WORKER_TYPES,
                            log_types=CLUSTER_LOG_TYPES,
                            log_levels=CLUSTER_LOG_LEVEL,
+                           username=username,
+                           is_admin=is_admin
                            )
 
 

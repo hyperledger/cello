@@ -67,10 +67,8 @@ export default {
       payload,
     }, { call, put }) {
       const data = yield call(logout, parse(payload))
-      if (data.success) {
-        yield put({
-          type: 'logoutSuccess',
-        })
+      if (data && data.data.success) {
+          window.location.href = data.data.next;
       }
     },
     *switchSider ({

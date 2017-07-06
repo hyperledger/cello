@@ -38,7 +38,7 @@ function Header ({ user, logout, switchSider, siderFold, isNavbar, menuPopoverVi
           <SubMenu style={{
             float: 'right',
           }} title={<span> <Icon type="user" />
-            {user.name} </span>}
+            {window.username} </span>}
           >
             <Menu.Item key="logout">
               <a>logout</a>
