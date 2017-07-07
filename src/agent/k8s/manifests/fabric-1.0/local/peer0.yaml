@@ -1,0 +1,111 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: hyperledger-peer0-org1
+  labels:
+    app: hyperledger
+    role: peer
+    peer-id: "0"
+    org: "1"
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: peer-pod0
+      labels:
+        app: hyperledger
+        role: peer
+        peer-id: "0"
+        org: "1"
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: peer0-org1-container
+          imagePullPolicy: Never
+          image: hyperledger/fabric-peer:latest
+          volumeMounts:
+            - mountPath: /etc/hyperledger/fabric
+              name: fabric-vol
+          env:
+            - name: CORE_PEER_ID
+              value: "peer0-org1"
+            - name: CORE_PEER_ADDRESS
+              value: "peer0-org1:7051"
+            - name: CORE_PEER_CHAINCODELISTENADDRESS
+              value: "peer0-org1:7052"
+            - name: CORE_PEER_GOSSIP_EXTERNALENDPOINT
+              value: "peer0-org1:7051"
+            - name: CORE_PEER_LOCALMSPID
+              value: "Org1MSP"
+            - name: CORE_PEER_GOSSIP_ORGLEADER
+              value: "true"
+            - name: CORE_PEER_ADDRESSAUTODETECT
+              value: "false"
+            - name: CORE_LOGGING_LEVEL
+              value: "DEBUG"
+            - name: CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE
+              value: "10_default"
+            - name: CORE_PEER_GOSSIP_USELEADERELECTION
+              value: "true"
+            - name: CORE_PEER_GOSSIP_ORGLEADER
+              value: "false"
+            - name: CORE_PEER_PROFILE_ENABLED
+              value: "false"
+            - name: CORE_PEER_TLS_ENABLED
+              value: "false"
+            - name: CORE_PEER_TLS_CERT_FILE
+              value: "/etc/hyperledger/fabric/tls/server.crt"
+            - name: CORE_PEER_TLS_KEY_FILE
+              value: "/etc/hyperledger/fabric/tls/server.key"
+            - name: CORE_PEER_TLS_ROOTCERT_FILE
+              value: /etc/hyperledger/fabric/tls/ca.crt
+          ports:
+            - containerPort: 7050
+            - containerPort: 7051
+            - containerPort: 7052
+            - containerPort: 7053
+            # - containerPort: 7054
+            # - containerPort: 7055
+            # - containerPort: 7056
+            # - containerPort: 7057
+            # - containerPort: 7058
+            # - containerPort: 7059
+          command:
+            # - /bin/bash
+            - peer
+            - node
+            - start
+          # command:
+          #   - cat
+          #   - "/etc/hyperledger/fabric/tls/server.crt"
+      volumes:
+        - name: fabric-vol
+          hostPath:
+            path: /data/driving-files/fabric-peer/peer0-org1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: peer0-org1
+  labels:
+    app: hyperledger-peer
+spec:
+  type: ClusterIP
+  ports:
+    - name: "7050"
+      targetPort: 7050
+      port: 7050
+    - name: "7051"
+      targetPort: 7051
+      port: 7051
+    - name: "7052"
+      targetPort: 7052
+      port: 7052
+    - name: "7053"
+      targetPort: 7053
+      port: 7053
+  selector:
+    app: hyperledger
+    role: peer
+    peer-id: "0"
+    org: "1"

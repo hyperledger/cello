@@ -1,0 +1,65 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: hyperledger-peer
+  labels:
+    app: hyperledger
+    role: peer
+    # peer-id: 0
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: hyperledger-peer-pod
+      labels:
+        role: peer
+        # peer-id: 0
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: peer-container
+          imagePullPolicy: Never
+          image: hyperledger/fabric-peer:latest
+          volumeMounts:
+            - mountPath: /etc/hyperledger/fabric
+              name: fabric-vol
+          env:
+            - name: CORE_PEER_ADDRESSAUTODETECT
+              value: "false"
+            - name: CORE_LOGGING_LEVEL
+              value: "DEBUG"
+            - name: CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE
+              value: "10_default"
+            - name: CORE_PEER_GOSSIP_USELEADERELECTION
+              value: "true"
+            - name: CORE_PEER_GOSSIP_ORGLEADER
+              value: "false"
+            - name: CORE_PEER_PROFILE_ENABLED
+              value: "false"
+            - name: CORE_PEER_TLS_ENABLED
+              value: "true"
+            - name: CORE_PEER_TLS_CERT_FILE
+              value: "/etc/hyperledger/fabric/tls/server.crt"
+            - name: CORE_PEER_TLS_KEY_FILE
+              value: "/etc/hyperledger/fabric/tls/server.key"
+            - name: CORE_PEER_TLS_ROOTCERT_FILE
+              value: /etc/hyperledger/fabric/tls/ca.crt
+          ports:
+            - containerPort: 7050
+            - containerPort: 7051
+            - containerPort: 7052
+            - containerPort: 7053
+            - containerPort: 7054
+            - containerPort: 7055
+            - containerPort: 7056
+            - containerPort: 7057
+            - containerPort: 7058
+            - containerPort: 7059
+          command:
+            - peer
+            - node
+            - start
+      volumes:
+        - name: fabric-vol
+          hostPath:
+            path: /data/fabric-peer

@@ -1,0 +1,83 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: hyperledger-orderer
+  labels:
+    app: hyperledger
+    role: orderer
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: hyperledger-orderer-pod
+      labels:
+        role: orderer
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: orderer-container
+          imagePullPolicy: Never
+          image: hyperledger/fabric-orderer:latest
+          volumeMounts:
+            - mountPath: /var/hyperledger/orderer
+              name: orderer-vol
+          env:
+            - name: ORDERER_GENERAL_LOGLEVEL
+              value: "DEBUG"
+            - name: ORDERER_GENERAL_LISTENADDRESS
+              value: "0.0.0.0"
+            - name: ORDERER_GENERAL_GENESISMETHOD
+              value: "file"
+            - name: ORDERER_GENERAL_GENESISFILE
+              value: "/var/hyperledger/orderer/orderer.genesis.block"
+            - name: ORDERER_GENERAL_LOCALMSPID
+              value: "OrdererMSP"
+            - name: ORDERER_GENERAL_LOCALMSPDIR
+              value: "/var/hyperledger/orderer/msp"
+            - name: ORDERER_GENERAL_LEDGERTYPE
+              value: "file"
+            - name: ORDERER_GENERAL_BATCHTIMEOUT
+              value: "2s"
+            - name: ORDERER_GENERAL_MAXMESSAGECOUNT
+              value: "10"
+            - name: ORDERER_GENERAL_MAXWINDOWSIZE
+              value: "1000"
+            - name: ORDERER_GENERAL_LISTENPORT
+              value: "7050"
+            - name: ORDERER_GENERAL_TLS_ENABLED
+              value: "true"
+            - name: ORDERER_RAMLEDGER_HISTORY_SIZE
+              value: "100"
+            - name: CONFIGTX_ORDERER_ORDERERTYPE
+              value: "solo"
+            - name: ORDERER_GENERAL_TLS_PRIVATEKEY
+              value: "/var/hyperledger/orderer/tls/server.key"
+            - name: ORDERER_GENERAL_TLS_CERTIFICATE
+              value: "/var/hyperledger/orderer/tls/server.crt"
+            - name: ORDERER_GENERAL_TLS_ROOTCAS
+              value: "[/var/hyperledger/orderer/tls/ca.crt]"
+          ports:
+            - containerPort: 7050
+          command:
+            - orderer
+            - start
+      volumes:
+        - name: orderer-vol
+          hostPath:
+            path: /data/driving-files/orderer
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orderer-service
+  labels:
+    app: hyperledger-orderer
+spec:
+  type: NodePort
+  ports:
+    - name: "7050"
+      targetPort: 7050
+      port: 7050
+      nodePort: 30001
+  selector:
+    role: orderer

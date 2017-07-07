@@ -1,0 +1,44 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: hyperledger-fabric-ca
+  labels:
+    app: hyperledger
+    role: ca
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: hyperledger-ca-pod
+      labels:
+        role: ca
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: ca-container
+          imagePullPolicy: Never
+          image: hyperledger/fabric-ca:latest
+          ports:
+            - containerPort: 7054
+          command:
+            - fabric-ca-server
+            - start
+            - -b
+            - admin:adminpw
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ca
+  labels:
+    app: hyperledger
+spec:
+  type: NodePort
+  ports:
+    - name: "ca"
+      port: 7054
+      targetPort: 7054
+      nodePort: 30002
+  selector:
+    app: hyperledger
+    role: ca
