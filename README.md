@@ -1,47 +1,31 @@
-![Cello](docs/imgs/logo.png)
-
-Cello is a blockchain provision and operational system, which helps provide Blockchain as a Service.
-
 **Note:** This is a **read-only mirror** of the formal [Gerrit](https://gerrit.hyperledger.org/r/#/admin/projects/cello) repository. Find more details at [Cello Wiki](https://wiki.hyperledger.org/projects/cello).
 
-## Introduction
+![Cello](docs/imgs/logo.png)
 
-Using Cello, everyone can:
+Hyperledger Cello is a blockchain provision and operational system, which helps provide Blockchain as a Service.
+
+## Introduction
+Using Cello, everyone can easily:
 
 * Provision customizable Blockchains instantly, e.g., a Hyperledger fabric network.
 * Maintain a pool of running blockchains atop of baremetals, vms, Docker Swarm and Kubernetes.
-* Check the system status, scale the chain numbers, change resources... through a dashboard.
+* Check the system status, adjust the chain numbers, scale resources... through a dashboard.
+
+A typical usage scenario is illustrated as:
 
 ![Typical Scenario](docs/imgs/scenario.png)
 
-Feel free to explore more [scenarios](docs/scenario.md).
-
 ## Main Features
+* Manage the lifecycle of blockchains, e.g., create/start/stop/delete/keep health automatically.
+* Support customized (e.g., size, consensus) blockchains request, currently we mainly support [Hyperledger fabric](https://github.com/hyperledger/fabric).
+* Support native Docker host, swarm or Kubernetes as the worker nodes. More supports on the way.
+* Support heterogeneous architecture, e.g., X86, POWER and Z, from bare-metal servers to virtual machines.
+* Extend with monitor, log, health and analytics features by employing additional components.
 
-* Manage the lifecycle of blockchains, e.g., create/delete/keep health automatically.
-* Response nearly instantly, even with hundreds of chains, or nodes.
-* Support customized (e.g., size, consensus) blockchains request, currently we support [hyperledger fabric](https://github.com/hyperledger/fabric).
-* Support native Docker host or swarm host as the compute nodes, more supports on the way.
-* Support heterogeneous architecture, e.g., Z, Power and X86, from bare-metal servers to virtual machines.
-* Extend with monitor/log/health features by employing additional components.
+## Documentation, Getting Started and Develop Guideline
+For new users, it is highly recommended to read the [tutorial](docs/tutorial.md) or [index](docs/index.md) first.
 
-## Documentation
-
-For new users, it is highly recommended to read the [tutorial](docs/tutorial.md) first.
-
-### User Docs
-* [Installation Steps](docs/installation.md)
-* [Terminology List](docs/terminology.md)
-* [Adoption Scenarios](docs/scenario.md)
-* [Production Configuration](docs/production_config.md)
-
-### Development Docs
-* [How to contribute](docs/CONTRIBUTING.md)
-* [Architecture Design](docs/arch.md)
-* [Database Model](docs/db.md)
-* [API](api/restserver_v2.md)
-* [Develop react js](docs/reactjs.md)
-* [pep8 style guide](https://www.python.org/dev/peps/pep-0008/), [Coding Style](docs/code_style.md)
+And feel free to visit the [online documentation](http://cello.readthedocs.io/en/latest/) for more information.
 
 ## Why named Cello?
 Can you find anyone better at playing chains? :)
