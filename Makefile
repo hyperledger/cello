@@ -39,6 +39,7 @@ endif
 	all \
 	check \
 	clean \
+	doc \
 	log \
 	logs \
 	redeploy \
@@ -55,6 +56,10 @@ check: ##@Code Check code format
 
 clean: ##@Code Clean tox result
 	rm -rf .tox
+
+doc: ##@Create local online documentation
+	pip install mkdocs
+	mkdocs serve
 
 # Use like "make log service=dashboard"
 log: ##@Log tail special service log, Use like "make log service=dashboard"
