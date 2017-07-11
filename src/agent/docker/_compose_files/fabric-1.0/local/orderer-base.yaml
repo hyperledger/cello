@@ -9,6 +9,11 @@ version: '2'
 services:
   orderer-base:
     image: hyperledger/fabric-orderer
+    restart: unless-stopped
+    labels:
+      - monitor=true
+      - hyperledger=true
+      - com.docker.swarm.reschedule-policy=["on-node-failure"]
     environment:
       - ORDERER_GENERAL_LOGLEVEL=DEBUG
       - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
@@ -29,4 +34,11 @@ services:
       - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
     expose:
       - "7050"  #
+    mem_limit: 512000000
+    memswap_limit: 1000000000
+    cpu_quota: 50000
+    logging:
+      driver: json-file
+      options:
+        max-size: 100m
     command: orderer start

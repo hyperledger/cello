@@ -21,7 +21,8 @@ from agent import get_swarm_node_ip
 from common import db, log_handler, LOG_LEVEL
 from common import CLUSTER_PORT_START, CLUSTER_PORT_STEP, \
     NETWORK_TYPE_FABRIC_PRE_V1, NETWORK_TYPE_FABRIC_V1, \
-    CONSENSUS_PLUGINS_FABRIC_V1, CONSENSUS_MODES, WORKER_TYPES, \
+    CONSENSUS_PLUGINS_FABRIC_V1, CONSENSUS_MODES, \
+    WORKER_TYPES, WORKER_TYPE_DOCKER, WORKER_TYPE_SWARM, WORKER_TYPE_K8S, \
     SYS_CREATOR, SYS_DELETER, SYS_USER, SYS_RESETTING, \
     NETWORK_SIZE_FABRIC_PRE_V1, \
     PEER_SERVICE_PORTS, CA_SERVICE_PORTS
@@ -89,7 +90,7 @@ class ClusterHandler(object):
             return {}
         return self._serialize(cluster)
 
-    def create(self, name, host_id, network_type, config, start_port=0,
+    def create(self, name, host_id, config, start_port=0,
                user_id=""):
         """ Create a cluster based on given data
 
@@ -98,7 +99,6 @@ class ClusterHandler(object):
 
             name: name of the cluster
             host_id: id of the host URL
-            network_type: type of the network
             config: network configuration
             start_port: first service port for cluster, will generate
              if not given
@@ -106,8 +106,9 @@ class ClusterHandler(object):
 
         return: Id of the created cluster or None
         """
-        logger.info("Create cluster {}, host_id={}, config={}"
-                    .format(name, host_id, network_type, config.get_data()))
+        logger.info("Create cluster {}, host_id={}, config={}, start_port={}, "
+                    "user_id={}".format(name, host_id, config.get_data(),
+                                        start_port, user_id))
 
         worker = self.host_handler.get_active_host_by_id(host_id)
         if not worker:
@@ -135,7 +136,9 @@ class ClusterHandler(object):
 
         mapped_ports.update(peer_mapped_ports)
         mapped_ports.update(ca_mapped_ports)
+        logger.debug("mapped_ports={}".format(mapped_ports))
 
+        network_type = config['network_type']
         net = {  # net is a blockchain network instance
             'id': '',
             'name': name,
@@ -181,16 +184,23 @@ class ClusterHandler(object):
         # start compose project, failed then clean and return
         logger.debug("Start compose project with name={}".format(cid))
         containers = self.cluster_agents[worker.get('type')]\
-            .create(cid, mapped_ports, worker, user_id=user_id,
-                    network_type=network_type, config=config)
+            .create(cid, mapped_ports, worker, config=config, user_id=user_id)
         if not containers:
             logger.warning("failed to start cluster={}, then delete"
                            .format(name))
             self.delete(id=cid, record=False, forced=True)
             return None
 
-        peer_host_ip = self._get_service_ip(cid, 'vp0')
-        ca_host_ip = self._get_service_ip(cid, 'membersrvc')
+        access_peer, access_ca = '', ''
+        if network_type == NETWORK_TYPE_FABRIC_V1:  # fabric v1.0
+            access_peer = 'peer0.org1.example.com'
+            access_ca = 'ca.example.com'
+        elif network_type == NETWORK_TYPE_FABRIC_PRE_V1:  # fabric v0.6
+            access_peer = 'vp0'
+            access_ca = 'membersrvc'
+
+        peer_host_ip = self._get_service_ip(cid, access_peer)
+        ca_host_ip = self._get_service_ip(cid, access_ca)
         # no api_url, then clean and return
         if not peer_host_ip:  # not valid api_url
             logger.error("Error to find peer host url, cleanup")
@@ -279,8 +289,8 @@ class ClusterHandler(object):
         else:
             return False
 
-        if not self.cluster_agents[h.get('type')]\
-                .delete(id, worker_api, network_type, config):
+        if not self.cluster_agents[h.get('type')].delete(id, worker_api,
+                                                         config):
             logger.warning("Error to run compose clean work")
             self.col_active.update_one({"id": id},
                                        {"$set": {"user_id": user_id}})
@@ -413,7 +423,6 @@ class ClusterHandler(object):
         result = self.cluster_agents[h.get('type')].start(
             name=cluster_id, worker_api=h.get('worker_api'),
             mapped_ports=c.get('mapped_ports', PEER_SERVICE_PORTS),
-            network_type=c.get('network_type'),
             log_type=h.get('log_type'),
             log_level=h.get('log_level'),
             log_server='',
@@ -458,7 +467,6 @@ class ClusterHandler(object):
         result = self.cluster_agents[h.get('type')].restart(
             name=cluster_id, worker_api=h.get('worker_api'),
             mapped_ports=c.get('mapped_ports', PEER_SERVICE_PORTS),
-            network_type=c.get('network_type'),
             log_type=h.get('log_type'),
             log_level=h.get('log_level'),
             log_server='',
@@ -501,7 +509,6 @@ class ClusterHandler(object):
         result = self.cluster_agents[h.get('type')].stop(
             name=cluster_id, worker_api=h.get('worker_api'),
             mapped_ports=c.get('mapped_ports', PEER_SERVICE_PORTS),
-            network_type=c.get('network_type'),
             log_type=h.get('log_type'),
             log_level=h.get('log_level'),
             log_server='',
@@ -546,8 +553,7 @@ class ClusterHandler(object):
         else:
             return False
         if not self.create(name=cluster_name, host_id=host_id,
-                           start_port=mapped_ports['rest'],
-                           network_type=network_type, config=config):
+                           start_port=mapped_ports['rest'], config=config):
             logger.warning("Fail to recreate cluster {}".format(cluster_name))
             return False
         return True
@@ -605,14 +611,14 @@ class ClusterHandler(object):
             logger.warning("Found invalid host_type=%s".format(host_type))
             return ""
         # we should diff with simple host and swarm host here
-        if host_type == WORKER_TYPES[0]:  # single
+        if host_type == WORKER_TYPE_DOCKER:  # single
             segs = worker_api.split(":")  # tcp://x.x.x.x:2375
             if len(segs) != 3:
                 logger.error("Invalid daemon url = ", worker_api)
                 return ""
             host_ip = segs[1][2:]
             logger.debug("single host, ip = {}".format(host_ip))
-        elif host_type == WORKER_TYPES[1]:  # swarm
+        elif host_type == WORKER_TYPE_SWARM:  # swarm
             host_ip = get_swarm_node_ip(worker_api, "{}_{}".format(
                 cluster_id, node))
             logger.debug("swarm host, ip = {}".format(host_ip))
@@ -666,36 +672,41 @@ class ClusterHandler(object):
         :param timeout: how many seconds to wait for receiving response
         :return: True or False
         """
-        logger.debug("checking health of cluster id={}".format(cluster_id))
         cluster = self.get_by_id(cluster_id)
+        logger.debug("checking health of cluster={}".format(cluster))
         if not cluster:
             logger.warning("Cannot found cluster id={}".format(cluster_id))
             return True
         if cluster.get('status') != 'running':
             logger.warning("cluster is not running id={}".format(cluster_id))
             return True
-        rest_api = cluster["service_url"]['rest'] + "/network/peers"
-        if not rest_api.startswith('http'):
-            rest_api = 'http://' + rest_api
-        try:
-            r = requests.get(rest_api, timeout=timeout)
-        except Exception as e:
-            logger.error("Error to refresh health of cluster {}: {}".format(
-                cluster_id, e))
-            return True
+        if cluster.get('network_type') == NETWORK_TYPE_FABRIC_PRE_V1:
+            rest_api = cluster["service_url"]['rest'] + "/network/peers"
+            if not rest_api.startswith('http'):
+                rest_api = 'http://' + rest_api
+            try:
+                r = requests.get(rest_api, timeout=timeout)
+            except Exception as e:
+                logger.error("Error to refresh health of cluster {}: {}".
+                             format(cluster_id, e))
+                return True
 
-        peers = r.json().get("peers")
+            peers = r.json().get("peers")
 
-        if len(peers) == cluster["size"]:
-            self.db_update_one({"id": cluster_id},
-                               {"$set": {"health": "OK"}})
+            if len(peers) == cluster["size"]:
+                self.db_update_one({"id": cluster_id},
+                                   {"$set": {"health": "OK"}})
+                return True
+            else:
+                logger.debug("checking result of cluster id={}".format(
+                    cluster_id, peers))
+                self.db_update_one({"id": cluster_id},
+                                   {"$set": {"health": "FAIL"}})
+                return False
+        elif cluster.get('network_type') == NETWORK_TYPE_FABRIC_V1:
+            # TODO: check fabric 1.0 network health status
             return True
-        else:
-            logger.debug("checking result of cluster id={}".format(
-                cluster_id, peers))
-            self.db_update_one({"id": cluster_id},
-                               {"$set": {"health": "FAIL"}})
-            return False
+        return True
 
     def db_update_one(self, filter, operations, after=True, col="active"):
         """

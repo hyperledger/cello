@@ -7,8 +7,8 @@ import logging
 from common.blockchain_network_config import BlockchainNetworkConfig
 
 from common import CONSENSUS_PLUGINS_FABRIC_V1, CONSENSUS_MODES, \
-    NETWORK_SIZE_FABRIC_PRE_V1, \
-    NETWORK_SIZE_FABRIC_V1, \
+    NETWORK_TYPE_FABRIC_PRE_V1, NETWORK_TYPE_FABRIC_V1, \
+    NETWORK_SIZE_FABRIC_PRE_V1, NETWORK_SIZE_FABRIC_V1, \
     log_handler, LOG_LEVEL
 
 logger = logging.getLogger(__name__)
@@ -33,6 +33,7 @@ class FabricPreNetworkConfig(BlockchainNetworkConfig):
 
         >>> config = FabricPreNetworkConfig('plugin', 'mode', 'size')
         """
+        self.network_type = NETWORK_TYPE_FABRIC_PRE_V1
         self.consensus_plugin = consensus_plugin
         self.consensus_mode = consensus_mode
         self.size = size
@@ -76,6 +77,7 @@ class FabricV1NetworkConfig(BlockchainNetworkConfig):
             consensus_plugin: plugin of consensus, e.g., solo, kafka
             size: number of containers in the network
         """
+        self.network_type = NETWORK_TYPE_FABRIC_V1
         self.consensus_plugin = consensus_plugin
         self.size = size
         super(FabricV1NetworkConfig, self).__init__()

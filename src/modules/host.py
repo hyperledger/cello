@@ -16,9 +16,13 @@ from pymongo.collection import ReturnDocument
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from common import \
     db, log_handler, \
+    FabricV1NetworkConfig, \
     LOG_LEVEL, CLUSTER_LOG_TYPES, CLUSTER_LOG_LEVEL, \
-    NETWORK_SIZE_FABRIC_PRE_V1, CLUSTER_PORT_START, CLUSTER_PORT_STEP, \
-    CONSENSUS_TYPES, WORKER_TYPES
+    NETWORK_TYPE_FABRIC_V1, \
+    NETWORK_SIZE_FABRIC_V1, \
+    CLUSTER_PORT_START, CLUSTER_PORT_STEP, \
+    CONSENSUS_PLUGINS_FABRIC_V1, CONSENSUS_PLUGIN_SOLO, \
+    WORKER_TYPES
 
 from agent import DockerHost, KubernetesHost
 
@@ -217,12 +221,14 @@ class HostHandler(object):
             cluster_name = "{}_{}".format(
                 host.get("name"),
                 int((start_port - CLUSTER_PORT_START) / CLUSTER_PORT_STEP))
-            consensus_plugin, consensus_mode = random.choice(CONSENSUS_TYPES)
-            cluster_size = random.choice(NETWORK_SIZE_FABRIC_PRE_V1)
-            cid = cluster.cluster_handler.create(
-                name=cluster_name, host_id=id, start_port=start_port,
+            consensus_plugin = CONSENSUS_PLUGIN_SOLO
+            cluster_size = random.choice(NETWORK_SIZE_FABRIC_V1)
+            config = FabricV1NetworkConfig(
                 consensus_plugin=consensus_plugin,
-                consensus_mode=consensus_mode, size=cluster_size)
+                size=cluster_size)
+            cid = cluster.cluster_handler.create(name=cluster_name,
+                                                 host_id=id, config=config,
+                                                 start_port=start_port)
             if cid:
                 logger.debug("Create cluster {} with id={}".format(
                     cluster_name, cid))

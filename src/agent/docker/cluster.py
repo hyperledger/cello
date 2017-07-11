@@ -31,9 +31,7 @@ class ClusterOnDocker(ClusterBase):
     def __init__(self):
         pass
 
-    def create(self, cid, mapped_ports, host, user_id="",
-               network_type=NETWORK_TYPES[0],
-               config=None):
+    def create(self, cid, mapped_ports, host, config, user_id=""):
         """ Create a cluster based on given data
 
         TODO: maybe need other id generation mechanism
@@ -54,7 +52,7 @@ class ClusterOnDocker(ClusterBase):
         # start compose project, failed then clean and return
         logger.debug("Start compose project with name={}".format(cid))
         containers = compose_up(name=cid, mapped_ports=mapped_ports, host=host,
-                                network_type=network_type, config=config)
+                                config=config)
         if not containers:
             logger.warning("failed to create cluster, with container={}"
                            .format(containers))
@@ -63,23 +61,23 @@ class ClusterOnDocker(ClusterBase):
             logger.debug("Created containers={}".format(containers))
             return containers
 
-    def delete(self, id, worker_api, network_type, config):
-        return compose_clean(id, worker_api, network_type, config)
+    def delete(self, id, worker_api, config):
+        return compose_clean(id, worker_api, config)
 
-    def start(self, name, worker_api, mapped_ports, network_type,
-              log_type, log_level, log_server, config):
-        return compose_start(name, worker_api, mapped_ports, network_type,
-                             log_type, log_level, log_server, config)
+    def start(self, name, worker_api, mapped_ports, log_type, log_level,
+              log_server, config):
+        return compose_start(name, worker_api, mapped_ports, log_type,
+                             log_level, log_server, config)
 
-    def restart(self, name, worker_api, mapped_ports, network_type,
-                log_type, log_level, log_server, config):
-        return compose_restart(name, worker_api, mapped_ports, network_type,
-                               log_type, log_level, log_server, config)
+    def restart(self, name, worker_api, mapped_ports, log_type, log_level,
+                log_server, config):
+        return compose_restart(name, worker_api, mapped_ports, log_type,
+                               log_level, log_server, config)
 
-    def stop(self, name, worker_api, mapped_ports, network_type,
-             log_type, log_level, log_server, config):
-        return compose_stop(name, worker_api, mapped_ports, network_type,
-                            log_type, log_level, log_server, config)
+    def stop(self, name, worker_api, mapped_ports, log_type, log_level,
+             log_server, config):
+        return compose_stop(name, worker_api, mapped_ports, log_type,
+                            log_level, log_server, config)
 
 
 cluster_on_docker = ClusterOnDocker()

@@ -327,37 +327,34 @@ def get_project(template_path):
 
 
 def _compose_set_env(name, worker_api, mapped_ports=SERVICE_PORTS,
-                     network_type=NETWORK_TYPES[0],
                      log_level=CLUSTER_LOG_LEVEL[0],
                      log_type=CLUSTER_LOG_TYPES[0], log_server="",
                      config=None):
     envs = {
-        'DOCKER_HOST': worker_api,
         'COMPOSE_PROJECT_NAME': name,
         'CLUSTER_LOG_LEVEL': log_level,
-        'NETWORK_TYPES': network_type,
+        'CLUSTER_NETWORK': CLUSTER_NETWORK + "_{}".format(
+            config['consensus_plugin']),
+        'DOCKER_HOST': worker_api,
+        'PEER_NETWORKID': name,
+        'NETWORK_TYPES': config['network_type'],
         'VM_ENDPOINT': worker_api,
         'VM_DOCKER_HOSTCONFIG_NETWORKMODE':
             CLUSTER_NETWORK + "_{}".format(config['consensus_plugin']),
-        'PEER_NETWORKID': name,
     }
-    if network_type == NETWORK_TYPE_FABRIC_V1:
+    if config['network_type'] == NETWORK_TYPE_FABRIC_V1:
         envs.update({
             'COMPOSE_FILE': "fabric-{}-{}.yaml".format(
                 config['consensus_plugin'],
                 config['size']),
-            'CLUSTER_NETWORK': CLUSTER_NETWORK + "_{}".format(
-                config['consensus_plugin']),
             'COMPOSE_PROJECT_PATH': '/opt/cello/fabric-1.0/local',
         })
-    elif network_type == NETWORK_TYPE_FABRIC_PRE_V1:
+    elif config['network_type'] == NETWORK_TYPE_FABRIC_PRE_V1:
         envs.update({
             'COMPOSE_FILE': "fabric-{}.yml".format(config['size']),
             'PEER_VALIDATOR_CONSENSUS_PLUGIN': config['consensus_plugin'],
             'PBFT_GENERAL_MODE': config['consensus_mode'],
             'PBFT_GENERAL_N': str(config['size']),
-            'CLUSTER_NETWORK': CLUSTER_NETWORK + "_{}".format(
-                config['consensus_plugin']),
         })
     os.environ.update(envs)
 
@@ -367,14 +364,12 @@ def _compose_set_env(name, worker_api, mapped_ports=SERVICE_PORTS,
         os.environ['SYSLOG_SERVER'] = log_server
 
 
-def compose_up(name, host, mapped_ports, network_type=NETWORK_TYPES[0],
-               config=None, timeout=5):
+def compose_up(name, host, mapped_ports, config=None, timeout=5):
     """ Compose up a cluster
 
     :param name: The name of the cluster
     :param mapped_ports: The mapped ports list of the cluster
     :param host: Docker host obj
-    :param network_type: Fabric version
     :param config: the blockchain network config
     :param timeout: Docker client timeout value
     :return: The name list of the started peer containers
@@ -382,25 +377,25 @@ def compose_up(name, host, mapped_ports, network_type=NETWORK_TYPES[0],
 
     logger.debug(
         "Compose start: name={}, host={}, mapped_port={},"
-        "config={} network_type={}".format(
+        "config={}".format(
             name, host.get("name"), mapped_ports,
-            config.get_data(), network_type))
+            config.get_data()))
     worker_api, log_type, log_server, log_level = \
         host.get("worker_api"), host.get("log_type"), host.get("log_server"), \
         host.get("log_level")
     if log_type != CLUSTER_LOG_TYPES[0]:  # not local
         os.environ['SYSLOG_SERVER'] = log_server
 
-    _compose_set_env(name, worker_api, mapped_ports, network_type,
-                     log_level, log_type, log_server, config)
+    _compose_set_env(name, worker_api, mapped_ports, log_level, log_type,
+                     log_server, config)
 
     try:
-        template_path = COMPOSE_FILE_PATH + os.sep + network_type + \
+        template_path = COMPOSE_FILE_PATH + os.sep + config['network_type'] + \
             os.sep + log_type
         project = get_project(template_path)
         containers = project.up(detached=True, timeout=timeout)
     except Exception as e:
-        logger.warning("Exception when compose start={}".format(e.message))
+        logger.warning("Exception when compose start={}".format(e))
         return {}
     logger.debug("containers={}".format(containers))
     if not containers or config['size'] > len(containers):
@@ -412,19 +407,18 @@ def compose_up(name, host, mapped_ports, network_type=NETWORK_TYPES[0],
     return result
 
 
-def compose_clean(name, worker_api, network_type, config):
+def compose_clean(name, worker_api, config):
     """
     Try best to clean a compose project and clean related containers.
 
     :param name: name of the project
     :param worker_api: Docker Host url
-    :param consensus_plugin: which consensus plugin
+    :param config: network config
     :return: True or False
     """
     has_exception = False
     try:
-        compose_down(name=name, worker_api=worker_api,
-                     network_type=network_type, config=config)
+        compose_down(name=name, worker_api=worker_api, config=config)
     except Exception as e:
         logger.error("Error in stop compose project, will clean")
         logger.debug(e)
@@ -448,39 +442,31 @@ def compose_clean(name, worker_api, network_type, config):
 
 
 def compose_start(name, worker_api, mapped_ports=SERVICE_PORTS,
-                  network_type=NETWORK_TYPES[0],
                   log_type=CLUSTER_LOG_TYPES[0], log_server="",
                   log_level=CLUSTER_LOG_LEVEL[0],
                   config=None):
     """ Start the cluster
 
     :param name: The name of the cluster
-    :param mapped_ports: The mapped port list
     :param worker_api: Docker host daemon
-    :param network_type: fabric version
-    :param consensus_plugin: Cluster consensus type
-    :param consensus_mode: Cluster consensus mode
+    :param mapped_ports: The mapped port list
     :param log_type: which log plugin for host
     :param log_server: syslog server
-    :param cluster_size: the size of the cluster
+    :param log_level: level of the logging msg
+    :param config: network config
     :return:
     """
     logger.debug("Compose Start {} with worker_api={}, mapped_ports={} "
-                 "network_type={} config={}".format(name, worker_api,
-                                                    mapped_ports, network_type,
-                                                    config.get_data()))
+                 "config={}".format(name, worker_api,
+                                    mapped_ports,
+                                    config.get_data()))
 
-    _compose_set_env(name, worker_api, mapped_ports, network_type,
-                     log_level, log_type, log_server, config)
-
-    if network_type == NETWORK_TYPE_FABRIC_PRE_V1:
-        cluster_version = 'fabric-0.6'
-    else:
-        cluster_version = 'fabric-1.0'
+    _compose_set_env(name, worker_api, mapped_ports, log_level, log_type,
+                     log_server, config)
 
     # project = get_project(COMPOSE_FILE_PATH+"/"+consensus_plugin)
     project = get_project(COMPOSE_FILE_PATH +
-                          "/{}/".format(cluster_version) + log_type)
+                          "/{}/".format(config['network_type']) + log_type)
     try:
         project.start()
         start_containers(worker_api, name + '-')
@@ -491,39 +477,30 @@ def compose_start(name, worker_api, mapped_ports=SERVICE_PORTS,
 
 
 def compose_restart(name, worker_api, mapped_ports=SERVICE_PORTS,
-                    network_type=NETWORK_TYPES[0],
                     log_type=CLUSTER_LOG_TYPES[0], log_server="",
                     log_level=CLUSTER_LOG_LEVEL[0],
                     config=None):
     """ Restart the cluster
 
     :param name: The name of the cluster
-    :param mapped_ports: The mapped port list
     :param worker_api: Docker host daemon
-    :param network_type: fabric image version
-    :param consensus_plugin: Cluster consensus type
-    :param consensus_mode: Cluster consensus mode
+    :param mapped_ports: The mapped port list
     :param log_type: which log plugin for host
     :param log_server: syslog server
-    :param cluster_size: the size of the cluster
+    :param log_level: level of the logging msg
+    :param config: network config
     :return:
     """
     logger.debug("Compose restart {} with worker_api={}, mapped_ports={} "
-                 "network_type={} config={}".format(name, worker_api,
-                                                    mapped_ports, network_type,
-                                                    config.get_data()))
+                 "config={}".format(name, worker_api, mapped_ports,
+                                    config.get_data()))
 
-    _compose_set_env(name, worker_api, mapped_ports, network_type,
-                     log_level, log_type, log_server, config)
-
-    if network_type == NETWORK_TYPE_FABRIC_PRE_V1:
-        cluster_version = 'fabric-0.6'
-    else:
-        cluster_version = 'fabric-1.0'
+    _compose_set_env(name, worker_api, mapped_ports, log_level, log_type,
+                     log_server, config)
 
     # project = get_project(COMPOSE_FILE_PATH+"/"+consensus_plugin)
-    project = get_project(COMPOSE_FILE_PATH +
-                          "/{}/".format(cluster_version) + log_type)
+    project = get_project(COMPOSE_FILE_PATH + os.sep + config['network_type'] +
+                          os.sep + log_type)
     try:
         project.restart()
         start_containers(worker_api, name + '-')
@@ -534,21 +511,18 @@ def compose_restart(name, worker_api, mapped_ports=SERVICE_PORTS,
 
 
 def compose_stop(name, worker_api, mapped_ports=SERVICE_PORTS,
-                 network_type=NETWORK_TYPES[0],
                  log_type=CLUSTER_LOG_TYPES[0], log_server="",
                  log_level=CLUSTER_LOG_LEVEL[0],
                  config=None, timeout=5):
     """ Stop the cluster
 
     :param name: The name of the cluster
-    :param mapped_ports: The mapped ports list
     :param worker_api: Docker host daemon
-    :param network_type: Fabric image version
-    :param consensus_plugin: Cluster consensus type
-    :param consensus_mode: Cluster consensus mode
+    :param mapped_ports: The mapped ports list
     :param log_type: which log plugin for host
     :param log_server: syslog server
-    :param cluster_size: the size of the cluster
+    :param log_level: level of the logging msg
+    :param config: network config
     :param timeout: Docker client timeout
     :return:
     """
@@ -558,16 +532,11 @@ def compose_stop(name, worker_api, mapped_ports=SERVICE_PORTS,
                                                  config.get_data(),
                                                  log_type))
 
-    _compose_set_env(name, worker_api, mapped_ports, network_type,
-                     log_level, log_type, log_server, config)
+    _compose_set_env(name, worker_api, mapped_ports, log_level, log_type,
+                     log_server, config)
 
-    if network_type == NETWORK_TYPE_FABRIC_PRE_V1:
-        cluster_version = 'fabric-0.6'
-    else:
-        cluster_version = 'fabric-1.0'
-
-    project = get_project(COMPOSE_FILE_PATH +
-                          "/{}/".format(cluster_version) + log_type)
+    project = get_project(COMPOSE_FILE_PATH + os.sep + config['network_type'] +
+                          os.sep + log_type)
     try:
         project.stop(timeout=timeout)
     except Exception as e:
@@ -577,7 +546,6 @@ def compose_stop(name, worker_api, mapped_ports=SERVICE_PORTS,
 
 
 def compose_down(name, worker_api, mapped_ports=SERVICE_PORTS,
-                 network_type=NETWORK_TYPES[0],
                  log_type=CLUSTER_LOG_TYPES[0], log_server="",
                  log_level=CLUSTER_LOG_LEVEL[0],
                  config=None, timeout=5):
@@ -586,27 +554,23 @@ def compose_down(name, worker_api, mapped_ports=SERVICE_PORTS,
     :param name: The name of the cluster
     :param mapped_ports: The mapped ports list
     :param worker_api: Docker host daemon
-    :param network_type: Fabric image version
-    :param consensus_plugin: Cluster consensus type
-    :param consensus_mode: Cluster consensus mode
     :param log_type: which log plugin for host
     :param log_server: syslog server
-    :param cluster_size: the size of the cluster
+    :param log_level: level of the logging
+    :param config: network config
     :param timeout: Docker client timeout
     :return:
     """
-    logger.debug("Compose remove {} with worker_api={}, network_type={} "
-                 "config={}".format(name, worker_api, network_type,
-                                    config.get_data()))
+    logger.debug("Compose remove {} with worker_api={}, config={}".format(
+        name, worker_api, config.get_data()))
 
-    _compose_set_env(name, worker_api, mapped_ports, network_type,
-                     log_level, log_type, log_server, config)
+    _compose_set_env(name, worker_api, mapped_ports, log_level, log_type,
+                     log_server, config)
 
     # project = get_project(COMPOSE_FILE_PATH+"/"+consensus_plugin)
-    project_path = COMPOSE_FILE_PATH + "/{}/".format(network_type) + log_type
-    logger.debug("project_path = {}".format(project_path))
     logger.debug(os.environ)
-    project = get_project(project_path)
+    project = get_project(COMPOSE_FILE_PATH + os.sep + config['network_type'] +
+                          os.sep + log_type)
 
     # project.down(remove_orphans=True)
     project.stop(timeout=timeout)
