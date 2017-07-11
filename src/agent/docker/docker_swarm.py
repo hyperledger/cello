@@ -165,12 +165,19 @@ def detect_daemon_type(worker_api, timeout=5):
         return None
     try:
         client = Client(base_url=worker_api, version="auto", timeout=timeout)
-        server_version = client.info()['ServerVersion']
-        server_swarm_cluster = client.info()['Swarm']['Cluster']['ID']
-        if server_version.startswith('swarm') or server_swarm_cluster != '':
+        info = client.info()
+        server_version = info['ServerVersion']
+        if not server_version:
+            logger.warning("info().ServerVersion cannot be empty")
+            return None
+        if server_version.startswith('swarm'):
             return WORKER_TYPES[1]
-        else:
-            return WORKER_TYPES[0]
+        try:
+            if info['Swarm']['Cluster']['ID'] != '':
+                return WORKER_TYPES[1]
+        except Exception as e:
+            logger.debug(e)
+        return WORKER_TYPES[0]
     except Exception as e:
         logger.error(e)
         return None
