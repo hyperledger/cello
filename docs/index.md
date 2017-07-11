@@ -23,7 +23,7 @@ A typical usage scenario is illustrated as:
 
 ## Getting Started
 
-For new users, it is highly recommended to read the [tutorial](docs/tutorial.md) first.
+For new users, it is highly recommended to read the [tutorial](docs/tutorial) first.
 
 ## Operational Guideline
 * [Installation Steps](installation)

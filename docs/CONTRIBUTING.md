@@ -1,8 +1,6 @@
 # Contribution
 Any kind of contribution is encouraged, e.g., bug fix and question report.
 
-Before taking actions, we highly recommend reading the [docs](../README.md).
-
 ## LF ID Application
 
 All the tools require an Linux Foundation (LF) ID.

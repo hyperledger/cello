@@ -1,6 +1,8 @@
-# Setup of Hyperledger Cello using AWS EC2 Ubuntu 14.04 instances
+# Deploy Hyperledger Cello on AWS EC2
 
-## Steps for creating an AWS instance and Cello setup.
+The following will show how to deploy Cello on AWS EC2 Ubuntu 14.04 instances.
+
+## AWS Setup
 
 1. If you dont have an Amazon AWS account, create one.
 
@@ -22,12 +24,15 @@
 
 10. From terminal, you can ssh into the AWS Ubuntu instance using command- *sudo ssh -i yourprivatekey.pem ubuntu@IP*.
 
+## Cello Installation
+
 11. Install docker and docker-compose. Follow the Cello master node setup as given in following document ![here](install.md). In the host, follow the worker node setup as given in link ![here](install.md). Other steps are the same for both master and worker node.
 
 12. Once done, in the master node, you should be able to run the command *docker -H Worker_Node_IP:2375 version*.
 
 Example: You should get something like this in the master node-
 
+```bash
 ubuntu@ip-172-31-34-249:~$ docker -H 54.87.59.141:2375 version
 Client:
  Version:      17.03.0-ce
@@ -45,6 +50,7 @@ Server:
  Built:        Tue Feb 28 07:57:58 2017
  OS/Arch:      linux/amd64
  Experimental: false
+```
 
 13. You should be able to open the link *http://MasternodeIP:8080* .You can login and add hosts. Once the hosts are added, you can create blockchains.
 

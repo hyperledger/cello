@@ -25,7 +25,7 @@ A typical usage scenario is illustrated as:
 ## Documentation, Getting Started and Develop Guideline
 For new users, it is highly recommended to read the [tutorial](docs/tutorial.md) or [index](docs/index.md) first.
 
-And feel free to visit the [online documentation](http://cello.readthedocs.io/en/latest/) for more information.
+And feel free to visit the [online documentation](http://cello.readthedocs.io/en/latest/) for more information. You can also run `make doc` to start a local documentation website (Listen at [localhost:8000](http://127.0.0.1:8000).
 
 ## Why named Cello?
 Can you find anyone better at playing chains? :)
