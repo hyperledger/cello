@@ -9,3 +9,6 @@ greenlet>=0.4.5,<=0.4.12
 gunicorn>=19.0.0,<=19.6.0
 pymongo>=3.2.0,<=3.4.0
 requests>=2.0.0,<=2.13.0
+mongoengine
+flask-login
+bcrypt

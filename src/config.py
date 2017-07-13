@@ -3,6 +3,8 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
+import os
+import bcrypt
 
 
 class Config(object):
@@ -16,3 +18,9 @@ class ProductionConfig(Config):
 
 class DevelopmentConfig(Config):
     DEBUG = True
+    MONGODB_DB = os.getenv('MONGODB_DB', 'dashboard')
+    MONGODB_HOST = os.getenv('MONGODB_HOST', 'mongo')
+    MONGODB_PORT = int(os.getenv('MONGODB_PORT', 27017))
+    MONGODB_USERNAME = os.getenv('MONGODB_USERNAME', '')
+    MONGODB_PASSWORD = os.getenv('MONGODB_PASSWORD', '')
+    SALT = '$2b$12$e9UeM1mU0RahYaC4Ikn1Ce'

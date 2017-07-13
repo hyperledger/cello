@@ -16,8 +16,8 @@ export async function login (params) {
 
 export async function logout (params) {
   return request({
-    url: '/api/logout',
-    method: 'post',
+    url: '/api/auth/logout',
+    method: 'get',
     data: params,
   })
 }

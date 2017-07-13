@@ -31,6 +31,10 @@
 <script src="//cdn.bootcss.com/echarts/3.4.0/echarts.min.js"></script>
 <script src="//cdn.bootcss.com/validator/7.0.0/validator.min.js"></script>
 <script src="{{ url_for('static', filename='js/dist/index.js') }}"> </script>
+<script>
+    window.username = "{{ username }}"
+    window.isAdmin = "{{ is_admin }}"
+</script>
 
 </body>
 </html>
