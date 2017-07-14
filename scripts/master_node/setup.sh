@@ -4,10 +4,21 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-# This script will try setup a valid environment for the docker-compose running.
-# It should be triggered at the upper directory, and safe to repeat.
+# This script will try setup a valid environment for the master node.
+# It should be triggered by the makefile, and safe to repeat.
 
-source scripts/header.sh
+# Detecting whether can import the header file to render colorful cli output
+# Need add choice option
+if [ -f ../header.sh ]; then
+ source ../header.sh
+elif [ -f scripts/header.sh ]; then
+ source scripts/header.sh
+else
+ alias echo_r="echo"
+ alias echo_g="echo"
+ alias echo_b="echo"
+fi
+
 # collect ID from /etc/os-release as distribution name
 # tested on debian,ubuntu,mint , centos,fedora  ,opensuse
 function get_distribution {
@@ -27,9 +38,13 @@ USER=`whoami`
 DISTRO=$(get_distribution)
 DB_DIR=/opt/${PROJECT}/mongo
 
+
+echo_b "Install python-pip, tox, and docker-engine"
 case $DISTRO in
   ubuntu)
-      sudo apt-get update && sudo apt-get install -y curl docker-engine python-pip
+      sudo apt-get update && sudo apt-get install -y curl python-pip tox;
+			echo_b "Checking to install Docker-engine..."
+			command -v docker >/dev/null 2>&1 || { echo_r >&2 "No docker-engine found, try installing"; curl -sSL https://get.docker.com/ | sh; sudo service docker restart; }
      ;;
   linuxmint)
      sudo apt-get install apt-transport-https ca-certificates -y
@@ -74,28 +89,24 @@ case $DISTRO in
      echo "Linux distribution not identified !!! skipping docker & pip installation"
      ;;
 esac
-sudo pip install --upgrade pip
-
-sudo pip install --upgrade tox
-
-echo_b "Checking Docker-engine..."
-command -v docker >/dev/null 2>&1 || { echo_r >&2 "No docker-engine found, try installing"; curl -sSL https://get.docker.com/ | sh; sudo service docker restart; }
 
 echo_b "Add existing user to docker group"
 sudo usermod -aG docker ${USER}
 
-echo_b "Checking Docker-compose..."
-command -v docker-compose >/dev/null 2>&1 || { echo_r >&2 "No docker-compose found, try installing"; sudo pip install -i http://pypi.douban.com/simple/ --trusted-host pypi.douban.com docker-compose; }
+echo_b "Checking to install Docker-compose..."
+command -v docker-compose >/dev/null 2>&1 || { echo_r >&2 "No docker-compose found, try installing"; sudo pip install docker-compose; }
 
-echo_b "Checking local mounted database path..."
-[ ! -d ${DB_DIR} ] && echo_r "Local database path ${DB_DIR} not existed, creating one" && sudo mkdir -p ${DB_DIR} && sudo chown -R ${USER}:${USER} ${DB_DIR}
+[ `sudo docker ps -qa|wc -l` -gt 0 ] \
+	&& echo_r "Warn: existing containers may cause unpredictable failure, suggest to clean them using docker rm"
 
-echo_b "Checking local Docker image..."
-pull_image "mongo:3.2"
-pull_image "python:3.5"
-pull_image "yeasy/nginx:latest"
+echo_b "Download dependent Images..."
+bash download_images.sh
 
-[ `sudo docker ps -qa|wc -l` -gt 0 ] && echo_r "Warn: existing containers may cause unpredictable failure, suggest to clean them using docker rm"
+echo_b "Checking local mounted database path ${DB_DIR}..."
+[ ! -d ${DB_DIR} ] \
+	&& echo_r "Local database path ${DB_DIR} not existed, creating one" \
+	&& sudo mkdir -p ${DB_DIR} \
+	&& sudo chown -R ${USER}:${USER} ${DB_DIR}
 
 echo_g "Setup done, please logout and login again."
 echo_g "It's safe to run this script repeatedly. Just re-run if it fails."

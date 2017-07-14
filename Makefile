@@ -1,4 +1,3 @@
-
 # Copyright IBM Corp, All Rights Reserved.
 #
 # SPDX-License-Identifier: Apache-2.0
@@ -36,17 +35,19 @@ else
 endif
 
 .PHONY: \
-	all \
-	check \
-	clean \
-	doc \
-	log \
-	logs \
-	redeploy \
-	restart \
-	setup \
-	start \
-	stop \
+	all \          # default to run check
+	check \        # ci checking
+	clean \        # clean up the env, remove temp files
+	doc \          # start a doc server locally
+	image-clean \  # clean up all cello related images
+	log \          # show logs of specify service
+	logs \         # show logs of all services
+	setup-master \ # setup the master node
+	setup-worker \ # setup the worker node
+	redeploy \     # redeploy service(s)
+	start \        # start all services
+	restart \      # restart all services
+	stop \         # stop all services
 
 all: check
 
@@ -55,7 +56,8 @@ check: ##@Code Check code format
 	make start && sleep 10 && make stop
 
 clean: ##@Code Clean tox result
-	rm -rf .tox
+	rm -rf .tox .cache *.egg-info
+	find . -name "*.pyc" -o -name "__pycache__" -exec rm -rf "{}" \;
 
 doc: ##@Create local online documentation
 	pip install mkdocs
@@ -63,14 +65,19 @@ doc: ##@Create local online documentation
 
 # Use like "make log service=dashboard"
 log: ##@Log tail special service log, Use like "make log service=dashboard"
-	docker-compose logs -f ${service} --tail=100
+	docker-compose logs -f ${service} --tail=200
 
 logs: ##@Log tail for all service log
 	docker-compose logs -f --tail=200
 
 # Use like "make redeploy service=dashboard"
 redeploy: ##@Service Redeploy single service, Use like "make redeploy service=dashboard"
-	bash scripts/redeploy.sh ${service}
+	bash scripts/master_node/redeploy.sh ${service}
+
+image-clean: ##@Clean all existing images to rebuild
+	echo "Clean all cello related images, may need to remove all containers before"
+	docker images | grep "cello-" | awk '{print $1}' | xargs docker rmi -f
+	docker rmi $(docker images -f dangling=true -q)
 
 initial-env: ##@Configuration Initial Configuration for dashboard
 	$(SED) 's/\(STATIC_FOLDER=\).*/\1${STATIC_FOLDER}/' .env
@@ -79,24 +86,31 @@ initial-env: ##@Configuration Initial Configuration for dashboard
 
 start: ##@Service Start service
 	@$(MAKE) $(START_OPTIONS)
-	bash scripts/start.sh
+	echo "Start all services..."
+	docker-compose up -d --no-recreate
 
 stop: ##@Service Stop service
-	bash scripts/stop.sh
+	echo "Stop all services..."
+	docker-compose stop
+	echo "Remove all services..."
+	docker-compose rm -f -a
 
 restart: stop start ##@Service Restart service
 
-setup: ##@Environment Setup dependency for service environment
-	bash scripts/setup.sh
+setup-master: ##@Environment Setup dependency for master node
+	bash scripts/master_node/setup.sh
+
+setup-worker: ##@Environment Setup dependency for worker node
+	bash scripts/worker_node/setup.sh
 
 build-js: ##@Nodejs Build js files for react
-	bash scripts/build_reactjs.sh
+	bash scripts/master_node/build_reactjs.sh
 
 watch-mode: ##@Nodejs Run watch mode with js files for react
-	bash scripts/watch_mode.sh
+	bash scripts/master_node/watch_mode.sh
 
 npm-install: ##@Nodejs Install modules with npm package management
-	bash scripts/npm_install.sh
+	bash scripts/master_node/npm_install.sh
 
 HELP_FUN = \
 	%help; \

@@ -7,7 +7,17 @@
 # This script will only build and redeploy the specific service.
 # It should be triggered at the upper directory
 
-source scripts/header.sh
+# Detecting whether can import the header file to render colorful cli output
+# Need add choice option
+if [ -f ../header.sh ]; then
+ source ../header.sh
+elif [ -f scripts/header.sh ]; then
+ source scripts/header.sh
+else
+ alias echo_r="echo"
+ alias echo_g="echo"
+ alias echo_b="echo"
+fi
 
 if [ "$#" -ne 1 ]; then
     echo "Redeploy the service, e.g., engine, api, watchdog, mongo, nginx"
