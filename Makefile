@@ -98,10 +98,10 @@ stop: ##@Service Stop service
 restart: stop start ##@Service Restart service
 
 setup-master: ##@Environment Setup dependency for master node
-	bash scripts/master_node/setup.sh
+	cd scripts/master_node && bash setup.sh
 
 setup-worker: ##@Environment Setup dependency for worker node
-	bash scripts/worker_node/setup.sh
+	cd scripts/worker_node && bash setup.sh
 
 build-js: ##@Nodejs Build js files for react
 	bash scripts/master_node/build_reactjs.sh

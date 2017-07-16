@@ -39,10 +39,7 @@ docker tag hyperledger/fabric-peer:$ARCH-$IMG_TAG hyperledger/fabric-tools
 docker tag hyperledger/fabric-orderer:$ARCH-$IMG_TAG hyperledger/fabric-orderer
 docker tag hyperledger/fabric-ca:$ARCH-$IMG_TAG hyperledger/fabric-ca
 
-
 echo_b "Copy required fabric 1.0 artifacts"
-
-
 ARTIFACTS_DIR=/opt/cello
 USER=`whoami`
 echo_b "Checking local artifacts path ${ARTIFACTS_DIR}..."
@@ -53,6 +50,6 @@ echo_b "Checking local artifacts path ${ARTIFACTS_DIR}..."
 	&& sudo chown -R ${USER}:${USER} ${ARTIFACTS_DIR}
 
 echo_b "Setup ip forward rules"
-sysctl -w net.ipv4.ip_forward=1
+sudo sysctl -w net.ipv4.ip_forward=1
 
 echo_g "Setup done"

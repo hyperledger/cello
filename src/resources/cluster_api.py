@@ -242,8 +242,7 @@ def cluster_create():
         return make_fail_resp(error="config not validated",
                               data=config.get_data())
 
-    if cluster_handler.create(name=name, host_id=host_id,
-                              network_type=network_type, config=config):
+    if cluster_handler.create(name=name, host_id=host_id, config=config):
         logger.debug("cluster POST successfully")
         return make_ok_resp(code=CODE_CREATED)
     else:
