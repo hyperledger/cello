@@ -1,3 +1,6 @@
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
+
 /**
  * @author Eberhard Graether / http://egraether.com/
  * @author Mark Lundin 	/ http://mark-lundin.com
