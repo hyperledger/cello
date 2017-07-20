@@ -1,8 +1,8 @@
 # Tutorial
 
-**Notice: Please have a look at the [terminologies](./terminology.md) if you haven't yet.**
+**Notice: Please have a look at the [terminology](./terminology.md) if you haven't yet.**
 
-After the [installation](./install.md), operators can interact with Cello through dashboard.
+After the [installation](./installation.md), operators can interact with Cello through dashboard.
 
 By default, the dashboard will listen on port `8080` at the Master Node.
 
@@ -20,7 +20,7 @@ Then you will see a jumped-out dialog to input the setup info.
 Suppose it's a Native Docker server to import as a host, input those fields
 
 * Name: docker_host
-* Daemon URL: `192.168.7.220:2375` (replace this with ur docker host address)
+* Daemon URL: `192.168.7.220:2375` (replace this with your docker host address)
 * Capacity: 5
 
 After successful adding, you can find the `docker_host` shown in the Host page, with 0 chains and Cap is 5.
@@ -43,10 +43,10 @@ Then you can see it at the Active Chain page.
 
 ## Use auto-mode to provision chains
 
-It will be difficult if you have numbers of chains to create manually. Cello provides automatic ways to save the time.
+It will be difficult if you have a numbers of chains to create manually. Cello provides automated ways to save time.
 
-* Use the host action dropdown menu: The Fillup button will fill the host full with chains till its capacity, while the Clean button will clean all unused chains from the host.
-* Use the Autofill checkbox: In the host configuration, you can find a `Autofill` checkbox, which will automatically  watch the host and keep it's full with chains to the capacity.
+* Use the host action dropdown menu: The Fillup button will fill the host full with chains until its at capacity, while the Clean button will clean all unused chains from the host.
+* Use the Autofill checkbox: In the host configuration, you can find a `Autofill` checkbox, which will automatically watch the host and keep it full with chains to the capacity.
 
 Try these methods as you like.
 
