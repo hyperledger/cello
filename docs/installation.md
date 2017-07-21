@@ -1,4 +1,4 @@
-# Installation
+    # Installation
 
 *Here we describe the setups for development usage. If you want to deploy Cello for production, please also refer to the [Production Configuration](production_config.md).*
 
@@ -23,6 +23,9 @@ Currently we support Docker Host or Swarm Cluster as Worker Node. More types wil
 
 See [Installation on Master Node](installation_master.md).
 
+### Command help - make
+
+To know more what make commands does in the installation process, please refer [make_support](/make_support.md) page.
 
 
 *Licensed under Creative Commons Attribution 4.0 International License

@@ -25,6 +25,9 @@ You may check `git` and `make` are installed to clone the code.
 $ sudo aptitude install git make -y
 $ git clone http://gerrit.hyperledger.org/r/cello && cd cello
 ```
+### Command help - make
+
+To know more what the following make commands does please refer [make_support](/make_support.md) page.
 
 ### Run Setup
 
