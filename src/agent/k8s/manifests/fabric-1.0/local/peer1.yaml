@@ -21,27 +21,32 @@ spec:
       restartPolicy: Always
       containers:
         - name: peer1-org1-container
-          imagePullPolicy: Never
-          image: hyperledger/fabric-peer:latest
+          imagePullPolicy: IfNotPresent
+          image: hyperledger/fabric-peer:x86_64-1.0.0
+          workingDir: /opt/gopath/src/github.com/hyperledger/fabric/peer
           volumeMounts:
-            - mountPath: /etc/hyperledger/fabric
-              name: fabric-vol
+            - mountPath: /etc/hyperledger/fabric/msp
+              name: fabric-vol-msp
+            - mountPath: /etc/hyperledger/fabric/tls
+              name: fabric-vol-tls
+            - mountPath: /var/run/docker.sock
+              name: docker-sock
           env:
-            - name: CORE_PEER_GOSSIP_BOOTSTRAP
-              value: "peer0-org1:7051"
+            - name: CORE_VM_ENDPOINT
+              value: unix:///var/run/docker.sock
             - name: CORE_PEER_ID
               value: "peer1-org1"
             - name: CORE_PEER_ADDRESS
               value: "peer1-org1:7051"
-            - name: CORE_PEER_CHAINCODELISTENADDRESS
-              value: "peer1-org1:7052"
+          #  - name: CORE_PEER_CHAINCODELISTENADDRESS
+          #    value: "peer1-org1:7052"
             - name: CORE_PEER_GOSSIP_EXTERNALENDPOINT
               value: "peer1-org1:7051"
+            - name: CORE_PEER_GOSSIP_BOOTSTRAP
+              value: "peer0-org1:7051"
             - name: CORE_PEER_LOCALMSPID
               value: "Org1MSP"
             - name: CORE_PEER_GOSSIP_ORGLEADER
-              value: "true"
-            - name: CORE_PEER_ADDRESSAUTODETECT
               value: "false"
             - name: CORE_LOGGING_LEVEL
               value: "DEBUG"
@@ -51,8 +56,10 @@ spec:
               value: "true"
             - name: CORE_PEER_GOSSIP_ORGLEADER
               value: "false"
+            - name: CORE_PEER_GOSSIP_SKIPHANDSHAKE
+              value: "true"
             - name: CORE_PEER_PROFILE_ENABLED
-              value: "false"
+              value: "true"
             - name: CORE_PEER_TLS_ENABLED
               value: "false"
             - name: CORE_PEER_TLS_CERT_FILE
@@ -60,9 +67,9 @@ spec:
             - name: CORE_PEER_TLS_KEY_FILE
               value: "/etc/hyperledger/fabric/tls/server.key"
             - name: CORE_PEER_TLS_ROOTCERT_FILE
-              value: /etc/hyperledger/fabric/tls/ca.crt
+              value: "/etc/hyperledger/fabric/tls/ca.crt"
           ports:
-            - containerPort: 7050
+            #- containerPort: 7050
             - containerPort: 7051
             - containerPort: 7052
             - containerPort: 7053
@@ -73,13 +80,27 @@ spec:
             # - containerPort: 7058
             # - containerPort: 7059
           command:
+            #- /bin/bash
+            #- sh
+            #- -c
+            #- "sleep 10; peer node start"
             - peer
             - node
             - start
+            - --peer-defaultchain=false
+          #command:
+            #- cat
+            #- "/etc/hyperledger/fabric/tls/server.crt"
       volumes:
-        - name: fabric-vol
+        - name: fabric-vol-msp
           hostPath:
-            path: /data/driving-files/fabric-peer/peer1-org1
+            path: /data/driving-files/fabric-peer/peer1-org1/msp
+        - name: fabric-vol-tls
+          hostPath:
+            path: /data/driving-files/fabric-peer/peer1-org1/tls
+        - name: docker-sock
+          hostPath:
+            path: /var/run/docker.sock
 ---
 apiVersion: v1
 kind: Service
@@ -90,9 +111,9 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-    - name: "7050"
-      targetPort: 7050
-      port: 7050
+    #- name: "7050"
+    #  targetPort: 7050
+    #  port: 7050
     - name: "7051"
       targetPort: 7051
       port: 7051

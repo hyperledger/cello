@@ -16,8 +16,8 @@ spec:
       restartPolicy: Always
       containers:
         - name: cli-container
-          imagePullPolicy: Never
-          image: hyperledger/fabric-tools:latest
+          imagePullPolicy: IfNotPresent
+          image: hyperledger/fabric-tools:x86_64-1.0.0 #The image is changed to fabric-tools in latest version of e2e_cli samples
           workingDir: /opt/gopath/src/github.com/hyperledger/fabric/peer
           tty: true
           volumeMounts:
@@ -31,7 +31,12 @@ spec:
               name: configtx
             - mountPath: /etc/hyperledger/fabric/crypto-config.yaml
               name: crypto-config
+            - mountPath: /var/run/docker.sock
+              name: docker-sock
+              readOnly: false
           env:
+            - name: CORE_VM_ENDPOINT
+              value: unix:///var/run/docker.sock
             - name: CORE_PEER_ID
               value: fabric-cli
             - name: CORE_LOGGING_LEVEL
@@ -41,7 +46,7 @@ spec:
             - name: CORE_PEER_LOCALMSPID
               value: "Org1MSP"
             - name: CORE_PEER_TLS_ENABLED
-              value: "true"
+              value: "false"
             - name: CORE_PEER_TLS_CERT_FILE
               value: "/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/server.crt"
             - name: CORE_PEER_TLS_KEY_FILE
@@ -71,3 +76,9 @@ spec:
         - name: crypto-config
           hostPath:
             path: /data/driving-files/crypto-config.yaml
+        - name: docker-sock
+          hostPath:
+            path: /var/run/docker.sock
+        # - name: kube
+        #   hostPath:
+        #     path: /data/packk
