@@ -13,7 +13,10 @@
     <meta name="description" content="Block Chain Cloud Service">
     <meta name="author" content="Baohua Yang">
     <link rel="icon" href="../static/img/favicon.ico">
-    <link rel="stylesheet" href="{{ url_for('static', filename='js/dist/login.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='login/login.css') }}">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/antd/2.12.2/antd.min.css" />
+    <script src="https://cdn.bootcss.com/vue/2.4.2/vue.min.js"></script>
+    <script src="https://cdn.bootcss.com/axios/0.16.2/axios.min.js"></script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -85,9 +88,87 @@
 
 <body id="particles-js">
 
-<div id="root"></div>
+<div id="app-5">
+    <div class="form">
+        <div class="logo">
+            <span>
+                CELLO
+            </span>
+        </div>
+        <form class="ant-form ant-form-horizontal login-form">
+            <div class="ant-row ant-form-item">
+                <div class="ant-form-item-control-wrapper">
+                    <div class="ant-form-item-control">
+                       <span class="ant-input-affix-wrapper">
+                           <span class="ant-input-prefix">
+                               <i class="anticon anticon-user"></i>
+                           </span>
+                           <input v-model="username" placeholder="Username" class="ant-input ant-input-lg" type="text" />
+                       </span>
+                    </div>
+                </div>
+            </div>
+            <div class="ant-row ant-form-item">
+                <div class="ant-form-item-control-wrapper">
+                    <div class="ant-form-item-control">
+                       <span class="ant-input-affix-wrapper">
+                           <span class="ant-input-prefix">
+                               <i class="anticon anticon-lock"></i>
+                           </span>
+                           <input v-model="password" placeholder="Password" class="ant-input ant-input-lg" type="password" />
+                       </span>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <div class="ant-row ant-form-item">
+            <div class="ant-form-item-control-wrapper">
+                <div class="ant-form-item-control has-success">
+                    <button v-on:click="login"
+                            v-bind:class="btnClass"
+                            class="ant-btn login-form-button ant-btn-primary ant-btn-lg">
+                        <i v-if="submitting" class="anticon anticon-spin anticon-loading"></i>
+                        <span>Login</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <script src="{{ url_for('static', filename='login/particles.min.js') }}"></script>
 <script>
+
+    const app5 = new Vue({
+        el: '#app-5',
+        data: {
+            username: '',
+            password: '',
+            submitting: false
+        },
+        computed: {
+            btnClass: function () {
+                return {
+                    'ant-btn-loading': this.submitting
+                }
+            }
+        },
+        methods: {
+            login: function () {
+                this.submitting = true;
+                let formData = new FormData();
+                formData.append('username', this.username);
+                formData.append('password', this.password);
+                axios.post('/api/auth/login', formData).then((response) => {
+                    if (response.data.data.success) {
+                        window.location.href = response.data.data.next;
+                    }
+                    this.submitting = false
+                }).catch((error) => {
+                    this.submitting = false
+                })
+            }
+        }
+    })
     particlesJS("particles-js", {
         "particles": {
             "number": {
@@ -199,32 +280,7 @@
         "retina_detect": true
     });
 
-
-    /* ---- stats.js config ---- */
-
-    var count_particles, stats, update;
-    stats = new Stats;
-    stats.setMode(0);
-    stats.domElement.style.position = 'absolute';
-    stats.domElement.style.left = '0px';
-    stats.domElement.style.top = '0px';
-    document.body.appendChild(stats.domElement);
-    count_particles = document.querySelector('.js-count-particles');
-    update = function() {
-        stats.begin();
-        stats.end();
-        if (window.pJSDom[0].pJS.particles && window.pJSDom[0].pJS.particles.array) {
-            count_particles.innerText = window.pJSDom[0].pJS.particles.array.length;
-        }
-        requestAnimationFrame(update);
-    };
-    requestAnimationFrame(update);
 </script>
-<script src="//cdn.bootcss.com/react/15.4.2/react.min.js"></script>
-<script src="//cdn.bootcss.com/react/15.4.2/react-dom.min.js"></script>
-<script src="//cdn.bootcss.com/echarts/3.4.0/echarts.min.js"></script>
-<script src="//cdn.bootcss.com/validator/7.0.0/validator.min.js"></script>
-<script src="{{ url_for('static', filename='js/dist/login.js') }}"> </script>
 
 </body>
 </html>

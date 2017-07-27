@@ -15,6 +15,7 @@ from common import log_handler, LOG_LEVEL, \
     WORKER_TYPES, request_debug, \
     CLUSTER_LOG_TYPES, CLUSTER_LOG_LEVEL
 from modules import host_handler
+from flask_login import login_required
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
@@ -26,6 +27,7 @@ bp_host_view = Blueprint('bp_host_view', __name__,
 
 
 @bp_host_view.route('/hosts', methods=['GET'])
+@login_required
 def hosts_show():
     logger.info("/hosts method=" + r.method)
     request_debug(r, logger)
@@ -44,6 +46,7 @@ def hosts_show():
 
 
 @bp_host_view.route('/host/<host_id>', methods=['GET'])
+@login_required
 def host_info(host_id):
     logger.debug("/ host_info/{0} method={1}".format(host_id, r.method))
     return render_template("host_info.html", item=host_handler.get_by_id(

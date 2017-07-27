@@ -30,7 +30,7 @@ bp_index = Blueprint('bp_index', __name__)
 
 @bp_index.route('/', methods=['GET'])
 @bp_index.route('/index', methods=['GET'])
-# @login_required
+@login_required
 def show():
     request_debug(r, logger)
     hosts = list(host_handler.list(filter_data={}))
@@ -48,8 +48,7 @@ def show():
 
     clusters_temp = len(list(cluster_handler.list(filter_data={
         "user_id": "/^__/"}, col_name="active")))
-    # username, is_admin = current_user.username, current_user.isAdmin
-    username, is_admin = 'admin', True
+    username, is_admin = current_user.username, current_user.isAdmin
 
     return render_template("index.html", hosts=hosts,
                            hosts_free=hosts_free,
@@ -74,6 +73,7 @@ def show():
 
 
 @bp_index.route('/about', methods=['GET'])
+@login_required
 def about():
     logger.info("path={}, method={}".format(r.path, r.method))
     return render_template("about.html", author=author, version=version,

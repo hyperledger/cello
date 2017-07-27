@@ -13,6 +13,7 @@ from flask import request as r
 from common import log_handler, LOG_LEVEL, CODE_OK, request_debug
 from version import version
 from modules import host_handler, stat_handler
+from flask_login import login_required
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
@@ -54,6 +55,7 @@ bp_stat_view = Blueprint('bp_stat_view', __name__, url_prefix='/view')
 
 
 @bp_stat_view.route('/stat', methods=['GET'])
+@login_required
 def show():
     logger.info("path={}, method={}".format(r.path, r.method))
     hosts = list(host_handler.list())

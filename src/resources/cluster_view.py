@@ -15,6 +15,7 @@ from common import log_handler, LOG_LEVEL, \
     request_debug, NETWORK_TYPES, \
     CONSENSUS_PLUGINS_FABRIC_V1, CONSENSUS_MODES, NETWORK_SIZE_FABRIC_V1
 from modules import cluster_handler, host_handler
+from flask_login import login_required
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
@@ -27,6 +28,7 @@ bp_cluster_view = Blueprint('bp_cluster_view', __name__,
 
 # Return a web page with cluster info
 @bp_cluster_view.route('/cluster/<cluster_id>', methods=['GET'])
+@login_required
 def cluster_info_show(cluster_id):
     logger.debug("/ cluster_info/{}?released={} action={}".format(
         cluster_id, r.args.get('released', '0'), r.method))
@@ -44,6 +46,7 @@ def cluster_info_show(cluster_id):
 
 # Return a web page with clusters
 @bp_cluster_view.route('/clusters', methods=['GET'])
+@login_required
 def clusters_show():
     request_debug(r, logger)
     show_type = r.args.get("type", "active")
