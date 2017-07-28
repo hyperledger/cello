@@ -5,7 +5,7 @@ The Master Node includes several services:
 * restserver: Provide RESTful APIs for chain consumers.
 * watchdog: Watch for health checking.
 
-*More details can be found at the [architecture doc](docs/arch.md).*
+*More details can be found at the [architecture doc](./arch.md).*
 
 It can be deployed by in 2 steps.
 
@@ -27,11 +27,11 @@ $ git clone http://gerrit.hyperledger.org/r/cello && cd cello
 ```
 ### Command help - make
 
-To know more what the following make commands does please refer [make_support](/make_support.md) page.
+To know more what the following make commands does please refer [make_support](./make_support.md) page.
 
 ### Run Setup
 
-For the first time running, please setup the master node with the [setup.sh](https://github.com/hyperledger/cello/blob/master/scripts/setup.sh).
+For the first time running, please setup the master node with the [setup.sh](https://github.com/hyperledger/cello/blob/master/scripts/master_node/setup.sh).
 
 ```sh
 $ make setup-master
@@ -69,7 +69,7 @@ To check the logs for one specific service, please run
 $ make log service=watchdog
 ```
 
-Now you can access the `MASTER_NODE_IP:8080` to open the Web-based [operational dashboard](docs/dashboard.md).
+Now you can access the `MASTER_NODE_IP:8080` to open the Web-based [operational dashboard](./dashboard.md).
 
 
 ### Configuration

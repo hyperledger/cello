@@ -1,4 +1,4 @@
-    # Installation
+# Installation
 
 *Here we describe the setups for development usage. If you want to deploy Cello for production, please also refer to the [Production Configuration](production_config.md).*
 
