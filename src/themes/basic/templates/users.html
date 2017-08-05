@@ -1,0 +1,244 @@
+
+<!-- Copyright IBM Corp, All Rights Reserved.
+
+ SPDX-License-Identifier: Apache-2.0
+-->
+
+{% extends "layout.html" %}
+{% block title %}Users{% endblock %}
+{% block body %}
+    {{ super() }}
+    <div id="users">
+        <h2 class="page-header">Users: {{ items_count }}
+            <v-button type="success" size="large" style="float: right" @click="showModal">Create User</v-button>
+        </h2>
+        <v-data-table ref="userTable" :data='loadData' :columns='columns' strip bordered>
+            <template slot="td" scope="props">
+                <div v-if="props.column.field=='role'">
+                    <span v-html="rolesShown[props.content]"></span>
+                </div>
+                <div v-else-if="props.column.field=='timestamp'">
+                    <span v-html="unixMoment(props.content)"></span>
+                </div>
+                <div v-else-if="props.column.field=='id'">
+                    <v-dropdown :data="operations(props.item)" @item-click="operationClick">
+                        <a href="javascript:void(0)" class="ant-dropdown-link ant-dropdown-trigger">
+                            Operate <v-icon type="down"></v-icon>
+                        </a>
+                    </v-dropdown>
+                </div>
+                <span v-else v-html="props.content"></span>
+            </template>
+        </v-data-table>
+        <v-modal :title="modalTitle"
+                 okText="confirmText"
+                 cancelText="cancelText"
+                 :visible="visible"
+                 :confirm-loading="handling"
+                 @ok="handleOk"
+                 @cancel="handleCancel">
+            <v-form direction="horizontal" ref="userForm" :model="userForm">
+                <v-form-item label="User Name" :label-col="labelCol" :wrapper-col="wrapperCol" has-feedback prop="username">
+                    <v-input placeholder="User Name" size="large" v-model="userForm.username"></v-input>
+                </v-form-item>
+                <v-form-item v-if="method == 'create'" label="Password" :label-col="labelCol" :wrapper-col="wrapperCol" has-feedback prop="password">
+                    <v-input placeholder="Password" size="large" v-model="userForm.password"></v-input>
+                </v-form-item>
+                <v-form-item label="Role" :label-col="labelCol" :wrapper-col="wrapperCol" prop="role">
+                    <v-select v-model="userForm.role" placeholder="Please select a role" notfound="has no role" :data="roles"></v-select>
+                </v-form-item>
+                <v-form-item label="Active" :label-col="labelCol" :wrapper-col="wrapperCol" props="active">
+                    <v-switch v-model="userForm.active"></v-switch>
+                </v-form-item>
+            </v-form>
+            <div slot="footer">
+                <v-button key="cancel" type="ghost" size="large" @click="handleCancel">
+                    Cancel
+                </v-button>
+                <v-button key="confirm" type="primary" size="large" :loading="handling" @click="handleOk">
+                    Confirm
+                </v-button>
+            </div>
+        </v-modal>
+    </div>
+{% endblock %}
+{% block custom_js %}
+    <script>
+        Vue.prototype.unixMoment = function (time) {
+            return moment.unix(time).format("YYYY/MM/DD HH:mm:ss")
+        };
+        const users = new Vue({
+            el: '#users',
+            data: {
+                labelCol: {
+                    span: 6
+                },
+                wrapperCol: {
+                    span: 14
+                },
+                userForm: {
+                    username: '',
+                    password: '',
+                    role: 0,
+                    active: true
+                },
+                visible: false,
+                method: 'create',
+                users: [],
+                currentUser: {},
+                rolesShown: ["admin", "operator", "user"],
+                activeChoices: [
+                    {
+                        value: 1,
+                        text: "Yes"
+                    },
+                    {
+                        value: 0,
+                        text: "No"
+                    }
+                ],
+                roles: [
+                    {
+                        value: 0,
+                        label: "admin"
+                    },
+                    {
+                        value: 1,
+                        label: "operator"
+                    },
+                    {
+                        value: 2,
+                        label: "user"
+                    }
+                ],
+                rules: {
+                    username: [
+                        { required: true, message: 'Please input username', trigger: 'blur' }
+                    ],
+                    password: [
+                        { required: true, message: 'Please input password', trigger: 'blur' }
+                    ]
+                },
+                loadData: function (params) {
+                    return axios.get("/api/user/list", {params: params}).then(res =>{
+                        return res.data.data.users;
+                    });
+                },
+                columns: [
+                    {title:"User Name", field:'name'},
+                    {title:"Role", field:'role', sort: true},
+                    {title:"Create Time", field:'timestamp', sort: true},
+                    {title:"Operation", field: 'id'}
+                ],
+                operations: function(item) {
+                    return [
+                        {content: 'edit', item: item},
+                        {content: 'delete', item: item, divided: true}
+                    ]
+                },
+                handling: false
+            },
+            methods: {
+                showModal: function () {
+                    this.userForm = {
+                        username: "",
+                        password: "",
+                        role: 0,
+                        active: true
+                    }
+                    this.handling = false;
+                    this.method = 'create';
+                    this.visible = true;
+                },
+                handleCancel: function () {
+                    this.visible = false
+                },
+                handleOk: function () {
+                    this.$refs.userForm.validate(valid => {
+                        if (valid) {
+                            var formData = new FormData();
+                            for (key in this.userForm) {
+                                formData.append(key, this.userForm[key])
+                            }
+                            this.handling = true;
+                            if (this.method === "create") {
+                                axios.post('/api/user/create', formData).then(response => {
+                                    if (response.data.status === "OK") {
+                                        this.visible = false
+                                        this.$message.info(String.format("Create user {0} success", this.userForm.username));
+                                        this.$refs.userTable.reload();
+                                    }
+                                })
+                            } else {
+                                const updateUrl = String.format("/api/user/update/{0}", this.currentUser.id);
+                                axios.put(updateUrl, formData).then(response => {
+                                    if (response.data.status === "OK") {
+                                        this.visible = false
+                                        this.$message.info(String.format("Update user {0} success", this.currentUser.username));
+                                        this.$refs.userTable.reload();
+                                    }
+                                })
+                            }
+                        }
+                    });
+                },
+                operationClick: function (data) {
+                    const item = data.item;
+                    const method = data.content;
+                    const _that = this;
+                    switch (method) {
+                        case "edit":
+                            this.userForm = {
+                                username: item.name,
+                                active: item.active,
+                                password: item.password,
+                                role: item.role
+                            }
+                            this.currentUser = item;
+                            this.method = 'update';
+                            this.handling = false;
+                            this.visible = true;
+                            break;
+                        case "delete":
+                            this.$modal.confirm({
+                                title: String.format('Do you confirm delete user {0}', item.name),
+                                content: '',
+                                onOk: function () {
+                                    var delete_url = String.format('/api/user/delete/{0}', item.id);
+                                    axios.delete(delete_url).then(response => {
+                                        if (response.data.status === "OK") {
+                                            _that.$message.info(String.format("Delete user {0} success", item.name));
+                                        }
+                                        _that.$refs.userTable.reload();
+                                    })
+                                },
+                                onCancel: function () {}
+                            })
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            },
+            mounted: function () {
+                this.$message.config({
+                    top: 50
+                })
+            },
+            computed: {
+                modalTitle: function () {
+                    return this.method === "create" ? "Create User" : "Update User"
+                },
+                confirmText: function () {
+                    return "Confirm"
+                },
+                cancelText: function () {
+                    return "Cancel"
+                }
+            },
+            filters: {
+                unixMoment: moment().unix
+            }
+        });
+    </script>
+{% endblock %}

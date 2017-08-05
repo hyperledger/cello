@@ -8,7 +8,9 @@ from flask import Flask, render_template, redirect, url_for
 from resources import bp_index, \
     bp_stat_view, bp_stat_api, \
     bp_cluster_view, bp_cluster_api, \
-    bp_host_view, bp_host_api, bp_auth_api, bp_login
+    bp_host_view, bp_host_api, bp_auth_api, \
+    bp_login, bp_user_api, bp_user_view
+from resources.models import ADMIN
 from mongoengine import connect
 from flask_login import LoginManager, UserMixin, login_required
 from resources.user import User
@@ -49,13 +51,15 @@ app.register_blueprint(bp_stat_view)
 app.register_blueprint(bp_stat_api)
 app.register_blueprint(bp_auth_api)
 app.register_blueprint(bp_login)
+app.register_blueprint(bp_user_api)
+app.register_blueprint(bp_user_view)
 
 admin = os.environ.get("ADMIN", "admin")
 admin_password = os.environ.get("ADMIN_PASSWORD", "pass")
 salt = app.config.get("SALT", b"")
 password = bcrypt.hashpw(admin_password.encode('utf8'), bytes(salt.encode()))
 try:
-    user = User(admin, password, is_admin=True)
+    user = User(admin, password, is_admin=True, role=ADMIN)
     user.save()
 except Exception:
     pass

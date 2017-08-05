@@ -13,11 +13,12 @@ logger.addHandler(log_handler)
 
 class User(UserMixin):
     def __init__(self, username=None, password=None, active=True,
-                 is_admin=False, id=None):
+                 is_admin=False, role=None, id=None):
         self.username = username
         self.password = password
         self.active = active
         self.isAdmin = is_admin
+        self.role = role
         self.id = None
 
     def is_active(self):
@@ -26,10 +27,14 @@ class User(UserMixin):
     def is_admin(self):
         return self.isAdmin
 
+    def user_role(self):
+        return self.role
+
     def save(self):
         new_user = models.User(username=self.username,
                                password=self.password,
                                active=self.active,
+                               role=self.role,
                                isAdmin=self.isAdmin)
         new_user.save()
         self.id = new_user.id

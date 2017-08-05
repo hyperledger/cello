@@ -76,5 +76,4 @@ def login():
 @bp_auth_api.route('/logout', methods=['GET'])
 def logout():
     logout_user()
-    return make_ok_resp(data={'success': True,
-                              'next': url_for('bp_login.login')})
+    return redirect(url_for('bp_index.show'))

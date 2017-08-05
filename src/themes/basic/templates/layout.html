@@ -22,11 +22,18 @@
     {% endblock %}
 
     <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/vue-beauty.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/paginate.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dataTables.bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery.dataTables.min.css') }}">
+    {% block custom_css %}
+    {% endblock %}
+    <script src="https://cdn.bootcss.com/vue/2.4.2/vue.min.js"></script>
+    <script src="//cdn.bootcss.com/moment.js/2.18.1/moment.min.js"></script>
+    <script src="{{ url_for('static', filename='js/vue-beauty.min.js') }}"> </script>
+    <script src="https://cdn.bootcss.com/axios/0.16.2/axios.min.js"></script>
 
 <!--
     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
@@ -57,6 +64,9 @@
             <li><a href="#">Settings</a></li>
             <li><a href="#">Profile</a></li>
             <li><a href="#">Help</a></li>
+            <li>
+                {{ nav_link("bp_auth_api.logout", "Logout") }}
+            </li>
           </ul>
           <form class="navbar-form navbar-right">
             <input type="text" class="form-control" placeholder="Search...">
@@ -75,6 +85,7 @@
                 {{ nav_link("bp_cluster_view.clusters_show", "Active Chains", type="active") }}
                 {{ nav_link("bp_cluster_view.clusters_show", "Inused Chains", type="inused" ) }}
                 {{ nav_link("bp_cluster_view.clusters_show", "Release History", type="released") }}
+                {{ nav_link("bp_user_view.users", "User Management") }}
                 {{ nav_link("bp_index.about", "About") }}
             </ul>
         </div>
@@ -415,5 +426,7 @@
 <script src="{{ url_for('static', filename='js/solid-gauge.js') }}"> </script>
 <script src="{{ url_for('static', filename='js/jquery.dataTables.min.js') }}"> </script>
 <script src="{{ url_for('static', filename='js/dataTables.bootstrap.min.js') }}"> </script>
+{% block custom_js %}
+{% endblock %}
 </body>
 </html>
