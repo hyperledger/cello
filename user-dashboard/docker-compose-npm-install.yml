@@ -1,0 +1,12 @@
+version: "2"
+
+# Copyright IBM Corp., All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+services:
+  install-npm:
+    image: node
+    volumes:
+      - ./:/usr/app/src
+    command: bash -c "cd /usr/app/src && npm install && npm install requirejs && npm install nodemon"

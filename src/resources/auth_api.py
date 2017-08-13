@@ -41,8 +41,16 @@ def register():
 
     try:
         user = User(username, password)
-        user.save()
-        return make_ok_resp(code=CODE_CREATED)
+        user_id = user.save()
+        user = user.get_by_id(user_id)
+        data = {
+            "username": user.username,
+            "apikey": str(user.id),
+            "isActivated": user.active,
+            "balance": user.balance,
+            "success": True
+        }
+        return make_ok_resp(code=CODE_CREATED, data=data)
     except Exception as exc:
         logger.info("exc %s", exc)
         return make_fail_resp(error="register failed")
@@ -59,11 +67,12 @@ def login():
     user_obj = User()
     try:
         user = user_obj.get_by_username_w_password(username)
-        if user.is_admin() and \
-                bcrypt.checkpw(password.encode('utf8'),
-                               bytes(user.password.encode())):
+        if bcrypt.checkpw(password.encode('utf8'),
+                          bytes(user.password.encode())):
             login_user(user)
+            user_id = str(user.id)
             return make_ok_resp(data={'success': True,
+                                      'id': user_id,
                                       'next': url_for('bp_index.show')},
                                 code=CODE_CREATED)
         else:
@@ -77,3 +86,23 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('bp_index.show'))
+
+
+@bp_auth_api.route('/user/account/<user_id>', methods=['GET'])
+def account(user_id):
+    logger.info("in account api {}".format(user_id))
+    if not user_id:
+        return make_fail_resp(error="no user id", data={"success": False})
+    user_obj = User()
+    user = user_obj.get_by_id(user_id)
+    if not user:
+        return make_fail_resp(error="no such user", data={"success": False})
+
+    data = {
+        "username": user.username,
+        "apikey": str(user.id),
+        "isActivated": user.active,
+        "balance": user.balance
+    }
+
+    return make_ok_resp(data=data)

@@ -60,6 +60,7 @@ def list_user():
         "isAdmin": user.isAdmin,
         "role": user.role,
         "active": user.active,
+        "balance": user.balance,
         "timestamp": time.mktime(user.timestamp.timetuple())
     } for user in users]
 
@@ -87,13 +88,14 @@ def create_user():
 
     username, password = r.form["username"], r.form["password"]
     role, active = int(r.form["role"]), r.form["active"]
+    balance = int(r.form["balance"])
     active = active == "true"
     salt = app.config.get("SALT", b"")
     password = bcrypt.hashpw(password.encode('utf8'), bytes(salt.encode()))
 
     try:
         user = User(username, password, is_admin=role == ADMIN,
-                    role=role, active=active)
+                    role=role, active=active, balance=balance)
         user.save()
         return make_ok_resp(code=CODE_CREATED)
     except Exception as exc:
@@ -112,11 +114,13 @@ def update_user(user_id):
         return make_fail_resp(error=error_msg, data=r.form)
 
     username, role = r.form["username"], int(r.form["role"])
+    balance = int(r.form["balance"])
     active = r.form["active"]
     active = active == "true"
     try:
         UserModel.objects(id=user_id).update(set__username=username,
                                              set__active=active,
+                                             set__balance=balance,
                                              set__role=role, upsert=True)
     except Exception as exc:
         error_msg = exc.message

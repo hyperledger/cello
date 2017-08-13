@@ -17,15 +17,16 @@ user.prototype = {
     account: function(apikey) {
         return new Promise(function(resolve, reject) {
             rp({
-                uri: this.BaseURL + "user/account/apikey/" + apikey,
+                uri: this.BaseURL + "user/account/" + apikey,
                 json: true
             }).then(function(response) {
+                const {username, apikey, isActivated, balance} = response.data;
                 resolve({
                     success: true,
-                    username: response.username,
-                    apikey: response.apikey,
-                    isActivated: response.isActivated,
-                    balance: response.balance
+                    username,
+                    apikey,
+                    isActivated,
+                    balance
                 });
             }).catch(function(err) {
                 reject({
@@ -39,17 +40,17 @@ user.prototype = {
         return new Promise(function(resolve, reject) {
             rp({
                 method: "POST",
-                uri: this.BaseURL + "user/account/validate",
-                body: {
+                uri: this.BaseURL + "login",
+                formData: {
                     username: name,
-                    passwd: password
+                    password: password
                 },
                 json: true
             }).then(function(response) {
-                if (response.success) {
+                if (response.data.success) {
                     resolve({
                         success: true,
-                        apikey: response.description
+                        apikey: response.data.id
                     });
                 } else {
                     var e = new Error(response.description);
@@ -69,18 +70,21 @@ user.prototype = {
         return new Promise(function(resolve, reject) {
             rp({
                 method: "POST",
-                uri: this.BaseURL + "user/account",
-                body: {
+                uri: this.BaseURL + "register",
+                formData: {
                     username: name,
-                    passwd: password,
-                    apikey: apikey
+                    password: password
                 },
                 json: true
             }).then(function(response) {
-                if (response.success) {
+                if (response.data.success) {
+                    const {username, apikey, isActivated, balance} = response.data;
                     resolve({
                         success: true,
-                        apikey: apikey
+                        apikey: apikey,
+                        username,
+                        isActivated,
+                        balance
                     });
                 } else {
                     var e = new Error(response.description);

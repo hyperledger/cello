@@ -1,0 +1,25 @@
+version: "2"
+
+# Copyright IBM Corp., All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+services:
+  dashboard:
+    image: node
+    container_name: user-dashboard
+    external_links:
+      - mongodb:dashboard_mongo
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./:/usr/app/src
+    environment:
+      - DEBUG=node:*
+      - SV_BaseURL=http://9.186.50.245:8080/api/auth/
+    command: bash -c "cd /usr/app/src && ./node_modules/.bin/nodemon app.js"
+#  mongodb:
+#    image: mongo
+#    container_name: mongo
+#    ports:
+#      - "27017:27017"

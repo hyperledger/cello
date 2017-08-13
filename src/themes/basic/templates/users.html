@@ -47,6 +47,9 @@
                 <v-form-item label="Role" :label-col="labelCol" :wrapper-col="wrapperCol" prop="role">
                     <v-select v-model="userForm.role" placeholder="Please select a role" notfound="has no role" :data="roles"></v-select>
                 </v-form-item>
+                <v-form-item label="Blue Points" :label-col="labelCol" :wrapper-col="wrapperCol" prop="balance">
+                    <v-input-number v-model="userForm.balance" :min="0" :max="9999"></v-input-number>
+                </v-form-item>
                 <v-form-item label="Active" :label-col="labelCol" :wrapper-col="wrapperCol" props="active">
                     <v-switch v-model="userForm.active"></v-switch>
                 </v-form-item>
@@ -80,7 +83,8 @@
                     username: '',
                     password: '',
                     role: 0,
-                    active: true
+                    active: true,
+                    balance: 0
                 },
                 visible: false,
                 method: 'create',
@@ -127,6 +131,7 @@
                 columns: [
                     {title:"User Name", field:'name'},
                     {title:"Role", field:'role', sort: true},
+                    {title:"Balance", field:'balance', sort: true},
                     {title:"Create Time", field:'timestamp', sort: true},
                     {title:"Operation", field: 'id'}
                 ],
@@ -192,6 +197,7 @@
                                 username: item.name,
                                 active: item.active,
                                 password: item.password,
+                                balance: item.balance,
                                 role: item.role
                             }
                             this.currentUser = item;

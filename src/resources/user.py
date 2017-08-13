@@ -13,13 +13,14 @@ logger.addHandler(log_handler)
 
 class User(UserMixin):
     def __init__(self, username=None, password=None, active=True,
-                 is_admin=False, role=None, id=None):
+                 is_admin=False, role=None, id=None, balance=0):
         self.username = username
         self.password = password
         self.active = active
         self.isAdmin = is_admin
         self.role = role
         self.id = None
+        self.balance = balance
 
     def is_active(self):
         return self.active
@@ -35,6 +36,7 @@ class User(UserMixin):
                                password=self.password,
                                active=self.active,
                                role=self.role,
+                               balance=self.balance,
                                isAdmin=self.isAdmin)
         new_user.save()
         self.id = new_user.id
@@ -47,6 +49,7 @@ class User(UserMixin):
             self.username = dbUser.username
             self.active = dbUser.active
             self.id = dbUser.id
+            self.balance = dbUser.balance
             return self
         else:
             return None
@@ -62,6 +65,7 @@ class User(UserMixin):
                 self.password = dbUser.password
                 self.id = dbUser.id
                 self.isAdmin = dbUser.isAdmin
+                self.balance = dbUser.balance
                 return self
             else:
                 logger.info("not get user")
@@ -71,15 +75,17 @@ class User(UserMixin):
             return None
 
     def get_by_id(self, id):
-        dbUser = models.User.objects.with_id(id)
-        if dbUser:
+        try:
+            dbUser = models.User.objects.get(id=id)
+        except Exception:
+            return None
+        else:
             self.username = dbUser.username
             self.active = dbUser.active
             self.id = dbUser.id
+            self.balance = dbUser.balance
 
             return self
-        else:
-            return None
 
 
 class Anonymous(AnonymousUserMixin):

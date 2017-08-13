@@ -18,3 +18,4 @@ class User(Document):
     isAdmin = BooleanField(default=False)
     role = IntField(default=COMMON_USER)
     timestamp = DateTimeField(default=datetime.datetime.now)
+    balance = IntField(default=0)

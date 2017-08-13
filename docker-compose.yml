@@ -103,3 +103,16 @@ services:
       - PORT=8080
       - USERNAME=admin
       - PASSWORD=pass
+
+  user-dashboard:
+    build:
+      context: user-dashboard
+    image: cello-user-dashboard
+    container_name: user-dashboard
+    links:
+      - mongo:dashboard_mongo
+      - dashboard
+    ports:
+      - "8081:8080"
+    environment:
+      - SV_BaseURL=http://dashboard:8080/api/auth/
