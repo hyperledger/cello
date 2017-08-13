@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kube-dns
+  namespace: kube-system
+  labels:
+    k8s-app: kube-dns
+    kubernetes.io/cluster-service: "true"
+    kubernetes.io/name: "KubeDNS"
+spec:
+  selector:
+    k8s-app: kube-dns
+  clusterIP: <Paste the CLUSTERIP here > #in my case it was 10.0.0.1, Please check yours by "Kubectl describe svc --namespace=kube-system kube-dns"
+  type: NodePort
+  ports:
+    - name: dns
+      port: 53
+      targetPort: 53
+      nodePort: 30053
+      protocol: UDP
+    - name: dns-tcp
+      port: 53
+      targetPort: 53
+      nodePort: 30053
+      protocol: TCP
