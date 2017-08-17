@@ -1,0 +1,94 @@
+---
+- name: Setup env specific variables
+  set_fact:
+    azure_ad_user: "{{ auth.username }}"
+    azure_ad_pwd: "{{ auth.password }}"
+    azure_sub_id: "{{ auth.subscription_id }}"
+    region: "{{ cluster.region_name | default('eastus') }}"
+    res_grp: "{{ cluster.resource_group }}"
+
+- name: Retrieve azure specific image details
+  azure_rm_virtualmachineimage_facts :
+    ad_user: "{{ azure_ad_user }}"
+    password: "{{ azure_ad_pwd }}"
+    subscription_id: "{{ azure_sub_id }}"
+    location: "{{ region }}"
+    offer: UbuntuServer
+    publisher: Canonical
+    sku: '16.04.0-LTS'
+    version: latest
+  register: found_images
+
+
+- name: Print azure image results
+  debug: var=found_images
+
+- name: Create azure resource group
+  azure_rm_resourcegroup:
+    ad_user: "{{ azure_ad_user }}"
+    password: "{{ azure_ad_pwd }}"
+    subscription_id: "{{ azure_sub_id }}"
+    name: "{{ res_grp }}"
+    location: "{{ region }}"
+    state: present
+    tags:
+      testing: Fabric
+      delete: never
+  register: rg_result
+
+- name: Print resource groupresults
+  debug: var=rg_result
+
+
+- name: Create azure virtual network
+  azure_rm_virtualnetwork:
+    ad_user: "{{ azure_ad_user }}"
+    password: "{{ azure_ad_pwd }}"
+    subscription_id: "{{ azure_sub_id }}"
+    resource_group: '{{ res_grp }}'
+    name: '{{ res_grp }}-vnet'
+    address_prefixes: "192.168.168.0/24"
+    state: present
+
+- name: add azure subnet
+  azure_rm_subnet:
+    ad_user: "{{ azure_ad_user }}"
+    password: "{{ azure_ad_pwd }}"
+    subscription_id: "{{ azure_sub_id }}"
+    resource_group: '{{ res_grp }}'
+    name: '{{ res_grp }}-subnet'
+    address_prefix: "192.168.168.0/24"
+    virtual_network: '{{ res_grp }}-vnet'
+    state: present
+  register: azsubnet
+
+- name: Create azure security group
+  azure_rm_securitygroup:
+    ad_user: "{{ azure_ad_user }}"
+    password: "{{ azure_ad_pwd }}"
+    subscription_id: "{{ azure_sub_id }}"
+    resource_group: "{{ res_grp }}"
+    name: "{{ res_grp }}-secgrp"
+    location: "{{ region }}"
+    state: present
+    tags:
+      testing: Fabric
+      delete: on-exit
+    rules:
+      - { name: ssh, protocol: Tcp, source_address_prefix: "0.0.0.0/0",
+          destination_port_range: 22, access: Allow, priority: 101,direction: Inbound }
+      - { name: custom_TCP_IN, protocol: Tcp, source_address_prefix: "0.0.0.0/0",
+          destination_port_range: 179, access: Allow, priority: 102,direction: Inbound }
+      - { name: custom_TCP_OUT, protocol: Tcp, source_address_prefix: "0.0.0.0/0",
+          destination_port_range: 179, access: Allow, priority: 103,direction: Outbound }
+  register: sg_result
+
+- name: Add new instance to host group
+  add_host:
+    name: "{{ cluster.name_prefix }}{{ item }}"
+    ansible_host: "127.0.0.1"
+    groups: prohosts
+  with_sequence: count={{ cluster.stack_size }} format=%03x
+- name: Scan the public key for master and added it to known hosts
+  debug: "arggg  {{ item }}  "
+  with_items: "{{ groups['prohosts'] }}"

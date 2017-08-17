@@ -1,0 +1,31 @@
+---
+- name: Setup couple variables
+  set_fact:
+    public_ip: "{{ ansible_host }}"
+    private_ip: "{{ hostvars[ansible_host].private_ip }}"
+    fabricroot: "/opt/fabric"
+
+- name: Check if addon services already running
+  shell: >-
+    {{ fabricroot }}/bin/kubectl --server={{ private_ip }}:8080
+    --namespace kube-system get services | grep {{ item }} | cat
+  with_items:
+    - dnscontroller
+    - dashboard
+  register: existings
+
+- name: Remove these services if they are stil there
+  shell: >-
+    {{ fabricroot }}/bin/kubectl --server={{ private_ip }}:8080
+    delete -f /etc/kubernetes/{{ item.item }}.yaml
+  when: item.stdout != ""
+  with_items: "{{ existings.results }}"
+  no_log: true
+
+- name: Ensure deploy yaml files are removed
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "/etc/kubernetes/dashboard.yaml"
+    - "/etc/kubernetes/dnscontroller.yaml"

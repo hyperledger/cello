@@ -1,0 +1,11 @@
+---
+- name: Get first nic IP address
+  shell: >-
+    ip -4 -o addr|grep -v '127.0.0.1'|awk 'NR==1{print $4}'|cut -d '/' -f 1
+  register: ipaddress
+
+- name: Remember IP addresses
+  set_fact:
+    public_ip: "{{ ipaddress.stdout }}"
+    private_ip: "{{ ipaddress.stdout }}"
+    inter_name: "{{ inventory_hostname[3:] }}"

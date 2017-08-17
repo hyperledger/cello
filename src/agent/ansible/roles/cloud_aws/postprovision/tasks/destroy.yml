@@ -1,0 +1,22 @@
+---
+- name: Setup env specific variables
+  set_fact:
+    aws_usr_key: "{{ auth.username }}"
+    aws_sec_key: "{{ auth.password }}"
+    region: "{{ cluster.region_name | default('us-east-1') }}"
+
+- name: Delete aws key pairs
+  ec2_key:
+    name: "{{ cluster.ssh_key_name }}"
+    aws_access_key: "{{ aws_usr_key }}"
+    aws_secret_key: "{{ aws_sec_key }}"
+    region: "{{ region }}"
+    state: absent
+
+- name: Delete EC2 security group
+  ec2_group:
+    name: "{{ cluster.security_group }}"
+    aws_access_key: "{{ aws_usr_key }}"
+    aws_secret_key: "{{ aws_sec_key }}"
+    region: "{{ region }}"
+    state: absent

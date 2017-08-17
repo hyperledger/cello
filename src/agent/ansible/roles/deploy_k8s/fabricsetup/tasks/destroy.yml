@@ -1,0 +1,29 @@
+---
+- name: Setup variables
+  set_fact:
+    fabricworkdir: "/opt/gopath/{{ env }}/fabric"
+    k8s_server: "{{ hostvars[groups['allnodes'][0]].private_ip }}"
+    clihost: "{{ groups['allnodes'][0] }}"
+
+- name: Stop fabric pods
+  command: >-
+    /opt/fabric/bin/kubectl --server {{ k8s_server }}:8080 delete
+    -f {{ fabricworkdir }}/run/fabric-pod.yml
+  tags: "fabricdown"
+
+- name: Stop fabriccli pod
+  command: >-
+    /opt/fabric/bin/kubectl --server {{ k8s_server }}:8080 delete
+    -f {{ fabricworkdir }}/run/cli-k8s.yml
+  when: clihost == inventory_hostname
+  tags: "clidown"
+
+- name: Test if there are any chaincode container images
+  shell: docker images | grep "dev-*" | cat | awk '{print $1}'
+  register: images
+  no_log: true
+
+- name: Remove these chaincode container images
+  shell: docker images | grep "dev-*" | cat | awk '{print $1}' | xargs docker rmi -f
+  when: images.stdout != ""
+  no_log: true

@@ -1,0 +1,63 @@
+---
+- name: Retrieve specified flavor
+  os_flavor_facts:
+    auth: "{{ auth }}"
+    region_name: "{{ cluster.region_name }}"
+    availability_zone: "{{ cluster.availability_zone }}"
+    validate_certs: "{{ cluster.validate_certs }}"
+    name: "{{ cluster.flavor_name }}"
+
+- name: Create a key-pair
+  os_keypair:
+    state: "present"
+    auth: "{{ auth }}"
+    region_name: "{{ cluster.region_name }}"
+    availability_zone: "{{ cluster.availability_zone }}"
+    validate_certs: "{{ cluster.validate_certs }}"
+    name: "fabric"
+    public_key_file: "{{ cluster.public_key_file }}"
+
+- name: Create security group
+  os_security_group:
+    state: present
+    auth: "{{ auth }}"
+    region_name: "{{ cluster.region_name }}"
+    availability_zone: "{{ cluster.availability_zone }}"
+    validate_certs: "{{ cluster.validate_certs }}"
+    name: "fabric_sg"
+    description: security group for kubernetes cluster
+
+- name: Add security rules
+  os_security_group_rule:
+    state: present
+    auth: "{{ auth }}"
+    region_name: "{{ cluster.region_name }}"
+    availability_zone: "{{ cluster.availability_zone }}"
+    validate_certs: "{{ cluster.validate_certs }}"
+    security_group: "fabric_sg"
+    protocol: "{{ item.protocol }}"
+    direction: "{{ item.dir }}"
+    port_range_min: "{{ item.p_min }}"
+    port_range_max: "{{ item.p_max }}"
+    remote_ip_prefix: 0.0.0.0/0
+  with_items:
+    - { p_min: 22, p_max: 22, dir: ingress, protocol: tcp }
+    - { p_min: 179, p_max: 179, dir: ingress, protocol: tcp }
+    - { p_min: 179, p_max: 179, dir: egress, protocol: tcp }
+    - { p_min: 80, p_max: 80, dir: ingress, protocol: tcp }
+    - { p_min: -1, p_max: -1, dir: ingress, protocol: icmp }
+    - { p_min: -1, p_max: -1, dir: egress, protocol: icmp }
+    - { p_min: 53, p_max: 53, dir: ingress, protocol: udp }
+    - { p_min: 53, p_max: 53, dir: egress, protocol: udp }
+    - { p_min: 8285, p_max: 8285, dir: ingress, protocol: udp }
+    - { p_min: 1000, p_max: 65535, dir: ingress, protocol: tcp }
+    - { p_min: 1000, p_max: 65535, dir: egress, protocol: tcp }
+
+- name: Add provisioning host group
+  add_host:
+    name: "{{ cluster.name_prefix }}{{ item }}"
+    ansible_host: "127.0.0.1"
+    groups: "prohosts"
+  with_sequence: count={{ cluster.stack_size }} format=%03x
+  no_log: True
+

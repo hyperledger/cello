@@ -1,0 +1,31 @@
+---
+- name: Check if the VirtualBox VM already exists
+  shell: >-
+    /usr/local/bin/VBoxManage list vms | grep {{ inventory_hostname }} | cat
+  register: exists
+
+- name: Create a VirtualBox VM
+  command: >-
+    /usr/local/bin/VBoxManage clonevm {{ cluster.image_name }}
+    --name "{{ inventory_hostname }}" --register
+  when: exists.stdout == ""
+  tags: "createVM"
+
+- name: Add port forwarding
+  command: >-
+    /usr/local/bin/VBoxManage modifyvm {{ inventory_hostname }} --natpf2
+    "guestssh,tcp,,{{ hostvars[inventory_hostname].sshport }},,22"
+  when: exists.stdout == ""
+  tags: "addPort"
+
+- name: Check if the VirtualBox VM is already running
+  shell: >-
+    /usr/local/bin/VBoxManage list runningvms | grep {{ inventory_hostname }} | cat
+  register: running
+
+- name: Start up the VM
+  command: >-
+    /usr/local/bin/VBoxManage startvm "{{ inventory_hostname }}"
+    --type headless
+  when: running.stdout == ""
+  tags: "startVM"

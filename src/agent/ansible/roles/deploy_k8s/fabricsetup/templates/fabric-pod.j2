@@ -1,0 +1,213 @@
+# Hyperledger fabric deployment file.
+#
+# Example usage: kubectl create -f <this_file>
+
+{% for zookeeper in zookeepers %}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ zookeeper }}
+  labels:
+    k8s-app: {{ zookeeper }}
+spec:
+  nodeName: {{ inter_name }}
+  restartPolicy: Always
+  containers:
+    - name: {{ zookeeper }}
+      image: hyperledger/fabric-zookeeper:{{ thetag }}
+      imagePullPolicy: IfNotPresent
+      env:
+        - { name: "ZOO_MY_ID", value: "{{ zoo_ids[zookeeper] }}" }
+        - { name: "ZOO_SERVERS", value: "{{ znodes | trim }}" }
+        - { name: "ZOO_TICK_TIME", value: "2000" }
+        - { name: "ZOO_INIT_LIMIT", value: "10" }
+        - { name: "ZOO_SYNC_LIMIT", value: "2" }
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    k8s-app: {{ zookeeper }}
+  name: {{ zookeeper }}
+spec:
+  selector:
+    k8s-app: {{ zookeeper }}
+  ports:
+    - { name: "port1", port: 2888 }
+    - { name: "port2", port: 3888 }
+    - { name: "port3", port: 2181 }
+{% endfor %}
+
+{% for kafka in kafkas %}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ kafka }}
+  labels:
+    k8s-app: {{ kafka }}
+spec:
+  nodeName: {{ inter_name }}
+  restartPolicy: Always
+  containers:
+    - name: {{ kafka }}
+      image: hyperledger/fabric-kafka:{{ thetag }}
+      imagePullPolicy: IfNotPresent
+      env:
+        - { name: "KAFKA_MESSAGE_MAX_BYTES", value: "103809024" }
+        - { name: "KAFKA_MAX_REQUEST_SIZE", value: "104857600" }
+        - { name: "KAFKA_REPLICA_FETCH_MAX_BYTES", value: "103809024" }
+        - { name: "KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE", value: "true" }
+        - { name: "KAFKA_BROKER_ID", value: "{{ kafka_ids[kafka] }}" }
+        - { name: "KAFKA_MIN_INSYNC_REPLICAS", value: "1" }
+        - { name: "KAFKA_DEFAULT_REPLICATION_FACTOR", value: "{{ kafka_ids | length }}" }
+        - { name: "KAFKA_ZOOKEEPER_CONNECT", value: "{{ zkparam | trim | replace(' ', ',') }}" }
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    k8s-app: {{ kafka }}
+  name: {{ kafka }}
+spec:
+  selector:
+    k8s-app: {{ kafka }}
+  ports:
+    - { name: "port1", port: 9092 }
+    - { name: "port2", port: 9093 }
+{% endfor %}
+
+{% for peer in peers %}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ peer.name }}
+  labels:
+    k8s-app: {{ peer.name }}
+spec:
+  nodeName: {{ inter_name }}
+  restartPolicy: Always
+  volumes:
+    - name: varrun
+      hostPath:
+        path: /var/run
+    - name: keyfiles
+      hostPath:
+        path: {{ fabricworkdir }}/run/keyfiles
+    - name: peerorg
+      hostPath:
+        path: {{ fabricworkdir }}/run/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}
+  containers:
+{% if fabric.peer_db == 'CouchDB' %}
+    - name: couchdb-{{ peer.name }}
+      image: hyperledger/fabric-couchdb:{{ thetag }}
+      imagePullPolicy: IfNotPresent
+      securityContext:
+        privileged: true
+{% endif %}
+    - name: {{ peer.name }}
+      image: hyperledger/fabric-peer:{{ thetag }}
+      imagePullPolicy: IfNotPresent
+      securityContext:
+        privileged: true
+      env:
+        - { name: "CORE_VM_ENDPOINT", value: "unix:///host/var/run/docker.sock" }
+        - { name: "CORE_LOGGING_LEVEL", value: "DEBUG" }
+        - { name: "CORE_PEER_TLS_ENABLED", value: "true" }
+        - { name: "CORE_PEER_ENDORSER_ENABLED", value: "true" }
+        - { name: "CORE_PEER_GOSSIP_USELEADERELECTION",
+            value: "{{ allpeers|selectattr('org','equalto',peer.org)|list|selectattr('role','equalto','leader')|list|length|int==0 }}" }
+        - { name: "CORE_PEER_GOSSIP_ORGLEADER", value: "{{ (peer.role == "leader") | ternary('true','false') }}" }
+        - { name: "CORE_PEER_PROFILE_ENABLED", value: "true" }
+        - { name: "CORE_PEER_TLS_CERT_FILE", value: "/etc/hyperledger/fabric/tls/server.crt" }
+        - { name: "CORE_PEER_TLS_KEY_FILE", value: "/etc/hyperledger/fabric/tls/server.key" }
+        - { name: "CORE_PEER_TLS_ROOTCERT_FILE", value: "/etc/hyperledger/fabric/tls/ca.crt" }
+        - { name: "CORE_PEER_ID", value: "{{ peer.name }}" }
+        - { name: "CORE_PEER_ADDRESS", value: "{{ peer.name }}:7051" }
+        - { name: "CORE_PEER_GOSSIP_EXTERNALENDPOINT", value: "{{ peer.name }}:7051" }
+        - { name: "CORE_PEER_LOCALMSPID", value: "{{ peer.org }}" }
+        - { name: "CORE_PEER_MSPCONFIGPATH", value: "/etc/hyperledger/fabric/msp" }
+{% if fabric.peer_db == 'CouchDB' %}
+        - { name: "CORE_LEDGER_STATE_STATEDATABASE", value: "CouchDB" }
+        - { name: "CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS", value: "localhost:5984" }
+{% endif %}
+      volumeMounts:
+        - { mountPath: "/host/var/run", name: "varrun" }
+        - { mountPath: "/etc/hyperledger/fabric", name: "peerorg" }
+        - { mountPath: "/etc/hyperledger/allorgs", name: "keyfiles" }
+      command: ["peer"]
+      args: ["node", "start"]
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    k8s-app: {{ peer.name }}
+  name: {{ peer.name }}
+spec:
+  selector:
+    k8s-app: {{ peer.name }}
+  ports:
+  - name: port1
+    port: 7051
+{% endfor %}
+
+{% for orderer in orderers %}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ orderer.name }}
+  labels:
+    k8s-app: {{ orderer.name }}
+spec:
+  nodeName: {{ inter_name }}
+  restartPolicy: Always
+  volumes:
+    - name: keyfiles
+      hostPath:
+        path: {{ fabricworkdir }}/run/keyfiles
+    - name: ordererorg
+      hostPath:
+        path: {{ fabricworkdir }}/run/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}
+  containers:
+    - name: {{ orderer.name }}
+      image: hyperledger/fabric-orderer:{{ thetag }}
+      imagePullPolicy: IfNotPresent
+      env:
+        - { name: "ORDERER_GENERAL_LOGLEVEL", value: "debug" }
+        - { name: "ORDERER_GENERAL_LISTENADDRESS", value: "0.0.0.0" }
+        - { name: "ORDERER_GENERAL_GENESISMETHOD", value: "file" }
+        - { name: "ORDERER_GENERAL_GENESISFILE", value: "/var/hyperledger/allorgs/genesis.block" }
+        - { name: "ORDERER_GENERAL_LOCALMSPID", value: "{{ orderer.org }}" }
+        - { name: "ORDERER_GENERAL_LOCALMSPDIR", value: "/var/hyperledger/orderer/msp" }
+        - { name: "ORDERER_GENERAL_TLS_ENABLED", value: "true" }
+        - { name: "ORDERER_GENERAL_TLS_CLIENTAUTHENABLED", value: "false" }
+        - { name: "ORDERER_GENERAL_TLS_PRIVATEKEY", value: "/var/hyperledger/orderer/tls/server.key" }
+        - { name: "ORDERER_GENERAL_TLS_CERTIFICATE", value: "/var/hyperledger/orderer/tls/server.crt" }
+        - { name: "ORDERER_GENERAL_TLS_ROOTCAS", value: "[/var/hyperledger/orderer/tls/ca.crt]" }
+        - { name: "ORDERER_KAFKA_RETRY_SHORTINTERVAL", value: "1s" }
+        - { name: "ORDERER_KAFKA_RETRY_SHORTTOTAL", value: "30s" }
+        - { name: "ORDERER_KAFKA_VERBOSE", value: "true" }
+      volumeMounts:
+        - { mountPath: "/var/hyperledger/allorgs", name: "keyfiles" }
+        - { mountPath: "/var/hyperledger/orderer", name: "ordererorg" }
+      command: ["orderer"]
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    k8s-app: {{ orderer.name }}
+  name: {{ orderer.name }}
+spec:
+  selector:
+    k8s-app: {{ orderer.name }}
+  ports:
+    - name: port1
+      port: 7050
+
+{% endfor %}

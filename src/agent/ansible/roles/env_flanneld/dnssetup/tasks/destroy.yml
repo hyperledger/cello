@@ -1,0 +1,14 @@
+---
+- name: Setup variables
+  set_fact:
+    node_ip: "{{ hostvars[inventory_hostname].private_ip }}"
+    node_name: "{{ hostvars[inventory_hostname].inter_name }}"
+
+- name: Stop skydns service
+  command: >-
+    docker rm -f skydns.{{ node_name }}
+  when: node_ip == hostvars[groups['allnodes'][0]].private_ip
+
+- name: Stop registrator service
+  command: >-
+    docker rm -f registrator.{{ node_name }}

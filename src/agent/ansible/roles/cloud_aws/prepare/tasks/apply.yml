@@ -1,0 +1,86 @@
+---
+- name: Setup env specific variables
+  set_fact:
+    aws_usr_key: "{{ auth.username }}"
+    aws_sec_key: "{{ auth.password }}"
+
+- name: Retrieve AWS specific image flavor
+  ec2_ami_find:
+    region: "{{ cluster.region_name }}"
+    name: "{{ cluster.image_name }}"
+    aws_access_key: "{{ aws_usr_key }}"
+    aws_secret_key: "{{ aws_sec_key }}"
+    virtualization_type: hvm
+    is_public: yes
+    sort: name
+    sort_order: descending
+    sort_end: 4
+    no_result_action: fail
+  register: found_amis
+
+- name: Set  ubuntu ami_id
+  set_fact:
+    ubuntu_ami_id: "{{ (found_amis.results | first).ami_id  }}"
+
+- name: Create a key-pair
+  ec2_key:
+    name: "{{ cluster.ssh_key_name }}"
+    aws_access_key: "{{ aws_usr_key }}"
+    aws_secret_key: "{{ aws_sec_key }}"
+    region: "{{ cluster.region_name | default('us-east-1') }}"
+    key_material: "{{ item }}"
+    state: present
+  with_file: "{{ cluster.public_key_file }}"
+  register: ec2_key_result
+
+- name: Gather vpc facts
+  ec2_vpc_net_facts:
+    region: "{{ cluster.region_name }}"
+    aws_access_key: "{{ aws_usr_key }}"
+    aws_secret_key: "{{ aws_sec_key }}"
+  register: vpcnet
+
+- name: Create EC2 security group
+  ec2_group:
+    name: "{{ cluster.security_group }}"
+    description: EC2 security group for Fabric.
+    region: "{{ cluster.region_name | default('us-east-1') }}"
+    aws_access_key: "{{ aws_usr_key }}"
+    aws_secret_key: "{{ aws_sec_key }}"
+    vpc_id: "{{ vpcnet.vpcs[0].id }}"
+    state: present
+    rules:
+      - { proto: tcp, from_port: 22, to_port: 22, cidr_ip: "0.0.0.0/0" }
+      - { proto: tcp, from_port: 179, to_port: 179, cidr_ip: "0.0.0.0/0" }
+      - { proto: tcp, from_port: 80, to_port: 80, cidr_ip: "0.0.0.0/0" }
+      - { proto: icmp, from_port: -1, to_port: -1, cidr_ip: "0.0.0.0/0" }
+      - { proto: udp, from_port: 53, to_port: 53, cidr_ip: "0.0.0.0/0" }
+      - { proto: udp, from_port: 8285, to_port: 8285, cidr_ip: "0.0.0.0/0" }
+      - { proto: tcp, from_port: 1000, to_port: 65535, cidr_ip: "0.0.0.0/0" }
+  register: sg_result
+
+- ec2_group_facts:
+    region: "{{ cluster.region_name }}"
+    aws_access_key: "{{ aws_usr_key }}"
+    aws_secret_key: "{{ aws_sec_key }}"
+    filters:
+      vpc-id: "{{ vpcnet.vpcs[0].id }}"
+      group_name: "{{ cluster.security_group }}"
+  register: vpcsg
+
+- name: Gather subnet facts
+  ec2_vpc_subnet_facts:
+    region: "{{ cluster.region_name }}"
+    aws_access_key: "{{ aws_usr_key }}"
+    aws_secret_key: "{{ aws_sec_key }}"
+  register: vpcsubnet
+
+- name: Add provisioning host group
+  add_host:
+    name: "{{ cluster.name_prefix }}{{ item }}"
+    ansible_host: "127.0.0.1"
+    subnet_id: "{{ vpcsubnet.subnets[0].id }}"
+    sg_id: "{{ vpcsg.security_groups[0].group_id }}"
+    groups: "prohosts"
+  with_sequence: count={{ cluster.stack_size }} format=%03x
+  no_log: True

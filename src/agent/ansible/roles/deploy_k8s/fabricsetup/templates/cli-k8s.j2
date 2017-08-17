@@ -1,0 +1,39 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: fabriccli
+  labels:
+    k8s-app: fabriccli
+spec:
+  nodeName: {{ inter_name }}
+  restartPolicy: OnFailure
+  volumes:
+    - name: varrun
+      hostPath:
+        path: /var/run
+    - name: keyfiles
+      hostPath:
+        path: {{ fabricworkdir }}/run/keyfiles
+    - name: chaincode
+      hostPath:
+        path: {{ fabricworkdir }}/run/keyfiles/chaincode
+  containers:
+    - name: fabriccli
+      image: hyperledger/fabric-tools:{{ thetag }}
+      imagePullPolicy: IfNotPresent
+      securityContext:
+        privileged: true
+      env:
+        - name: CORE_VM_ENDPOINT
+          value: "unix:///host/var/run/docker.sock"
+        - name: CORE_LOGGING_LEVEL
+          value: "DEBUG"
+      volumeMounts:
+        - mountPath: /host/var/run
+          name: varrun
+        - mountPath: /opt/gopath/src/chaincode
+          name: chaincode
+        - mountPath: /etc/hyperledger/allorgs
+          name: keyfiles
+      command: ["/etc/hyperledger/allorgs/dochannel.sh"]

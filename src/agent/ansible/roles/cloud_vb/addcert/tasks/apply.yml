@@ -1,0 +1,14 @@
+---
+- name: Make sure that working directory exists and clean
+  file:
+    path: "~/.ssh/"
+    state: "directory"
+
+- name: Setup ssh key
+  lineinfile:
+    dest: "~/.ssh/authorized_keys"
+    insertafter: EOF
+    create: yes
+    state: present
+    line: "{{ item }}"
+  with_lines: cat "{{ cluster.public_key_file }}"

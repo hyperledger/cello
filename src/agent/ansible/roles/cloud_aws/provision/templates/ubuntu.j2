@@ -1,0 +1,6 @@
+#cloud-config
+hostname: {{ inventory_hostname }}.
+package_update: true
+packages:
+ - python
+ - docker.io

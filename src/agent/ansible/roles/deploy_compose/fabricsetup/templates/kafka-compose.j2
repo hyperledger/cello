@@ -1,0 +1,23 @@
+---
+version: '2'
+
+services:
+
+{% for kafka in kafkas %}
+  {{ kafka }}:
+    container_name: {{ kafka }}
+    image: hyperledger/fabric-kafka:{{ thetag }}
+    restart: always
+    network_mode: bridge
+    hostname: {{ kafka }}
+    environment:
+      - KAFKA_MESSAGE_MAX_BYTES=103809024
+      - KAFKA_MAX_REQUEST_SIZE=104857600
+      - KAFKA_REPLICA_FETCH_MAX_BYTES=103809024
+      - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=true
+      - KAFKA_BROKER_ID={{ kafka_ids[kafka] }}
+      - KAFKA_MIN_INSYNC_REPLICAS=1
+      - KAFKA_DEFAULT_REPLICATION_FACTOR={{ kafka_ids | length }}
+      - KAFKA_ZOOKEEPER_CONNECT={{ zkparam | trim | replace(' ', ',') }}
+
+{% endfor %}

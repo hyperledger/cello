@@ -1,0 +1,11 @@
+---
+- name: Grant the user docker permission
+  command: gpasswd -a "{{ cluster.ssh_user }}" docker
+
+- name: Run base image scripts to setup environment
+  script: "{{ playbook_dir }}/run/fabric-baseimage/scripts/{{ item }}"
+  with_items:
+    - "common/packages.sh"
+    - "common/setup.sh"
+    - "docker/fixup.sh"
+    - "common/cleanup.sh"
