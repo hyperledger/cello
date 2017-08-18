@@ -90,7 +90,6 @@ def logout():
 
 @bp_auth_api.route('/user/account/<user_id>', methods=['GET'])
 def account(user_id):
-    logger.info("in account api {}".format(user_id))
     if not user_id:
         return make_fail_resp(error="no user id", data={"success": False})
     user_obj = User()

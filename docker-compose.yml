@@ -115,4 +115,10 @@ services:
     ports:
       - "8081:8080"
     environment:
-      - SV_BaseURL=http://dashboard:8080/api/auth/
+      - SV_BaseURL=http://dashboard:8080/api/
+      - RESTful_Server=dashboard:8080
+      - RESTful_BaseURL=/v2/
+      - DEBUG=node:*
+    volumes:
+      - ./user-dashboard:/usr/app/src
+    command: bash -c "cd /usr/app/src && ./node_modules/.bin/nodemon app.js"

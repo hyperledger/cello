@@ -12,3 +12,4 @@ requests>=2.0.0,<=2.13.0
 mongoengine>=0.10.0,<=0.13.0
 flask-login>=0.4.0,<=0.4.0
 bcrypt>=3.0.0,<=3.1.0
+flask-restful>=0.2.1,<=0.3.6

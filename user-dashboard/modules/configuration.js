@@ -11,7 +11,7 @@ module.exports = {
     cookieName: "BlockChainAccount",
     SV_BaseURL: process.env.SV_BaseURL || "https://ptopenlab.com/cloudlab/api/",
     RESTful_Server: process.env.RESTful_Server || "9.186.91.4:8108",
-    RESTful_BaseURL: "/restful/api/v2/",
+    RESTful_BaseURL: process.env.RESTful_BaseURL || "/restful/api/v2/",
     PoolManager_Server: process.env.PoolManager_Server || "9.186.91.26",
     PoolManager_BaseURL: "/v2/",
     Log_Server: process.env.Log_Server || "9.186.91.29:8080",

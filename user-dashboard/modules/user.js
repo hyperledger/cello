@@ -17,7 +17,7 @@ user.prototype = {
     account: function(apikey) {
         return new Promise(function(resolve, reject) {
             rp({
-                uri: this.BaseURL + "user/account/" + apikey,
+                uri: this.BaseURL + "auth/user/account/" + apikey,
                 json: true
             }).then(function(response) {
                 const {username, apikey, isActivated, balance} = response.data;
@@ -40,7 +40,7 @@ user.prototype = {
         return new Promise(function(resolve, reject) {
             rp({
                 method: "POST",
-                uri: this.BaseURL + "login",
+                uri: this.BaseURL + "auth/login",
                 formData: {
                     username: name,
                     password: password
@@ -70,7 +70,7 @@ user.prototype = {
         return new Promise(function(resolve, reject) {
             rp({
                 method: "POST",
-                uri: this.BaseURL + "register",
+                uri: this.BaseURL + "auth/register",
                 formData: {
                     username: name,
                     password: password
