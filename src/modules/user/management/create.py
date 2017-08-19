@@ -21,7 +21,8 @@ logger.setLevel(LOG_LEVEL)
 logger.addHandler(log_handler)
 
 user_create_fields = {
-    "status": fields.String
+    "status": fields.String,
+    "id": fields.String
 }
 
 user_create_parser = reqparse.RequestParser()
@@ -54,13 +55,15 @@ class CreateUser(Resource):
         salt = app.config.get("SALT", b"")
         password = bcrypt.hashpw(password.encode('utf8'), bytes(salt.encode()))
         status = "OK"
+        user_id = ""
 
         try:
             user = User(username, password, is_admin=role == ADMIN,
                         role=role, active=active, balance=balance)
             user.save()
+            user_id = user.id
         except Exception as exc:
             logger.error("exc %s", exc)
             status = "FAIL"
 
-        return {"status": status}, 200
+        return {"status": status, "id": user_id}, 200

@@ -53,7 +53,11 @@ all: check
 
 check: ##@Code Check code format
 	tox
+	@$(MAKE) test-case
 	make start && sleep 10 && make stop
+
+test-case: ##@Code Run test case for flask server
+	@$(MAKE) -C test/ all
 
 clean: ##@Code Clean tox result
 	rm -rf .tox .cache *.egg-info

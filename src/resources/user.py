@@ -39,7 +39,7 @@ class User(UserMixin):
                                balance=self.balance,
                                isAdmin=self.isAdmin)
         new_user.save()
-        self.id = new_user.id
+        self.id = str(new_user.id)
         return self.id
 
     def get_by_username(self, username):
@@ -59,7 +59,6 @@ class User(UserMixin):
             dbUser = models.User.objects.get(username=username)
 
             if dbUser:
-                logger.info("get user")
                 self.username = dbUser.username
                 self.active = dbUser.active
                 self.password = dbUser.password
@@ -68,10 +67,9 @@ class User(UserMixin):
                 self.balance = dbUser.balance
                 return self
             else:
-                logger.info("not get user")
                 return None
         except Exception as exc:
-            logger.info("get user exc %s", exc)
+            logger.error("get user exc %s", exc)
             return None
 
     def get_by_id(self, id):

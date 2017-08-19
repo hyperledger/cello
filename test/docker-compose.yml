@@ -1,0 +1,44 @@
+# This compose file will deploy the services, and bootup a mongo server.
+
+# Copyright IBM Corp., All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+# Local `/opt/cello/mongo` will be used for the db storage.
+#  dashboard: dashboard service of cello, listen on 8080
+#  app: app service of cello, listen on 80
+#  nginx: front end
+#  mongo: mongo db
+
+version: '2'
+services:
+  # cello dashboard service
+  dashboard:
+    build:
+      context: ../src
+      dockerfile: Dockerfile-dashboard
+    image: cello-dashboard
+    container_name: dashboard-test
+    hostname: cello-dashboard
+    environment:
+      - MONGO_URL=mongodb://mongo:27017
+      - MONGO_DB=dev
+      - DEBUG=False # in debug mode, service will auto-restart
+      - LOG_LEVEL=INFO # what level log will be output
+      - STATIC_FOLDER=$STATIC_FOLDER
+      - TEMPLATE_FOLDER=$TEMPLATE_FOLDER
+    expose:
+      - "8080"
+    volumes:  # This should be removed in product env
+      - ../src:/src
+      - ./:/test
+    command: bash -c "python /test/cases/run.py"
+
+  # mongo database, may use others in future
+  mongo:
+    image: mongo:3.2
+    hostname: mongo
+    container_name: mongo-test
+    mem_limit: 2048m
+    environment:
+      - NO_USED=0

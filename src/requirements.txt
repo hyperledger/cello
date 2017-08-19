@@ -13,3 +13,5 @@ mongoengine>=0.10.0,<=0.13.0
 flask-login>=0.4.0,<=0.4.0
 bcrypt>=3.0.0,<=3.1.0
 flask-restful>=0.2.1,<=0.3.6
+Flask-Testing>=0.5.0,<=0.6.2
+Faker>=0.7.17,<=0.7.18
