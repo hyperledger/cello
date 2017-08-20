@@ -17,10 +17,10 @@ user.prototype = {
     account: function(apikey) {
         return new Promise(function(resolve, reject) {
             rp({
-                uri: this.BaseURL + "auth/user/account/" + apikey,
+                uri: this.BaseURL + "user/account/" + apikey,
                 json: true
             }).then(function(response) {
-                const {username, apikey, isActivated, balance} = response.data;
+                const {username, apikey, isActivated, balance} = response;
                 resolve({
                     success: true,
                     username,
@@ -47,10 +47,10 @@ user.prototype = {
                 },
                 json: true
             }).then(function(response) {
-                if (response.data.success) {
+                if (response.success) {
                     resolve({
                         success: true,
-                        apikey: response.data.id
+                        apikey: response.id
                     });
                 } else {
                     var e = new Error(response.description);

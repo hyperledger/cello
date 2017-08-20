@@ -3,7 +3,8 @@ import os
 import logging
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from flask_login import UserMixin, AnonymousUserMixin
-from resources import models
+from modules.models import User as UserModel
+from modules.models import LoginHistory
 from common import log_handler, LOG_LEVEL
 
 logger = logging.getLogger(__name__)
@@ -32,19 +33,19 @@ class User(UserMixin):
         return self.role
 
     def save(self):
-        new_user = models.User(username=self.username,
-                               password=self.password,
-                               active=self.active,
-                               role=self.role,
-                               balance=self.balance,
-                               isAdmin=self.isAdmin)
+        new_user = UserModel(username=self.username,
+                             password=self.password,
+                             active=self.active,
+                             role=self.role,
+                             balance=self.balance,
+                             isAdmin=self.isAdmin)
         new_user.save()
         self.id = str(new_user.id)
         return self.id
 
     def get_by_username(self, username):
 
-        dbUser = models.User.objects.get(username=username)
+        dbUser = UserModel.objects.get(username=username)
         if dbUser:
             self.username = dbUser.username
             self.active = dbUser.active
@@ -56,7 +57,7 @@ class User(UserMixin):
 
     def get_by_username_w_password(self, username):
         try:
-            dbUser = models.User.objects.get(username=username)
+            dbUser = UserModel.objects.get(username=username)
 
             if dbUser:
                 self.username = dbUser.username
@@ -65,6 +66,8 @@ class User(UserMixin):
                 self.id = dbUser.id
                 self.isAdmin = dbUser.isAdmin
                 self.balance = dbUser.balance
+                login_history = LoginHistory(user=dbUser)
+                login_history.save()
                 return self
             else:
                 return None
@@ -74,7 +77,7 @@ class User(UserMixin):
 
     def get_by_id(self, id):
         try:
-            dbUser = models.User.objects.get(id=id)
+            dbUser = UserModel.objects.get(id=id)
         except Exception:
             return None
         else:

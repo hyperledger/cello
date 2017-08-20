@@ -3,4 +3,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-from .management import ListUser, CreateUser, UpdateUser, DeleteUser
+from .management import ListUser, CreateUser, UpdateUser, \
+    DeleteUser, UserInfo
+from .auth import Register, Login
+from .user import User

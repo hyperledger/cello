@@ -15,7 +15,7 @@ fake = Factory.create()
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 from dashboard import app
 from common import log_handler, LOG_LEVEL
-from resources.models import COMMON_USER
+from modules.models import COMMON_USER
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
@@ -48,7 +48,7 @@ class UserManagementTestCase(TestCase):
         response = self._login("admin", "pass")
         response = response.data.decode("utf-8")
         response = json.loads(response)
-        self.assertEqual(response.get("status", ""), "OK")
+        self.assertTrue(response.get("success", False))
 
     def test_list_user(self):
         self._login("admin", "pass")
@@ -77,7 +77,7 @@ class UserManagementTestCase(TestCase):
         response = self._login(user_name, password)
         response = response.data.decode("utf-8")
         response = json.loads(response)
-        self.assertEqual(response.get("status", ""), "OK")
+        self.assertTrue(response.get("success", False))
 
         self._login("admin", "pass")
 

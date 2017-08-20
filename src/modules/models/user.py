@@ -2,7 +2,8 @@ import sys
 import os
 import datetime
 from mongoengine import Document, StringField,\
-    BooleanField, DateTimeField, IntField
+    BooleanField, DateTimeField, IntField, \
+    ReferenceField
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
@@ -19,3 +20,8 @@ class User(Document):
     role = IntField(default=COMMON_USER)
     timestamp = DateTimeField(default=datetime.datetime.now)
     balance = IntField(default=0)
+
+
+class LoginHistory(Document):
+    time = DateTimeField(default=datetime.datetime.now)
+    user = ReferenceField(User)

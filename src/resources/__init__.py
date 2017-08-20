@@ -12,7 +12,6 @@ from .cluster_view import bp_cluster_view
 from .host_view import bp_host_view
 
 from .stat import bp_stat_api, bp_stat_view
-from .auth_api import bp_auth_api
 from .login import bp_login
-from .user_api import bp_user_api
+from .user_api import bp_user_api, bp_auth_api
 from .user_view import bp_user_view

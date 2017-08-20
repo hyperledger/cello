@@ -2,21 +2,22 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
+import logging
 import os
-from common import log_handler, LOG_LEVEL
+
+import bcrypt
 from flask import Flask, render_template, redirect, url_for
+from flask_login import LoginManager
+from mongoengine import connect
+
+from common import log_handler, LOG_LEVEL
+from modules.models import ADMIN
 from resources import bp_index, \
     bp_stat_view, bp_stat_api, \
     bp_cluster_view, bp_cluster_api, \
     bp_host_view, bp_host_api, bp_auth_api, \
     bp_login, bp_user_api, bp_user_view
-from resources.models import ADMIN
-from mongoengine import connect
-from flask_login import LoginManager, UserMixin, login_required
-from resources.user import User
-from resources import models
-import bcrypt
-import logging
+from modules.user import User
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
