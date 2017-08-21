@@ -29,6 +29,7 @@ from common import CLUSTER_PORT_START, CLUSTER_PORT_STEP, \
     PEER_SERVICE_PORTS, CA_SERVICE_PORTS
 
 from common import FabricPreNetworkConfig, FabricV1NetworkConfig
+from common.fabric_network import FabricV1Network
 
 from modules import host
 
@@ -689,17 +690,21 @@ class ClusterHandler(object):
         :return: True or False
         """
         cluster = self.get_by_id(cluster_id)
+        cluster_id = cluster_id
+        logger.debug("Cluster ID: {}".format(cluster_id))
         logger.debug("checking health of cluster={}".format(cluster))
         if not cluster:
             logger.warning("Cannot found cluster id={}".format(cluster_id))
             return True
-        if cluster.get('status') != 'running':
+        if cluster.get("status") != "running":
             logger.warning("cluster is not running id={}".format(cluster_id))
             return True
-        if cluster.get('network_type') == NETWORK_TYPE_FABRIC_PRE_V1:
-            rest_api = cluster["service_url"]['rest'] + "/network/peers"
-            if not rest_api.startswith('http'):
-                rest_api = 'http://' + rest_api
+        if cluster.get("network_type") == NETWORK_TYPE_FABRIC_PRE_V1:
+            rest_api = cluster["service_url"]["rest"] + "/network/peers"
+            if not rest_api.startswith("http"):
+                rest_api = "http://" + rest_api
+            logger.debug("rest_api={}".format(rest_api))
+            logger.debug("---In Network type Fabric V 0.6---")
             try:
                 r = requests.get(rest_api, timeout=timeout)
             except Exception as e:
@@ -708,6 +713,7 @@ class ClusterHandler(object):
                 return True
 
             peers = r.json().get("peers")
+            logger.debug("peers from rest_api: {}".format(peers))
 
             if len(peers) == cluster["size"]:
                 self.db_update_one({"id": cluster_id},
@@ -720,9 +726,18 @@ class ClusterHandler(object):
                                    {"$set": {"health": "FAIL"}})
                 return False
         elif cluster.get('network_type') == NETWORK_TYPE_FABRIC_V1:
-            # TODO: check fabric 1.0 network health status
-            return True
-        return True
+            logger.debug("Cluster_id ={}".format(cluster_id))
+            logger.debug("checking health of cluster={}".format(cluster))
+            health_status = FabricV1Network.\
+                health_check(cluster, cluster_id, timeout=5)
+            if health_status == "OK":
+                self.db_update_one({"id": cluster_id},
+                                   {"$set": {"health": "OK"}})
+            else:
+                self.db_update_one({"id": cluster_id},
+                                   {"$set": {"health": "FAIL"}})
+            logger.debug("health_status: {}".format(health_status))
+            return health_status
 
     def db_update_one(self, filter, operations, after=True, col="active"):
         """
