@@ -1,0 +1,230 @@
+---
+- name: Figuring out the server architecture
+  shell: uname -m
+  register: rawarch
+
+- name: Setup and initialize variables
+  set_fact:
+    current_host: "{{ hostvars[inventory_hostname].inter_name }}"
+    fabricworkdir: "/opt/gopath/{{ env }}/fabric"
+    gopath: "/opt/gopath/{{ env }}"
+    arch: "{{ rawarch.stdout}}"
+    peers: "{{ [] }}"
+    orderers: "{{ [] }}"
+    kafkas: "{{ [] }}"
+    kafkanodes: ""
+    zookeepers: "{{ [] }}"
+    znodes: ""
+    zkparam: ""
+    index: 1
+    zoo_ids: "{{ {} }}"
+    kafka_ids: "{{ {} }}"
+    zookeeperls: "{{ [] }}"
+    kafkals: "{{ [] }}"
+    peerls: "{{ [] }}"
+    ordererls: "{{ [] }}"
+    allpeers: "{{ [] }}"
+    clihost: ""
+    filterstr: ""
+    thetag: "{{ rawarch.stdout + '-' + fabric.baseimage_tag }}"
+
+- name: Make sure that working directory exists and clean
+  file:
+    path: "{{ fabricworkdir }}/run"
+    state: "{{ item }}"
+    mode: 0775
+  with_items:
+    - "absent"
+    - "directory"
+
+- name: Create component list
+  set_fact:
+    ordererls: "{{ ordererls | default([]) + item.value.orderers | default([]) }}"
+    peerls: "{{ peerls | default([]) + item.value.peers | default([]) }}"
+    zookeeperls: "{{ zookeeperls | default([]) + item.value.zookeepers | default([]) }}"
+    kafkals: "{{ kafkals | default([]) + item.value.kafkas | default([]) }}"
+  with_dict: "{{ fabric.network }}"
+
+- name: Sort component list
+  set_fact:
+    zookeeperls: "{{ zookeeperls | sort }}"
+    kafkals: "{{ kafkals | sort }}"
+
+- name: Generate zookeeper node list
+  set_fact:
+    znodes: "{{ znodes }} server.{{ index }}={{ item }}:2888:3888"
+    zkparam: "{{ zkparam + item }}:2181 "
+    zoo_ids: "{{ zoo_ids | combine({item: index}) }}"
+    index: "{{ index | int + 1 }}"
+  with_items: "{{ zookeeperls | default([]) }}"
+
+- name: Reset the index
+  set_fact:
+    index: 1
+
+- name: Generate kafka broker ids
+  set_fact:
+    kafka_ids: "{{ kafka_ids | combine({item: index}) }}"
+    index: "{{ index | int + 1 }}"
+  with_items: "{{ kafkals | default([]) }}"
+
+- name: Get all peer object list
+  set_fact:
+    allpeers: |
+      {{ allpeers | default([]) + [{'org':item.split('@')[1].split('.')[-1],
+        'name':item.split('@')[1] | replace('.', '-'),
+        'role':item.split('@')[0]}] }}
+  with_items: "{{ peerls }}"
+
+- name: Get all orderer object list
+  set_fact:
+    allorderers: |
+      {{ allorderers | default([]) + [{ 'org':item.split('.')[-1],
+        'name':item | replace('.', '-') }] }}
+  with_items: "{{ ordererls }}"
+
+- name: Get peer container list
+  set_fact:
+    peers: |
+      {{ peers + [{'org':item.split('@')[1].split('.')[-1],
+        'name':item.split('@')[1] | replace('.', '-'),
+        'role':item.split('@')[0]}] }}
+  with_items: "{{ fabric.network[current_host].peers | default([]) }}"
+
+- name: Get orderer container list
+  set_fact:
+    orderers: |
+      {{ orderers + [{'org':item.split('.')[-1],
+        'name':item | replace('.', '-') }] }}
+  with_items: "{{ fabric.network[current_host].orderers | default([]) }}"
+
+- name: Set zookeeper and kafka container list
+  set_fact:
+    zookeepers: "{{ fabric.network[current_host].zookeepers | default([]) }}"
+    kafkas: "{{ fabric.network[current_host].kafkas | default([]) }}"
+
+- name: Pull certificates from the builder machine
+  command: >-
+    scp -i "/opt/gopath/id_rsa" -r -o "StrictHostKeyChecking no" "{{ fabric.
+    ssh_user }}@{{ hostvars[groups['builders'][0]].private_ip }}:{{ fabricworkdir }}/certs.tgz"
+    "{{ fabricworkdir }}/allcerts.tgz"
+
+- name: Pull container images from the builder machine
+  command: >-
+    scp -i "/opt/gopath/id_rsa" -r -o "StrictHostKeyChecking no" "{{ fabric.
+    ssh_user }}@{{ hostvars[groups['builders'][0]].private_ip }}:{{ fabricworkdir }}/images/fabricimages.tar"
+    "{{ fabricworkdir }}/fabricimages.tar"
+  when: fabric.baseimage_tag == '' and inventory_hostname not in groups['builders']
+
+- name: Pull container version file from the build machine
+  command: >-
+    scp -i "/opt/gopath/id_rsa" -r -o "StrictHostKeyChecking no" "{{ fabric.
+    ssh_user }}@{{ hostvars[groups['builders'][0]].private_ip }}:{{ fabricworkdir }}/images/VERSION"
+    "{{ fabricworkdir }}/VERSION"
+  when: fabric.baseimage_tag == ''
+
+- name: Load all the docker images created by build machine
+  shell: >-
+    docker load -i {{ fabricworkdir }}/fabricimages.tar
+  when: fabric.baseimage_tag == '' and inventory_hostname not in groups['builders']
+
+- name: Find out the image tags
+  slurp:
+    src: "{{ fabricworkdir }}/VERSION"
+  register: project_version
+  when: fabric.baseimage_tag == ''
+
+- name: Set the container tag
+  set_fact:
+    thetag: "{{ arch + '-' + (project_version['content'] | b64decode) }}"
+  when: fabric.baseimage_tag == ''
+
+- name: Unpack the certificates
+  unarchive:
+    src: "{{ fabricworkdir }}/allcerts.tgz"
+    dest: "{{ fabricworkdir }}/run"
+    remote_src: true
+
+- name: Get the peer org list
+  set_fact:
+    peerorgs: "{{ peers | map(attribute='org') | list  | unique | sort }}"
+
+- name: Get all peer orgs
+  set_fact:
+    orgmembers: "{{ peers | map(attribute='org') | list  | unique | sort | join(\".member' '\") | trim | replace(' ', ',') }}"
+
+- name: Pull container images from the docker hub
+  command: "docker pull {{ item }}"
+  when: fabric.baseimage_tag | length > 0
+  with_items:
+    - "hyperledger/fabric-tools:{{ thetag }}"
+    - "hyperledger/fabric-ccenv:{{ thetag }}"
+    - "hyperledger/fabric-kafka:{{ thetag }}"
+    - "hyperledger/fabric-zookeeper:{{ thetag }}"
+    - "hyperledger/fabric-peer:{{ thetag }}"
+    - "hyperledger/fabric-orderer:{{ thetag }}"
+    - "hyperledger/fabric-couchdb:{{ thetag }}"
+
+- name: Create docker compose files
+  template:
+    src: "{{ playbook_dir }}/fabricsetup/templates/{{ item.name }}.j2"
+    dest: "{{ fabricworkdir }}/run/{{ item.name }}.yml"
+  when: item.flag | length > 0
+  with_items:
+    - { name: "zookeeper-compose", flag: "{{ zookeepers }}" }
+    - { name: "kafka-compose", flag: "{{ kafkas }}" }
+    - { name: "orderer-compose", flag: "{{ orderers }}" }
+    - { name: "peer-compose", flag: "{{ peers }}" }
+
+- name: Start fabric components
+  command: "docker-compose -p {{ env }}.{{ item.name }} -f {{ fabricworkdir }}/run/{{ item.name }}.yml up -d"
+  when: item.flag | length > 0
+  with_items:
+    - { name: "zookeeper-compose", flag: "{{ zookeepers }}" }
+    - { name: "kafka-compose", flag: "{{ kafkas }}" }
+    - { name: "orderer-compose", flag: "{{ orderers }}" }
+    - { name: "peer-compose", flag: "{{ peers }}" }
+  tags: "fabricup"
+
+- name: Locate a host to run peer channel create command
+  set_fact:
+    clihost: "{{ item }}"
+    clipeer: "{{ allpeers | random }}"
+    cliorderer: "{{ allorderers | random }}"
+  when: peers | length > 0 and clihost == ""
+  with_items: "{{ groups['allnodes'] }}"
+
+- name: Make sure that working directory exists and clean
+  file:
+    path: "{{ fabricworkdir }}/run/keyfiles/chaincode"
+    state: "directory"
+    mode: 0775
+  when: clihost == inventory_hostname
+
+- name: Move chaincode to the server
+  copy:
+    src: "{{ playbook_dir }}/fabricsetup/templates/firstcode.go"
+    dest: "{{ fabricworkdir }}/run/keyfiles/chaincode/firstcode.go"
+    mode: "u=rw,g=rw"
+  when: clihost == inventory_hostname
+
+- name: Create peer channel command script
+  template:
+    src: "{{ playbook_dir }}/fabricsetup/templates/dochannel.j2"
+    dest: "{{ fabricworkdir }}/run/keyfiles/dochannel.sh"
+    mode: "u=rx,g=rx"
+  when: clihost == inventory_hostname
+
+- name: Create peer channel command docker compose file
+  template:
+    src: "{{ playbook_dir }}/fabricsetup/templates/cli-compose.j2"
+    dest: "{{ fabricworkdir }}/run/cli-compose.yml"
+  when: clihost == inventory_hostname
+
+- name: Wait for containers to be ready
+  pause:
+    seconds: 30
+
+- name: Start fabriccli components
+  command: "docker-compose -p {{ env }}.cli -f {{ fabricworkdir }}/run/cli-compose.yml up -d"
+  when: clihost == inventory_hostname

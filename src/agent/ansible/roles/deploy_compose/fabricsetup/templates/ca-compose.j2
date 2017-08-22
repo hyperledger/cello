@@ -1,0 +1,21 @@
+---
+version: '2'
+
+services:
+
+{% for ca in cas %}
+  {{ ca.name }}.{{ ca.org }}:
+    container_name: {{ ca.name}}.{{ ca.org }}
+    image: hyperledger/fabric-ca:{{ thetag }}
+    network_mode: bridge
+    hostname: {{ ca.name}}.{{ ca.org }}
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_CA_NAME={{ ca.name}}.{{ ca.org }}
+      - FABRIC_CA_SERVER_TLS_ENABLED=true
+      - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/{{ ca.org }}.crt
+      - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/{{ ca.org}}.sk
+    volumes:
+      - {{ fabricworkdir }}/run/keyfiles/{{ ca.org }}:/etc/hyperledger/fabric-ca-server-config
+    command: sh -c 'fabric-ca-server start --ca.certfile /etc/hyperledger/fabric-ca-server-config/{{ ca.org }}.crt --ca.keyfile /etc/hyperledger/fabric-ca-server-config/{{ ca.org }}.sk -b admin:adminpw -d'
+{% endfor %}

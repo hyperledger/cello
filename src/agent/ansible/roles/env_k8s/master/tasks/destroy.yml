@@ -1,0 +1,26 @@
+---
+- name: Setup fabric root dir variable
+  set_fact:
+    fabricroot: "/opt/fabric"
+
+- name: Stop the worker services
+  service:
+    name: "{{ item }}"
+    enabled: yes
+    state: stopped
+  with_items:
+    - kube-apiserver
+    - kube-controller-manager
+    - kube-scheduler
+
+- name: Ensure binary removed
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "{{ fabricroot }}/bin/kubelet"
+    - "{{ fabricroot }}/bin/kubectl"
+    - "{{ fabricroot }}/bin/kube-proxy"
+    - "{{ fabricroot }}/bin/kube-apiserver"
+    - "{{ fabricroot }}/bin/kube-controller-manager"
+    - "{{ fabricroot }}/bin/kube-scheduler"

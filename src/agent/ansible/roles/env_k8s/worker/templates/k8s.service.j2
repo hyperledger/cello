@@ -1,0 +1,13 @@
+[Unit]
+Description=Kubernetes on OpenStack {{ item }} Service
+
+[Service]
+EnvironmentFile=/etc/kubernetes/{{ item }}
+ExecStart={{ fabricroot }}/bin/{{ item }} "$DAEMON_ARGS"
+Restart=always
+RestartSec=2s
+StartLimitInterval=0
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target

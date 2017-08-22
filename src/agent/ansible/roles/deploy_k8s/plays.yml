@@ -1,0 +1,32 @@
+---
+- name: build fabric artifacts
+  hosts: builders
+  gather_facts: true
+  user: "{{ fabric.ssh_user }}"
+  vars_files:
+    - "./../../vars/{{ env }}.yml"
+  tasks:
+    - include: "../deploy_compose/fabricbuild/tasks/{{ mode }}.yml"
+  tags: "fabricbuild"
+
+- name: generate certificates
+  hosts: builders
+  gather_facts: false
+  user: "{{ fabric.ssh_user }}"
+  vars_files:
+    - "./../../vars/{{ env }}.yml"
+  tasks:
+    - include: "../deploy_compose/certsetup/tasks/{{ mode }}.yml"
+  tags: "certsetup"
+
+- name: setup fabric network
+  hosts: allnodes
+  gather_facts: false
+  user: "{{ fabric.ssh_user }}"
+  become: true
+  become_user: root
+  vars_files:
+    - "./../../vars/{{ env }}.yml"
+  tasks:
+    - include: "fabricsetup/tasks/{{ mode }}.yml"
+  tags: "fabricsetup"

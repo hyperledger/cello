@@ -1,0 +1,34 @@
+---
+- name: Get start timestamp
+  hosts: cloud
+  connection: local
+  tasks:
+    - set_fact:
+        starttime: "{{ ansible_date_time }}"
+
+- name: Run the plays
+  vars:
+    env: "os"
+    cloud_type: "os"
+  include: "roles/cloud_os/plays.yml"
+
+- name: Run the plays
+  vars:
+    env: "os"
+    env_type: "k8s"
+  include: "roles/env_k8s/plays.yml"
+
+- name: Run the plays
+  vars:
+    env: "bc1st"
+    deploy_type: "k8s"
+  include: "roles/deploy_k8s/plays.yml"
+
+- name: Inform the installer
+  hosts: cloud
+  connection: local
+  tasks:
+    - debug:
+        msg: >-
+          The work load started at {{ hostvars.cloud.starttime.time }},
+          ended at {{ ansible_date_time.time }}

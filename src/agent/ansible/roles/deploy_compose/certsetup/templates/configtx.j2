@@ -1,0 +1,63 @@
+---
+{% if allorgs | length > 0 %}
+Organizations:
+{% for org in allorgs %}
+  - &{{ org }}
+    Name: {{ org }}
+    ID: {{ org }}
+    MSPDir: {{ fabricworkdir }}/keyfiles/{{ org }}/msp
+    AdminPrincipal: Role.ADMIN
+    {% if org_anchor[org] is defined -%}
+    AnchorPeers:
+      - Host: {{ org_anchor[org].name }}
+        Port: 7051
+    {% endif %}
+
+{% endfor %}
+{% endif %}
+
+Orderer: &OrdererDefaults
+  OrdererType: kafka
+  Addresses:
+{%   for orderer in orderers %}
+    - {{ orderer.name }}:7050
+{%   endfor %}
+  BatchTimeout: 2s
+  BatchSize:
+    MaxMessageCount: 10
+    AbsoluteMaxBytes: 98 MB
+    PreferredMaxBytes: 512 KB
+{% if kafkas | length > 0 %}
+  Kafka:
+    Brokers:
+{%   for item in kafkas %}
+      - {{ item }}:9092
+{%   endfor %}
+{% endif %}
+  Organizations:
+{% for org in ordererorgs %}
+    - *{{ org }}
+{% endfor %}
+
+Application: &ApplicationDefaults
+  Organizations:
+{%   for org in peerorgs %}
+    - *{{ org }}
+{%   endfor %}
+
+Profiles:
+  OrgChannel:
+    Consortium: FabricConsortium
+    Application:
+      <<: *ApplicationDefaults
+
+  OrdererGenesis:
+    Orderer:
+      <<: *OrdererDefaults
+
+    Consortiums:
+      FabricConsortium:
+        Organizations:
+{%   for org in peerorgs %}
+          - *{{ org }}
+{%   endfor %}

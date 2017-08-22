@@ -1,0 +1,91 @@
+---
+- name: Ensure we have a working directory to save runtime files
+  file: "path={{ playbook_dir }}/../../run state=directory"
+
+- name: Remove the runhost file
+  file:
+    path: "{{ playbook_dir }}/../../run/runhosts"
+    state: absent
+
+- name: Remove the fabric host file
+  file:
+    path: "{{ playbook_dir }}/../../run/fabrichosts"
+    state: absent
+
+- name: Setup runhosts file
+  lineinfile:
+    dest: "{{ playbook_dir }}/../../run/runhosts"
+    create: yes
+    insertafter: EOF
+    line: "{{ item }}"
+  with_items:
+    - 'cloud ansible_host=127.0.0.1 ansible_python_interpreter=python'
+
+- name: Add the node to host group named allnodes
+  add_host:
+    name: "{{ hostvars[item][cluster.node_ip] }}"
+    private_ip: "{{ hostvars[item].private_ip }}"
+    public_ip: "{{ hostvars[item].public_ip }}"
+    inter_name: "{{ item }}"
+    groups: "allnodes"
+  with_items:
+    - "{{ groups['prohosts'] }}"
+
+- name: Add the node to host group with specified IP
+  add_host:
+    name: "{{ hostvars[item[0]][cluster.node_ip] }}"
+    private_ip: "{{ hostvars[item[0]].private_ip }}"
+    public_ip: "{{ hostvars[item[0]].public_ip }}"
+    inter_name: "{{ item[0] }}"
+    groups: "{{ item[1].type}}"
+  when: item[0] in item[1].member
+  with_nested:
+    - "{{ groups['prohosts'] }}"
+    - [ { type: "etcdnodes", member: "{{ cluster.etcdnodes }}" },
+        { type: "builders", member: "{{ cluster.builders }}"} ]
+
+- name: Add all the hosts to the file
+  lineinfile:
+    dest: "{{ playbook_dir }}/../../run/runhosts"
+    create: yes
+    insertafter: EOF
+    line: >-
+      {{ hostvars[item][cluster.node_ip] }}
+      private_ip={{ hostvars[item].private_ip }}
+      public_ip={{ hostvars[item].public_ip }}
+      inter_name={{ hostvars[item].inter_name }}
+  with_items:
+    - "{{ groups['prohosts'] }}"
+
+- name: Setup groups in the inventory file
+  lineinfile:
+    dest: "{{ playbook_dir }}/../../run/runhosts"
+    insertafter: EOF
+    regexp: 'NOT TO BE FOUND'
+    state: present
+    line: "{{ item }}"
+  with_flattened:
+    - ['', '[allnodes]', "{{ groups['allnodes'] }}"]
+    - ['', '[etcdnodes]', "{{ groups['etcdnodes'] | default('') }}"]
+    - ['', '[builders]', "{{ groups['builders'] | default('') }}"]
+
+- name: Create the hosts file
+  lineinfile:
+    dest: "{{ playbook_dir }}/../../run/fabrichosts"
+    create: yes
+    insertafter: EOF
+    line: >-
+      {{ hostvars[item].private_ip }}
+      {{ hostvars[item].inter_name }}
+  with_items:
+    - "{{ groups['prohosts'] }}"
+
+- name: Wait until servers are up and runnning
+  wait_for:
+    host: "{{ item }}"
+    port: 22
+    state: started
+    delay: 15
+    connect_timeout: 20
+    timeout: 300
+  with_items: "{{ groups['allnodes'] }}"

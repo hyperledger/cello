@@ -1,0 +1,147 @@
+---
+- name: Setup few variables
+  set_fact:
+    fabricworkdir: "/opt/gopath/{{ env }}/fabric"
+    fabricpath: "/opt/gopath/{{ env }}/src/github.com/hyperledger/fabric"
+    gopath: "/opt/gopath/{{ env }}"
+
+- name: Create component list
+  set_fact:
+    cals: "{{ cals | default([]) + item.value.cas | default([]) }}"
+    peerls: "{{ peerls | default([]) + item.value.peers | default([]) }}"
+    ordererls: "{{ ordererls | default([]) + item.value.orderers | default([]) }}"
+    kafkals: "{{ kafkals | default([]) + item.value.kafkas | default([]) }}"
+  with_dict: "{{ fabric.network }}"
+
+- name: Get ca object list
+  set_fact:
+    cas: |
+      {{ cas | default([]) + [{ 'org':item.split('.')[-1],
+        'name':item | replace('.', '-') }] }}
+  with_items: "{{ cals }}"
+  when: cals | length > 0
+
+- name: Get ca object list
+  set_fact:
+    cas: "{{ cas | default([]) }}"
+
+- name: Get peer object list
+  set_fact:
+    peers: |
+      {{ peers | default([]) + [{'org':item.split('@')[1].split('.')[-1],
+        'name':item.split('@')[1] | replace('.','-'),
+        'role':item.split('@')[0]}] }}
+  with_items: "{{ peerls }}"
+
+- name: Find all anchor peers
+  set_fact:
+    anchor_peers: "{{ peers | selectattr('role', 'equalto', 'anchor') | list }}"
+
+- name: Create org anchor peer hash
+  set_fact:
+    org_anchor: "{{ org_anchor | default({}) | combine( { item.org: item } ) }}"
+  with_items: "{{ anchor_peers }}"
+
+- name: Sort the peer list
+  set_fact:
+    peers: "{{ peers | sort(attribute='org') }}"
+
+- name: Get orderer object list
+  set_fact:
+    orderers: |
+      {{ orderers | default([]) + [{'org':item.split('.')[-1],
+        'name':item | replace('.', '-') }] }}
+  with_items: "{{ ordererls }}"
+
+- name: Sort the orderer list
+  set_fact:
+    orderers: "{{ orderers | sort(attribute='org') }}"
+    allorgs: "{{ [] }}"
+
+- name: Sort the ca and kafka list
+  set_fact:
+    caorgs: "{{ cas | map(attribute='org') | list  | unique | sort }}"
+    peerorgs: "{{ peers | map(attribute='org') | list  | unique | sort }}"
+    ordererorgs: "{{ orderers | map(attribute='org') | list  | unique | sort }}"
+    kafkas: "{{ kafkals | sort }}"
+
+- name: Create all orgs list
+  set_fact:
+    allorgs: "{{ caorgs + peerorgs + ordererorgs | sort }}"
+
+- name: Filter the all orgs list
+  set_fact:
+    allorgs: "{{ allorgs | unique | sort }}"
+
+- name: Ensure certificate directory is clean
+  file:
+    path: "{{ fabricworkdir }}/keyfiles"
+    state: "{{ item }}"
+  with_items:
+    - "absent"
+    - "directory"
+
+- name: Create crypto-config file
+  template:
+    src: "{{ playbook_dir }}/../deploy_compose/certsetup/templates/crypto-config.j2"
+    dest: "{{ fabricworkdir }}/crypto-config.yml"
+
+- name: Create the certificate files
+  command: "{{ fabricpath }}/build/bin/cryptogen generate --config crypto-config.yml --output keyfiles"
+  args:
+    chdir: "{{ fabricworkdir }}"
+
+- name: Combine all orgs into one location
+  shell: >-
+    mv {{ item }}/* . && rm -rf {{ item }}
+  args:
+    chdir: "{{ fabricworkdir }}/keyfiles"
+  with_items:
+    - "peerOrganizations"
+    - "ordererOrganizations"
+
+- name: Create core.yml file for every peer
+  template:
+    src: "{{ playbook_dir }}/../deploy_compose/certsetup/templates/core.yaml"
+    dest: "{{ fabricworkdir }}/keyfiles/{{ item.org }}/peers/{{ item.name }}.{{ item.org }}/core.yaml"
+  with_items: "{{ peers }}"
+
+- name: Create config tx file
+  template:
+    src: "{{ playbook_dir }}/../deploy_compose/certsetup/templates/configtx.j2"
+    dest: "{{ fabricworkdir }}/configtx.yml"
+
+- name: Create the gensis block and channel transaction
+  shell: >-
+    export FABRIC_CFG_PATH={{ fabricworkdir }} &&
+    {{ fabricpath }}/build/bin/configtxgen -profile OrdererGenesis
+    -outputBlock keyfiles/genesis.block -channelID orderersystemchannel &&
+    {{ fabricpath }}/build/bin/configtxgen -profile OrgChannel
+    -outputCreateChannelTx keyfiles/firstchannel.tx -channelID firstchannel
+  args:
+    chdir: "{{ fabricworkdir }}"
+
+- name: Define the anchor peer for organizations
+  shell: >-
+    export FABRIC_CFG_PATH={{ fabricworkdir }} &&
+    {{ fabricpath }}/build/bin/configtxgen -profile OrgChannel
+    -outputAnchorPeersUpdate keyfiles/{{ item }}.anchor.tx
+    -channelID firstchannel -asOrg {{ item }}
+  args:
+    chdir: "{{ fabricworkdir }}"
+  with_items: "{{ peerorgs }}"
+
+- name: Duplicate genesis and transaction block to each peer
+  shell: >-
+    cp {{ fabricworkdir }}/keyfiles/genesis.block
+    {{ fabricworkdir }}/keyfiles/{{ item.org }}/peers/{{ item.name }}.{{ item.org }} &&
+    cp {{ fabricworkdir }}/keyfiles/firstchannel.tx
+    {{ fabricworkdir }}/keyfiles/{{ item.org }}/peers/{{ item.name }}.{{ item.org }}
+  args:
+    chdir: "{{ fabricworkdir }}"
+  with_items: "{{ peers }}"
+
+- name: Create a zip file of all certificates
+  archive:
+    path: "{{ fabricworkdir }}/keyfiles"
+    dest: "{{ fabricworkdir }}/certs.tgz"

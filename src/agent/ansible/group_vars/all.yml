@@ -1,0 +1,7 @@
+---
+etcdtoken: "{{ lookup('password',
+             '/tmp/etcdtoken chars=ascii_letters,digits length=16') }}"
+
+proxy_env: {
+}
+

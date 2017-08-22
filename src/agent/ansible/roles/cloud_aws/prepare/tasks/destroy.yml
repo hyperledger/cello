@@ -1,0 +1,20 @@
+---
+- name: Setup env specific variables
+  set_fact:
+    aws_usr_key: "{{ auth.username }}"
+    aws_sec_key: "{{ auth.password }}"
+
+- name: Gather vpc facts
+  ec2_vpc_net_facts:
+    region: "{{ cluster.region_name }}"
+    aws_access_key: "{{ aws_usr_key }}"
+    aws_secret_key: "{{ aws_sec_key }}"
+  register: vpcnet
+
+- name: Add provisioning host group
+  add_host:
+    name: "{{ cluster.name_prefix }}{{ item }}"
+    ansible_host: "127.0.0.1"
+    groups: "prohosts"
+  with_sequence: count={{ cluster.stack_size }} format=%03x
+  no_log: True

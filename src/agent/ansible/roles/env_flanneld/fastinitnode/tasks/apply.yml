@@ -1,0 +1,74 @@
+---
+- name: Figuring out the server architecture
+  shell: uname -m | sed 's|i686|386|' | sed 's|x86_64|amd64|'
+  register: rawarch
+
+- name: Setup variables
+  set_fact:
+    goroot: "/opt/go"
+    gopath: "/opt/gopath"
+    arch: "{{ rawarch.stdout}}"
+
+- name: Ensure gopath exists
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0775
+    owner: "{{ cluster.ssh_user }}"
+  with_items:
+    - "{{ goroot }}"
+    - "{{ gopath }}"
+
+- name: Install packages
+  apt:
+    name: "{{ item }}"
+  with_items:
+    - ['docker.io', 'python-dev', 'python-pip', 'libtool', 'libltdl-dev']
+    - ['git', 'net-tools', 'netcat-openbsd', 'autoconf', 'automake']
+    - ['libtool', 'curl', 'make', 'g++', 'unzip', 'build-essential']
+
+- name: Install pip and upgrade
+  pip:
+    name: "{{ item.name}}"
+    extra_args: "{{ item.args | default('') }}"
+  with_items:
+    - { name: "pip", args: "--upgrade" }
+    - { name: "behave" }
+    - { name: "nose" }
+    - { name: "docker-compose" }
+    - { name: "protobuf" }
+    - { name: "couchdb==1.0" }
+
+- name: Grant the user docker permission
+  user:
+    name: "{{ cluster.ssh_user }}"
+    append: yes
+    groups: "docker,root"
+
+- name: Retrive golang binary and unpackage it
+  unarchive:
+    src: "https://storage.googleapis.com/golang/go{{ cluster.go_ver }}.linux-{{ arch }}.tar.gz"
+    dest: "/opt"
+    remote_src: True
+
+- name: Fix up the search domain
+  lineinfile:
+    path: /etc/resolvconf/resolv.conf.d/base
+    state: present
+    line: search {{ cluster.domain | default('fabric') }}
+
+- name: Setup golang profile
+  template:
+    src: "{{ playbook_dir }}/../env_flanneld/fastinitnode/templates/goroot.j2"
+    dest: "/etc/profile.d/goroot.sh"
+
+- name: Place the certificate in the right place
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.target }}"
+    owner: "{{ cluster.ssh_user }}"
+    group: "{{ cluster.ssh_user }}"
+    mode: 0400
+  with_items:
+    - { src: "{{ cluster.public_key_file }}", target: "{{ gopath }}/id_rsa.pub" }
+    - { src: "{{ cluster.private_key_file }}", target: "{{ gopath }}/id_rsa" }

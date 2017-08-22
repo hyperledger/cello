@@ -1,0 +1,56 @@
+#! /bin/bash
+
+# Set up environment varilables first
+
+export CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/allorgs/{{ clipeer.org }}/peers/{{ clipeer.name }}.{{ clipeer.org }}/tls/server.key
+export CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/allorgs/{{ clipeer.org }}/peers/{{ clipeer.name }}.{{ clipeer.org }}/tls/ca.crt
+export CORE_PEER_ID={{ clipeer.name }}
+export CORE_PEER_ADDRESS={{ clipeer.name }}:7051
+export CORE_PEER_LOCALMSPID={{ clipeer.org }}
+export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/allorgs/{{ clipeer.org }}/users/Admin@{{ clipeer.org }}/msp
+
+# Run the peer channel create command
+cd /etc/hyperledger/allorgs
+peer channel create -o {{ cliorderer.name }}:7050 -c firstchannel \
+  -f /etc/hyperledger/allorgs/firstchannel.tx --tls true --timeout 240 \
+  --cafile /etc/hyperledger/allorgs/{{ cliorderer.org }}/orderers/{{ cliorderer.name }}.{{ cliorderer.org }}/msp/tlscacerts/tlsca.{{ cliorderer.org }}-cert.pem
+
+export CORE_PEER_TLS_ENABLED=true
+export GOPATH=/opt/gopath
+mkdir -p $GOPATH/src/chaincode
+
+{% for peer in allpeers %}
+
+export CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/allorgs/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}/tls/server.key
+export CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/allorgs/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}/tls/ca.crt
+export CORE_PEER_ID={{ peer.name }}
+export CORE_PEER_ADDRESS={{ peer.name }}:7051
+export CORE_PEER_LOCALMSPID={{ peer.org }}
+export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/allorgs/{{ peer.org }}/users/Admin@{{ peer.org }}/msp
+
+peer channel join -b firstchannel.block
+
+peer chaincode install -n firstchaincode -v 1.0 -p chaincode
+
+{% endfor %}
+
+# Instantiate the chaincode
+echo '-------------- Instantiate chaincode'
+
+{% set chainpeer = peers[0] %}
+export CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/allorgs/{{ chainpeer.org }}/peers/{{ chainpeer.name }}.{{ chainpeer.org }}/tls/server.key
+export CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/allorgs/{{ chainpeer.org }}/peers/{{ chainpeer.name }}.{{ chainpeer.org }}/tls/ca.crt
+export CORE_PEER_ID={{ chainpeer.name }}
+export CORE_PEER_ADDRESS={{ chainpeer.name }}:7051
+export CORE_PEER_LOCALMSPID={{ chainpeer.org }}
+export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/allorgs/{{ chainpeer.org }}/users/Admin@{{ chainpeer.org }}/msp
+
+peer chaincode instantiate -o {{ cliorderer.name }}:7050 --tls true \
+  --cafile /etc/hyperledger/allorgs/{{ cliorderer.org }}/orderers/{{ cliorderer.name }}.{{ cliorderer.org }}/msp/tlscacerts/tlsca.{{ cliorderer.org }}-cert.pem \
+  -C firstchannel -n firstchaincode -v 1.0 -c '{"Args":["init","a", "100", "b","200"]}' -P "OR ('{{ orgmembers }}.member')"
+
+# Query the chaincode
+echo '-------------- Query chaincode'
+
+# skip the query for now since it most likely will fail due to the timeout issue.
+# peer chaincode query -C firstchannel -n firstchaincode -c '{"Args":["query","a"]}'

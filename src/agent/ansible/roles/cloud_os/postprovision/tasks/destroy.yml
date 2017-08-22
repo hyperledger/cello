@@ -1,0 +1,20 @@
+---
+- name: Delete key pairs
+  os_keypair:
+    state: "absent"
+    auth: "{{ auth }}"
+    region_name: "{{ cluster.region_name }}"
+    availability_zone: "{{ cluster.availability_zone }}"
+    validate_certs: "{{ cluster.validate_certs }}"
+    name: "fabric"
+    public_key_file: "{{ cluster.public_key_file }}"
+
+- name: Delete security group
+  os_security_group:
+    state: absent
+    auth: "{{ auth }}"
+    region_name: "{{ cluster.region_name }}"
+    availability_zone: "{{ cluster.availability_zone }}"
+    validate_certs: "{{ cluster.validate_certs }}"
+    name: fabric_sg
+    description: secuirty group for fabric network

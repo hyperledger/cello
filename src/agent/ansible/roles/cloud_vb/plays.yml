@@ -1,0 +1,68 @@
+---
+- name: Prepare to run the workload
+  hosts: cloud
+  connection: local
+  vars_files:
+    - "./../../vars/{{ env }}.yml"
+  tasks:
+    - include: "prepare/tasks/main.yml"
+  tags: "prepare"
+
+- name: provision servers
+  hosts: prohosts
+  gather_facts: false
+  vars_files:
+    - "{{ playbook_dir }}/../../vars/{{ env }}.yml"
+  tasks:
+    - include: "provision/tasks/{{ mode }}.yml"
+  tags: "provision"
+
+- name: Generate runhost file
+  hosts: cloud
+  connection: local
+  vars_files:
+    - "./../../vars/{{ env }}.yml"
+  tasks:
+    - include: "wait/tasks/{{ mode }}.yml"
+  tags: "wait"
+
+- name: Get VM IP addresses
+  hosts: nathosts
+  gather_facts: false
+  user: "{{ cluster.ssh_user }}"
+  vars_files:
+    - "{{ playbook_dir }}/../../vars/{{ env }}.yml"
+  tasks:
+    - include: "netprocess/tasks/{{ mode }}.yml"
+  tags: "netprocess"
+
+- name: Generate runhost file
+  hosts: cloud
+  connection: local
+  vars_files:
+    - "./../../vars/{{ env }}.yml"
+  tasks:
+    - include: "post/tasks/{{ mode }}.yml"
+  tags: "post"
+
+- name: Setup hostname and static node names
+  hosts: nathosts
+  gather_facts: false
+  user: "{{ cluster.ssh_user }}"
+  become: true
+  become_user: root
+  vars_files:
+    - "{{ playbook_dir }}/../../vars/{{ env }}.yml"
+  tasks:
+    - include: "namenode/tasks/{{ mode }}.yml"
+  tags: "namenode"
+
+- name: Setup certificates for ssh access
+  hosts: nathosts
+  gather_facts: false
+  user: "{{ cluster.ssh_user }}"
+  vars_files:
+    - "{{ playbook_dir }}/../../vars/{{ env }}.yml"
+  tasks:
+    - include: "addcert/tasks/{{ mode }}.yml"
+  tags: "addcert"

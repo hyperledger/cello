@@ -1,0 +1,19 @@
+---
+- name: Get start timestamp
+  hosts: cloud
+  connection: local
+  tasks:
+    - set_fact:
+        starttime: "{{ ansible_date_time }}"
+
+- name: Run the plays
+  include: "roles/env_{{ env_type | default('flanneld') }}/plays.yml"
+
+- name: inform the installer
+  hosts: cloud
+  connection: local
+  tasks:
+    - debug:
+        msg: >-
+          The work load started at {{ hostvars.cloud.starttime.time }},
+          ended at {{ ansible_date_time.time }}

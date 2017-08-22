@@ -1,0 +1,40 @@
+---
+- name: Prepare to run the workload
+  hosts: cloud
+  connection: local
+  vars_files:
+    - "./../../vars/{{ env }}.yml"
+  tasks:
+    - include: "prepare/tasks/{{ mode }}.yml"
+  tags: "prepare"
+
+- name: provision servers
+  hosts: prohosts
+  connection: local
+  strategy: free
+  vars_files:
+    - "{{ playbook_dir }}/../../vars/{{ env }}.yml"
+  tasks:
+    - include: "provision/tasks/{{ mode }}.yml"
+  tags: "provision"
+
+- name: Post provision process
+  hosts: cloud
+  connection: local
+  vars_files:
+    - "{{ playbook_dir }}/../../vars/{{ env }}.yml"
+  tasks:
+    - include: "postprovision/tasks/{{ mode }}.yml"
+  tags: "postprovision"
+
+- name: change /etc/hosts files so that each node knows other nodes
+  hosts: allnodes
+  strategy: free
+  user: "{{ cluster.ssh_user }}"
+  become: true
+  become_user: root
+  vars_files:
+    - "{{ playbook_dir }}/../../vars/{{ env }}.yml"
+  tasks:
+    - include: "namenode/tasks/{{ mode }}.yml"
+  tags: "namenode"

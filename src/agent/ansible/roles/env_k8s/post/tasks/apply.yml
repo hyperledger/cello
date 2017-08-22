@@ -1,0 +1,50 @@
+---
+- name: Setup couple variables
+  set_fact:
+    public_ip: "{{ ansible_host }}"
+    private_ip: "{{ hostvars[ansible_host].private_ip }}"
+    node_name: "{{ hostvars[ansible_host].inter_name }}"
+    fabricroot: "/opt/fabric"
+
+- include: common.yml
+
+- name: Combine all possible name servers
+  set_fact:
+    nameservers: "{{ nameserverraw.stdout_lines | join(',') }}"
+
+- name: Upload addon service configuration files
+  template:
+    src: "{{ playbook_dir }}/../env_k8s/post/templates/{{ item }}.j2"
+    dest: "/etc/kubernetes/{{ item }}.yaml"
+    mode: 0644
+  with_items:
+    - dnscontroller
+    - dashboard
+
+- name: Label the master node
+  command: >-
+    {{ fabricroot }}/bin/kubectl --server={{ private_ip }}:8080 label --overwrite=true
+    nodes {{ node_name }} dashboardId=master
+
+- name: Create addon services
+  command: >-
+    {{ fabricroot }}/bin/kubectl --server={{ private_ip }}:8080 create
+    -f /etc/kubernetes/{{ item }}.yaml
+  with_items:
+    - dnscontroller
+    - dashboard
+
+# The following code setup a native docker nginx container to
+# proxy dns lookup to k8s dns services so that containers
+# created by docker containers can also use names
+
+- name: Upload nginx configuration file
+  template:
+    src: "{{ playbook_dir }}/../env_k8s/post/templates/nginx.j2"
+    dest: "/etc/kubernetes/nginx.conf"
+    mode: 0644
+
+- name: Launch dns reverse proxy
+  command: >-
+    docker run --net host --name fabricnginx -d -p 53:53 -p 53:53/udp
+    -v /etc/kubernetes/nginx.conf:/etc/nginx/nginx.conf:ro nginx

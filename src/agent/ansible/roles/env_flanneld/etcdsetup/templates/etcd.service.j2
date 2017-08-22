@@ -1,0 +1,23 @@
+[Unit]
+Description=Fabric ETCD V3 Service
+
+[Service]
+Environment="ETCD_NAME={{ node_name }}"
+Environment="ETCD_INITIAL_ADVERTISE_PEER_URLS=http://{{ node_ip }}:2380"
+Environment="ETCD_LISTEN_PEER_URLS=http://{{ node_ip }}:2380"
+Environment="ETCD_LISTEN_CLIENT_URLS=http://{{ node_ip }}:2379,http://127.0.0.1:2379"
+Environment="ETCD_ADVERTISE_CLIENT_URLS=http://{{ node_ip }}:2379"
+Environment="ETCD_INITIAL_CLUSTER_TOKEN={{ etcdtoken }}"
+Environment="ETCD_INITIAL_CLUSTER={{ etcd_cluster }}"
+Environment="ETCD_DATA_DIR={{ fabricroot }}/bin/etcddata"
+Environment="ETCD_INITIAL_CLUSTER_STATE=new"
+ExecStart={{ fabricroot }}/bin/etcd
+Restart=always
+RestartSec=2s
+StartLimitInterval=0
+KillMode=process
+Type=notify
+NotifyAccess=all
+
+[Install]
+WantedBy=multi-user.target

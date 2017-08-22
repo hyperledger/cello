@@ -1,0 +1,51 @@
+---
+- name: Setup env specific variables
+  set_fact:
+    tp_path: "{{ playbook_dir }}/../cloud_aws/provision/templates/{{ cluster.target_os }}.j2"
+    ip_pos: "{{ inventory_hostname | replace(cluster.name_prefix, '') }}"
+    aws_usr_key: "{{ auth.username }}"
+    aws_sec_key: "{{ auth.password }}"
+    region: "{{ cluster.region_name | default('us-east-1') }}"
+
+- name: Get the allocated IP address if there is any configured
+  set_fact:
+    ips: "{{ [cluster.node_ips[ip_pos|int|default(0)-1]] | default([]) }}"
+
+- name: Launch new instance
+  ec2:
+    region: "{{ region }}"
+    aws_access_key: "{{ aws_usr_key }}"
+    aws_secret_key: "{{ aws_sec_key }}"
+    key_name: "{{ cluster.ssh_key_name }}"
+    validate_certs: "{{ cluster.validate_certs }}"
+    group_id: "{{ sg_id }}"
+    image: "{{ cluster.image_id }}"
+    instance_type: "{{ cluster.flavor_name }}"
+    state: present
+    user_data: "{{ lookup('template', tp_path) }}"
+    vpc_subnet_id: "{{ subnet_id }}"
+    instance_tags:
+      Name: "{{ inventory_hostname }}"
+    volumes:
+      - device_name: "/dev/xvda"
+        device_type: "gp2"
+        volume_size: "{{ cluster.volume_size }}"
+        delete_on_termination: true
+    wait: true
+  register: awsvm
+
+- name: Setup variables for generate host groups
+  set_fact:
+    inter_name: "{{ awsvm.instances[0].tags.Name }}"
+    public_ip: "{{ awsvm.instances[0].public_ip }}"
+    private_ip: "{{ awsvm.instances[0].private_ip }}"
+
+- name: Use public ip address when private ip is empty
+  set_fact:
+    private_ip: "{{ awsvm.instances[0].public_ip }}"
+  when: awsvm.instances[0].private_ip == ""
+
+- name: Use private ip address when public ip is empty
+  set_fact:
+    public_ip: "awsvm.instances[0].private_ip }}"
+  when: awsvm.instances[0].public_ip == ""
