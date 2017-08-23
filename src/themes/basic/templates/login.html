@@ -159,8 +159,8 @@
                 formData.append('username', this.username);
                 formData.append('password', this.password);
                 axios.post('/api/auth/login', formData).then((response) => {
-                    if (response.data.data.success) {
-                        window.location.href = response.data.data.next;
+                    if (response.data.success) {
+                        window.location.href = response.data.next;
                     }
                     this.submitting = false
                 }).catch((error) => {

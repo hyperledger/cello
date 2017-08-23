@@ -13,8 +13,8 @@ import bcrypt
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 from common import log_handler, LOG_LEVEL
-from resources.models import ADMIN
-from resources.user import User
+from modules.models import ADMIN
+from modules.user.user import User
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)

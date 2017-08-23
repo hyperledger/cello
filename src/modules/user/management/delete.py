@@ -11,7 +11,7 @@ import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 from common import log_handler, LOG_LEVEL
-from resources.models import User as UserModel
+from modules.models import User as UserModel
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
