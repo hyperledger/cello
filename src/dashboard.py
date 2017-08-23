@@ -16,7 +16,7 @@ from resources import bp_index, \
     bp_stat_view, bp_stat_api, \
     bp_cluster_view, bp_cluster_api, \
     bp_host_view, bp_host_api, bp_auth_api, \
-    bp_login, bp_user_api, bp_user_view
+    bp_login, bp_user_api, bp_user_view, front_rest_user_v2
 from modules.user import User
 
 logger = logging.getLogger(__name__)
@@ -54,6 +54,7 @@ app.register_blueprint(bp_auth_api)
 app.register_blueprint(bp_login)
 app.register_blueprint(bp_user_api)
 app.register_blueprint(bp_user_view)
+app.register_blueprint(front_rest_user_v2)
 
 admin = os.environ.get("ADMIN", "admin")
 admin_password = os.environ.get("ADMIN_PASSWORD", "pass")

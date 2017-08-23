@@ -117,7 +117,7 @@ services:
     environment:
       - SV_BaseURL=http://dashboard:8080/api/
       - RESTful_Server=dashboard:8080
-      - RESTful_BaseURL=/v2/
+      - RESTful_BaseURL=/api/v2/
       - DEBUG=node:*
     volumes:
       - ./user-dashboard:/usr/app/src

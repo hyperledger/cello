@@ -43,7 +43,7 @@ profile.prototype = {
     load: function() {
         return new Promise(function(resolve, reject) {
             rp({
-                uri: this.BaseURL + "user/get?user_id=" + this.apikey,
+                uri: this.BaseURL + "profile/" + this.apikey,
                 json: true
             }).then(function(response) {
                 if (response.success) {
@@ -73,10 +73,9 @@ profile.prototype = {
     update: function(name, email, bio, url, location) {
         return new Promise(function(resolve, reject) {
             rp({
-                method: "POST",
-                uri: this.BaseURL + "user/edit",
-                body: {
-                    user_id: this.apikey,
+                method: "PUT",
+                uri: this.BaseURL + "profile/" + this.apikey,
+                formData: {
                     name: name,
                     email: email,
                     bio: bio,

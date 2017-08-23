@@ -6,11 +6,13 @@
 import sys
 import unittest
 from test_user_management import UserManagementTestCase
+from test_user_profile import UserProfileTest
 
 
 def suite():
     suit = unittest.TestSuite()
     suit.addTest(unittest.makeSuite(UserManagementTestCase))
+    suit.addTest(unittest.makeSuite(UserProfileTest))
 
     return suit
 
