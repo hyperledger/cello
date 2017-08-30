@@ -29,29 +29,31 @@ spec:
               name: fabric-vol-msp
             - mountPath: /etc/hyperledger/fabric/tls
               name: fabric-vol-tls
-            - mountPath: /var/run/docker.sock
+            - mountPath: /host/var/run/docker.sock
               name: docker-sock
           env:
             - name: CORE_VM_ENDPOINT
-              value: unix:///var/run/docker.sock
+              value: unix:///host/var/run/docker.sock
             - name: CORE_PEER_ID
               value: "peer1-org1"
             - name: CORE_PEER_ADDRESS
               value: "peer1-org1:7051"
-          #  - name: CORE_PEER_CHAINCODELISTENADDRESS
-          #    value: "peer1-org1:7052"
             - name: CORE_PEER_GOSSIP_EXTERNALENDPOINT
               value: "peer1-org1:7051"
             - name: CORE_PEER_GOSSIP_BOOTSTRAP
               value: "peer0-org1:7051"
             - name: CORE_PEER_LOCALMSPID
               value: "Org1MSP"
+            - name: CHAINCODE_LISTEN_ADDRESS
+              value: "0.0.0.0:8000"
+            - name: CORE_VM_HOSTCONFIG_DNS
+              value: $NGINX_PROXY_DNS
             - name: CORE_PEER_GOSSIP_ORGLEADER
               value: "false"
             - name: CORE_LOGGING_LEVEL
               value: "DEBUG"
             - name: CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE
-              value: "10_default"
+              value: "bridge"
             - name: CORE_PEER_GOSSIP_USELEADERELECTION
               value: "true"
             - name: CORE_PEER_GOSSIP_ORGLEADER
@@ -73,7 +75,7 @@ spec:
             - containerPort: 7051
             - containerPort: 7052
             - containerPort: 7053
-            # - containerPort: 7054
+            - containerPort: 8000
             # - containerPort: 7055
             # - containerPort: 7056
             # - containerPort: 7057
@@ -123,6 +125,9 @@ spec:
     - name: "7053"
       targetPort: 7053
       port: 7053
+    - name: "chaincode-listen-address"
+      targetPort: 8000
+      port: 8000
   selector:
     app: hyperledger
     role: peer

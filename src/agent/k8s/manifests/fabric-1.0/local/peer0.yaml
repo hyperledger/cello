@@ -29,21 +29,23 @@ spec:
               name: fabric-vol-msp
             - mountPath: /etc/hyperledger/fabric/tls
               name: fabric-vol-tls
-            - mountPath: /var/run/docker.sock
+            - mountPath: /host/var/run/docker.sock
               name: docker-sock
           env:
             - name: CORE_VM_ENDPOINT
-              value: unix:///var/run/docker.sock
+              value: unix:///host/var/run/docker.sock
             - name: CORE_PEER_ID
               value: "peer0-org1"
             - name: CORE_PEER_ADDRESS
               value: "peer0-org1:7051"
-            # - name: CORE_PEER_CHAINCODELISTENADDRESS
-            #   value: "peer0-org1:7052"
             - name: CORE_PEER_GOSSIP_EXTERNALENDPOINT
               value: "peer0-org1:7051"
             - name: CORE_PEER_GOSSIP_BOOTSTRAP
               value: "peer0-org1:7051"
+            - name: CHAINCODE_LISTEN_ADDRESS
+              value: "0.0.0.0:8000"
+            - name: CORE_VM_HOSTCONFIG_DNS
+              value: $NGINX_PROXY_DNS
             - name: CORE_PEER_LOCALMSPID
               value: "Org1MSP"
             - name: CORE_PEER_GOSSIP_ORGLEADER
@@ -51,7 +53,7 @@ spec:
             - name: CORE_LOGGING_LEVEL
               value: "DEBUG"
             - name: CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE
-              value: "10_default"
+              value: "bridge"
             - name: CORE_PEER_GOSSIP_USELEADERELECTION
               value: "true"
             - name: CORE_PEER_GOSSIP_ORGLEADER
@@ -69,23 +71,14 @@ spec:
             - name: CORE_PEER_TLS_ROOTCERT_FILE
               value: "/etc/hyperledger/fabric/tls/ca.crt"
           ports:
-            #- containerPort: 7050
             - containerPort: 7051
             - containerPort: 7052
             - containerPort: 7053
-            # - containerPort: 7054
-            # - containerPort: 7055
-            # - containerPort: 7056
-            # - containerPort: 7057
-            # - containerPort: 7058
-            # - containerPort: 7059
+            - containerPort: 8000
           command:
             - peer
             - node
             - start
-            # - /bin/bash
-            # - -nltpu
-            # - "7052"
       volumes:
         - name: fabric-vol-msp
           hostPath:
@@ -106,9 +99,6 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-    #- name: "7050"
-    #  targetPort: 7050
-    #  port: 7050
     - name: "7051"
       targetPort: 7051
       port: 7051
@@ -118,6 +108,9 @@ spec:
     - name: "7053"
       targetPort: 7053
       port: 7053
+    - name: "chaincode-listen-address"
+      targetPort: 8000
+      port: 8000
   selector:
     app: hyperledger
     role: peer
