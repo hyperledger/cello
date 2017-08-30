@@ -1,0 +1,49 @@
+---
+# The url to the fabric source repository
+GIT_URL: "http://gerrit.hyperledger.org/r/fabric"
+
+# The gerrit patch set reference, should be automatically set by gerrit
+GERRIT_REFSPEC: "refs/changes/23/11523/3"
+
+# This variable defines fabric network attributes
+fabric: {
+
+  # The user to connect to the server
+  ssh_user: "ubuntu",
+
+  # options are "goleveldb", "CouchDB", default is goleveldb
+  peer_db: "CouchDB",
+
+  # The following section defines how the fabric network is going to be made up
+  # cas indicates certificate authority containers
+  # peers indicates peer containers
+  # orderers indicates orderer containers
+  # kafka indicates kafka containers
+  # all names must be in lower case. Numeric characters cannot be used to start
+  # or end a name. Character dot (.) can only be used in names of peers and orderers.
+  network: {
+    fabric001: {
+      cas: [],
+      peers: ["anchor@peer1st.orga", "anchor@peer1st.orgb"],
+      orderers: ["orderer1st.orgc", "orderer1st.orgd"],
+      zookeepers: ["zookeeper1st"],
+      kafkas: ["kafka1st"]
+    },
+    fabric002: {
+      cas: [],
+      peers: ["worker@peer2nd.orga", "worker@peer2nd.orgb"],
+      orderers: ["orderer2nd.orgc", "orderer2nd.orgd"],
+      zookeepers: ["zookeeper2nd"],
+      kafkas: ["kafka2nd"]
+    },
+    fabric003: {
+      cas: [],
+      peers: ["worker@peer3rd.orga", "worker@peer3rd.orgb"],
+      orderers: [],
+      zookeepers: ["zookeeper3rd"],
+      kafkas: ["kafka3rd"]
+    }
+  },
+
+  baseimage_tag: "1.0.0"
+}

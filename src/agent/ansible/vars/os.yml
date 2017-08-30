@@ -1,0 +1,68 @@
+---
+# This is an example configuration file when use ubuntu image.
+horizon_url: "https://salesdemo-sjc.openstack.blueboxgrid.com"
+
+auth: {
+  auth_url: "https://salesdemo-sjc.openstack.blueboxgrid.com:5000/v2.0",
+  username: "litong01",
+  password: "{{ password | default(lookup('env', 'password')) }}",
+  project_name: "Interop"
+}
+
+# This variable defines cloud provision attributes
+cluster: {
+  target_os: "ubuntu",
+  image_name: "Ubuntu 16.04",
+  region_name: "",
+  ssh_user: "ubuntu",
+  availability_zone: "compute_enterprise",
+  validate_certs: True,
+  private_net_name: "demonet",
+  flavor_name: "m1.medium",
+  public_key_file: "/home/ubuntu/.ssh/fd.pub",
+  private_key_file: "/home/ubuntu/.ssh/fd",
+  # This variable indicate what IP should be used, only valid values are
+  # private_ip or public_ip
+  node_ip: "public_ip",
+
+  container_network: {
+    Network: "172.16.0.0/16",
+    SubnetLen: 24,
+    SubnetMin: "172.16.0.0",
+    SubnetMax: "172.16.255.0",
+    Backend: {
+      Type: "udp",
+      Port: 8285
+    }
+  },
+
+  service_ip_range: "172.15.0.0/16",
+  dns_service_ip: "172.15.0.4",
+
+  # the section defines preallocated IP addresses for each node, if there is no
+  # preallocated IPs, leave it blank
+  node_ips: ["169.45.102.186", "169.45.102.187", "169.45.102.188"],
+
+  # fabric network node names expect to be using a clear pattern, this defines
+  # the prefix for the node names.
+  name_prefix: "fabric",
+  domain: "fabricnet",
+
+  # stack_size determines how many virtual or physical machines we will have
+  # each machine will be named ${name_prefix}001 to ${name_prefix}${stack_size}
+  stack_size: 3,
+
+  etcdnodes: ["fabric001", "fabric002", "fabric003"],
+  builders: ["fabric001"],
+
+  flannel_repo: "https://github.com/coreos/flannel/releases/download/v0.7.1/flannel-v0.7.1-linux-amd64.tar.gz",
+  etcd_repo: "https://github.com/coreos/etcd/releases/download/v3.2.0/etcd-v3.2.0-linux-amd64.tar.gz",
+  k8s_repo: "https://storage.googleapis.com/kubernetes-release/release/v1.7.0/bin/linux/amd64/",
+
+  go_ver: "1.8.3",
+  # If volume want to be used, specify a size in GB, make volume size 0 if wish
+  # not to use volume from your cloud
+  volume_size: 0,
+  # cloud block device name presented on virtual machines.
+  block_device_name: "/dev/vdb"
+}
