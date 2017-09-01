@@ -3,7 +3,8 @@
 GIT_URL: "http://gerrit.hyperledger.org/r/fabric"
 
 # The gerrit patch set reference, should be automatically set by gerrit
-GERRIT_REFSPEC: "refs/changes/23/11523/3"
+# GERRIT_REFSPEC: "refs/changes/23/11523/3" # 1.0.0
+GERRIT_REFSPEC: "refs/changes/47/12047/3" # 1.0.1
 
 # This variable defines fabric network attributes
 fabric: {
@@ -13,6 +14,7 @@ fabric: {
 
   # options are "goleveldb", "CouchDB", default is goleveldb
   peer_db: "CouchDB",
+  tls: true,
 
   # The following section defines how the fabric network is going to be made up
   # cas indicates certificate authority containers
@@ -45,5 +47,5 @@ fabric: {
     }
   },
 
-  baseimage_tag: "1.0.0"
+  baseimage_tag: "1.0.1"
 }
