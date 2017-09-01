@@ -1,0 +1,72 @@
+---
+# This is an example configuration file when use ubuntu image.
+horizon_url: "https://salesdemo-sjc.openstack.blueboxgrid.com"
+
+auth: {
+  auth_url: "https://salesdemo-sjc.openstack.blueboxgrid.com:5000/v2.0",
+  username: "litong01",
+  password: "{{ password }}",
+  project_name: "Interop"
+}
+
+# This variable defines cloud provision attributes
+cluster: {
+  target_os: "ubuntu",
+  image_name: "Ubuntu 16.04",
+  region_name: "",
+  ssh_user: "ubuntu",
+  availability_zone: "compute_enterprise",
+  validate_certs: True,
+  private_net_name: "demonet",
+  flavor_name: "m1.xlarge",
+  public_key_file: "/home/ubuntu/.ssh/fd.pub",
+  private_key_file: "/home/ubuntu/.ssh/fd",
+  # This variable indicate what IP should be used, only valid values are
+  # private_ip or public_ip
+  node_ip: "public_ip",
+
+  container_network: {
+    Network: "172.17.0.0/16",
+    SubnetLen: 24,
+    SubnetMin: "172.17.0.0",
+    SubnetMax: "172.17.255.0",
+    Backend: {
+      Type: "udp",
+      Port: 8285
+    }
+  },
+
+  flannel_repo: "https://github.com/coreos/flannel/releases/download/v0.7.1/flannel-v0.7.1-linux-amd64.tar.gz",
+  etcd_repo: "https://github.com/coreos/etcd/releases/download/v3.2.0/etcd-v3.2.0-linux-amd64.tar.gz",
+
+  go_ver: "1.7.5",
+  # If volume want to be used, specify a size in GB, make volume size 0 if wish
+  # not to use volume from your cloud
+  volume_size: 0,
+  # cloud block device name presented on virtual machines.
+  block_device_name: "/dev/vdb"
+}
+
+# The url which the project should get source code from
+GIT_URL: "http://gerrit.hyperledger.org/r/fabric"
+
+# The gerrit patch set reference, should be automatically set by gerrit
+GERRIT_REFSPEC: ""
+
+# This variable defines fabric network attributes
+fabric: {
+  # fabric network node names expect to be using a clear pattern, this defines
+  # the prefix for the node names.
+  name_prefix: "fabric",
+  baseimage_tag: "x86_64-0.3.1",
+
+  # stack_size determines how many virtual or physical machines we will have
+  # each machine will be named ${name_prefix}001 to ${name_prefix}${stack_size}
+  stack_size: 1,
+
+  # Where etcd will be setup
+  etcdnodes: ["fabric001"],
+  peers: [],
+  orderers: [],
+  builders: ["fabric001"]
+}
