@@ -7,3 +7,4 @@ from .management import ListUser, CreateUser, UpdateUser, \
     DeleteUser, UserInfo
 from .auth import Register, Login
 from .user import User
+from .profile import UserProfile

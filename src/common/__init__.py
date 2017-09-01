@@ -24,3 +24,4 @@ from .utils import \
 
 from .fabric_network_config import \
     FabricPreNetworkConfig, FabricV1NetworkConfig
+from .stringvalidator import StringValidator

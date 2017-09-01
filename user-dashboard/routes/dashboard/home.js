@@ -30,18 +30,22 @@ router.get("/", function(req, res, next) {
         pointBalance: req.session.balance
     };
     var userInfo = JSON.parse(req.cookies[config.cookieName]);
-    var chain = new Chain(userInfo.apikey);
-    var contract = new Contract(userInfo.apikey);
-    chain.amount().then(function(result) {
-        renderer["chainNum"] = result.amount;
-        return contract.amount();
-    }).then(function(result) {
-        renderer["contractNum"] = result.amount;
-        res.render("dashboard/home", renderer);
-    }).catch(function(err) {
-        var e = new Error(err.message);
-        e.status = 500;
-        next(e);
-    });
+    renderer["chainNum"] = 1;
+    renderer["contractNum"] = 1;
+    res.render("dashboard/home", renderer)
+    next()
+    // var chain = new Chain(userInfo.apikey);
+    // var contract = new Contract(userInfo.apikey);
+    // chain.amount().then(function(result) {
+    //     renderer["chainNum"] = result.amount;
+    //     return contract.amount();
+    // }).then(function(result) {
+    //     renderer["contractNum"] = result.amount;
+    //     res.render("dashboard/home", renderer);
+    // }).catch(function(err) {
+    //     var e = new Error(err.message);
+    //     e.status = 500;
+    //     next(e);
+    // });
 });
 module.exports = router;

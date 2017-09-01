@@ -14,6 +14,7 @@ import bcrypt
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 from common import log_handler, LOG_LEVEL
 from modules.user.user import User
+from modules.models import LoginHistory
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
@@ -43,10 +44,15 @@ class Login(Resource):
 
         user_obj = User()
         try:
-            user = user_obj.get_by_username_w_password(username)
+            user = user_obj.get_by_username(username)
+            # compare input password with password in db
             if bcrypt.checkpw(password.encode('utf8'),
                               bytes(user.password.encode())):
                 login_user(user)
+
+                # if login success save login history
+                login_history = LoginHistory(user=user.dbUser)
+                login_history.save()
                 user_id = str(user.id)
                 data = {
                     "success": True,

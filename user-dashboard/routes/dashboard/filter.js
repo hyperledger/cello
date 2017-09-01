@@ -21,10 +21,10 @@ router.get([
     var userInfo = req.cookies[config.cookieName];
     if (userInfo) {
         userInfo = JSON.parse(userInfo);
+        res.locals.username = userInfo.username || "";
+        next()
         var profile = new Profile(userInfo.apikey);
-        profile.init().then(function(result) {
-            return profile.load();
-        }).then(function(result) {
+        profile.load().then(function(result) {
             res.locals.username = result.result.name || userInfo.username.split("@")[0];
             next();
         }).catch(function(err) {
