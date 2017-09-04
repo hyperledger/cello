@@ -37,8 +37,9 @@ def check_status(func):
 class DockerHost(HostBase):
     """ Main handler to operate the Docker hosts
     """
-    def __init__(self):
+    def __init__(self, host_type):
         self.col = db["host"]
+        self.host_type = host_type
 
     def create(self, worker_api):
         """ Create a new docker host node
@@ -65,6 +66,10 @@ class DockerHost(HostBase):
             return False
 
         detected_type = detect_daemon_type(worker_api)
+        if detected_type != self.host_type:
+            logger.warning("Host type={} should be same with the initialized \
+                            type={}".format(detected_type, self.host_type))
+            return False
 
         if detected_type not in ['docker', 'swarm']:
             logger.warning("Detected type={} is not docker or swarm".
@@ -107,6 +112,3 @@ class DockerHost(HostBase):
         :return: Updated host
         """
         return check_daemon(worker_api)
-
-
-docker_host = DockerHost()

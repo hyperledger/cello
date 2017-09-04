@@ -7,12 +7,14 @@ import sys
 import unittest
 from test_user_management import UserManagementTestCase
 from test_user_profile import UserProfileTest
+from test_host_create import HostCreateTest
 
 
 def suite():
     suit = unittest.TestSuite()
     suit.addTest(unittest.makeSuite(UserManagementTestCase))
     suit.addTest(unittest.makeSuite(UserProfileTest))
+    suit.addTest(unittest.makeSuite(HostCreateTest))
 
     return suit
 

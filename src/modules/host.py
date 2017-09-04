@@ -51,16 +51,15 @@ class HostHandler(object):
     def __init__(self):
         self.col = db["host"]
         self.host_agents = {
-            'docker': DockerHost(),
-            'swarm': DockerHost(),
+            'docker': DockerHost("docker"),
+            'swarm': DockerHost("swarm"),
             'kubernetes': KubernetesHost()
         }
 
-    def create(self, name, worker_api, capacity=1,
+    def create(self, name, worker_api, host_type, capacity=1,
                log_level=CLUSTER_LOG_LEVEL[0],
                log_type=CLUSTER_LOG_TYPES[0], log_server="", autofill="false",
-               schedulable="false", serialization=True,
-               host_type=WORKER_TYPES[0]):
+               schedulable="false", serialization=True):
         """ Create a new docker host node
 
         A docker host is potentially a single node or a swarm.
@@ -68,6 +67,7 @@ class HostHandler(object):
 
         :param name: name of the node
         :param worker_api: worker_api of the host
+        :param host_type: docker host type docker or swarm
         :param capacity: The number of clusters to hold
         :param log_type: type of the log
         :param log_level: level of the log
@@ -77,9 +77,9 @@ class HostHandler(object):
         :param serialization: whether to get serialized result or object
         :return: True or False
         """
-        logger.debug("Create host: name={}, worker_api={}, capacity={}, "
-                     "log={}/{}, autofill={}, schedulable={}"
-                     .format(name, worker_api, capacity, log_type,
+        logger.debug("Create host: name={}, worker_api={}, host_type={}, "
+                     "capacity={}, log={}/{}, autofill={}, schedulable={}"
+                     .format(name, worker_api, host_type, capacity, log_type,
                              log_server, autofill, schedulable))
         if not worker_api.startswith("tcp://"):
             worker_api = "tcp://" + worker_api
@@ -93,7 +93,7 @@ class HostHandler(object):
         if log_type == CLUSTER_LOG_TYPES[0]:
             log_server = ""
 
-        if not self.host_agents[host_type].create(worker_api):
+        if not host_type or not self.host_agents[host_type].create(worker_api):
             logger.warning("{} cannot be setup".format(name))
             return {}
 
