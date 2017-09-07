@@ -4,7 +4,8 @@ GIT_URL: "http://gerrit.hyperledger.org/r/fabric"
 
 # The gerrit patch set reference, should be automatically set by gerrit
 # GERRIT_REFSPEC: "refs/changes/23/11523/3" # 1.0.0
-GERRIT_REFSPEC: "refs/changes/47/12047/3" # 1.0.1
+# GERRIT_REFSPEC: "refs/changes/47/12047/3" # 1.0.1
+GERRIT_REFSPEC: "refs/changes/13/13113/1"
 
 # This variable defines fabric network attributes
 fabric: {
@@ -40,5 +41,5 @@ fabric: {
     }
   },
 
-  baseimage_tag: "1.0.1"
+  baseimage_tag: "1.0.2"
 }

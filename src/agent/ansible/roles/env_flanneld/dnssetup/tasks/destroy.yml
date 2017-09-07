@@ -4,11 +4,33 @@
     node_ip: "{{ hostvars[inventory_hostname].private_ip }}"
     node_name: "{{ hostvars[inventory_hostname].inter_name }}"
 
-- name: Stop skydns service
-  command: >-
-    docker rm -f skydns.{{ node_name }}
+- name: Remove registrator service
+  command: docker rm -f registrator.{{ node_name }}
+
+- name: Remove dns service
+  command: docker rm -f skydns.{{ node_name }}
   when: node_ip == hostvars[groups['allnodes'][0]].private_ip
 
-- name: Stop registrator service
-  command: >-
-    docker rm -f registrator.{{ node_name }}
+- name: Stop the flanneld and docker service
+  service:
+    name: "{{ item }}"
+    state: stopped
+  with_items:
+    - flanneld
+    - docker
+
+- name: Reset etcd
+  uri:
+    url: "http://{{ inventory_hostname }}:2379/v2/keys/{{ item }}?recursive=true"
+    method: DELETE
+    status_code: 200,202,204,404
+  with_items:
+    - coreos.com
+    - skydns
+  when: inventory_hostname == groups['etcdnodes'][0]
+
+- name: Stop the etcd services
+  service:
+    name: etcd
+    state: stopped
+  when: inventory_hostname in groups['etcdnodes']

@@ -22,5 +22,5 @@ fabric: {
     }
   },
 
-  baseimage_tag: "1.0.1"
+  baseimage_tag: "1.0.2"
 }
