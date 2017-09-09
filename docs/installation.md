@@ -18,14 +18,15 @@ Currently we support Docker Host or Swarm Cluster as Worker Node. More types wil
 `Docker Host`: See [Installation on Worker Docker Node](installation_worker_docker.md).
 `Docker Swarm `: TODO.
 `Kubernetes`: TODO.
+`vSphere`: TODO.
 
 ## Master Node
 
 See [Installation on Master Node](installation_master.md).
 
-### Command help - make
+### Make Command
 
-To know more what make commands does in the installation process, please refer [make_support](/make_support.md) page.
+A Makefile is provided to help setup the master node, please refer [make_support](/make_support.md) page.
 
 
 *Licensed under Creative Commons Attribution 4.0 International License

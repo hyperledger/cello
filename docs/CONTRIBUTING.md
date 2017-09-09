@@ -1,5 +1,5 @@
 # Contribution
-Any kind of contribution is encouraged, e.g., bug fix and question report.
+Any kind of contribution is encouraged, e.g., [Jira items](https://jira.hyperledger.org/projects/CE/issues) or [patchsets](https://gerrit.hyperledger.org/r/#/admin/projects/cello).
 
 ## LF ID Application
 
@@ -11,12 +11,12 @@ If you do not have an LF ID, can [apply one](https://identity.linuxfoundation.or
 
 We are using [Jira](https://jira.hyperledger.org/projects/CE) to track the project progress, and welcome to report bug issues or create to-do tasks there. Each item should try keeping simple and focused, hence easy to fix and review.
 
-After login with your LF ID, you can see those task items may have 4 status:
+After login with your LF ID, you can see those task items with one of the following statuses:
 
-* `To Do`: Available for picking.
-* `In Progress`: Picked by someone (check the assignee) to work on.
-* `Under Review`: Related patchset has been submitted for review.
-* `Done`: Patchset merged, the item is done.
+* `To Do`: Available for picking and fix.
+* `In Progress`: Some on already picked it (check the assignee) to work on.
+* `Under Review`: Related patchset has been submitted for review, and added as comment under the Jira item.
+* `Done`: Patchset merged, the item has been resolved.
 
 In brief, if you want to contribute, create or find some `To Do` item, and assign it to yourself, then update its status to `In Progress`. After the item is fixed, remember to mark it as `Under Review` and `Done` when the patch is submitted and merged.
 

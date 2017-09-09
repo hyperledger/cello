@@ -63,7 +63,7 @@ const App = ({ children, location, dispatch, app, loading }) => {
   return (
     <div>
       <Helmet>
-        <title>Cello Dashboard</title>
+        <title>Cello Operation Dashboard</title>
         <link rel="icon" href={config.logoSrc} type="image/x-icon" />
         {config.iconFontUrl ? <script src={config.iconFontUrl}></script> : ''}
       </Helmet>

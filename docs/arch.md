@@ -36,7 +36,7 @@ Each layer should maintain stable APIs for upper layers, to achieve pluggability
 
 The restful related implementation is based on [Flask](flask.pocoo.org), a Werkzeug based micro-framework for web service.
 
-I choose it for:
+The reasons of choosing it include:
 
 * Lightweight
 * Good enough in performance
