@@ -18,6 +18,11 @@ try:  # docker 2.x lib is recommended
 except ImportError:  # docker 1.x lib
     from docker import Client
 
+import sys
+if sys.version_info.major == 2:  # py2
+    from urlparse import urlparse
+else:  # py3
+    from urllib.parse import urlparse
 from common import log_handler, LOG_LEVEL
 from common import \
     WORKER_TYPES, \
@@ -157,8 +162,11 @@ def detect_daemon_type(worker_api, timeout=5):
     :param timeout: Time to wait for the response
     :return: host type info
     """
-    if not worker_api or not worker_api.startswith("tcp://"):
+    if not worker_api:
         return None
+    url = urlparse(worker_api)
+    if not url.scheme:
+        worker_api = "tcp://" + worker_api  # worker node listen on tcp port
     segs = worker_api.split(":")
     if len(segs) != 3:
         logger.error("Invalid daemon url = ", worker_api)
