@@ -130,6 +130,19 @@
                   <input id="host_capacity" type="number" name="capacity"
                          class="form-control" min="0" max="1000" value=1 required>
               </div>
+              {% if host_types|length > 0 %}
+                    <div class="form-group form-inline">
+                        <label for="host_type" style="width: 20%">Host Type</label>
+                        <select id="host_type" class="c-select host_type"
+                                name="host_type" required>
+                            <option selected
+                                    value="{{host_types[0]}}">{{host_types[0]|upper }}</option>
+                            {% for c in host_types[1:] %}
+                                    <option value="{{c}}">{{c|upper}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+              {% endif %}
               {% if log_levels|length > 0 %}
                     <div class="form-group form-inline">
                         <label for="log_level" style="width: 20%">Logging Level</label>
