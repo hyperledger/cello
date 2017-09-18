@@ -79,6 +79,55 @@ spec:
     - { name: "port2", port: 9093 }
 {% endfor %}
 
+{% for ca in cas %}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ ca.name }}
+  labels:
+    k8s-app: {{ ca.name }}
+spec:
+  nodeName: {{ inter_name }}
+  restartPolicy: Always
+  volumes:
+    - name: keyfiles
+      hostPath:
+        path: {{ fabricworkdir }}/run/keyfiles/{{ ca.org }}
+  containers:
+    - name: {{ ca.name }}
+      image: hyperledger/fabric-ca:{{ catag }}
+      imagePullPolicy: IfNotPresent
+      env:
+        - { name: "FABRIC_CA_HOME", value: "/etc/hyperledger/fabric-ca-server-config/ca" }
+        - { name: "FABRIC_CA_SERVER_CA_NAME", value: "{{ ca.name}}" }
+        - { name: "FABRIC_CA_SERVER_CA_KEYFILE", value: "/etc/hyperledger/fabric-ca-server-config/ca/{{ cakeys[ca.org+'_ca'] }}" }
+        - { name: "FABRIC_CA_SERVER_CA_CERTFILE", value: "/etc/hyperledger/fabric-ca-server-config/ca/ca.{{ ca.org }}-cert.pem" }
+{% if fabric.tls %}
+        - { name: "FABRIC_CA_SERVER_TLS_ENABLED", value: "true" }
+        - { name: "FABRIC_CA_SERVER_TLS_KEYFILE", value: "/etc/hyperledger/fabric-ca-server-config/tlsca/{{ cakeys[ca.org+'_tlsca'] }}" }
+        - { name: "FABRIC_CA_SERVER_TLS_CERTFILE", value: "/etc/hyperledger/fabric-ca-server-config/tlsca/tlsca.{{ ca.org }}-cert.pem" }
+{% endif %}
+      volumeMounts:
+        - { mountPath: "/etc/hyperledger/fabric-ca-server-config", name: "keyfiles" }
+      command: ["fabric-ca-server"]
+      args:  ["start", "-b", "{{ fabric.ca.admin }}:{{ fabric.ca.adminpw }}", "-d"]
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    k8s-app: {{ ca.name }}
+  name: {{ ca.name }}
+spec:
+  selector:
+    k8s-app: {{ ca.name }}
+  ports:
+    - name: port1
+      port: 7054
+
+{% endfor %}
+
 {% for peer in peers %}
 ---
 apiVersion: v1
@@ -116,15 +165,17 @@ spec:
       env:
         - { name: "CORE_VM_ENDPOINT", value: "unix:///host/var/run/docker.sock" }
         - { name: "CORE_LOGGING_LEVEL", value: "DEBUG" }
-        - { name: "CORE_PEER_TLS_ENABLED", value: "true" }
         - { name: "CORE_PEER_ENDORSER_ENABLED", value: "true" }
         - { name: "CORE_PEER_GOSSIP_USELEADERELECTION",
             value: "{{ allpeers|selectattr('org','equalto',peer.org)|list|selectattr('role','equalto','leader')|list|length|int==0 }}" }
         - { name: "CORE_PEER_GOSSIP_ORGLEADER", value: "{{ (peer.role == "leader") | ternary('true','false') }}" }
         - { name: "CORE_PEER_PROFILE_ENABLED", value: "true" }
+        - { name: "CORE_PEER_TLS_ENABLED", value: "{{ fabric.tls | lower }}" }
+{% if fabric.tls %}
         - { name: "CORE_PEER_TLS_CERT_FILE", value: "/etc/hyperledger/fabric/tls/server.crt" }
         - { name: "CORE_PEER_TLS_KEY_FILE", value: "/etc/hyperledger/fabric/tls/server.key" }
         - { name: "CORE_PEER_TLS_ROOTCERT_FILE", value: "/etc/hyperledger/fabric/tls/ca.crt" }
+{% endif %}
         - { name: "CORE_PEER_ID", value: "{{ peer.name }}" }
         - { name: "CORE_PEER_ADDRESS", value: "{{ peer.name }}:7051" }
         - { name: "CORE_PEER_GOSSIP_EXTERNALENDPOINT", value: "{{ peer.name }}:7051" }
@@ -184,11 +235,13 @@ spec:
         - { name: "ORDERER_GENERAL_GENESISFILE", value: "/var/hyperledger/allorgs/genesis.block" }
         - { name: "ORDERER_GENERAL_LOCALMSPID", value: "{{ orderer.org }}" }
         - { name: "ORDERER_GENERAL_LOCALMSPDIR", value: "/var/hyperledger/orderer/msp" }
-        - { name: "ORDERER_GENERAL_TLS_ENABLED", value: "true" }
         - { name: "ORDERER_GENERAL_TLS_CLIENTAUTHENABLED", value: "false" }
+        - { name: "ORDERER_GENERAL_TLS_ENABLED", value: "{{ fabric.tls | lower }}" }
+{% if fabric.tls %}
         - { name: "ORDERER_GENERAL_TLS_PRIVATEKEY", value: "/var/hyperledger/orderer/tls/server.key" }
         - { name: "ORDERER_GENERAL_TLS_CERTIFICATE", value: "/var/hyperledger/orderer/tls/server.crt" }
         - { name: "ORDERER_GENERAL_TLS_ROOTCAS", value: "[/var/hyperledger/orderer/tls/ca.crt]" }
+{% endif %}
         - { name: "ORDERER_KAFKA_RETRY_SHORTINTERVAL", value: "1s" }
         - { name: "ORDERER_KAFKA_RETRY_SHORTTOTAL", value: "30s" }
         - { name: "ORDERER_KAFKA_VERBOSE", value: "true" }

@@ -16,7 +16,7 @@
   vars:
     env: "os"
     env_type: "k8s"
-  include: "roles/env_k8s/plays.yml"
+  include: "roles/env_k8s/{{ mode }}.yml"
 
 - name: Run the plays
   vars:

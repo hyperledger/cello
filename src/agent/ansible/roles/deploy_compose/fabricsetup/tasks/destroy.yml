@@ -38,3 +38,10 @@
   shell: docker images | grep "dev-*" | cat | awk '{print $1}' | xargs docker rmi -f
   when: images.stdout != ""
   no_log: true
+
+- name: Clean up the working directory
+  become: true
+  become_user: root
+  file:
+    path: "{{ fabricworkdir }}/run"
+    state: absent

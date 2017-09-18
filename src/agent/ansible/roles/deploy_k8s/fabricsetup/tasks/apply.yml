@@ -11,6 +11,8 @@
     arch: "{{ rawarch.stdout}}"
     peers: "{{ [] }}"
     orderers: "{{ [] }}"
+    cas: "{{ [] }}"
+    cakeys: "{{ {} }}"
     kafkas: "{{ [] }}"
     kafkanodes: ""
     zookeepers: "{{ [] }}"
@@ -23,9 +25,11 @@
     kafkals: "{{ [] }}"
     peerls: "{{ [] }}"
     ordererls: "{{ [] }}"
+    cals: "{{ [] }}"
     allpeers: "{{ [] }}"
     clihost: ""
     thetag: "{{ rawarch.stdout + '-' + fabric.baseimage_tag }}"
+    catag: "{{ rawarch.stdout + '-' + fabric.ca.tag }}"
     filterstr: ""
     k8s_server: "{{ hostvars[groups['allnodes'][0]].private_ip }}"
 
@@ -40,6 +44,7 @@
 
 - name: Create component list
   set_fact:
+    cals: "{{ cals | default([]) + item.value.cas | default([]) }}"
     ordererls: "{{ ordererls | default([]) + item.value.orderers | default([]) }}"
     peerls: "{{ peerls | default([]) + item.value.peers | default([]) }}"
     zookeeperls: "{{ zookeeperls | default([]) + item.value.zookeepers | default([]) }}"
@@ -77,6 +82,13 @@
         'role':item.split('@')[0]}] }}
   with_items: "{{ peerls }}"
 
+- name: Get all ca object list
+  set_fact:
+    allcas: |
+      {{ allcas | default([]) + [{ 'org':item.split('.')[-1],
+        'name':item | replace('.', '-') }] }}
+  with_items: "{{ cals }}"
+
 - name: Get all orderer object list
   set_fact:
     allorderers: |
@@ -91,6 +103,13 @@
         'name':item.split('@')[1] | replace('.', '-'),
         'role':item.split('@')[0]}] }}
   with_items: "{{ fabric.network[current_host].peers | default([]) }}"
+
+- name: Get ca container list
+  set_fact:
+    cas: |
+      {{ cas + [{'org':item.split('.')[-1],
+        'name':item | replace('.', '-') }] }}
+  with_items: "{{ fabric.network[current_host].cas | default([]) }}"
 
 - name: Get orderer container list
   set_fact:
@@ -146,6 +165,30 @@
     dest: "{{ fabricworkdir }}/run"
     remote_src: true
 
+- name: Process private key files
+  find:
+    paths: "{{ fabricworkdir }}/run/keyfiles/{{ item[0].org }}/{{ item[1] }}"
+    patterns: "*_sk"
+    recurse: yes
+  with_nested:
+    - "{{ cas }}"
+    - ["ca", "tlsca"]
+  when: cas | length > 0
+  register: privatekeys
+
+- name: Process private key files
+  template:
+    src: "{{ playbook_dir }}/../deploy_k8s/fabricsetup/templates/fabric-ca-server-config.j2"
+    dest: "{{ fabricworkdir }}/run/keyfiles/{{ item.org }}/ca/fabric-ca-server-config.yaml"
+  with_items: "{{ cas }}"
+
+- name: Setup ca private key values
+  set_fact:
+    cakeys: |
+      {{ cakeys | combine( {item.item[0].org+'_'+item.item[1]: item.files[0].path.split('/')[-1] } ) }}
+  with_items: "{{ privatekeys.results }}"
+  no_log: True
+
 - name: Get the peer org list
   set_fact:
     peerorgs: "{{ peers | map(attribute='org') | list  | unique | sort }}"
@@ -178,6 +221,7 @@
   command: "docker pull {{ item }}"
   when: fabric.baseimage_tag | length > 0
   with_items:
+    - "hyperledger/fabric-ca:{{ thetag }}"
     - "hyperledger/fabric-tools:{{ thetag }}"
     - "hyperledger/fabric-ccenv:{{ thetag }}"
     - "hyperledger/fabric-kafka:{{ thetag }}"

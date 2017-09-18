@@ -27,3 +27,8 @@
   shell: docker images | grep "dev-*" | cat | awk '{print $1}' | xargs docker rmi -f
   when: images.stdout != ""
   no_log: true
+
+- name: Make sure that working directory is removed
+  file:
+    path: "{{ fabricworkdir }}/run"
+    state: absent
