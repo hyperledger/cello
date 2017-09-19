@@ -22,5 +22,6 @@ fabric: {
     }
   },
 
-  baseimage_tag: "1.0.2"
+  baseimage_tag: "1.0.2",
+  ca: { tag: "1.0.2", admin: "admin", adminpw: "adminpw" }
 }

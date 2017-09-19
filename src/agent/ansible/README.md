@@ -35,7 +35,9 @@ need to do should be identical.
     sudo pip install --upgrade pip
     sudo pip install six==1.10.0
     sudo pip install ansible==2.3.0.0
-    git clone https://github.com/litong01/fabric-deploy.git
+    git clone https://gerrit.hyperledger.org/r/cello
+
+All the following work assumed that you are in cello/src/agent/ansible directory
 
 ## Deploy hyperledger fabric onto different environment
 
