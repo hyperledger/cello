@@ -1,6 +1,7 @@
 # Copyright 2017 (c) VMware, Inc. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
+
 import logging
 import os
 import sys
@@ -30,35 +31,31 @@ class ClusterOnVsphere(ClusterBase):
         pass
 
     def create(self, cid, mapped_ports, host, config, user_id=""):
-        """ Create a cluster based on given data. This will first select the VM
-        then call compose_up
-        """
-        return
+        containers = compose_up(name=cid, mapped_ports=mapped_ports,
+                                host=host, config=config)
+
+        if not containers:
+            return []
+
+        return containers
 
     def delete(self, id, worker_api, config):
-        """ Delete a fabric cluster.
-        """
-        return
+        return compose_clean(id, worker_api, config)
 
     def start(self, name, worker_api, mapped_ports, log_type, log_level,
               log_server, config):
-        """ Star a fabric cluster
-        need to identify the right vm and run compose_start on that vm
-        """
-        return
+        return compose_start(name, worker_api, mapped_ports, log_type,
+                             log_level, log_server, config)
 
     def restart(self, name, worker_api, mapped_ports, log_type, log_level,
                 log_server, config):
-        """ Restart a fabric cluster. Need to identify which VM this cluster lives on
-        and then call compose_restart
-        """
-        return
+        return compose_restart(name, worker_api, mapped_ports, log_type,
+                               log_level, log_server, config)
 
     def stop(self, name, worker_api, mapped_ports, log_type, log_level,
              log_server, config):
-        """ Stop a Fabric cluster. First identify the VM then call compose_stop.
-        """
-        return
+        return compose_stop(name, worker_api, mapped_ports, log_type,
+                            log_level, log_server, config)
 
 
 cluster_on_vsphere = ClusterOnVsphere()
