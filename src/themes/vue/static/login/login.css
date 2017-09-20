@@ -1,0 +1,44 @@
+.form {
+  position: absolute;
+  top: 50%;
+  left: 70%;
+  margin: -160px 0 0 -160px;
+  width: 350px;
+  height: 350px;
+  padding: 36px;
+  box-shadow: 0 0 100px rgba(0, 0, 0, 0.08);
+  background-color: rgba(255, 255, 255, 0.7);
+}
+.form button {
+  width: 100%;
+}
+.form p {
+  color: #cccccc;
+  text-align: center;
+  margin-top: 16px;
+}
+.form p span:first-child {
+  margin-right: 16px;
+}
+.logo {
+  text-align: center;
+  height: 40px;
+  line-height: 40px;
+  cursor: pointer;
+  margin-bottom: 24px;
+}
+.logo img {
+  width: 60px;
+  margin-right: 8px;
+}
+.logo span {
+  vertical-align: text-bottom;
+  font-size: 16px;
+  text-transform: uppercase;
+  display: inline-block;
+  color: #595f69;
+}
+.ant-spin-container,
+.ant-spin-nested-loading {
+  height: 100%;
+}

@@ -107,8 +107,8 @@ setup-master: ##@Environment Setup dependency for master node
 setup-worker: ##@Environment Setup dependency for worker node
 	cd scripts/worker_node && bash setup.sh
 
-build-js: ##@Nodejs Build js files for react
-	bash scripts/master_node/build_reactjs.sh
+build-js: ##@Nodejs Build js files for vue
+	bash scripts/master_node/build_vuejs.sh
 
 watch-mode: ##@Nodejs Run watch mode with js files for react
 	bash scripts/master_node/watch_mode.sh
