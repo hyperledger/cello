@@ -1,12 +1,19 @@
 # Tutorial
 
-**Notice: Please have a look at the [terminology](./terminology.md) if you haven't yet.**
 
-After the [installation](./installation.md), operators can interact with Cello through dashboard.
+## Basic Concepts
 
-By default, the dashboard will listen on port `8080` at the Master Node.
+Have a look at the [terminology](./terminology.md) to understand the basic concepts.
 
-## Add a host to the pool
+## Setup a Cello Cluster
+
+Following the [installation](./installation.md) to setup a Cello cluster.
+
+After that, operators can interact with Cello through dashboard.
+
+By default, the dashboard will listen on port `8080` at the Master Node, you can login with default administrator account of `admin:pass`.
+
+## Add a Host
 
 The first time you start Cello, there will be no hosts in the pool. There are two methods to add more hosts into the pool.
 
@@ -25,7 +32,7 @@ Suppose it's a Native Docker server to import as a host, input those fields
 
 After successful adding, you can find the `docker_host` shown in the Host page, with 0 chains and Cap is 5.
 
-## Create a chain in the pool
+## Create a Chain
 
 Now we have the free host in the pool, new chains can be create.
 
@@ -41,7 +48,7 @@ Click the create button to add a new chain with name `test_chain` into the pool.
 
 Then you can see it at the Active Chain page.
 
-## Use auto-mode to provision chains
+## Enable auto-mode
 
 It will be difficult if you have a numbers of chains to create manually. Cello provides automated ways to save time.
 

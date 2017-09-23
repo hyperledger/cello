@@ -1,6 +1,6 @@
 # Scenarios
 
-## Admin
+## Admin Scenario
 After start up, Cello provides a dashboar for administrators, which listens on localhost:8080.
 
 The default login user name and password are `admin:pass`, you can modify this by changing the variables `USERNAME` and `PASSWORD` in the `nginx` section of the [docker-compose file](../docker-compose.yml).
@@ -16,19 +16,19 @@ Admin can also delete a host from the resource pool if it has no running chains.
 ### Config a host
 Admin can manually update the host configuration, including:
 
-* name: Human readable name alias.
-* capacity: Maximum chain number on that host.
-* schedulable: Whether to distribute chains on that host to users.
-* autofill: Whether to keep host with running chains to its capacity.
-* log_type: local or syslog.
+* `name`: Human readable name alias.
+* `capacity`: Maximum chain number on that host.
+* `schedulable`: Whether to distribute chains on that host to users.
+* `autofill`: Whether to keep host with running chains to its capacity.
+* `log_type`: local or syslog.
 
 ### Operate a host
 
 Admin can run several operations on a host, including:
 
-* fill: Fill the host with chains to its capacity.
-* clean: Clean up the free chains on that host.
-* reset: Re-setup a host, e.g., cleaning useless docker containers.
+* `fill`: Fill the host with chains to its capacity.
+* `clean`: Clean up the free chains on that host.
+* `reset`: Re-setup a host, e.g., cleaning useless docker containers.
 
 ### Add/Delete chains
 Admin can also manually add some specific chain to a host, or delete one.
@@ -39,7 +39,7 @@ When the autofill box is checked on a host, then watchdog will automatically kee
 
 e.g., if the capacity of one host is set to 10, then the host will be filled with 10 chains quickly. When 2 chains are broken, they will be replaced by healthy ones soon.
 
-## Chain users
+## Users Scenario
 
 ### apply a cluster
 

@@ -1,5 +1,6 @@
 # Production Configurations
-Reference system configuration in production environment.
+
+In order to optimize the system performance in production environment, these system configurations can be set.
 
 ## `/etc/sysctl.conf`
 
@@ -31,9 +32,8 @@ Then, need to run `sysctl -p` for enabling.
 * soft stack 32768
 * hard stack 32768
 ```
-Log
 
-## Other Consideration
+## Other Configurations
 
 * Use the code from `release` branch.
 * Configuration: Set all parameters to production, including image, compose, and application.

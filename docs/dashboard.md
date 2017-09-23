@@ -1,6 +1,6 @@
 # Dashboard
 
-By default, the dashboard will listen on port `8080` at the Master Node.
+By default, the dashboard will listen on port `8080` at the Master Node, and operators can login in with default `admin:pass` credential.
 
 The left panel gives quick link to various functions, including `overview`, `system status`, `Hosts`, `Active Clusters`, `Inused Clusters`, `Release History` and `About`.
 
@@ -70,6 +70,5 @@ Filter out those running chains that are occupied by users.
 ## Release History
 
 Record all the user releasing chain history.
-
 
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
