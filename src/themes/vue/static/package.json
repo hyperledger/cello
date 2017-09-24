@@ -20,6 +20,7 @@
     "iview": "^2.3.2",
     "axios": "^0.16.2",
     "vue-echarts": "*",
+    "moment": "^2.18.1",
     "vuex-router-sync": "^4.1.2"
   },
   "devDependencies": {
