@@ -5,6 +5,7 @@
 #
 import unittest
 from flask_testing import TestCase
+from flask import url_for
 import sys
 import os
 import logging
@@ -57,6 +58,24 @@ class UserManagementTestCase(TestCase):
         response = json.loads(response)
         users = response.get("users", {}).get("result", [])
         self.assertTrue(len(users) >= 1)
+
+    def test_search_user(self):
+        """
+        search admin will return admin user info,
+        search fake username will return user_exists False
+        """
+        self._login("admin", "pass")
+        response = self.client.get(url_for("bp_user_api.search"), query_string={"username": "admin"})
+        raw_json = response.data.decode("utf-8")
+        raw_json = json.loads(raw_json)
+        user_exists = raw_json.get("user_exists", False)
+        self.assertTrue(user_exists)
+        user_name = fake.user_name()
+        response = self.client.get(url_for("bp_user_api.search"), query_string={"username": user_name})
+        raw_json = response.data.decode("utf-8")
+        raw_json = json.loads(raw_json)
+        user_exists = raw_json.get("user_exists", False)
+        self.assertTrue(not user_exists)
 
     def test_create_update_delete_user(self):
         self._login("admin", "pass")

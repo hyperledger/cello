@@ -130,4 +130,7 @@ export default {
       display:inline-block;
       border-bottom: 2px solid #5b6270;
     }
+    .main-content {
+      min-height: 100vh;
+    }
 </style>
