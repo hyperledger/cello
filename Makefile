@@ -18,13 +18,13 @@ else
 	SED = sed -i
 endif
 
-ifeq (${THEME}, react)
-	ifneq ($(wildcard ./src/themes/react/static/node_modules),)
+ifneq (${THEME}, basic)
+	ifneq ($(wildcard ./src/${STATIC_FOLDER}/node_modules),)
 		INSTALL_NPM=
 	else
 		INSTALL_NPM=npm-install
 	endif
-	ifneq ($(wildcard ./src/themes/react/static/js/dist),)
+	ifneq ($(wildcard ./src/${STATIC_FOLDER}/js/dist),)
 		BUILD_JS=
 	else
 		BUILD_JS=build-js
@@ -107,8 +107,8 @@ setup-master: ##@Environment Setup dependency for master node
 setup-worker: ##@Environment Setup dependency for worker node
 	cd scripts/worker_node && bash setup.sh
 
-build-js: ##@Nodejs Build js files for vue
-	bash scripts/master_node/build_vuejs.sh
+build-js: ##@Nodejs Build js files
+	bash scripts/master_node/build_js.sh
 
 watch-mode: ##@Nodejs Run watch mode with js files for react
 	bash scripts/master_node/watch_mode.sh

@@ -7,7 +7,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 const HostPage = resolve => {
   require.ensure([], () => {
-    resolve(require('@/pages/HostPage.vue'))
+    resolve(require('@/pages/Host/index.vue'))
   })
 }
 const HomePage = resolve => {

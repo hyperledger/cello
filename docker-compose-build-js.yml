@@ -15,8 +15,7 @@ services:
   # cello dashboard service
   build-js:
     image: node
-    container_name: build-js
     volumes:  # This should be removed in product env
-      - ./src/themes/vue/static:/app
-      - ./src/themes/vue/templates:/app/templates
+      - ./src/$STATIC_FOLDER:/app
+      - ./src/$TEMPLATE_FOLDER:/app/templates
     command: bash -c "cd /app && npm run build"

@@ -21,6 +21,7 @@
     "axios": "^0.16.2",
     "vue-echarts": "*",
     "moment": "^2.18.1",
+    "qs": "^6.5.1",
     "vuex-router-sync": "^4.1.2"
   },
   "devDependencies": {

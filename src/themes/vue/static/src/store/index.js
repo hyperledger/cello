@@ -7,12 +7,14 @@ import Vuex from 'vuex'
 import Vue from 'vue'
 import stats from './stats'
 import users from './users'
+import hosts from './hosts'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
   modules: {
     stats,
-    users
+    users,
+    hosts
   }
 })
