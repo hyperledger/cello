@@ -24,10 +24,18 @@ ifneq (${THEME}, basic)
 	else
 		INSTALL_NPM=npm-install
 	endif
-	ifneq ($(wildcard ./src/${STATIC_FOLDER}/js/dist),)
-		BUILD_JS=
+	ifeq (${THEME}, react)
+		ifneq ($(wildcard ./src/${STATIC_FOLDER}/js/dist),)
+			BUILD_JS=
+		else
+			BUILD_JS=build-js
+		endif
 	else
-		BUILD_JS=build-js
+		ifneq ($(wildcard ./src/${STATIC_FOLDER}/dist),)
+			BUILD_JS=
+		else
+			BUILD_JS=build-js
+		endif
 	endif
 	START_OPTIONS = initial-env $(INSTALL_NPM) $(BUILD_JS)
 else

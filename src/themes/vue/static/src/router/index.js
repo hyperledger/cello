@@ -17,7 +17,7 @@ const HomePage = resolve => {
 }
 const ChainsPage = resolve => {
   require.ensure([], () => {
-    resolve(require('@/pages/ChainsPage.vue'))
+    resolve(require('@/pages/Chains/index.vue'))
   })
 }
 const UserManagementPage = resolve => {
