@@ -6,13 +6,16 @@ import logging
 import os
 import sys
 from pyVmomi import vim
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-from ..host_base import HostBase
-from agent import reset_container_host, \
-    check_vc_resource, create_vm, delete_vm, \
-    check_vm_status, check_connection
 
-from common import db, log_handler, LOG_LEVEL
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+from common import db, log_handler, LOG_LEVEL, VCENTER, \
+    VC_DATASTORE, VC_DATACENTER, NETWORK, TEMPLATE, VC_CLUSTER
+
+from agent import reset_container_host, check_daemon, \
+    create_vm, delete_vm, check_vc_resource, \
+    initializesi
+
+from ..host_base import HostBase
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
@@ -20,97 +23,116 @@ logger.addHandler(log_handler)
 
 
 class VsphereHost(HostBase):
-    """ Main handler to operate the VMs in vSphere
+    """ Main handler to operate the vSphere hosts
     """
+
     def __init__(self):
         self.collection = db["host"]
 
-    def create(self, vcip, username, pwd, port, paras):
-
-        """ Create a new vSphere host node
-        :param vcip: vcenter ip
-        :param username : vcenter username
-        :param pwd: vcenter password
-        :param port: vcenter port default is 443
-        :param paras: a dic include all attributes to create a vm
+    def create(self, vcip, username, pwd, port, params):
+        """ Create a new vSphere host
+        :param vcip : vCenter address
+        :param username: vCenter username
+        :param pwd: vCenter password
+        :param port:
+        :param params: params to create vm
         :return:
         """
+        # Init connection
+        si = initializesi(vcip, username, pwd, port)
+        connection = si.RetrieveContent()
+        vc_resources = params.get(VCENTER)
 
-        vmname = paras.get("vmname")
-        cluster = paras.get("cluster")
-        datacenter = paras.get("datacenter")
-        datastore = paras.get("datastore")
-        template = paras.get("template")
-
-#       check virtual machine name
-        res = check_vc_resource(vcip, username, pwd, port,
-                                [vim.VirtualMachine], vmname)
-        if res is not None:
-            logger.error("vmname is duplicated.")
+        # Check cluster
+        cluster = check_vc_resource(connection,
+                                    [vim.ClusterComputeResource],
+                                    vc_resources[VC_CLUSTER])
+        if cluster is None:
+            logger.error("The Cluster: {} does not exist,"
+                         "or exception is raised."
+                         .format(vc_resources[VC_CLUSTER]))
             return False
+        else:
+            vc_resources[VC_CLUSTER] = cluster
 
-#       check cluster
-        res = check_vc_resource(vcip, username, pwd, port,
-                                [vim.ClusterComputeResource], cluster)
-        if res is None:
-            logger.error("Resourceool does not exist")
+        # Check datacenter
+        datacenter = check_vc_resource(connection,
+                                       [vim.Datacenter],
+                                       vc_resources[VC_DATACENTER])
+        if datacenter is None:
+            logger.error("The DataCenter: {} does not exist,"
+                         "or exception is raised."
+                         .format(vc_resources[VC_DATACENTER]))
             return False
+        else:
+            vc_resources[VC_DATACENTER] = datacenter
 
-#       check datacenter
-        res = check_vc_resource(vcip, username, pwd, port,
-                                [vim.Datacenter], datacenter)
-        if res is None:
-            logger.error("DataCenter:{} doesn't exist.".format(datacenter))
+        # Check datastore
+        datastore = check_vc_resource(connection,
+                                      [vim.Datastore],
+                                      vc_resources[VC_DATASTORE])
+        if datastore is None:
+            logger.error("The Datastore: {} does not exist,"
+                         "or exception is raised."
+                         .format(vc_resources[VC_DATASTORE]))
             return False
+        else:
+            vc_resources[VC_DATASTORE] = datastore
 
-#       check datastore
-        res = check_vc_resource(vcip, username, pwd, port,
-                                [vim.Datastore], datastore)
-        if res is None:
-            logger.error("Datastore:{} doesn't exist.".format(datastore))
+        # Check template
+        template = check_vc_resource(connection,
+                                     [vim.VirtualMachine],
+                                     vc_resources[TEMPLATE])
+        if template is None:
+            logger.error("The template: {} does not exist,"
+                         "or exception is raised."
+                         .format(vc_resources[TEMPLATE]))
             return False
+        else:
+            vc_resources[TEMPLATE] = template
 
-#       check template
-        res = check_vc_resource(vcip, username, pwd, port,
-                                [vim.VirtualMachine], template)
-        print(res)
-        if res is None:
-            logger.error("Template: {} does not exist.".format(template))
+        # Check network
+        network = check_vc_resource(connection,
+                                    [vim.Network],
+                                    vc_resources[NETWORK])
+        if network is None:
+            logger.error("The network: {} does not exist,"
+                         "or exception is raised."
+                         .format(vc_resources[NETWORK]))
             return False
+        else:
+            vc_resources[NETWORK] = network
 
-#       check connnection
-        if not check_connection(vcip, username, pwd, port):
-            logger.error("can not get connection please check args")
-            return False
+        create_vm(connection, params)
+        return True
 
-        create_vm(vcip, username, pwd, port, paras)
-        return
-
-    def delete(self, vmuuid, vcip, username, pwd, port):
+    def delete(self, vmuuid, vcip, username, pwd, port=443):
         """ Delete a host instance
 
-        :param vmuuid:
-        :param host vcenter username
-        :param pwd vcenter  password
-        :param port vcenter port
+        :param vmuuid: Identify of vm
+        :param vcip vCenter ip
+        :param username vCenter  username
+        :param pwd vCenter password
+        :param port vCenter port
         :return:
         """
-        if not check_connection(vcip, username, pwd, port):
-            logger.error("can not get connection to the \
-                         Vcenter please check args")
-            return False
-
         return delete_vm(vcip, username, pwd, port, vmuuid)
 
     def reset(self, worker_api, host_type='docker'):
         """
         Clean a host's free clusters.
-
-        :param id: host id
-        :return: True or False
+        :param worker_api:
+        :param host_type:
+        :return:
         """
-        return reset_container_host(host_type=host_type, worker_api=worker_api)
+        return reset_container_host(host_type=host_type,
+                                    worker_api=worker_api)
 
-    def is_active(self, vmuuid, vcip, username, pwd, port):
+    def refresh_status(self, worker_api):
+        """
+        Refresh the status of the host
 
-        return check_vm_status(vcip, username, pwd, port, vmuuid)
+        :param worker_api: the host of vm
+        :return: the status of the host
+        """
+        return check_daemon(worker_api)
