@@ -36,6 +36,7 @@ For new users, it is highly recommended to read the [Tutorial for Beginners](tut
 * [Coding Style](code_style)
 * [PEP8 Style Guide](https://www.python.org/dev/peps/pep-0008/)
 * [Develop react js](reactjs)
+* [Develop vue theme](vue/index)
 
 ## Design Documentation
 * [Architecture Design](arch)
