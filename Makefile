@@ -42,10 +42,15 @@ else
 	START_OPTIONS = initial-env
 endif
 
+# changelog specific version tags
+PREV_VERSION=0.6
+BASE_VERSION=
+
 .PHONY: \
 	all \          # default to run check
 	check \        # ci checking
 	clean \        # clean up the env, remove temp files
+	changelog \    # update the changelog based on the VERSION tags
 	doc \          # start a doc server locally
 	image-clean \  # clean up all cello related images
 	log \          # show logs of specify service
@@ -70,6 +75,13 @@ test-case: ##@Code Run test case for flask server
 clean: ##@Code Clean tox result
 	rm -rf .tox .cache *.egg-info
 	find . -name "*.pyc" -o -name "__pycache__" -exec rm -rf "{}" \;
+
+# TODO (david_dornseier): As long as there are no release versions, always rewrite
+# the entire changelog (bug)
+changelog: ##@Update the changelog.md file in the root folder
+	rm -rf CHANGELOG.md
+	bash scripts/changelog.sh bd0c6db v$(PREV_VERSION)
+	bash scripts/changelog.sh v$(PREV_VERSION) HEAD
 
 doc: ##@Create local online documentation
 	pip install mkdocs
