@@ -39,19 +39,31 @@ class VsphereHost(HostBase):
         :return:
         """
         # Init connection
-        si = initializesi(vcip, username, pwd, port)
-        connection = si.RetrieveContent()
-        vc_resources = params.get(VCENTER)
+        try:
+            si = initializesi(vcip, username, pwd, port)
+            connection = si.RetrieveContent()
+            vc_resources = params.get(VCENTER)
+
+        except Exception as e:
+            error_msg = (
+                "Cannot complete login due to"
+                " an incorrect user name or password."
+            )
+            raise Exception(error_msg)
 
         # Check cluster
         cluster = check_vc_resource(connection,
                                     [vim.ClusterComputeResource],
                                     vc_resources[VC_CLUSTER])
         if cluster is None:
-            logger.error("The Cluster: {} does not exist,"
-                         "or exception is raised."
-                         .format(vc_resources[VC_CLUSTER]))
-            return False
+            error_msg = (
+                "The Cluster: {} does not exist"
+                " or exception is raised."
+            ).format(vc_resources[VC_CLUSTER])
+
+            logger.error(error_msg)
+            raise Exception(error_msg)
+
         else:
             vc_resources[VC_CLUSTER] = cluster
 
@@ -60,10 +72,14 @@ class VsphereHost(HostBase):
                                        [vim.Datacenter],
                                        vc_resources[VC_DATACENTER])
         if datacenter is None:
-            logger.error("The DataCenter: {} does not exist,"
-                         "or exception is raised."
-                         .format(vc_resources[VC_DATACENTER]))
-            return False
+            error_msg = (
+                "The DataCenter: {} does not exist"
+                " or exception is raised."
+            ).format(vc_resources[VC_DATACENTER])
+
+            logger.error(error_msg)
+            raise Exception(error_msg)
+
         else:
             vc_resources[VC_DATACENTER] = datacenter
 
@@ -72,10 +88,14 @@ class VsphereHost(HostBase):
                                       [vim.Datastore],
                                       vc_resources[VC_DATASTORE])
         if datastore is None:
-            logger.error("The Datastore: {} does not exist,"
-                         "or exception is raised."
-                         .format(vc_resources[VC_DATASTORE]))
-            return False
+            error_msg = (
+                "The Datastore: {} does not exist"
+                " or exception is raised."
+            ).format(vc_resources[VC_DATASTORE])
+
+            logger.error(error_msg)
+            raise Exception(error_msg)
+
         else:
             vc_resources[VC_DATASTORE] = datastore
 
@@ -84,10 +104,14 @@ class VsphereHost(HostBase):
                                      [vim.VirtualMachine],
                                      vc_resources[TEMPLATE])
         if template is None:
-            logger.error("The template: {} does not exist,"
-                         "or exception is raised."
-                         .format(vc_resources[TEMPLATE]))
-            return False
+            error_msg = (
+                "The template: {} does not exist"
+                " or exception is raised."
+            ).format(vc_resources[TEMPLATE])
+
+            logger.error(error_msg)
+            raise Exception(error_msg)
+
         else:
             vc_resources[TEMPLATE] = template
 
@@ -96,10 +120,14 @@ class VsphereHost(HostBase):
                                     [vim.Network],
                                     vc_resources[NETWORK])
         if network is None:
-            logger.error("The network: {} does not exist,"
-                         "or exception is raised."
-                         .format(vc_resources[NETWORK]))
-            return False
+            error_msg = (
+                "The network: {} does not exist"
+                " or exception is raised."
+            ).format(vc_resources[NETWORK])
+
+            logger.error(error_msg)
+            raise Exception(error_msg)
+
         else:
             vc_resources[NETWORK] = network
 

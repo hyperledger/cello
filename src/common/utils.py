@@ -87,7 +87,7 @@ VMUUID = 'vm_uuid'
 VM_DEFAULT_HOSTNAME = "Cello"
 VMMEMORY = 'memory'
 VMCPU = 'vcpus'
-VMNAME = 'name'
+VMNAME = 'vmname'
 VMIP = 'ip'
 VMNETMASK = 'netmask'
 VMDNS = 'dns'
@@ -105,7 +105,7 @@ VCPORT = 'port'
 VC_DEFAULT_PORT = 443
 VCTHREAD_NAME = "setupvm"
 WORKER_API_PORT = 2375
-DEFAULT_TIMEOUT = 4
+DEFAULT_TIMEOUT = 300
 
 
 def json_decode(jsonstr):
