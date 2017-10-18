@@ -44,7 +44,7 @@
   when: hasContainer.stdout_lines | length > 1
 
 - name: Get nameservers
-  shell: cat '/etc/resolv.conf'|grep nameserver|awk '{print $2 ":53"}'
+  shell: grep -v "^#" /etc/resolv.conf|grep nameserver|awk '{print $2 ":53"}'
   register: nameservers
 
 # only have skydns container running on the first node
