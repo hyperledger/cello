@@ -119,6 +119,7 @@ services:
       - RESTful_Server=dashboard:8080
       - RESTful_BaseURL=/api/v2/
       - DEBUG=node:*
+      - DEV=$DEV
     volumes:
       - ./user-dashboard:/usr/app/src
-    command: bash -c "cd /usr/app/src && ./node_modules/.bin/nodemon app.js"
+    command: bash -c "cd /usr/app/src && [ "$DEV" = True ] && npm run dev || npm start"

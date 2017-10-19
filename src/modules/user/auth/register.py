@@ -39,7 +39,7 @@ register_parser.add_argument('password', required=True,
 
 
 class Register(Resource):
-    @login_required
+    # @login_required
     @marshal_with(register_fields)
     def post(self, **kwargs):
         args = register_parser.parse_args()
