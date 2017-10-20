@@ -1,0 +1,31 @@
+v0.6 https://github.com/hyperledger/cello/releases/tag/v0.6 June 24, 2017
+------------------------
+
+Release Notes
+-------------
+Add new features:
+
+* Support fabric 0.6 network;
+* Support docker swarm;
+* Add admin dashboard;
+* Add core engine;
+
+Improvement:
+
+none
+
+Known Vulnerabilities
+---------------------
+none
+
+Resolved Vulnerabilities
+------------------------
+none
+
+Known Issues & Workarounds
+--------------------------
+none
+
+Change Log
+----------
+https://github.com/hyperledger/cello/blob/master/CHANGELOG.md#v06
