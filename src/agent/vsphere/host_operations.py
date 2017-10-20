@@ -139,8 +139,6 @@ def setup_vm(connection, params):
     network = vc.get(utils.NETWORK)
     destfolder = datacenter.vmFolder
 
-    # create connection
-
     vmconf = vim.vm.ConfigSpec(numCPUs=vmcpunum,
                                memoryMB=vmmem * 1024)
     # nic
@@ -186,16 +184,16 @@ def setup_vm(connection, params):
     clonespec.powerOn = True
 
     host = {
-        'vm_uuid': '',
-        'vm_ip': vmip,
-        'vm_netmask': vmnetmask,
-        'vm_dns': vmdns,
-        'vm_gateway': vmgateway,
-        'vm_cpunum': vmcpunum,
-        'vm_mem': vmmem,
-        'vc_cluster': cluster.name,
-        'vc_datastore': datastore.name,
-        'vc_datacenter': datacenter.name,
+        utils.VMUUID: '',
+        utils.VMIP: vmip,
+        utils.VMNETMASK: vmnetmask,
+        utils.VMDNS: vmdns,
+        utils.VMGATEWAY: vmgateway,
+        utils.VMCPU: vmcpunum,
+        utils.VMMEMORY: vmmem,
+        utils.VC_CLUSTER: cluster.name,
+        utils.VC_DATASTORE: datastore.name,
+        utils.VC_DATACENTER: datacenter.name,
     }
     try:
         task = template.Clone(folder=destfolder, name=vmname, spec=clonespec)
@@ -204,7 +202,7 @@ def setup_vm(connection, params):
         vm = check_object(connection, [vim.VirtualMachine], vmname)
         workerapi = "tcp://" + vmip + ":2375"
         uuid = vm.summary.config.uuid
-        host.update({"vm_uuid": uuid})
+        host.update({utils.VMUUID: uuid})
         if check_isport_open(vmip, utils.WORKER_API_PORT,
                              utils.DEFAULT_TIMEOUT):
             if setup_container_host(utils.WORKER_TYPE_DOCKER,
@@ -214,11 +212,15 @@ def setup_vm(connection, params):
             else:
                 host["status"] = 'error'
                 logger.error("Failed to setup container host")
-                col.find_one_and_update({"name": vmname}, {"$set": host})
-                # Should be safe to delete vm though VsphereHost layer.
+        else:
+            host["status"] = 'error'
+            logger.error("Failed to ping docker daemon:{}:{}"
+                         .format(vmip, "2375"))
+        col.find_one_and_update({utils.VMNAME: vmname}, {"$set": host})
+        # Should be safe to delete vm though VsphereHost layer.
     except Exception as e:
         logger.error(e)
-        col.delete_one({"name": vmname})
+        col.delete_one({utils.VMNAME: vmname})
         return
 
 
@@ -305,7 +307,7 @@ def check_vmstatus(vcip, username, pwd, port, uuid):
         return False
 
 
-def check_isport_open(vmip, vmport, timeout=30):
+def check_isport_open(vmip, vmport, timeout=300):
     """
     Check whether the vmport is ready.
     :param vmip:
