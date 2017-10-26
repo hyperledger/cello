@@ -23,7 +23,8 @@ from common import CLUSTER_PORT_START, CLUSTER_PORT_STEP, \
     NETWORK_TYPE_FABRIC_PRE_V1, NETWORK_TYPE_FABRIC_V1, \
     CONSENSUS_PLUGINS_FABRIC_V1, CONSENSUS_MODES, \
     WORKER_TYPES, WORKER_TYPE_DOCKER, WORKER_TYPE_SWARM, WORKER_TYPE_K8S, \
-    SYS_CREATOR, SYS_DELETER, SYS_USER, SYS_RESETTING, \
+    WORKER_TYPE_VSPHERE, SYS_CREATOR, SYS_DELETER, SYS_USER, \
+    SYS_RESETTING, VMIP, \
     NETWORK_SIZE_FABRIC_PRE_V1, \
     PEER_SERVICE_PORTS, CA_SERVICE_PORTS
 
@@ -31,7 +32,7 @@ from common import FabricPreNetworkConfig, FabricV1NetworkConfig
 
 from modules import host
 
-from agent import ClusterOnDocker
+from agent import ClusterOnDocker, ClusterOnVsphere
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
@@ -49,7 +50,8 @@ class ClusterHandler(object):
         self.host_handler = host.host_handler
         self.cluster_agents = {
             'docker': ClusterOnDocker(),
-            'swarm': ClusterOnDocker()
+            'swarm': ClusterOnDocker(),
+            'vsphere': ClusterOnVsphere()
         }
 
     def list(self, filter_data={}, col_name="active"):
@@ -114,6 +116,12 @@ class ClusterHandler(object):
         if not worker:
             return None
 
+        if worker.get("type") == WORKER_TYPE_VSPHERE:
+            vm_params = self.host_handler.get_vm_params_by_id(host_id)
+            docker_daemon = vm_params.get(VMIP) + ":2375"
+            worker.update({"worker_api": "tcp://" + docker_daemon})
+            logger.info(worker)
+
         if len(worker.get("clusters")) >= worker.get("capacity"):
             logger.warning("host {} is already full".format(host_id))
             return None
@@ -173,6 +181,10 @@ class ClusterHandler(object):
         # try to start one cluster at the host
         worker = self.host_handler.db_update_one(
             {"id": host_id}, {"$addToSet": {"clusters": cid}})
+        # worker get worker_api from host collection
+        if worker.get("type") == WORKER_TYPE_VSPHERE:
+            worker.update({"worker_api": worker_api})
+
         if not worker or len(worker.get("clusters")) > worker.get("capacity"):
             self.col_active.delete_one({"id": cid})
             self.host_handler.db_update_one({"id": host_id},
@@ -622,6 +634,10 @@ class ClusterHandler(object):
             host_ip = get_swarm_node_ip(worker_api, "{}_{}".format(
                 cluster_id, node))
             logger.debug("swarm host, ip = {}".format(host_ip))
+        elif host_type == WORKER_TYPE_VSPHERE:
+            vm_params = self.host_handler.get_vm_params_by_id(host_id)
+            host_ip = vm_params.get(VMIP)
+            logger.debug(" host, ip = {}".format(host_ip))
         else:
             logger.error("Unknown host type = {}".format(host_type))
             host_ip = ""

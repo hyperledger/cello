@@ -13,6 +13,11 @@ NETWORK_SIZE_FABRIC_V1 = [4]
 # first port that can be assigned as cluster API
 CLUSTER_PORT_START = int(os.getenv("CLUSTER_PORT_START", 7050))
 
+# host status
+HOST_STATUS = 'status'
+HOST_STATUS_ACTIVE = 'active'
+HOST_STATUS_PENDING = 'pending'
+
 # number of port allocated to each cluster in case collision
 CLUSTER_PORT_STEP = 100
 
