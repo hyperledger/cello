@@ -1,0 +1,14 @@
+version: "2"
+
+# Copyright IBM Corp., All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+services:
+  install-npm:
+    image: node
+    volumes:
+      - $ROOT_PATH/user-dashboard:/usr/app/src
+      - $ROOT_PATH/user-dashboard/js:/reactjs
+    command: bash -c "cd /usr/app/src && npm install && npm install requirejs &&
+                cd /reactjs && npm install && cd /reactjs/home && npm install"

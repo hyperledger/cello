@@ -7,10 +7,15 @@ WHITE  := $(shell tput -Txterm setaf 7)
 YELLOW := $(shell tput -Txterm setaf 3)
 RESET  := $(shell tput -Txterm sgr0)
 
+SLASH:=/
+REPLACE_SLASH:=\/
+export ROOT_PATH = ${PWD}
+ROOT_PATH_REPLACE=$(subst $(SLASH),$(REPLACE_SLASH),$(ROOT_PATH))
 THEME?=basic
 STATIC_FOLDER?=themes\/${THEME}\/static
 TEMPLATE_FOLDER?=themes\/${THEME}\/templates
 NPM_REGISTRY?=registry.npmjs.org
+DEV?=True
 SYSTEM=$(shell uname)
 ifeq ($(SYSTEM), Darwin)
 	SED = sed -ix
@@ -107,6 +112,8 @@ initial-env: ##@Configuration Initial Configuration for dashboard
 	$(SED) 's/\(STATIC_FOLDER=\).*/\1${STATIC_FOLDER}/' .env
 	$(SED) 's/\(TEMPLATE_FOLDER=\).*/\1${TEMPLATE_FOLDER}/' .env
 	$(SED) 's/\(NPM_REGISTRY=\).*/\1${NPM_REGISTRY}/' .env
+	$(SED) 's/\(DEV=\).*/\1${DEV}/' .env
+	$(SED) 's/\(ROOT_PATH=\).*/\1${ROOT_PATH_REPLACE}/' .env
 
 start: ##@Service Start service
 	@$(MAKE) $(START_OPTIONS)
@@ -129,12 +136,14 @@ setup-worker: ##@Environment Setup dependency for worker node
 
 build-js: ##@Nodejs Build js files
 	bash scripts/master_node/build_js.sh
+	@$(MAKE) -C user-dashboard/ build-js
 
 watch-mode: ##@Nodejs Run watch mode with js files for react
 	bash scripts/master_node/watch_mode.sh
 
 npm-install: ##@Nodejs Install modules with npm package management
 	bash scripts/master_node/npm_install.sh
+	@$(MAKE) -C user-dashboard/ npm-install
 
 HELP_FUN = \
 	%help; \

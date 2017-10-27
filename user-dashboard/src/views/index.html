@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cello User Dashboard</title>
+  <link rel="stylesheet" href="/static/js/dist/home/index.css" />
+</head>
+<body>
+
+<div id="root"></div>
+
+<script type="text/javascript">
+    (function() {
+        'use strict';
+        window.username = '{{ username }}'
+        window.apikey = '{{ apikey }}'
+        const isActivated = '{{ isActivated }}'
+        window.isActivated = isActivated === 'true'
+    }());
+</script>
+<script src="/static/js/dist/home/index.js"></script>
+
+</body>
+</html>
