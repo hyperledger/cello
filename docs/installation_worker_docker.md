@@ -76,4 +76,15 @@ $ sysctl -w net.ipv4.ip_forward=1
 ```
 And check the os iptables config, to make sure host ports are open (e.g., 2375, 7050~10000)
 
+### Work with MacOS
+
+In MacOS, [Docker](https://docs.docker.com/docker-for-mac/networking/#known-limitations-use-cases-and-workarounds) currently provides no support to config the daemon to listen from network.
+
+Users need to use some tools to config Docker daemon to listen at network manually, e.g., to config Docker daemon to listen on `127.0.0.1:2375`,
+
+```bash
+$ docker run -d -v /var/run/docker.sock:/var/run/docker.sock -p 127.0.0.1:2375:2375 bobrik/socat TCP-LISTEN:2375,fork UNIX-CONNECT:/var/run/docker.sock
+$ docker -H 127.0.0.1:2375 info
+```
+
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
