@@ -13,6 +13,16 @@ NETWORK_SIZE_FABRIC_V1 = [4]
 # first port that can be assigned as cluster API
 CLUSTER_PORT_START = int(os.getenv("CLUSTER_PORT_START", 7050))
 
+# Fabric image related varible
+ARCH = 'x86_64'
+VERSION = '1.0.0'
+BASEIMAGE_RELEASE = '0.3.1'
+FABRIC_IMAGE_FULL = 'hyperledger/fabric-{}:{}-{}'
+FABRIC_IMAGE_TAG = 'hyperledger/fabric-{}'
+FABRIC_IMAGES = ['peer', 'tools', 'orderer', 'ca', 'ccenv', 'kafka',
+                 'zookeeper']
+FABRIC_BASE_IMAGES = ['baseimage', 'baseos']
+
 # host status
 HOST_STATUS = 'status'
 HOST_STATUS_ACTIVE = 'active'

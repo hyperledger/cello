@@ -11,8 +11,7 @@ from .docker.docker_swarm import get_project, \
     compose_up, compose_clean, compose_start, compose_stop, compose_restart, \
     setup_container_host, cleanup_host, reset_container_host
 
-from .vsphere.host_operations import create_vm, delete_vm, \
-    check_vc_resource, initializesi
+from .vsphere.host_operations import VsphereOperation
 
 from .docker.host import DockerHost
 from .docker.cluster import ClusterOnDocker
