@@ -1,0 +1,59 @@
+.steps {
+  list-style: none;
+  display: table;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  position: relative;
+}
+.steps li {
+  display: table-cell;
+  text-align: center;
+  width: 1%;
+}
+.steps li .step {
+  border: 2px solid #ced1d6;
+  font-size: 15px;
+  border-radius: 100%;
+  background-color: #FFF;
+  position: relative;
+  z-index: 2;
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  line-height: 25px;
+}
+.steps li:before {
+  display: block;
+  content: "";
+  width: 100%;
+  height: 7px;
+  font-size: 0;
+  overflow: hidden;
+  border-top: 2px solid #CED1D6;
+  position: relative;
+  top: 21px;
+  z-index: 1;
+}
+.steps li.last-child:before {
+  max-width: 50%;
+  width: 50%;
+}
+.steps li:last-child:before {
+  max-width: 50%;
+  width: 50%;
+}
+.steps li:first-child:before {
+  max-width: 51%;
+  left: 50%;
+}
+.steps li.active:before,
+.steps li.active .step{
+  border-color: #428bca;
+}
+.steps li .title {
+  display: block;
+  margin-top: 2px;
+  max-width: 100%;
+  font-size: 12px;
+}
