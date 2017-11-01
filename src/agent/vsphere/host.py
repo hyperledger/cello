@@ -12,14 +12,14 @@ from common import db, log_handler, LOG_LEVEL, VCENTER, \
     VC_DATASTORE, VC_DATACENTER, NETWORK, TEMPLATE, VC_CLUSTER
 
 from agent import reset_container_host, check_daemon, \
-    create_vm, delete_vm, check_vc_resource, \
-    initializesi
+    VsphereOperation
 
 from ..host_base import HostBase
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
 logger.addHandler(log_handler)
+operation = VsphereOperation()
 
 
 class VsphereHost(HostBase):
@@ -40,25 +40,25 @@ class VsphereHost(HostBase):
         """
         # Init connection
         try:
-            si = initializesi(vcip, username, pwd, port)
+            si = operation.initializesi(vcip, username, pwd, port)
             connection = si.RetrieveContent()
             vc_resources = params.get(VCENTER)
 
         except Exception as e:
             error_msg = (
-                "Cannot complete login due to"
-                " an incorrect user name or password."
+                "Cannot complete login due"
+                "to an incorrect user name or password."
             )
             raise Exception(error_msg)
 
         # Check cluster
-        cluster = check_vc_resource(connection,
-                                    [vim.ClusterComputeResource],
-                                    vc_resources[VC_CLUSTER])
+        cluster = operation.check_vc_resource(connection,
+                                              [vim.ClusterComputeResource],
+                                              vc_resources[VC_CLUSTER])
         if cluster is None:
             error_msg = (
                 "The Cluster: {} does not exist"
-                " or exception is raised."
+                "or exception is raised."
             ).format(vc_resources[VC_CLUSTER])
 
             logger.error(error_msg)
@@ -68,13 +68,13 @@ class VsphereHost(HostBase):
             vc_resources[VC_CLUSTER] = cluster
 
         # Check datacenter
-        datacenter = check_vc_resource(connection,
-                                       [vim.Datacenter],
-                                       vc_resources[VC_DATACENTER])
+        datacenter = operation.check_vc_resource(connection,
+                                                 [vim.Datacenter],
+                                                 vc_resources[VC_DATACENTER])
         if datacenter is None:
             error_msg = (
-                "The DataCenter: {} does not exist"
-                " or exception is raised."
+                "The DataCenter: {} does not exist,"
+                "or exception is raised."
             ).format(vc_resources[VC_DATACENTER])
 
             logger.error(error_msg)
@@ -84,13 +84,13 @@ class VsphereHost(HostBase):
             vc_resources[VC_DATACENTER] = datacenter
 
         # Check datastore
-        datastore = check_vc_resource(connection,
-                                      [vim.Datastore],
-                                      vc_resources[VC_DATASTORE])
+        datastore = operation.check_vc_resource(connection,
+                                                [vim.Datastore],
+                                                vc_resources[VC_DATASTORE])
         if datastore is None:
             error_msg = (
-                "The Datastore: {} does not exist"
-                " or exception is raised."
+                "The Datastore: {} does not exist,"
+                "or exception is raised."
             ).format(vc_resources[VC_DATASTORE])
 
             logger.error(error_msg)
@@ -100,13 +100,13 @@ class VsphereHost(HostBase):
             vc_resources[VC_DATASTORE] = datastore
 
         # Check template
-        template = check_vc_resource(connection,
-                                     [vim.VirtualMachine],
-                                     vc_resources[TEMPLATE])
+        template = operation.check_vc_resource(connection,
+                                               [vim.VirtualMachine],
+                                               vc_resources[TEMPLATE])
         if template is None:
             error_msg = (
                 "The template: {} does not exist"
-                " or exception is raised."
+                "or exception is raised."
             ).format(vc_resources[TEMPLATE])
 
             logger.error(error_msg)
@@ -116,13 +116,13 @@ class VsphereHost(HostBase):
             vc_resources[TEMPLATE] = template
 
         # Check network
-        network = check_vc_resource(connection,
-                                    [vim.Network],
-                                    vc_resources[NETWORK])
+        network = operation.check_vc_resource(connection,
+                                              [vim.Network],
+                                              vc_resources[NETWORK])
         if network is None:
             error_msg = (
-                "The network: {} does not exist"
-                " or exception is raised."
+                "The network: {} does not exist,"
+                "or exception is raised."
             ).format(vc_resources[NETWORK])
 
             logger.error(error_msg)
@@ -131,7 +131,7 @@ class VsphereHost(HostBase):
         else:
             vc_resources[NETWORK] = network
 
-        create_vm(connection, params)
+        operation.create_vm(connection, params)
         return True
 
     def delete(self, vmuuid, vcip, username, pwd, port=443):
@@ -144,7 +144,7 @@ class VsphereHost(HostBase):
         :param port vCenter port
         :return:
         """
-        return delete_vm(vcip, username, pwd, port, vmuuid)
+        return operation.delete_vm(vcip, username, pwd, port, vmuuid)
 
     def reset(self, worker_api, host_type='docker'):
         """
