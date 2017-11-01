@@ -60,6 +60,7 @@ $(document).ready(function () {
     //var name = $(this).parents('form:first').find('[name="name"]').val();
     //var worker_api = $(this).parents('form:first').find('[name="worker_api"]').val();
     var form_data = $('#add_new_host_form').serialize();
+    $("#host_create_button").attr('disabled',true);
 
     $.ajax({
       url: "/api/host",
@@ -70,12 +71,14 @@ $(document).ready(function () {
         console.log(response);
         $('#newHostModal').hide();
         alertMsg('Success!', 'New host is created.', 'success');
+        $("#host_create_button").attr('disabled',false);
         setTimeout("location.reload(true);", 2000);
       },
       error: function (error) {
         console.log(error);
         $('#newHostModal').hide();
         alertMsg('Failed!', error.responseJSON.error, 'danger');
+        $("#host_create_button").attr('disabled',false);
         setTimeout("location.reload(true);", 2000);
       }
     });

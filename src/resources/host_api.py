@@ -6,6 +6,7 @@
 import logging
 import os
 import sys
+import uuid
 
 from flask import jsonify, Blueprint, render_template
 from flask import request as r
@@ -70,16 +71,61 @@ def host_create():
     else:
         schedulable = "false"
 
-    logger.debug("name={}, worker_api={}, capacity={}"
-                 "fillup={}, schedulable={}, log={}/{}".
-                 format(name, worker_api, capacity, autofill, schedulable,
-                        log_type, log_server))
-    if not name or not worker_api or not capacity or not log_type:
-        error_msg = "host POST without enough data"
-        logger.warning(error_msg)
-        return make_fail_resp(error=error_msg, data=r.form)
-    else:
-        host_type = host_type if host_type else detect_daemon_type(worker_api)
+    if host_type == "vsphere":
+        vcaddress = r.form['vc_address']
+        if vcaddress.find(":") == -1:
+            address = vcaddress
+            port = "443"
+        else:
+            address = vcaddress.split(':')[0]
+            port = vcaddress.split(':')[1]
+        logger.debug("address={}, port={}".format(address, port))
+
+        vmname = "cello-vsphere-" + str(uuid.uuid1())
+        vsphere_param = {
+            'vc': {
+                'address': address,
+                'port': port,
+                'username': r.form['vc_user'],
+                'password': r.form['vc_password'],
+                'network': r.form['vc_network'],
+                'vc_datastore': r.form['datastore'],
+                'vc_datacenter': r.form['datacenter'],
+                'vc_cluster': r.form['cluster'],
+                'template': r.form['vm_template']},
+            'vm': {
+                'vmname': vmname,
+                'ip': r.form['vm_ip'],
+                'gateway': r.form['vm_gateway'],
+                'netmask': r.form['vm_netmask'],
+                'dns': r.form['vm_dns'],
+                'vcpus': int(r.form['vm_cpus']),
+                'memory': int(r.form['vm_memory'])}}
+
+        logger.debug("name={}, capacity={}"
+                     "fillup={}, schedulable={}, log={}/{}, vsphere_param={}".
+                     format(name, capacity, autofill, schedulable,
+                            log_type, log_server, vsphere_param))
+
+        vsphere_must_have_params = {
+            'Name': name,
+            'Capacity': capacity,
+            'LoggingType': log_type,
+            'VCAddress': address,
+            'VCUser': r.form['vc_user'],
+            'VCPassword': r.form['vc_password'],
+            'VCNetwork': r.form['vc_network'],
+            'Datastore': r.form['datastore'],
+            'Datacenter': r.form['datacenter'],
+            'Cluster': r.form['cluster'],
+            'VMIp': r.form['vm_ip'],
+            'VMGateway': r.form['vm_gateway'],
+            'VMNetmask': r.form['vm_netmask']}
+        for key in vsphere_must_have_params:
+            if vsphere_must_have_params[key] == '':
+                error_msg = "host POST without {} data".format(key)
+                logger.warning(error_msg)
+                return make_fail_resp(error=error_msg, data=r.form)
         result = host_handler.create(name=name, worker_api=worker_api,
                                      capacity=int(capacity),
                                      autofill=autofill,
@@ -87,14 +133,41 @@ def host_create():
                                      log_level=log_level,
                                      log_type=log_type,
                                      log_server=log_server,
-                                     host_type=host_type)
-        if result:
-            logger.debug("host creation successfully")
-            return make_ok_resp(code=CODE_CREATED)
-        else:
-            error_msg = "Failed to create host {}".format(r.form["name"])
+                                     host_type=host_type,
+                                     params=vsphere_param)
+    else:
+        logger.debug("name={}, worker_api={}, capacity={}"
+                     "fillup={}, schedulable={}, log={}/{}".
+                     format(name, worker_api, capacity, autofill, schedulable,
+                            log_type, log_server))
+        if not name or not worker_api or not capacity or not log_type:
+            error_msg = "host POST without enough data"
             logger.warning(error_msg)
-            return make_fail_resp(error=error_msg)
+            return make_fail_resp(error=error_msg, data=r.form)
+        else:
+            host_type = host_type if host_type \
+                else detect_daemon_type(worker_api)
+            result = host_handler.create(name=name, worker_api=worker_api,
+                                         capacity=int(capacity),
+                                         autofill=autofill,
+                                         schedulable=schedulable,
+                                         log_level=log_level,
+                                         log_type=log_type,
+                                         log_server=log_server,
+                                         host_type=host_type)
+    logger.debug("result.msg={}".format(result.get('msg')))
+    if (host_type == "vsphere") and ('msg' in result):
+        vsphere_errmsg = result.get('msg')
+        error_msg = "Failed to create vsphere host {}".format(vsphere_errmsg)
+        logger.warning(error_msg)
+        return make_fail_resp(error=error_msg)
+    elif result:
+        logger.debug("host creation successfully")
+        return make_ok_resp(code=CODE_CREATED)
+    else:
+        error_msg = "Failed to create host {}".format(r.form["name"])
+        logger.warning(error_msg)
+        return make_fail_resp(error=error_msg)
 
 
 @bp_host_api.route('/host', methods=['PUT'])
