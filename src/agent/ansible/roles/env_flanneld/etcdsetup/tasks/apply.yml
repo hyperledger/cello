@@ -3,6 +3,7 @@
   set_fact:
     fabricroot: "/opt/fabric"
     etcd_cluster: ""
+    etcdtoken: "{{ lookup('password', '../../run/token chars=ascii_letters,digits length=8') }}"
     node_ip: "{{ hostvars[inventory_hostname].private_ip }}"
     node_name: "{{ hostvars[inventory_hostname].inter_name }}"
 
