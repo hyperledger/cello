@@ -33,11 +33,12 @@ need to do should be identical.
     sudo apt-get update
     sudo apt-get install python-dev python-pip libssl-dev libffi-dev -y
     sudo pip install --upgrade pip
-    sudo pip install six==1.10.0
-    sudo pip install ansible==2.3.0.0
+    sudo pip install 'ansible>=2.3.0.0'
     git clone https://gerrit.hyperledger.org/r/cello
 
 All the following work assumed that you are in cello/src/agent/ansible directory
+
+Supported ansible versions are 2.3.0.0 or greater.
 
 ## Deploy hyperledger fabric onto different environment
 
