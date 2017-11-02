@@ -67,3 +67,15 @@ All the following work assumed that you are in cello/src/agent/ansible directory
         ansible-playbook -e "mode=apply" aws.yml
     4. To tear down the fabric network::
         ansible-playbook -e "mode=destroy" aws.yml
+
+### Run fabric network on a single ubuntu server
+
+Please follow instructions in document [All-in-one](./vars/All-in-one.md) to
+setup fabric network on one clean ubuntu 16.04 server.
+
+<a rel="license" href="http://creativecommons.org/licenses/by/4.0/">
+<img alt="Creative Commons License" style="border-width:0"
+src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />
+This work is licensed under a
+<a rel="license" href="http://creativecommons.org/licenses/by/4.0/">
+Creative Commons Attribution 4.0 International License</a>.
