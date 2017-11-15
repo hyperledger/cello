@@ -49,10 +49,22 @@
     dest: "~/.kube/config"
     mode: 0600
 
+- name: Setup kubeconfig for each node
+  template:
+    src: "{{ playbook_dir }}/../env_k8s/worker/templates/kubeconfig.j2"
+    dest: "/etc/kubernetes/kubeconfig"
+    mode: 0600
+
+- name: Check kubelet version
+  command: "{{ fabricroot }}/bin/kubelet --version"
+  register: kubeversion
+
 - name: Setup worker node service variables
   set_fact:
     kubelet_params: >-
-      --api-servers={{ private_ip }}:8080
+      --cloud-provider=''
+      --kubeconfig=/etc/kubernetes/kubeconfig
+      --require-kubeconfig
       --container-runtime=docker
       --cluster-dns={{ cluster.dns_service_ip }}
       --cluster-domain={{ cluster.domain }}
@@ -61,6 +73,11 @@
     proxy_params: >-
       --master={{ private_ip }}:8080
       --cluster-cidr={{ cluster.container_network.Network }}
+
+- name: Setup worker node service variables
+  set_fact:
+    kubelet_params: "{{ kubelet_params }} --fail-swap-on=false"
+  when: kubeversion.stdout | search('v1.8.')
 
 - name: Configure the worker node services
   template:
