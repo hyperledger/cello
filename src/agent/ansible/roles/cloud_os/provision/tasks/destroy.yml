@@ -20,7 +20,7 @@
     validate_certs: "{{ cluster.validate_certs }}"
     name: "{{ inventory_hostname }}"
     image: "{{ cluster.image_name }}"
-    delete_fip: "{{ ip_flag }}"
+    delete_fip: "{{ cluster.assign_public_ip | default(true) == false | ternary(false, ip_flag) }}"
     key_name: "fabric"
     timeout: 200
     network: "{{ cluster.private_net_name }}"

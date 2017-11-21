@@ -24,6 +24,7 @@ cluster: {
   # This variable indicate what IP should be used, only valid values are
   # private_ip or public_ip
   node_ip: "public_ip",
+  assign_public_ip: true,
 
   container_network: {
     Network: "172.16.0.0/16",

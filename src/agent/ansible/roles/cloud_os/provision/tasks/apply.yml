@@ -29,7 +29,35 @@
     security_groups: "fabric_sg"
     meta:
       hostname: "{{ inventory_hostname }}"
-  register: osvm
+  when: cluster.assign_public_ip | default(true) == true
+  register: osvm1
+
+- name: Create an OpenStack virtual machine
+  os_server:
+    state: "present"
+    auth: "{{ auth }}"
+    region_name: "{{ cluster.region_name }}"
+    availability_zone: "{{ cluster.availability_zone }}"
+    validate_certs: "{{ cluster.validate_certs }}"
+    name: "{{ inventory_hostname }}"
+    image: "{{ cluster.image_name }}"
+    key_name: "fabric"
+    timeout: 200
+    flavor: "{{ cluster.flavor_name }}"
+    network: "{{ cluster.private_net_name }}"
+    auto_ip: false
+    reuse_ips: False
+    userdata: "{{ lookup('template', tp_path) }}"
+    config_drive: "{{ cluster.config_drive | default('no') }}"
+    security_groups: "fabric_sg"
+    meta:
+      hostname: "{{ inventory_hostname }}"
+  when: cluster.assign_public_ip | default(true) == false
+  register: osvm2
+
+- name: combine osvm1 and osvm2
+  set_fact:
+    osvm: "{{ osvm1 | combine(osvm2) }}"
 
 - name: Setup variables for generate host groups
   set_fact:
