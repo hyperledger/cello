@@ -6,6 +6,7 @@ GREEN  := $(shell tput -Txterm setaf 2)
 WHITE  := $(shell tput -Txterm setaf 7)
 YELLOW := $(shell tput -Txterm setaf 3)
 RESET  := $(shell tput -Txterm sgr0)
+ARCH   := $(shell uname -m)
 
 SLASH:=/
 REPLACE_SLASH:=\/
@@ -49,7 +50,7 @@ endif
 
 # changelog specific version tags
 PREV_VERSION=0.6
-BASE_VERSION=
+#BASE_VERSION=
 
 .PHONY: \
 	all \          # default to run check
@@ -66,8 +67,56 @@ BASE_VERSION=
 	start \        # start all services
 	restart \      # restart all services
 	stop \         # stop all services
+	docker \       # create docker image
 
-all: check
+DOCKER_NS ?= hyperledger
+BASENAME ?= $(DOCKER_NS)/cello
+VERSION ?= 0.7.0
+IS_RELEASE=false
+
+DOCKER_BASE_x86_64=ubuntu:xenial
+DOCKER_BASE_ppc64le=ppc64le/ubuntu:xenial
+DOCKER_BASE_s390x=s390x/debian:jessie
+DOCKER_BASE=$(DOCKER_BASE_$(ARCH))
+BASE_VERSION ?= $(ARCH)-$(VERSION)
+
+ifneq ($(IS_RELEASE),true)
+EXTRA_VERSION ?= snapshot-$(shell git rev-parse --short HEAD)
+DOCKER_TAG=$(BASE_VERSION)-$(EXTRA_VERSION)
+else
+DOCKER_TAG=$(BASE_VERSION)
+endif
+
+DOCKER_IMAGES = baseimage mongo nginx
+DUMMY = .$(DOCKER_TAG)
+
+ifeq ($(DOCKER_BASE), )
+$(error "Architecture \"$(ARCH)\" is unsupported")
+endif
+
+all: docker check
+
+build/docker/baseimage/$(DUMMY): build/docker/baseimage/$(DUMMY)
+build/docker/nginx/$(DUMMY): build/docker/nginx/$(DUMMY)
+build/docker/mongo/$(DUMMY): build/docker/mongo/$(DUMMY)
+
+build/docker/%/$(DUMMY):
+	$(eval TARGET = ${patsubst build/docker/%/$(DUMMY),%,${@}})
+	$(eval DOCKER_NAME = $(BASENAME)-$(TARGET))
+	@mkdir -p $(@D)
+	@echo "Building docker $(TARGET)"
+	@cat config/$(TARGET)/Dockerfile.in \
+		| sed -e 's|_DOCKER_BASE_|$(DOCKER_BASE)|g' \
+		| sed -e 's|_NS_|$(DOCKER_NS)|g' \
+		| sed -e 's|_TAG_|$(DOCKER_TAG)|g' \
+		> $(@D)/Dockerfile
+	docker build -f $(@D)/Dockerfile \
+		-t $(DOCKER_NAME) \
+		-t $(DOCKER_NAME):$(DOCKER_TAG) \
+		.
+	@touch $@
+
+docker: $(patsubst %,build/docker/%/$(DUMMY),$(DOCKER_IMAGES))
 
 check: ##@Code Check code format
 	tox
@@ -128,7 +177,7 @@ stop: ##@Service Stop service
 
 restart: stop start ##@Service Restart service
 
-setup-master: ##@Environment Setup dependency for master node
+setup-master: docker ##@Environment Setup dependency for master node
 	cd scripts/master_node && bash setup.sh
 
 setup-worker: ##@Environment Setup dependency for worker node
