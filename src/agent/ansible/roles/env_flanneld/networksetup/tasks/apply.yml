@@ -66,6 +66,9 @@
     dest: "/lib/systemd/system/flanneld.service"
     mode: 0644
 
+- name: Change IP Forwarding
+  command: iptables -P FORWARD ACCEPT
+
 - name: Reload services
   command: systemctl daemon-reload
 
