@@ -14,7 +14,7 @@ version: '2'
 services:
   # cello dashboard service
   watch-mode:
-    image: node
+    image: hyperledger/cello-baseimage
     container_name: watch-mode
     volumes:  # This should be removed in product env
       - ./src/themes/react/static:/app

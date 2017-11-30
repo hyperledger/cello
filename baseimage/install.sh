@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 #
 # Copyright IBM Corp. All Rights Reserved.
 #
@@ -77,7 +78,12 @@ rm -f /tmp/node*.tar.gz
 # ----------------------------------------------------------------
 # Install python3 and pip
 # ----------------------------------------------------------------
-apt-get -y install python3
+if [[ $ARCH = 'ppc64le' ]];then
+apt-get install build-essential libssl-dev libffi-dev python3-dev libxslt-dev python3 -y
+else
+apt-get install python3 -y
+fi
+
 update-alternatives --install /usr/bin/python python /usr/bin/python3 10
 cd /tmp
 wget https://bootstrap.pypa.io/get-pip.py
@@ -87,4 +93,5 @@ rm get-pip.py
 # ----------------------------------------------------------------
 # Install nginx
 # ----------------------------------------------------------------
-apt-get install nginx -y
+groupadd -r nginx && useradd -r -g nginx nginx
+apt-get install nginx apache2-utils -y

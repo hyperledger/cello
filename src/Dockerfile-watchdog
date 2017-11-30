@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-FROM python:3.5
+FROM hyperledger/cello-baseimage
 MAINTAINER Baohua Yang <"baohyang@cn.ibm.com">
 ENV TZ Asia/Shanghai
 

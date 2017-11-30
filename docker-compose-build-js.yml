@@ -14,7 +14,7 @@ version: '2'
 services:
   # cello dashboard service
   build-js:
-    image: node
+    image: hyperledger/cello-baseimage
     volumes:  # This should be removed in product env
       - ./src/$STATIC_FOLDER:/app
       - ./src/$TEMPLATE_FOLDER:/app/templates

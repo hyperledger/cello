@@ -17,7 +17,7 @@ services:
     build:
       context: src
       dockerfile: Dockerfile-dashboard
-    image: cello-dashboard
+    image: hyperledger/cello-dashboard
     container_name: dashboard
     hostname: cello-dashboard
     restart: unless-stopped
@@ -38,7 +38,7 @@ services:
     build:
       context: src
       dockerfile: Dockerfile-restserver
-    image: cello-restserver
+    image: hyperledger/cello-restserver
     container_name: restserver
     hostname: cello-restserver
     restart: unless-stopped
@@ -57,7 +57,7 @@ services:
     build:
       context: src
       dockerfile: Dockerfile-watchdog
-    image: cello-watchdog
+    image: hyperledger/cello-watchdog
     container_name: watchdog
     hostname: cello-watchdog
     restart: unless-stopped
@@ -71,7 +71,7 @@ services:
 
   # mongo database, may use others in future
   mongo:
-    image: mongo:3.2
+    image: hyperledger/cello-mongo
     hostname: mongo
     container_name: mongo
     restart: unless-stopped
@@ -87,7 +87,7 @@ services:
 
   # nginx to forward front request, may split it out in future
   nginx:
-    image: yeasy/nginx
+    image: hyperledger/cello-nginx
     hostname: nginx
     container_name: nginx
     restart: always
@@ -107,7 +107,7 @@ services:
   user-dashboard:
     build:
       context: user-dashboard
-    image: cello-user-dashboard
+    image: hyperledger/cello-user-dashboard
     container_name: user-dashboard
     links:
       - mongo:dashboard_mongo

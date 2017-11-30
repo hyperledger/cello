@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-FROM node
+FROM hyperledger/cello-baseimage
 MAINTAINER li xu cheng "lixucheng@aliyun.com"
 RUN npm install -g requirejs
 RUN mkdir -p /usr/app/src

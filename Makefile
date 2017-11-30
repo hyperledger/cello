@@ -94,7 +94,7 @@ ifeq ($(DOCKER_BASE), )
 $(error "Architecture \"$(ARCH)\" is unsupported")
 endif
 
-all: docker check
+all: check
 
 build/docker/baseimage/$(DUMMY): build/docker/baseimage/$(DUMMY)
 build/docker/nginx/$(DUMMY): build/docker/nginx/$(DUMMY)
@@ -118,7 +118,7 @@ build/docker/%/$(DUMMY):
 
 docker: $(patsubst %,build/docker/%/$(DUMMY),$(DOCKER_IMAGES))
 
-check: ##@Code Check code format
+check: docker ##@Code Check code format
 	tox
 	@$(MAKE) test-case
 	make start && sleep 10 && make stop
@@ -164,7 +164,7 @@ initial-env: ##@Configuration Initial Configuration for dashboard
 	$(SED) 's/\(DEV=\).*/\1${DEV}/' .env
 	$(SED) 's/\(ROOT_PATH=\).*/\1${ROOT_PATH_REPLACE}/' .env
 
-start: ##@Service Start service
+start: docker ##@Service Start service
 	@$(MAKE) $(START_OPTIONS)
 	echo "Start all services..."
 	docker-compose up -d --no-recreate

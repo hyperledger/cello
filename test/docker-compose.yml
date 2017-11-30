@@ -17,7 +17,7 @@ services:
     build:
       context: ../src
       dockerfile: Dockerfile-dashboard
-    image: cello-dashboard
+    image: hyperledger/cello-dashboard
     container_name: dashboard-test
     hostname: cello-dashboard
     environment:
@@ -36,7 +36,7 @@ services:
 
   # mongo database, may use others in future
   mongo:
-    image: mongo:3.2
+    image: hyperledger/cello-mongo
     hostname: mongo
     container_name: mongo-test
     mem_limit: 2048m

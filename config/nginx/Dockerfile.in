@@ -1,7 +1,10 @@
 FROM _NS_/cello-baseimage:_TAG_
+
+COPY nginx/ /tmp/
+
+RUN cp /tmp/nginx.default.conf /etc/nginx/nginx.default.conf
+
 RUN ln -sf /dev/stdout /var/log/nginx/access.log \
 	&& ln -sf /dev/stderr /var/log/nginx/error.log
 
-EXPOSE 80 443
-
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["/bin/bash", "/tmp/docker-entrypoint.sh"]
