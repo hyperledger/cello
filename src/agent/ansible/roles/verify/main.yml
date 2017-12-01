@@ -2,7 +2,7 @@
 
 - name: verify fabric network
   hosts: allnodes
-  user: "{{ cluster.ssh_user }}"
+  user: "{{ fabric.ssh_user }}"
   vars_files:
     - "./../../vars/{{ env }}.yml"
   tasks:
