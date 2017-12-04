@@ -127,7 +127,7 @@ test-case: ##@Code Run test case for flask server
 	@$(MAKE) -C test/ all
 
 clean: ##@Code Clean tox result
-	rm -rf .tox .cache *.egg-info
+	rm -rf .tox .cache *.egg-info build/
 	find . -name "*.pyc" -o -name "__pycache__" -exec rm -rf "{}" \;
 
 # TODO (david_dornseier): As long as there are no release versions, always rewrite
@@ -152,10 +152,9 @@ logs: ##@Log tail for all service log
 redeploy: ##@Service Redeploy single service, Use like "make redeploy service=dashboard"
 	bash scripts/master_node/redeploy.sh ${service}
 
-image-clean: ##@Clean all existing images to rebuild
+image-clean: clean ##@Clean all existing images to rebuild
 	echo "Clean all cello related images, may need to remove all containers before"
-	docker images | grep "cello-" | awk '{print $1}' | xargs docker rmi -f
-	docker rmi $(docker images -f dangling=true -q)
+	docker images | grep "hyperledger/cello-" | awk '{print $3}' | xargs docker rmi -f
 
 initial-env: ##@Configuration Initial Configuration for dashboard
 	$(SED) 's/\(STATIC_FOLDER=\).*/\1${STATIC_FOLDER}/' .env
