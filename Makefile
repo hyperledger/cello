@@ -116,7 +116,15 @@ build/docker/%/$(DUMMY):
 		.
 	@touch $@
 
+build/docker/%/.push: build/docker/%/$(DUMMY)
+	@docker login \
+		--username=$(DOCKER_HUB_USERNAME) \
+		--password=$(DOCKER_HUB_PASSWORD)
+	@docker push $(BASENAME)-$(patsubst build/docker/%/.push,%,$@):$(DOCKER_TAG)
+
 docker: $(patsubst %,build/docker/%/$(DUMMY),$(DOCKER_IMAGES))
+
+install: $(patsubst %,build/docker/%/.push,$(DOCKER_IMAGES))
 
 check: docker ##@Code Check code format
 	tox
