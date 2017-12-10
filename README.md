@@ -2,7 +2,7 @@
 
 ![Cello](docs/imgs/logo.png)
 
-Hyperledger Cello is a blockchain provision and operation system, which helps manage blockchain networks.
+Hyperledger Cello is a blockchain provision and operation system, which helps manage blockchain networks in an efficient way.
 
 ## Introduction
 Using Cello, everyone can easily:

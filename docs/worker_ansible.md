@@ -1,7 +1,6 @@
-# Hyperledger Fabric Deployment
+# Cello Ansible Worker Node
 
-Hyperledger fabric deploy module is an ansible project which deploys hybperledger fabric
-onto multiple physical or virtual servers.
+Cello supports to deploy hybperledger fabric onto multiple physical or virtual servers using [ansible](https://ansible.com), and achieve:
 
  - Provision virtual servers to participate in fabric network
  - Install necessary hyperledger dependent libraries and packages
@@ -13,10 +12,6 @@ onto multiple physical or virtual servers.
  - Push new or tagged fabric images onto all docker hosts
  - Deploy fabric network
  - Join peers to channels, instantiate chaincode
-
-## Status
-
-In development
 
 ## Requirements for ansible controller
 
@@ -71,8 +66,12 @@ Supported ansible versions are 2.3.0.0 or greater.
 
 ### Run fabric network on a single ubuntu server
 
-Please follow instructions in document [All-in-one](./vars/All-in-one.md) to
+Please follow instructions in document [ansible worker usage](./worker_ansible_usage.md) to
 setup fabric network on one clean ubuntu 16.04 server.
+
+## More Usage
+
+Please refer to [ansible worker how to](./worker_ansible_howto.md).
 
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">
 <img alt="Creative Commons License" style="border-width:0"

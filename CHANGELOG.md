@@ -1,3 +1,26 @@
+## HEAD
+Sun Dec 10 10:46:32 UTC 2017
+
+* [3e001cc](https://github.com/hyperledger/cello/commit/3e001cc) [CE-183](https://jira.hyperledger.org/browse/CE-183) Fixed a bug in roles/verify/main.yml
+* [e75be2a](https://github.com/hyperledger/cello/commit/e75be2a) [CE-182](https://jira.hyperledger.org/browse/CE-182) Refactor docker-compose and Dockerfile
+* [dfc974f](https://github.com/hyperledger/cello/commit/dfc974f) :Fix [CE-181](https://jira.hyperledger.org/browse/CE-181)
+* [1eafd52](https://github.com/hyperledger/cello/commit/1eafd52) [CE-173](https://jira.hyperledger.org/browse/CE-173) Fix the ip forwarding issue
+* [4f65ce5](https://github.com/hyperledger/cello/commit/4f65ce5) [CE-179](https://jira.hyperledger.org/browse/CE-179) Fix ca configuration issue
+* [e9eb9f1](https://github.com/hyperledger/cello/commit/e9eb9f1) Fix [CE-170](https://jira.hyperledger.org/browse/CE-170)
+* [ea846e6](https://github.com/hyperledger/cello/commit/ea846e6) [CE-178](https://jira.hyperledger.org/browse/CE-178) Allow OpenStack public IP not to be assigned
+* [eb01d64](https://github.com/hyperledger/cello/commit/eb01d64) Nominate Tong Li as maintainer
+* [f7a11fb](https://github.com/hyperledger/cello/commit/f7a11fb) [CE-172](https://jira.hyperledger.org/browse/CE-172) add kubernetes 1.8.x support
+* [e94f593](https://github.com/hyperledger/cello/commit/e94f593) [CE-98](https://jira.hyperledger.org/browse/CE-98) Health check and port check for Fabric v1.0
+* [71fe841](https://github.com/hyperledger/cello/commit/71fe841) [CE-171](https://jira.hyperledger.org/browse/CE-171) Add playbook to show network state
+* [9b156d6](https://github.com/hyperledger/cello/commit/9b156d6) [CE-167](https://jira.hyperledger.org/browse/CE-167) Add supported ansible versions
+* [ffaa4d1](https://github.com/hyperledger/cello/commit/ffaa4d1) [CE-166](https://jira.hyperledger.org/browse/CE-166) Improve the all in one document
+* [45611c8](https://github.com/hyperledger/cello/commit/45611c8) [CE-163](https://jira.hyperledger.org/browse/CE-163) Provide default value for etcd token
+* [bc08be0](https://github.com/hyperledger/cello/commit/bc08be0) [CE-161](https://jira.hyperledger.org/browse/CE-161) Auto pull fabric images for vSphere host
+* [5ae0ec3](https://github.com/hyperledger/cello/commit/5ae0ec3) [CE-142](https://jira.hyperledger.org/browse/CE-142)[CE-111] UI for add vSphere host
+* [f5b818b](https://github.com/hyperledger/cello/commit/f5b818b) [CE-159](https://jira.hyperledger.org/browse/CE-159) Add notes to use Cello with MacOS
+* [6b4c8bd](https://github.com/hyperledger/cello/commit/6b4c8bd) [CE-157](https://jira.hyperledger.org/browse/CE-157) Model layer for vSphere agent.
+* [d79c48c](https://github.com/hyperledger/cello/commit/d79c48c) [CE-151](https://jira.hyperledger.org/browse/CE-151) Add user login,register in user-dashboard
+
 ## v0.7
 Fri Oct 20 CST 2017
 

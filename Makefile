@@ -2,12 +2,44 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
+
 GREEN  := $(shell tput -Txterm setaf 2)
 WHITE  := $(shell tput -Txterm setaf 7)
 YELLOW := $(shell tput -Txterm setaf 3)
 RESET  := $(shell tput -Txterm sgr0)
 ARCH   := $(shell uname -m)
 
+# changelog specific version tags
+PREV_VERSION=0.7
+
+# Building image usage
+DOCKER_NS ?= hyperledger
+BASENAME ?= $(DOCKER_NS)/cello
+BASE_VERSION=0.8.0
+VERSION ?= 0.8.0
+IS_RELEASE=false
+
+DOCKER_BASE_x86_64=ubuntu:xenial
+DOCKER_BASE_ppc64le=ppc64le/ubuntu:xenial
+#DOCKER_BASE_s390x=s390x/debian:jessie
+DOCKER_BASE=$(DOCKER_BASE_$(ARCH))
+BASE_VERSION ?= $(ARCH)-$(VERSION)
+
+ifneq ($(IS_RELEASE),true)
+	EXTRA_VERSION ?= snapshot-$(shell git rev-parse --short HEAD)
+	DOCKER_TAG=$(BASE_VERSION)-$(EXTRA_VERSION)
+else
+	DOCKER_TAG=$(BASE_VERSION)
+endif
+
+DOCKER_IMAGES = baseimage mongo nginx
+DUMMY = .$(DOCKER_TAG)
+
+ifeq ($(DOCKER_BASE), )
+$(error "Architecture \"$(ARCH)\" is unsupported")
+endif
+
+# Frontend needed
 SLASH:=/
 REPLACE_SLASH:=\/
 export ROOT_PATH = ${PWD}
@@ -17,6 +49,8 @@ STATIC_FOLDER?=themes\/${THEME}\/static
 TEMPLATE_FOLDER?=themes\/${THEME}\/templates
 NPM_REGISTRY?=registry.npmjs.org
 DEV?=True
+
+# macOS has diff `sed` usage from Linux
 SYSTEM=$(shell uname)
 ifeq ($(SYSTEM), Darwin)
 	SED = sed -ix
@@ -48,51 +82,6 @@ else
 	START_OPTIONS = initial-env
 endif
 
-# changelog specific version tags
-PREV_VERSION=0.6
-#BASE_VERSION=
-
-.PHONY: \
-	all \          # default to run check
-	check \        # ci checking
-	clean \        # clean up the env, remove temp files
-	changelog \    # update the changelog based on the VERSION tags
-	doc \          # start a doc server locally
-	image-clean \  # clean up all cello related images
-	log \          # show logs of specify service
-	logs \         # show logs of all services
-	setup-master \ # setup the master node
-	setup-worker \ # setup the worker node
-	redeploy \     # redeploy service(s)
-	start \        # start all services
-	restart \      # restart all services
-	stop \         # stop all services
-	docker \       # create docker image
-
-DOCKER_NS ?= hyperledger
-BASENAME ?= $(DOCKER_NS)/cello
-VERSION ?= 0.7.0
-IS_RELEASE=false
-
-DOCKER_BASE_x86_64=ubuntu:xenial
-DOCKER_BASE_ppc64le=ppc64le/ubuntu:xenial
-#DOCKER_BASE_s390x=s390x/debian:jessie
-DOCKER_BASE=$(DOCKER_BASE_$(ARCH))
-BASE_VERSION ?= $(ARCH)-$(VERSION)
-
-ifneq ($(IS_RELEASE),true)
-EXTRA_VERSION ?= snapshot-$(shell git rev-parse --short HEAD)
-DOCKER_TAG=$(BASE_VERSION)-$(EXTRA_VERSION)
-else
-DOCKER_TAG=$(BASE_VERSION)
-endif
-
-DOCKER_IMAGES = baseimage mongo nginx
-DUMMY = .$(DOCKER_TAG)
-
-ifeq ($(DOCKER_BASE), )
-$(error "Architecture \"$(ARCH)\" is unsupported")
-endif
 
 all: check
 
@@ -133,8 +122,7 @@ clean: ##@Code Clean tox result
 # TODO (david_dornseier): As long as there are no release versions, always rewrite
 # the entire changelog (bug)
 changelog: ##@Update the changelog.md file in the root folder
-	rm -rf CHANGELOG.md
-	bash scripts/changelog.sh bd0c6db v$(PREV_VERSION)
+	#bash scripts/changelog.sh bd0c6db v$(PREV_VERSION)
 	bash scripts/changelog.sh v$(PREV_VERSION) HEAD
 
 doc: ##@Create local online documentation
@@ -194,6 +182,9 @@ npm-install: ##@Nodejs Install modules with npm package management
 	bash scripts/master_node/npm_install.sh
 	@$(MAKE) -C user-dashboard/ npm-install
 
+help: ##@other Show this help.
+	@perl -e '$(HELP_FUN)' $(MAKEFILE_LIST)
+
 HELP_FUN = \
 	%help; \
 	while(<>) { push @{$$help{$$2 // 'options'}}, [$$1, $$3] if /^([a-zA-Z\-]+)\s*:.*\#\#(?:@([a-zA-Z\-]+))?\s(.*)$$/ }; \
@@ -206,5 +197,19 @@ HELP_FUN = \
 	}; \
 	print "\n"; }
 
-help: ##@other Show this help.
-	@perl -e '$(HELP_FUN)' $(MAKEFILE_LIST)
+.PHONY: \
+	all \          # default to run check
+	check \        # ci checking
+	clean \        # clean up the env, remove temp files
+	changelog \    # update the changelog based on the VERSION tags
+	doc \          # start a doc server locally
+	image-clean \  # clean up all cello related images
+	log \          # show logs of specify service
+	logs \         # show logs of all services
+	setup-master \ # setup the master node
+	setup-worker \ # setup the worker node
+	redeploy \     # redeploy service(s)
+	start \        # start all services
+	restart \      # restart all services
+	stop \         # stop all services
+	docker \       # create docker image

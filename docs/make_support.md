@@ -2,7 +2,7 @@
 
 The following opperations are supported by [Make](https://en.wikipedia.org/wiki/Makefile) command. Prepend the following commands with make.
 
-These commands should be run in `cello` directory, for example: `/cello$ make all`.
+These commands should be run in `cello` directory, for example: `/cello $ make all`.
 
 ### all
 Default to run the testing cases.

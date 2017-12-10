@@ -2,8 +2,8 @@
 
 Cello follows a typical Master-Worker architecture. There are two types of Nodes in the cluster.
 
-* Master Node: Holds [Cello services](service_management.md) to manage (e.g., create/delete) the chains inside Work Nodes. Usually, Master Node will provide Web dashboard (port `8080`) and RESTful api (port `80`). It is recommended to use Linux (e.g., Ubuntu 14.04+) or MacOS;
-* Worker Node: Nodes to hold blockchains. Take Docker Host or Swarm Cluster for example, the Docker daemon should be accessible (typically at port `2375`) from the Master Node.
+* `Master Node`: Holds [Cello services](service_management.md) to manage (e.g., `create/delete`) the chains inside Worker Nodes through Worker's management APIs. Usually, Master Node provides web dashboard (port `8080`) and RESTful APIs (port `80`). It is recommended to use Linux (e.g., Ubuntu 16.04+) or MacOS;
+* `Worker Node`: Nodes to hold blockchains. Cello support several types of `worker node` from single server to cluster. Take `Docker host` or `Swarm cluster` for example, the Docker daemon should be accessible (typically at port `2375`) from the Master Node as the management API.
 
 ![Deployment topology](imgs/deploy_arch.png)
 
