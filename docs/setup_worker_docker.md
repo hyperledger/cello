@@ -1,4 +1,4 @@
-## Setup Docker Host as Worker Node
+## Setup Docker Host as a Worker Node
 
 For the Worker Node with meeting the [system requirements](#system-requirements), three steps are required:
 

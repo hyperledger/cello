@@ -9,7 +9,7 @@ Hyperledger Cello provides the following features:
 
 * Manage the lifecycle of blockchain networks (mainly support [Hyperledger fabric](https://github.com/hyperledger/fabric) now), e.g., `create/start/stop/delete/keep health` automatically.
 * Support customized blockchain network, e.g., network size, consensus type.
-* Support multiple underly infrastructure including bare-metal, virtual machine, native [Docker](https://www.docker.com/) host, swarm or [Kubernetes](https://kubernetes.io/). More supports on the way.
+* Support multiple underly infrastructure including bare-metal, virtual machine, native [Docker](https://www.docker.com) host, swarm or [Kubernetes](https://kubernetes.io). More supports on the way.
 * Support heterogeneous architecture, e.g., X86, POWER and Z, from bare-metal servers to virtual machine clouds.
 * Extendable with monitoring, logging, health and analytics capability by integrating with existing tools like [ELK](https://www.elastic.co).
 
@@ -25,23 +25,22 @@ Using Cello, application developers can:
 For new users, it is highly recommended to read the [Tutorial for Beginners](tutorial) first.
 
 ## Operation Guideline
-* [Terminology and Concept](terminology)
-* [Installation](installation)
-* [Adoption Scenarios](scenario)
-* [Configuration for Production](production_config)
-* [Manage Cello services](service_management)
+* [Terminology and Concept](terminology.md)
+* [Start Cello](setup.md)
+* [Adoption Scenarios](scenario.md)
+* [Configuration for Production](production_config.md)
+* [Manage Cello services](service_management.md)
 
 ## Contribute to the Project
-* [How to Contribute](CONTRIBUTING)
-* [Coding Style](code_style)
-* [PEP8 Style Guide](https://www.python.org/dev/peps/pep-0008/)
-* [Develop react js](reactjs)
-* [Develop vue theme](vue/index)
+* [How to Contribute](CONTRIBUTING.md)
+* [Code Style Guide](https://www.python.org/dev/peps/pep-0008/)
+* [Develop react js](reactjs.md)
+* [Develop vue theme](vue/index.md)
 
 ## Design Documentation
-* [Architecture Design](arch)
-* [Database Model](db)
-* [API Design](api/restserver_v2)
+* [Architecture Design](arch.md)
+* [Database Model](db.md)
+* [API Design](api/restserver_v2.md)
 
 ## Communication Channels
 

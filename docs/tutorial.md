@@ -7,7 +7,7 @@ Have a look at the [terminology](./terminology.md) to understand the basic conce
 
 ## Setup a Cello Cluster
 
-Following the [installation](./installation.md) to setup a Cello cluster.
+Following the [setup steps](./setup.md) to start a Cello cluster.
 
 After that, operators can interact with Cello through dashboard.
 
