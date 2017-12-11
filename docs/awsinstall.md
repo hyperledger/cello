@@ -26,7 +26,7 @@ The following will show how to deploy Cello on AWS EC2 Ubuntu 14.04 instances.
 
 ## Cello Installation
 
-11. Install docker and docker-compose. Follow the Cello master node setup as given in following document ![here](install.md). In the host, follow the worker node setup as given in link ![here](install.md). Other steps are the same for both master and worker node.
+11. Install docker and docker-compose. Follow the Cello [master node setup](setup_master.md). In the host, follow the [worker node setup](setup_worker_docker.md). Other steps are the same for both master and worker node.
 
 12. Once done, in the master node, you should be able to run the command *docker -H Worker_Node_IP:2375 version*.
 

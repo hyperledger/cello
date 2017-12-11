@@ -5,7 +5,7 @@ The [Master Node](./terminology.md) includes several services:
 * `restserver`: Provide RESTful APIs for chain consumers.
 * `watchdog`: Watch for health checking.
 
-*More details can be found at the [architecture doc](./arch.md).*
+*More details can be found at the [Architecture Design](./arch.md).*
 
 ### System Requirement
 

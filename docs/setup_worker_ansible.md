@@ -66,7 +66,7 @@ Supported ansible versions are 2.3.0.0 or greater.
 
 ### Run fabric network on a single ubuntu server
 
-Please follow instructions in document [ansible worker usage](./worker_ansible_usage.md) to
+Please follow instructions in document [ansible worker usage](setup_worker_ansible_allinone.md) to
 setup fabric network on one clean ubuntu 16.04 server.
 
 ## More Usage
