@@ -30,7 +30,7 @@
     clihost: ""
     filterstr: ""
     thetag: "{{ rawarch.stdout + '-' + fabric.baseimage_tag }}"
-    catag: "{{ rawarch.stdout + '-' + fabric.ca.tag }}"
+    helpertag: "{{ rawarch.stdout + '-' + fabric.helper_tag }}"
 
 - name: Make sure that working directory is clean
   become: true

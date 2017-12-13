@@ -5,7 +5,9 @@ GIT_URL: "http://gerrit.hyperledger.org/r/fabric"
 # The gerrit patch set reference, should be automatically set by gerrit
 # GERRIT_REFSPEC: "refs/changes/23/11523/3" # 1.0.0
 # GERRIT_REFSPEC: "refs/changes/47/12047/3" # 1.0.1
-GERRIT_REFSPEC: "refs/changes/13/13113/1"
+# GERRIT_REFSPEC: "refs/changes/13/13113/1"
+# GERRIT_REFSPEC: "refs/tags/v1.0.4" # 1.0.4
+GERRIT_REFSPEC: "refs/tags/v1.0.5" # 1.0.5
 
 # This variable defines fabric network attributes
 fabric: {
@@ -41,6 +43,8 @@ fabric: {
     }
   },
 
-  baseimage_tag: "1.0.2",
-  ca: { tag: "1.0.2", admin: "admin", adminpw: "adminpw" }
+  baseimage_tag: "1.0.5",
+  # This tag defines image tag for containers such as kafka, zookeeper and couchdb
+  helper_tag: "",
+  ca: { admin: "admin", adminpw: "adminpw" }
 }

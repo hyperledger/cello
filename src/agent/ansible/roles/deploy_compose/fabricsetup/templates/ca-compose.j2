@@ -6,7 +6,7 @@ services:
 {% for ca in cas %}
   {{ ca.name }}:
     container_name: {{ ca.name}}
-    image: hyperledger/fabric-ca:{{ catag }}
+    image: hyperledger/fabric-ca:{{ (fabric.helper_tag == "") | ternary(thetag, helpertag) }}
     network_mode: bridge
     hostname: {{ ca.name}}
     environment:

@@ -6,7 +6,7 @@ services:
 {% for zookeeper in zookeepers %}
   {{ zookeeper }}:
     container_name: {{ zookeeper }}
-    image: hyperledger/fabric-zookeeper:{{ thetag }}
+    image: hyperledger/fabric-zookeeper:{{ (fabric.helper_tag == "") | ternary(thetag, helpertag) }}
     network_mode: bridge
     hostname: {{ zookeeper }}
     restart: always

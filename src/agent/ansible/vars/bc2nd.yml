@@ -16,12 +16,14 @@ fabric: {
   network: {
     fabric001: {
       peers: ["leader@peer1st.mad","anchor@peer2nd.mad"],
-      orderers: ["1storderer.sin"],
+      orderers: ["orderer1st.sin"],
       zookeepers: ["zookeeper1st"],
       kafkas: ["kafka1st"]
     }
   },
 
-  baseimage_tag: "1.0.2",
-  ca: { tag: "1.0.2", admin: "admin", adminpw: "adminpw" }
+  baseimage_tag: "1.0.5",
+  # This tag defines image tag for containers such as kafka, zookeeper and couchdb
+  helper_tag: "",
+  ca: { admin: "admin", adminpw: "adminpw" }
 }

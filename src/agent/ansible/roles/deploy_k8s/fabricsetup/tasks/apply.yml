@@ -29,7 +29,7 @@
     allpeers: "{{ [] }}"
     clihost: ""
     thetag: "{{ rawarch.stdout + '-' + fabric.baseimage_tag }}"
-    catag: "{{ rawarch.stdout + '-' + fabric.ca.tag }}"
+    helpertag: "{{ rawarch.stdout + '-' + fabric.helper_tag }}"
     filterstr: ""
     k8s_server: "{{ hostvars[groups['allnodes'][0]].private_ip }}"
 

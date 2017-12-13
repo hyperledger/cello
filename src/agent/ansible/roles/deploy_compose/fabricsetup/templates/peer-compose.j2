@@ -7,7 +7,7 @@ services:
 {% if fabric.peer_db == 'CouchDB' %}
   couchdb-{{ peer.name }}:
     container_name: couchdb-{{ peer.name }}
-    image: hyperledger/fabric-couchdb:{{ thetag }}
+    image: hyperledger/fabric-couchdb:{{ (fabric.helper_tag == "") | ternary(thetag, helpertag) }}
     network_mode: bridge
     hostname: couchdb-{{ peer.name }}
 {% endif %}
