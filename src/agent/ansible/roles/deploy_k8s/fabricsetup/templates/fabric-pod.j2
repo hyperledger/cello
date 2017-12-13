@@ -15,7 +15,7 @@ spec:
   restartPolicy: Always
   containers:
     - name: {{ zookeeper }}
-      image: hyperledger/fabric-zookeeper:{{ thetag }}
+      image: hyperledger/fabric-zookeeper:{{ (fabric.helper_tag == "") | ternary(thetag, helpertag) }}
       imagePullPolicy: IfNotPresent
       env:
         - { name: "ZOO_MY_ID", value: "{{ zoo_ids[zookeeper] }}" }
@@ -53,7 +53,7 @@ spec:
   restartPolicy: Always
   containers:
     - name: {{ kafka }}
-      image: hyperledger/fabric-kafka:{{ thetag }}
+      image: hyperledger/fabric-kafka:{{ (fabric.helper_tag == "") | ternary(thetag, helpertag) }}
       imagePullPolicy: IfNotPresent
       env:
         - { name: "KAFKA_MESSAGE_MAX_BYTES", value: "103809024" }
@@ -96,7 +96,7 @@ spec:
         path: {{ fabricworkdir }}/run/keyfiles/{{ ca.org }}
   containers:
     - name: {{ ca.name }}
-      image: hyperledger/fabric-ca:{{ catag }}
+      image: hyperledger/fabric-ca:{{ (fabric.helper_tag == "") | ternary(thetag, helpertag) }}
       imagePullPolicy: IfNotPresent
       env:
         - { name: "FABRIC_CA_HOME", value: "/etc/hyperledger/fabric-ca-server-config/ca" }
@@ -152,7 +152,7 @@ spec:
   containers:
 {% if fabric.peer_db == 'CouchDB' %}
     - name: couchdb-{{ peer.name }}
-      image: hyperledger/fabric-couchdb:{{ thetag }}
+      image: hyperledger/fabric-couchdb:{{ (fabric.helper_tag == "") | ternary(thetag, helpertag) }}
       imagePullPolicy: IfNotPresent
       securityContext:
         privileged: true
