@@ -13,7 +13,7 @@ else
 fi
 
 # pull fabric images
-ARCH=`uname -m | sed 's|i686|x86|' | sed 's|x86_64|x64|'`
+ARCH=`uname -m | sed 's|i686|x86|' | sed 's|x64|x86_64|'`
 BASEIMAGE_RELEASE=0.3.2
 BASE_VERSION=1.0.5
 PROJECT_VERSION=1.0.5
