@@ -94,7 +94,7 @@ echo_b "Add existing user to docker group"
 sudo usermod -aG docker ${USER}
 
 echo_b "Checking to install Docker-compose..."
-command -v docker-compose >/dev/null 2>&1 || { echo_r >&2 "No docker-compose found, try installing"; sudo pip install docker-compose; }
+command -v docker-compose >/dev/null 2>&1 || { echo_r >&2 "No docker-compose found, try installing"; sudo pip install 'docker-compose>=1.17.0'; }
 
 [ `sudo docker ps -qa|wc -l` -gt 0 ] \
 	&& echo_r "Warn: existing containers may cause unpredictable failure, suggest to clean them using docker rm"

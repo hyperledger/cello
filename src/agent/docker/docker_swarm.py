@@ -31,7 +31,7 @@ from common import \
     CLUSTER_LOG_TYPES, CLUSTER_LOG_LEVEL, \
     NETWORK_SIZE_FABRIC_PRE_V1, NETWORK_SIZE_FABRIC_V1, \
     SERVICE_PORTS, \
-    NETWORK_TYPE_FABRIC_PRE_V1, NETWORK_TYPE_FABRIC_V1
+    NETWORK_TYPE_FABRIC_PRE_V1, NETWORK_TYPE_FABRIC_V1, HLF_VERSION
 
 COMPOSE_FILE_PATH = os.getenv("COMPOSE_FILE_PATH",
                               "." + os.sep + "agent" + os.sep + "docker" +
@@ -349,6 +349,7 @@ def _compose_set_env(name, worker_api, mapped_ports=SERVICE_PORTS,
         'VM_ENDPOINT': worker_api,
         'VM_DOCKER_HOSTCONFIG_NETWORKMODE':
             CLUSTER_NETWORK + "_{}".format(config['consensus_plugin']),
+        'HLF_VERSION': HLF_VERSION,
     }
     if config['network_type'] == NETWORK_TYPE_FABRIC_V1:
         envs.update({
