@@ -9,13 +9,19 @@
 
 # Detecting whether can import the header file to render colorful cli output
 if [ -f ../header.sh ]; then
- source ../header.sh
+	source ../header.sh
 elif [ -f scripts/header.sh ]; then
- source scripts/header.sh
+	source scripts/header.sh
 else
- alias echo_r="echo"
- alias echo_g="echo"
- alias echo_b="echo"
+	echo_r() {
+		echo "$@"
+	}
+	echo_g() {
+		echo "$@"
+	}
+	echo_b() {
+		echo "$@"
+	}
 fi
 
 # pull fabric images
