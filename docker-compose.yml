@@ -10,7 +10,7 @@
 #  nginx: front end
 #  mongo: mongo db
 
-version: '2'
+version: '3.2'
 services:
   # cello dashboard service
   dashboard:
@@ -75,7 +75,14 @@ services:
     hostname: mongo
     container_name: mongo
     restart: unless-stopped
-    mem_limit: 2048m
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 2048M
+        reservations:
+          cpus: '0.10'
+          memory: 256M
     ports:
       #- "27017:27017"  # use follow line instead in production env
       - "127.0.0.1:27017:27017"
@@ -91,7 +98,14 @@ services:
     hostname: nginx
     container_name: nginx
     restart: always
-    mem_limit: 2048m
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 2048M
+        reservations:
+          cpus: '0.10'
+          memory: 256M
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.default.conf
       #- /opt/cello/nginx/log/:/var/log/nginx/
