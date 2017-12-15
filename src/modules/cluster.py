@@ -26,7 +26,7 @@ from common import CLUSTER_PORT_START, CLUSTER_PORT_STEP, \
     WORKER_TYPE_VSPHERE, SYS_CREATOR, SYS_DELETER, SYS_USER, \
     SYS_RESETTING, VMIP, \
     NETWORK_SIZE_FABRIC_PRE_V1, \
-    PEER_SERVICE_PORTS, CA_SERVICE_PORTS
+    PEER_SERVICE_PORTS, CA_SERVICE_PORTS, EXPLORER_PORT
 
 from common import FabricPreNetworkConfig, FabricV1NetworkConfig
 from common.fabric_network import FabricV1Network
@@ -137,14 +137,19 @@ class ClusterHandler(object):
                 return None
             start_port = ports[0]
 
-        peer_mapped_ports, ca_mapped_ports, mapped_ports = {}, {}, {}
+        peer_mapped_ports, ca_mapped_ports, explorer_mapped_port, \
+            mapped_ports = {}, {}, {}, {}
         for k, v in PEER_SERVICE_PORTS.items():
             peer_mapped_ports[k] = v - PEER_SERVICE_PORTS['rest'] + start_port
         for k, v in CA_SERVICE_PORTS.items():
             ca_mapped_ports[k] = v - PEER_SERVICE_PORTS['rest'] + start_port
+        for k, v in EXPLORER_PORT.items():
+            explorer_mapped_port[k] = \
+                v - PEER_SERVICE_PORTS['rest'] + start_port
 
         mapped_ports.update(peer_mapped_ports)
         mapped_ports.update(ca_mapped_ports)
+        mapped_ports.update(explorer_mapped_port)
         logger.debug("mapped_ports={}".format(mapped_ports))
 
         network_type = config['network_type']
@@ -204,16 +209,18 @@ class ClusterHandler(object):
             self.delete(id=cid, record=False, forced=True)
             return None
 
-        access_peer, access_ca = '', ''
+        access_peer, access_ca, access_explorer = '', '', ''
         if network_type == NETWORK_TYPE_FABRIC_V1:  # fabric v1.0
             access_peer = 'peer0.org1.example.com'
             access_ca = 'ca.example.com'
+            access_explorer = 'explorer'
         elif network_type == NETWORK_TYPE_FABRIC_PRE_V1:  # fabric v0.6
             access_peer = 'vp0'
             access_ca = 'membersrvc'
 
         peer_host_ip = self._get_service_ip(cid, access_peer)
         ca_host_ip = self._get_service_ip(cid, access_ca)
+        explorer_host_ip = self._get_service_ip(cid, access_explorer)
         # no api_url, then clean and return
         if not peer_host_ip:  # not valid api_url
             logger.error("Error to find peer host url, cleanup")
@@ -226,6 +233,9 @@ class ClusterHandler(object):
 
         for k, v in ca_mapped_ports.items():
             service_urls[k] = "{}:{}".format(ca_host_ip, v)
+
+        for k, v in explorer_mapped_port.items():
+            service_urls[k] = "{}:{}".format(explorer_host_ip, v)
 
         # update api_url, container, and user_id field
         self.db_update_one(

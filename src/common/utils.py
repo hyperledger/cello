@@ -51,6 +51,10 @@ CA_SERVICE_PORTS = {
     'tlscaa': 7059,
 }
 
+EXPLORER_PORT = {
+    'dashboard': 7060
+}
+
 SERVICE_PORTS = dict(list(PEER_SERVICE_PORTS.items()) +
                      list(CA_SERVICE_PORTS.items()))
 
