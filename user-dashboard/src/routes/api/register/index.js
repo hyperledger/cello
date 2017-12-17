@@ -1,3 +1,8 @@
+
+/* Copyright IBM Corp, All Rights Reserved.
+
+ SPDX-License-Identifier: Apache-2.0
+*/
 import { Router } from 'express'
 import config from "../../../modules/configuration"
 import User from "../../../modules/user"

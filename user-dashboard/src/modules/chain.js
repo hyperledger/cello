@@ -8,17 +8,32 @@ SPDX-License-Identifier: Apache-2.0
  * Created by lixuc on 2017/5/3.
  */
 var rp = require("request-promise");
-var config = require("./configuration");
+var configuration = require("./configuration");
 var dt = require("../kit/date-tool");
 var Pagination = require("../kit/pagination");
+import Moment from 'moment'
+import { extendMoment } from 'moment-range';
+import util from 'util'
+import config from '../config'
+import sleep from 'sleep-promise';
+const crypto = require("crypto");
+const mongoose = require('mongoose');
+const moment = extendMoment(Moment);
+const log4js = require('log4js');
+const logger = log4js.getLogger(__filename.slice(__dirname.length + 1));
+const logLevel = process.env.DEV === "True" ? "DEBUG" : "INFO"
+import ChainModel from '../models/chain'
+import ChainCode from '../models/chainCode'
+logger.setLevel(logLevel);
 
-function chain(apikey) {
+function chain(apikey, username) {
     this.apikey = apikey;
+    this.username = username;
 }
 chain.prototype = {
-    RESTfulURL: "http://" + config.RESTful_Server + config.RESTful_BaseURL,
-    PoolManagerURL: "http://" + config.PoolManager_Server + config.PoolManager_BaseURL,
-    LogURL: "http://" + config.Log_Server + config.Log_BaseURL,
+    RESTfulURL: "http://" + configuration.RESTful_Server + configuration.RESTful_BaseURL,
+    PoolManagerURL: "http://" + configuration.PoolManager_Server + configuration.PoolManager_BaseURL,
+    LogURL: "http://" + configuration.Log_Server + configuration.Log_BaseURL,
     amount: function() {
         return new Promise(function(resolve, reject) {
             rp({
@@ -39,94 +54,151 @@ chain.prototype = {
             }).catch(function(err) {
                 reject({
                     success: false,
-                    message: (err.status == 503 && err.message) || "System maintenance, please try again later!"
+                    message: (err.status === 503 && err.message) || "System maintenance, please try again later!"
                 });
             });
         }.bind(this));
     },
     list: function(page) {
+        const username = this.username
+        const userId = this.apikey
         return new Promise(function(resolve, reject) {
             rp({
-                uri: this.RESTfulURL + "cluster/list?user_id=" + this.apikey,
+                uri: this.RESTfulURL + "clusters?user_id=" + this.apikey,
                 json: true
             }).then(function(response) {
-                if (response.success) {
-                    var chains = [];
-                    var clusters = response.result.clusters;
-                    var pageNo = page || 1;
-                    var pg = new Pagination(clusters);
-                    clusters = pg.gotoPage(pageNo);
-                    for (var i in clusters) {
-                        var plugin = clusters[i]["consensus_plugin"];
-                        var size = clusters[i]["size"];
-                        var chaincodeNumber = clusters[i]["chaincodes"].length;
-                        var cost = 0;
-                        if (plugin == "noops") {
-                            if (size == 4) {
-                                cost = 40 + chaincodeNumber * 20;
-                            } else if (size == 6) {
-                                cost = 60 + chaincodeNumber * 30;
-                            }
-                        } else if (plugin == "pbft") {
-                            if (size == 4) {
-                                cost = 80 + chaincodeNumber * 40;
-                            } else if (size == 6) {
-                                cost = 120 + chaincodeNumber * 60;
-                            }
+              if (response.status === "OK") {
+                let chains = [];
+                let clusters = response.data;
+                const pageNo = page || 1;
+                const pg = new Pagination(clusters);
+                clusters = pg.gotoPage(pageNo);
+                let promises = []
+                clusters.forEach((cluster, i) => {
+                  const plugin = cluster.consensus_plugin
+                  const size = cluster.size
+                  let p = new Promise((resolve, reject) => {
+                      ChainModel.findOne({clusterId: cluster.id, user_id: userId}, function (err, chainDoc) {
+                        const peers = cluster.containers.filter(container => container.includes(".peer"))
+                        const applyTime = moment(cluster.apply_ts)
+                        const nowTime = moment().add(8, "hours")
+                        let runningHours = moment.range(applyTime, nowTime).diff("hours")
+                        ChainCode.count({chain: chainDoc, status: "instantiated"}, function (err, result) {
+                          chains.push({
+                            id: cluster.id,
+                            dbId: chainDoc.id,
+                            blocks: 0,
+                            scNum: result,
+                            initialized: chainDoc.initialized,
+                            keyValueStore: chainDoc.keyValueStore,
+                            status: chainDoc.initialized ? cluster.status : "initializing",
+                            plugin,
+                            size,
+                            name: chainDoc.name,
+                            template: chainDoc.template,
+                            type: chainDoc.type,
+                            peerNum: peers.length,
+                            createTime: applyTime.format("YYYY/MM/DD HH:mm:ss"),
+                            runningHours
+                          });
+                          resolve()
+                        })
+                      })
+                  })
+                  promises.push(p)
+                });
+                function asyncQuery(arr) {
+                  return arr.reduce((promise, chain) => {
+                    return promise.then((result) => {
+                      return new Promise((resolve, reject) => {
+                        const chainRootDir = util.format(config.path.chain, username, chain.dbId)
+                        if (chain.initialized) {
+                          const helper = require(`${chainRootDir}/lib/helper`)
+                          helper.initialize(chain.template)
+                          helper.setupChaincodeDeploy()
+                          const query = require(`${chainRootDir}/lib/query`)
+                          query.initialize(chain.template)
+                          query.getChannelHeight("peer1", username, "org1")
+                            .then(function(message) {
+                              const chainIndex = chains.findIndex(x => x.id === chain.id);
+                              let chainItem = chains[chainIndex]
+                              chainItem.blocks = parseInt(message)
+                              chains[chainIndex] = chainItem
+                            }).then(sleep(500)).then(() => {
+                            resolve()
+                          })
+                        } else {
+                          resolve()
                         }
-                        chains.push({
-                            id: clusters[i]["cluster_id"],
-                            name: clusters[i]["name"],
-                            description: clusters[i]["description"],
-                            plugin: plugin,
-                            mode: clusters[i]["consensus_mode"],
-                            size: size,
-                            run_time: dt.diff2Now(clusters[i]["apply_time"]),
-                            status: clusters[i]["status"],
-                            chaincodes: chaincodeNumber,
-                            cost: cost
-                        });
-                    }
-                    resolve({
-                        success: true,
-                        chains: chains,
-                        totalNumber: pg.getTotalRow(),
-                        totalPage: pg.getTotalPage()
-                    });
-                } else {
-                    var e = new Error(response.message);
-                    e.status = 503;
-                    throw e;
+                      })
+                    })
+                  }, Promise.resolve())
                 }
+                Promise.all(promises).then(() => {
+                  asyncQuery(chains).then(() => {
+                    resolve({
+                      success: true,
+                      chains: chains,
+                      totalNumber: pg.getTotalRow(),
+                      totalPage: pg.getTotalPage()
+                    });
+                  })
+                })
+              } else {
+                var e = new Error(response.message);
+                e.status = 503;
+                throw e;
+              }
             }).catch(function(err) {
                 reject({
                     success: false,
-                    message: (err.status == 503 && err.message) || "System maintenance, please try again later!"
+                    message: (err.status === 503 && err.message) || "System maintenance, please try again later!"
                 });
             });
         }.bind(this));
     },
-    apply: function(name, description, plugin, mode, size) {
+    apply: function(name, plugin, mode, size, applyType) {
         return new Promise(function(resolve, reject) {
+            const apikey = this.apikey
+            const username = this.username
             rp({
                 method: "POST",
-                uri: this.RESTfulURL + "cluster/apply",
+                uri: this.RESTfulURL + "cluster_op",
                 body: {
                     user_id: this.apikey,
-                    name: name,
-                    description: description,
-                    consensus_plugin: plugin,
-                    consensus_mode: mode,
+                    action: "apply",
+                    type: applyType,
                     size: size
                 },
                 json: true
             }).then(function(response) {
-                if (response.success) {
-                    resolve({
-                        success: true,
-                        id: response.result.cluster_id,
-                        applyTime: response.result.apply_time
-                    });
+                if (response.status === "OK") {
+                  const {data: {service_url, size}} = response
+                  const chainId = mongoose.Types.ObjectId();
+                  const chainRootDir = util.format(config.path.chain, username, chainId)
+                  const newChain = new ChainModel({
+                    _id: chainId,
+                    keyValueStore: `${chainRootDir}/client-kvs`,
+                    ccSrcPath: chainRootDir,
+                    serviceUrl: service_url,
+                    user_id: apikey,
+                    username,
+                    name,
+                    size,
+                    plugin,
+                    mode,
+                    type: applyType,
+                    clusterId: response.data.id
+                  })
+                  newChain.save(function(err, data){
+                    if(err){ return console.log(err) }
+                  })
+                  resolve({
+                    success: true,
+                    id: response.data.id,
+                    dbId: newChain.id,
+                    applyTime: response.data.apply_ts
+                  });
                 } else {
                     var e = new Error(response.message);
                     e.status = 503;
@@ -135,61 +207,87 @@ chain.prototype = {
             }).catch(function(err) {
                 reject({
                     success: false,
-                    message: (err.status == 503 && err.message) || "System maintenance, please try again later!"
+                    message: (err.status === 503 && err.message) || "System maintenance, please try again later!"
                 });
             });
         }.bind(this));
     },
-    edit: function(id, name, description) {
+    edit: function(id, name) {
         return new Promise(function(resolve, reject) {
-            rp({
-                method: "POST",
-                uri: this.RESTfulURL + "cluster/edit",
-                body: {
-                    user_id: this.apikey,
-                    cluster_id: id,
-                    name: name,
-                    description: description
-                },
-                json: true
-            }).then(function(response) {
-                if (response.success) {
-                    resolve({ success: true });
-                } else {
-                    var e = new Error(response.message);
-                    e.status = 503;
-                    throw e;
-                }
-            }).catch(function(err) {
-                reject({
-                    success: false,
-                    message: (err.status == 503 && err.message) || "System maintenance, please try again later!"
-                });
+          try {
+            const query = {clusterId: id};
+            ChainModel.findOneAndUpdate(query, {name}, {upsert: true}, function (err, doc) {
+              if (err) {
+                logger.error(err)
+                err.status = 503;
+                throw err;
+              } else {
+                resolve({success: true})
+              }
+            })
+          } catch (err) {
+            reject({
+              success: false,
+              message: (err.status === 503 && err.message) || "System maintenance, please try again later!"
             });
+          }
+            // rp({
+            //     method: "POST",
+            //     uri: this.RESTfulURL + "cluster/edit",
+            //     body: {
+            //         user_id: this.apikey,
+            //         cluster_id: id,
+            //         name: name,
+            //         description: description
+            //     },
+            //     json: true
+            // }).then(function(response) {
+            //     if (response.success) {
+            //         resolve({ success: true });
+            //     } else {
+            //         var e = new Error(response.message);
+            //         e.status = 503;
+            //         throw e;
+            //     }
+            // }).catch(function(err) {
+            //     reject({
+            //         success: false,
+            //         message: (err.status == 503 && err.message) || "System maintenance, please try again later!"
+            //     });
+            // });
         }.bind(this));
     },
     release: function(id) {
         return new Promise(function(resolve, reject) {
             rp({
                 method: "POST",
-                uri: this.RESTfulURL + "cluster/release",
+                uri: this.RESTfulURL + "cluster_op",
                 body: {
+                    action: "release",
                     user_id: this.apikey,
                     cluster_id: id
                 },
                 json: true
             }).then(function(response) {
-                if (response.success) {
-                    resolve({ success: true });
+                if (response.status === "OK") {
+                  ChainModel.findOne({clusterId: id}, function (err, doc) {
+                    if (err) {
+                      err.status = 503;
+                      throw err;
+                    } else {
+                      doc.remove(function(err){logger.error(err)});
+                      resolve({success: true})
+                    }
+                  })
                 } else {
-                    var e = new Error(response.message);
+                    let e = new Error(response.message);
                     e.status = 503;
                     throw e;
                 }
             }).catch(function(err) {
                 reject({
                     success: false,
-                    message: (err.status == 503 && err.message) || "System maintenance, please try again later!"
+                    message: (err.status === 503 && err.message) || "System maintenance, please try again later!"
                 });
             });
         }.bind(this));
@@ -205,7 +303,7 @@ chain.prototype = {
                 },
                 json: true
             }).then(function(response) {
-                if (response.status.toLowerCase() == "ok") {
+                if (response.status.toLowerCase() === "ok") {
                     resolve({ success: true });
                 } else {
                     var e = new Error(response.error);
@@ -215,7 +313,7 @@ chain.prototype = {
             }).catch(function(err) {
                 reject({
                     success: false,
-                    message: (err.status == 503 && err.message) || "System maintenance, please try again later!"
+                    message: (err.status === 503 && err.message) || "System maintenance, please try again later!"
                 });
             });
         }.bind(this));
@@ -234,7 +332,7 @@ chain.prototype = {
                             type: "Feature",
                             geometry: {
                                 type: "Point",
-                                coordinates: config["topology"][nodes[i]["id"]]
+                                coordinates: configuration["topology"][nodes[i]["id"]]
                             },
                             properties: nodes[i]
                         });
@@ -274,8 +372,8 @@ chain.prototype = {
                             geometry: {
                                 type: "LineString",
                                 coordinates: [
-                                    config["topology"][links[i]["from"]],
-                                    config["topology"][links[i]["to"]]
+                                    configuration["topology"][links[i]["from"]],
+                                    configuration["topology"][links[i]["to"]]
                                 ]
                             },
                             properties: links[i]

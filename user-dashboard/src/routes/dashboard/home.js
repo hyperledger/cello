@@ -1,11 +1,11 @@
-/**
- * Created by lixuc on 2017/5/3.
- */
+
+/* Copyright IBM Corp, All Rights Reserved.
+
+ SPDX-License-Identifier: Apache-2.0
+*/
 var express = require("express");
 var config = require("../../modules/configuration");
 var User = require("../../modules/user");
-var Chain = require("../../modules/chain");
-var Contract = require("../../modules/contract");
 
 var router = express.Router();
 
@@ -16,7 +16,6 @@ router.get("/", function(req, res, next) {
         var userInfo = JSON.parse(req.cookies[config.cookieName]);
         var user = new User();
         user.account(userInfo.apikey).then(function(result) {
-            //将用户的blue points保存到session中，有效期24小时
             req.session.balance = result.balance;
             next();
         }).catch(function(err) {
@@ -29,11 +28,12 @@ router.get("/", function(req, res, next) {
     var renderer = {
         pointBalance: req.session.balance
     };
-    var userInfo = JSON.parse(req.cookies[config.cookieName]);
+    let userInfo = JSON.parse(req.cookies[config.cookieName]);
+    userInfo["language"] = req.language
     renderer["chainNum"] = 1;
     renderer["contractNum"] = 1;
-    res.render("dashboard/home", renderer)
-    next()
+    res.render("dashboard", userInfo)
+    // next()
     // var chain = new Chain(userInfo.apikey);
     // var contract = new Contract(userInfo.apikey);
     // chain.amount().then(function(result) {
