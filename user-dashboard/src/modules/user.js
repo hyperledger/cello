@@ -10,10 +10,84 @@ SPDX-License-Identifier: Apache-2.0
 var rp = require("request-promise");
 var uuid = require("node-uuid");
 var config = require("./configuration");
+import UserModel from '../models/user'
+const log4js = require('log4js');
+const logger = log4js.getLogger(__filename.slice(__dirname.length + 1));
+const logLevel = process.env.DEV === "True" ? "DEBUG" : "INFO"
+logger.setLevel(logLevel);
 
 function user() {}
 user.prototype = {
     BaseURL: config.SV_BaseURL,
+    active: function (apikey) {
+        return new Promise(function (resolve, reject) {
+            rp({
+                uri: this.BaseURL + "user/active/" + apikey,
+                json: true
+            }).then(function (response) {
+                resolve(response)
+            }).catch(function (err) {
+                reject({
+                    success: false,
+                    message: err.message || "System maintenance, please try again later!"
+                })
+            })
+        }.bind(this));
+    },
+    search: function (username) {
+        return new Promise(function (resolve, reject) {
+            rp({
+                uri: this.BaseURL + "user/search?username=" + username,
+                json: true
+            }).then(function (response) {
+                resolve(response)
+            }).catch(function (err) {
+                reject({
+                    success: false,
+                    message: err.message || "System maintenance, please try again later!"
+                })
+            })
+        }.bind(this));
+    },
+    changePassword: function (apikey, origin_password, new_password) {
+        return new Promise(function (resolve, reject) {
+            rp({
+                method: "POST",
+                uri: this.BaseURL + "user/password/change/" + apikey,
+                formData: {
+                    origin_password,
+                    new_password
+                },
+                json: true
+            }).then(function (response) {
+                resolve(response)
+            }).catch(function (err) {
+                reject({
+                    success: false,
+                    message: err.message || "System maintenance, please try again later!"
+                })
+            })
+        }.bind(this));
+    },
+    resetPassword: function (apikey, new_password) {
+        return new Promise(function (resolve, reject) {
+            rp({
+                method: "POST",
+                uri: this.BaseURL + "user/password/reset/" + apikey,
+                formData: {
+                    new_password
+                },
+                json: true
+            }).then(function (response) {
+                resolve(response)
+            }).catch(function (err) {
+                reject({
+                    success: false,
+                    message: err.message || "System maintenance, please try again later!"
+                })
+            })
+        }.bind(this));
+    },
     account: function(apikey) {
         return new Promise(function(resolve, reject) {
             rp({
@@ -21,13 +95,15 @@ user.prototype = {
                 json: true
             }).then(function(response) {
                 const {username, apikey, isActivated, balance} = response;
-                resolve({
+                UserModel.findOneOrCreate({name: username, userId: apikey}, (err, user) => {
+                  resolve({
                     success: true,
                     username,
                     apikey,
                     isActivated,
                     balance
-                });
+                  });
+                })
             }).catch(function(err) {
                 reject({
                     success: false,
@@ -60,7 +136,7 @@ user.prototype = {
             }).catch(function(err) {
                 reject({
                     success: false,
-                    message: (err.status == 403 && err.message) || "System maintenance, please try again later!"
+                    message: (err.status === 403 && err.message) || "System maintenance, please try again later!"
                 });
             });
         }.bind(this));

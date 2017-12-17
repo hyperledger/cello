@@ -1,9 +1,13 @@
+
+/* Copyright IBM Corp, All Rights Reserved.
+
+ SPDX-License-Identifier: Apache-2.0
+*/
 import jsonfile from 'jsonfile'
 import rimraf from 'rimraf'
 import sleep from 'sleep-promise';
 import config from '../config'
 import util from 'util'
-const hfc = require('fabric-client');
 const shell = require('shelljs');
 const mongoose = require('mongoose');
 const fs = require('fs-extra');
@@ -57,9 +61,10 @@ chainSchema.post('save', function(doc, next) {
       template.keyValueStore = `${chainRootDir}/client-kvs`
       template.CC_SRC_PATH = chainRootDir
       const txDir = `${chainRootDir}/tx`
+      const libDir = `${chainRootDir}/lib`
+      fs.ensureDirSync(libDir)
       shell.cp('-R', '/usr/app/src/src/config-template/cc_code/src', template.CC_SRC_PATH);
-      shell.cp('/usr/app/src/src/modules/helper.js', chainRootDir)
-      shell.cp('-R', '/usr/app/src/src/modules/fabric', chainRootDir)
+      shell.cp('-R', `/usr/app/src/src/modules/${type}/*`, libDir)
 
       fs.ensureDirSync(template.keyValueStore)
       fs.ensureDirSync(txDir)
@@ -122,30 +127,19 @@ function initialFabric (doc) {
   if (shell.exec(`configtxgen -profile TwoOrgsChannel -channelID ${channelName} -outputCreateChannelTx ${channelConfigPath}/${channelName}.tx`).code !== 0) {
     return
   }
-  hfc.addConfigFile(`${chainRootDir}/network-config.json`);
-  const helper = require(`${chainRootDir}/helper.js`)
+  const helper = require(`${chainRootDir}/lib/helper.js`)
   helper.initialize(doc._template)
-  const channels = require(`${chainRootDir}/fabric/create-channel.js`);
+  const channels = require(`${chainRootDir}/lib/create-channel.js`);
   channels.initialize(doc._template)
-  const chaincodeVersion = "v0"
-  const chaincodePath = "github.com/example_cc"
-  const chaincodeName = `${clusterId}-${id}`
   function asyncInstallChainCode(arr) {
     return arr.reduce((promise, orgName) => {
       return promise.then((result) => {
         return new Promise((resolve, reject) => {
-          const join = require(`${chainRootDir}/fabric/join-channel.js`);
+          const join = require(`${chainRootDir}/lib/join-channel.js`);
           join.initialize(doc._template)
           join.joinChannel(channelName, peerNames, username, orgName)
             .then(function(message) {
               resolve()
-              // helper.setupChaincodeDeploy()
-              // const install = require(`${chainRootDir}/fabric/install-chaincode.js`);
-              // install.initialize(keyValueStore)
-              // install.installChaincode(peerNames, chaincodeName, chaincodePath, chaincodeVersion, username, orgName)
-              //   .then(function(message) {
-              //     resolve()
-              //   });
             });
         })
       })

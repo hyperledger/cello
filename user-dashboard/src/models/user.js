@@ -1,3 +1,8 @@
+
+/* Copyright IBM Corp, All Rights Reserved.
+
+ SPDX-License-Identifier: Apache-2.0
+*/
 const mongoose = require('mongoose');
 const log4js = require('log4js');
 const logger = log4js.getLogger(__filename.slice(__dirname.length + 1));
