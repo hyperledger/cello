@@ -153,6 +153,7 @@ image-clean: clean ##@Clean all existing images to rebuild
 	docker images | grep "hyperledger/cello-" | awk '{print $3}' | xargs docker rmi -f
 
 initial-env: ##@Configuration Initial Configuration for dashboard
+	cp default.env .env
 	$(SED) 's/\(STATIC_FOLDER=\).*/\1${STATIC_FOLDER}/' .env
 	$(SED) 's/\(TEMPLATE_FOLDER=\).*/\1${TEMPLATE_FOLDER}/' .env
 	$(SED) 's/\(NPM_REGISTRY=\).*/\1${NPM_REGISTRY}/' .env
