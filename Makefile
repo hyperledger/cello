@@ -42,13 +42,13 @@ endif
 # Frontend needed
 SLASH:=/
 REPLACE_SLASH:=\/
+
+-include .makerc/email
+-include .makerc/admin-dashboard
+-include .makerc/user-dashboard
+
 export ROOT_PATH = ${PWD}
 ROOT_PATH_REPLACE=$(subst $(SLASH),$(REPLACE_SLASH),$(ROOT_PATH))
-THEME?=basic
-STATIC_FOLDER?=themes\/${THEME}\/static
-TEMPLATE_FOLDER?=themes\/${THEME}\/templates
-NPM_REGISTRY?=registry.npmjs.org
-DEV?=True
 
 # macOS has diff `sed` usage from Linux
 SYSTEM=$(shell uname)
@@ -156,9 +156,16 @@ initial-env: ##@Configuration Initial Configuration for dashboard
 	cp default.env .env
 	$(SED) 's/\(STATIC_FOLDER=\).*/\1${STATIC_FOLDER}/' .env
 	$(SED) 's/\(TEMPLATE_FOLDER=\).*/\1${TEMPLATE_FOLDER}/' .env
-	$(SED) 's/\(NPM_REGISTRY=\).*/\1${NPM_REGISTRY}/' .env
+	$(SED) 's/\(NPM_REGISTRY=\).*/\1${NPM_REGISTRY_REPLACE}/' .env
 	$(SED) 's/\(DEV=\).*/\1${DEV}/' .env
 	$(SED) 's/\(ROOT_PATH=\).*/\1${ROOT_PATH_REPLACE}/' .env
+	$(SED) 's/\(ENABLE_EMAIL_ACTIVE=\).*/\1${ENABLE_EMAIL_ACTIVE}/' .env
+	$(SED) 's/\(SMTP_SERVER=\).*/\1${SMTP_SERVER}/' .env
+	$(SED) 's/\(SMTP_PORT=\).*/\1${SMTP_PORT}/' .env
+	$(SED) 's/\(SMTP_AUTH_USERNAME=\).*/\1${SMTP_AUTH_USERNAME}/' .env
+	$(SED) 's/\(SMTP_AUTH_PASSWORD=\).*/\1${SMTP_AUTH_PASSWORD}/' .env
+	$(SED) 's/\(FROM_EMAIL=\).*/\1${FROM_EMAIL}/' .env
+	$(SED) 's/\(WEBROOT=\).*/\1${WEBROOT}/' .env
 
 start: docker ##@Service Start service
 	@$(MAKE) $(START_OPTIONS)

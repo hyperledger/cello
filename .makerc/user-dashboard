@@ -1,0 +1,3 @@
+# web site url for user active link
+ROOT_URL?=
+WEBROOT=$(subst $(SLASH),$(REPLACE_SLASH),$(ROOT_URL))

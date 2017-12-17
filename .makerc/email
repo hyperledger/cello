@@ -1,0 +1,9 @@
+# smtp server for send email to user
+SMTP_SERVER?=
+# smtp port
+SMTP_PORT?=587
+# auth for smtp
+SMTP_AUTH_USERNAME?=
+SMTP_AUTH_PASSWORD?=
+# email address where sent from
+FROM_EMAIL?=
