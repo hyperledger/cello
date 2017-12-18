@@ -40,6 +40,10 @@ apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 0C49F3730359A145185
 
 echo "deb [ arch=amd64,arm64,ppc64el,s390x ] http://repo.mongodb.com/apt/ubuntu xenial/mongodb-enterprise/3.4 multiverse" | tee /etc/apt/sources.list.d/mongodb-enterprise.list
 
+if [ $(dpkg --print-architecture) == "s390x" ]; then
+	echo "deb [ arch=s390x ] http://deb.debian.org/debian stable main" >> /etc/apt/sources.list
+fi
+
 apt-get update
 
 export MONGO_PACKAGE=mongodb-enterprise
@@ -47,7 +51,7 @@ export MONGO_PACKAGE=mongodb-enterprise
 # export MONGO_PACKAGE=${MONGO_PACKAGE} MONGO_REPO=${MONGO_REPO}
 
 export MONGO_MAJOR=3.4
-export MONGO_VERSION=3.4.10
+export MONGO_VERSION=3.4.9
 
 apt-get install -y \
 		${MONGO_PACKAGE}=$MONGO_VERSION \
