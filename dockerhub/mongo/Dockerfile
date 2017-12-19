@@ -1,4 +1,4 @@
-FROM hyperledger/cello-baseimage
+FROM hyperledger/cello-baseimage:x86_64-latest
 
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
