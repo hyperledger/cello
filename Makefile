@@ -15,7 +15,6 @@ PREV_VERSION=0.7
 # Building image usage
 DOCKER_NS ?= hyperledger
 BASENAME ?= $(DOCKER_NS)/cello
-BASE_VERSION=0.8.0
 VERSION ?= 0.8.0
 IS_RELEASE=false
 
