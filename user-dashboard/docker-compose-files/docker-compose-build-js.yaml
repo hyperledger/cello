@@ -18,5 +18,7 @@ services:
     volumes:  # This should be removed in product env
       - $ROOT_PATH/user-dashboard/js:/app
       - $ROOT_PATH/user-dashboard:/usr/app/src
-    command: bash -c "cd /app && npm run build && cd /app/home && npm run build &&
+    command: bash -c "cd /app && npm run build &&
+              cd /app/home && npm run build &&
+              cd /app/dashboard && npm run build &&
               cd /usr/app/src && npm run build"
