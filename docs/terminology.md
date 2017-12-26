@@ -7,14 +7,14 @@ The Cello system is suggested to be deployed on multiple servers, at least 1 Mas
 * `Master` Node: Running Cello services, which will manage the worker nodes.
 * `Worker` Node: The servers to have blockchains running inside. The worker nodes will be managed by the master node.
 * `Host`: Host is a resource pool managed by a unique control point, which consists of several compute nodes. Typically it can be a naive Docker host, a Swarm cluster or other bare-metal/virtual/container clusters.
-* `Chain` (`Cluster`): A blockchain network including numbers of peer nodes. E.g., a Hyperledger Fabric network, a SawthoothLake or Iroha chain.
+* `Chain` (`Cluster`): A blockchain network including number of peer nodes. E.g., a Hyperledger Fabric network, a SawthoothLake or Iroha chain.
 
 
 ## Master
 
 The `Master` Node will hold the main Cello [services](service_management.md).
 
-This node is the control point of the whole Cello cluster, and most of the management work should be taken here.
+This node is the control point of the whole Cello cluster, and most of the management work should be managed here.
 
 `Master` node will manage the blockchain networks running inside the `Worker` nodes.
 
