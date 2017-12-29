@@ -2,6 +2,7 @@ import BasicLayout from '../layouts/BasicLayout';
 
 import Chain from '../routes/Chain'
 import NewChain from '../routes/Chain/New'
+import Api from '../routes/Api'
 
 const data = [
   {
@@ -21,6 +22,13 @@ const data = [
         messageId: "ChainNew",
         path: 'chain/new',
         component: NewChain
+      },
+      {
+        name: 'API',
+        messageId: "API",
+        icon: 'api',
+        path: 'api',
+        component: Api
       }
     ],
   }
