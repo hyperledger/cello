@@ -45,12 +45,13 @@
     "babel-preset-stage-0": "^6.5.0",
     "babel-plugin-transform-runtime": "^6.0.0",
     "eslint": "^3.1.1",
+    "pm2": "^2.9.1",
     "nodemon": "^1.12.1"
   },
   "scripts": {
-    "start": "node dist",
+    "start": "pm2 start dist/index.js -i max",
     "build": "babel src -s --ignore src/public -D -d dist && cp -r src/public dist/",
-    "dev": "nodemon src/index.js --exec \"babel-node src\"",
+    "dev": "pm2 --interpreter babel-node start src/index.js --no-daemon --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "hightall",
