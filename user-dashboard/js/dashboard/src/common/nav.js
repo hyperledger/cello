@@ -3,6 +3,7 @@ import BasicLayout from '../layouts/BasicLayout';
 import Chain from '../routes/Chain'
 import NewChain from '../routes/Chain/New'
 import Api from '../routes/Api'
+import SmartContract from '../routes/SmartContract'
 
 const data = [
   {
@@ -29,6 +30,13 @@ const data = [
         icon: 'api',
         path: 'api',
         component: Api
+      },
+      {
+        name: 'Smart Contract',
+        messageId: "SmartContract",
+        icon: 'copy',
+        path: 'smart_contract',
+        component: SmartContract
       }
     ],
   }
