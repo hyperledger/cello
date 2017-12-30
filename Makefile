@@ -59,25 +59,20 @@ else
 endif
 
 ifneq (${THEME}, basic)
-	ifneq ($(wildcard ./src/${STATIC_FOLDER}/node_modules),)
-		INSTALL_NPM=
-	else
-		INSTALL_NPM=npm-install
-	endif
 	ifeq (${THEME}, react)
 		ifneq ($(wildcard ./src/${STATIC_FOLDER}/js/dist),)
 			BUILD_JS=
 		else
-			BUILD_JS=build-js
+			BUILD_JS=build-admin-js build-user-dashboard-js
 		endif
 	else
 		ifneq ($(wildcard ./src/${STATIC_FOLDER}/dist),)
 			BUILD_JS=
 		else
-			BUILD_JS=build-js
+			BUILD_JS=build-admin-js build-user-dashboard-js
 		endif
 	endif
-	START_OPTIONS = initial-env $(INSTALL_NPM) $(BUILD_JS)
+	START_OPTIONS = initial-env $(BUILD_JS)
 else
 	START_OPTIONS = initial-env
 endif
@@ -166,6 +161,7 @@ initial-env: ##@Configuration Initial Configuration for dashboard
 	$(SED) 's/\(SMTP_AUTH_PASSWORD=\).*/\1${SMTP_AUTH_PASSWORD}/' .env
 	$(SED) 's/\(FROM_EMAIL=\).*/\1${FROM_EMAIL}/' .env
 	$(SED) 's/\(WEBROOT=\).*/\1${WEBROOT}/' .env
+	$(SED) 's/\(THEME=\).*/\1${THEME}/' .env
 
 start: docker ##@Service Start service
 	@$(MAKE) $(START_OPTIONS)
@@ -186,8 +182,11 @@ setup-master: docker ##@Environment Setup dependency for master node
 setup-worker: ##@Environment Setup dependency for worker node
 	cd scripts/worker_node && bash setup.sh
 
-build-js: ##@Nodejs Build js files
+build-admin-js: ##@Nodejs Build admin dashboard js files
+	@$(MAKE) initial-env
 	bash scripts/master_node/build_js.sh
+
+build-user-dashboard-js: ##@Nodejs Build user dashboard js files
 	@$(MAKE) -C user-dashboard/ build-js
 
 watch-mode: ##@Nodejs Run watch mode with js files for react

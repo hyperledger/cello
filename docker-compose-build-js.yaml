@@ -12,10 +12,11 @@
 
 version: '2'
 services:
-  # cello dashboard service
-  build-js:
-    image: node:9.3
-    volumes:  # This should be removed in product env
+  build-admin-js:
+    build:
+      context: $ROOT_PATH/src/themes/$THEME/static
+    image: build-$THEME
+    volumes:
       - ./src/$STATIC_FOLDER:/app
       - ./src/$TEMPLATE_FOLDER:/app/templates
     command: bash -c "cd /app && npm run build"
