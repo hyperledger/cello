@@ -10,6 +10,17 @@ from threading import Thread
 
 from modules import host_handler, cluster_handler
 from common import LOG_LEVEL, log_handler, SYS_DELETER, SYS_USER
+from mongoengine import connect
+import os
+
+MONGODB_DB = os.getenv('MONGODB_DB', 'dashboard')
+MONGODB_HOST = os.getenv('MONGODB_HOST', 'mongo')
+MONGODB_PORT = int(os.getenv('MONGODB_PORT', 27017))
+MONGODB_USERNAME = os.getenv('MONGODB_USERNAME', '')
+MONGODB_PASSWORD = os.getenv('MONGODB_PASSWORD', '')
+
+connect(MONGODB_DB, host=MONGODB_HOST, username=MONGODB_USERNAME,
+        password=MONGODB_PASSWORD, connect=False, tz_aware=True)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
@@ -46,6 +57,7 @@ def chain_check_health(chain_id, retries=3, period=5):
             cluster_handler.delete(chain_id)
         return
 
+    logger.info("will refresh health")
     # free or used by user, then check its health
     for i in range(retries):
         if cluster_handler.refresh_health(chain_id):  # chain is healthy
@@ -67,10 +79,11 @@ def host_check_chains(host_id):
     :param host_id:
     :return:
     """
+    host = host_handler.get_by_id(host_id)
     logger.debug("Host {}/{}: checking chains".format(
-        host_handler.get_by_id(host_id).get('name'), host_id))
-    clusters = cluster_handler.list(filter_data={"host_id": host_id,
-                                                 "status": "running"})
+        host.name, host_id))
+    clusters = cluster_handler.list(filter_data={
+        "status": "running"})
     for c in clusters:  # concurrent health check is safe for multi-chains
         t = Thread(target=chain_check_health, args=(c.get("id"),))
         t.start()
@@ -85,9 +98,9 @@ def host_check_fillup(host_id):
     :return:
     """
     host = host_handler.get_by_id(host_id)
-    if host.get("autofill") == "true":
+    if host.autofill:
         logger.info("Host {}/{}: checking auto-fillup".format(
-            host_handler.get_by_id(host_id).get('name'), host_id))
+            host_handler.get_by_id(host_id).name, host_id))
         host_handler.fillup(host_id)
 
 
@@ -104,7 +117,7 @@ def host_check(host_id, retries=3, period=3):
     for _ in range(retries):
         if host_handler.refresh_status(host_id):  # host is active
             logger.debug("Host {}/{} is active, start checking".format(
-                host_handler.get_by_id(host_id).get('name'), host_id))
+                host_handler.get_by_id(host_id).name, host_id))
             host_check_chains(host_id)
             time.sleep(period)
             host_check_fillup(host_id)

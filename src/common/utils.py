@@ -51,6 +51,10 @@ CA_SERVICE_PORTS = {
     'tlscaa': 7059,
 }
 
+ORDERER_SERVICE_PORTS = {
+    'orderer': 7050
+}
+
 EXPLORER_PORT = {
     'dashboard': 7060
 }

@@ -10,6 +10,7 @@ import random
 import sys
 import time
 from threading import Thread
+from uuid import uuid4
 
 from pymongo.collection import ReturnDocument
 
@@ -31,6 +32,9 @@ from common import \
 
 from agent import DockerHost, VsphereHost, KubernetesHost
 from modules import cluster
+from modules.models import Host as HostModel
+from modules.models import Cluster as ClusterModel
+from modules.models import HostSchema
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
@@ -92,7 +96,7 @@ class HostHandler(object):
             # params is None when host_type is either docker or swarm.
             worker_api = "tcp://" + worker_api
 
-        if self.col.find_one({"worker_api": worker_api}):
+        if HostModel.objects(worker_api=worker_api).count():
             logger.warning("{} already existed in db".format(worker_api))
             return {}
 
@@ -156,6 +160,7 @@ class HostHandler(object):
                 VCPORT: vc_port,
                 HOST_STATUS: HOST_STATUS_PENDING
             }
+            logger.debug("update {}".format(h_update))
             try:
                 if self.host_agents[host_type].create(worker_api,
                                                       vc_username,
@@ -168,39 +173,24 @@ class HostHandler(object):
                 logger.error("{}".format(e))
                 return {"msg": "{}".format(e)}
 
-        h = {
-            'id': '',
-            'name': name,
-            'worker_api': worker_api,
-            'create_ts': datetime.datetime.now(),
-            'capacity': capacity,
-            'status': 'active',
-            'clusters': [],
-            'type': host_type,
-            'log_level': log_level,
-            'log_type': log_type,
-            'log_server': log_server,
-            'autofill': autofill,
-            'schedulable': schedulable
-        }
-        hid = self.col.insert_one(h).inserted_id  # object type
-        host = self.db_update_one(
-            {"_id": hid},
-            {"$set": {"id": str(hid)}})
-
-        if params is not None:  # If params is not none, update extra info.
-            host = self.db_update_one(
-                {"id": str(hid)},
-                {"$set": h_update})
-            logger.info(host)
+        hid = uuid4().hex
+        host = HostModel(id=hid,
+                         name=name,
+                         worker_api=worker_api,
+                         capacity=capacity,
+                         type=host_type,
+                         log_level=log_level,
+                         log_type=log_type,
+                         log_server=log_server,
+                         autofill=autofill == "true",
+                         schedulable=schedulable == "true"
+                         )
+        host.save()
 
         if capacity > 0 and autofill == "true":  # should autofill it
             self.fillup(str(hid))
 
-        if serialization:
-            return self._serialize(host)
-        else:
-            return host
+        return self._schema(host)
 
     def get_by_id(self, id):
         """ Get a host
@@ -208,39 +198,40 @@ class HostHandler(object):
         :param id: id of the doc
         :return: serialized result or obj
         """
-        # logger.debug("Get a host with id=" + id)
-        ins = self.col.find_one({"id": id})
-        if not ins:
+        try:
+            ins = HostModel.objects.get(id=id)
+        except Exception:
             logger.warning("No host found with id=" + id)
-            return {}
-        return self._serialize(ins)
+            return None
 
-    def get_vc_params_by_id(self, id):
-        """ Get vCenter params while host type is vsphere
+        return ins
 
-        :param id: id of the doc
-        :return: serialized result or obj
-        """
-        ins = self.col.find_one({"id": id})
-        if not ins:
-            logger.warning("No host found with id=" + id)
-            return {}
-        return self._serialize(ins, keys=[VCUSERNAME,
-                                          VCPWD, VCPORT])
-
-    def get_vm_params_by_id(self, id):
-        """ Get VM params while host type is vsphere
-
-        :param id: id of the doc
-        :return: serialized result or obj
-        """
-        ins = self.col.find_one({"id": id})
-        if not ins:
-            logger.warning("No host found with id=" + id)
-            return {}
-        return self._serialize(ins, keys=[VMUUID,
-                                          VMIP,
-                                          VMNAME])
+    # def get_vc_params_by_id(self, id):
+    #     """ Get vCenter params while host type is vsphere
+    #
+    #     :param id: id of the doc
+    #     :return: serialized result or obj
+    #     """
+    #     ins = self.col.find_one({"id": id})
+    #     if not ins:
+    #         logger.warning("No host found with id=" + id)
+    #         return {}
+    #     return self._serialize(ins, keys=[VCUSERNAME,
+    #                                       VCPWD, VCPORT])
+    #
+    # def get_vm_params_by_id(self, id):
+    #     """ Get VM params while host type is vsphere
+    #
+    #     :param id: id of the doc
+    #     :return: serialized result or obj
+    #     """
+    #     ins = self.col.find_one({"id": id})
+    #     if not ins:
+    #         logger.warning("No host found with id=" + id)
+    #         return {}
+    #     return self._serialize(ins, keys=[VMUUID,
+    #                                       VMIP,
+    #                                       VMNAME])
 
     def update(self, id, d):
         """ Update a host's property
@@ -265,15 +256,16 @@ class HostHandler(object):
 
         if "capacity" in d:
             d["capacity"] = int(d["capacity"])
-        if d["capacity"] < len(h_old.get("clusters")):
+        if d["capacity"] < ClusterModel.objects(host=h_old).count():
             logger.warning("Cannot set cap smaller than running clusters")
             return {}
         if "log_server" in d and "://" not in d["log_server"]:
             d["log_server"] = "udp://" + d["log_server"]
         if "log_type" in d and d["log_type"] == CLUSTER_LOG_TYPES[0]:
             d["log_server"] = ""
-        h_new = self.db_set_by_id(id, **d)
-        return self._serialize(h_new)
+        self.db_set_by_id(id, **d)
+        h_new = self.get_by_id(id)
+        return self._schema(h_new)
 
     def list(self, filter_data={}):
         """ List hosts with given criteria
@@ -281,8 +273,9 @@ class HostHandler(object):
         :param filter_data: Image with the filter properties
         :return: iteration of serialized doc
         """
-        hosts = self.col.find(filter_data)
-        return list(map(self._serialize, hosts))
+        logger.info("filter data {}".format(filter_data))
+        hosts = HostModel.objects(__raw__=filter_data)
+        return self._schema(hosts, many=True)
 
     def delete(self, id):
         """ Delete a host instance
@@ -292,36 +285,34 @@ class HostHandler(object):
         """
         logger.debug("Delete a host with id={0}".format(id))
 
-        h = self.get_by_id(id)
-        if not h:
+        try:
+            h = HostModel.objects.get(id=id)
+        except Exception:
             logger.warning("Cannot delete non-existed host")
             return False
-        if h.get("clusters", ""):
-            logger.warning("There are clusters on that host, cannot delete.")
-            return False
 
-        host_type = h.get("type")
+        host_type = h.host.type
 
-        if host_type is None:
+        if ClusterModel.objects(host=h).count():
             logger.warning("Host type not found.")
             return False
 
         elif (host_type == WORKER_TYPE_DOCKER or
               host_type == WORKER_TYPE_SWARM):
-            self.host_agents[host_type].delete(h.get("worker_api"))
+            self.host_agents[host_type].delete(h.worker_api)
 
-        elif host_type == WORKER_TYPE_VSPHERE:
-            if h.get("status") == "pending":
-                return False
-            vc_params = self.get_vc_params_by_id(id)
-            vm_params = self.get_vm_params_by_id(id)
-            logger.info(vc_params)
-            self.host_agents[host_type].delete(vm_params.get(VMUUID),
-                                               h.get("worker_api"),
-                                               vc_params.get(VCUSERNAME),
-                                               vc_params.get(VCPWD),
-                                               vc_params.get(VCPORT))
-        self.col.delete_one({"id": id})
+        # elif host_type == WORKER_TYPE_VSPHERE:
+        #     if h.status == "pending":
+        #         return False
+        #     vc_params = self.get_vc_params_by_id(id)
+        #     vm_params = self.get_vm_params_by_id(id)
+        #     logger.info(vc_params)
+        #     self.host_agents[host_type].delete(vm_params.get(VMUUID),
+        #                                        h.worker_api,
+        #                                        vc_params.get(VCUSERNAME),
+        #                                        vc_params.get(VCPWD),
+        #                                        vc_params.get(VCPORT))
+        h.delete()
         return True
 
     @check_status
@@ -336,10 +327,11 @@ class HostHandler(object):
         host = self.get_by_id(id)
         if not host:
             return False
-        if host.get("status") != "active":
+        if host.status != "active":
             logger.warning("host {} is not active".format(id))
             return False
-        num_new = host.get("capacity") - len(host.get("clusters"))
+        clusters = ClusterModel.objects(host=host)
+        num_new = host.capacity - len(clusters)
         if num_new <= 0:
             logger.warning("host {} already full".format(id))
             return True
@@ -349,7 +341,7 @@ class HostHandler(object):
 
         def create_cluster_work(start_port):
             cluster_name = "{}_{}".format(
-                host.get("name"),
+                host.name,
                 int((start_port - CLUSTER_PORT_START) / CLUSTER_PORT_STEP))
             consensus_plugin = CONSENSUS_PLUGIN_SOLO
             cluster_size = random.choice(NETWORK_SIZE_FABRIC_V1)
@@ -383,23 +375,25 @@ class HostHandler(object):
         host = self.get_by_id(id)
         if not host:
             return False
-        if host.get("status") != "active":
+        clusters = ClusterModel.objects(host=host)
+        if host.status != "active":
             return False
 
-        if len(host.get("clusters")) <= 0:
+        if len(clusters) <= 0:
             return True
 
-        host = self.db_set_by_id(id, autofill="false")
-        schedulable_status = host.get("schedulable")
-        if schedulable_status == "true":
-            host = self.db_set_by_id(id, schedulable="false")
+        host = self.db_set_by_id(id, autofill=False)
+        schedulable_status = host.schedulable
+        if schedulable_status:
+            host = self.db_set_by_id(id, schedulable=False)
 
-        for cid in host.get("clusters"):
-            t = Thread(target=cluster.cluster_handler.delete, args=(cid,))
+        for cluster_item in clusters:
+            cid = str(cluster_item.id)
+            t = Thread(target=cluster_item.cluster_handler.delete, args=(cid,))
             t.start()
             time.sleep(0.2)
 
-        if schedulable_status == "true":
+        if schedulable_status:
             self.db_set_by_id(id, schedulable=schedulable_status)
 
         return True
@@ -413,15 +407,11 @@ class HostHandler(object):
         """
         logger.debug("clean host with id = {}".format(id))
         host = self.get_by_id(id)
-        logger.info(host)
-        if (not host or len(host.get("clusters")) > 0 or
-           host.get("status") != "active"):
+        if not host or ClusterModel.objects(host=host).count() > 0:
             logger.warning("No find resettable host with id ={}".format(id))
             return False
-        logger.info(host.get("type"))
-        logger.info(self.host_agents[host.get("type")])
-        return self.host_agents[host.get("type")].reset(
-            host_type=host.get("type"), worker_api=host.get("worker_api"))
+        return self.host_agents[host.type].reset(
+            host_type=host.type, worker_api=host.worker_api)
 
     def refresh_status(self, id):
         """
@@ -434,24 +424,14 @@ class HostHandler(object):
         if not host:
             logger.warning("No host found with id=" + id)
             return False
-
-        host_type = host.get("type")
-        if (host_type == WORKER_TYPE_DOCKER or
-           host_type == WORKER_TYPE_SWARM):
-            if not self.host_agents[host_type]\
-                    .refresh_status(host.get("worker_api")):
-                logger.warning("Host {} is inactive".format(id))
-                self.db_set_by_id(id, status="inactive")
+        if not self.host_agents[host.type]\
+                .refresh_status(host.worker_api):
+            logger.warning("Host {} is inactive".format(id))
+            self.db_set_by_id(id, status="inactive")
             return False
-        elif host_type == WORKER_TYPE_VSPHERE:
-            if not self.host_agents[host_type]\
-                    .refresh_status(host.get(VMIP) + ":2375"):
-                logger.warning("Host {} is inactive".format(id))
-                self.db_set_by_id(id, status="inactive")
-            return False
-
-        self.db_set_by_id(id, status="active")
-        return True
+        else:
+            self.db_set_by_id(id, status="active")
+            return True
 
     def is_active(self, host_id):
         """
@@ -464,7 +444,7 @@ class HostHandler(object):
         if not host:
             logger.warning("invalid host is given")
             return False
-        return host.get("status") == "active"
+        return host.status == "active"
 
     def get_active_host_by_id(self, id):
         """
@@ -474,15 +454,16 @@ class HostHandler(object):
         :return: host or None
         """
         logger.debug("check host with id = {}".format(id))
-        host = self.col.find_one({"id": id, "status": "active"})
-        if not host:
+        try:
+            host = HostModel.objects.get(id=id)
+        except Exception:
             logger.warning("No active host found with id=" + id)
-            return {}
-        return self._serialize(host)
+            return None
+        return host
 
     def _serialize(self, doc, keys=['id', 'name', 'worker_api', 'capacity',
                                     'type', 'create_ts', 'status', 'autofill',
-                                    'schedulable', 'clusters', 'log_level',
+                                    'schedulable', 'log_level',
                                     'log_type', 'log_server']):
         """ Serialize an obj
 
@@ -496,6 +477,13 @@ class HostHandler(object):
                 result[k] = doc.get(k, '')
         return result
 
+    def _schema(self, doc, many=False):
+        host_schema = HostSchema(many=many)
+        return host_schema.dump(doc).data
+
+    def schema(self, doc, many=False):
+        return self._schema(doc, many)
+
     def db_set_by_id(self, id, **kwargs):
         """
         Set the key:value pairs to the data
@@ -503,7 +491,14 @@ class HostHandler(object):
         :param kwargs: kv pairs
         :return: The updated host json dict
         """
-        return self.db_update_one({"id": id}, {"$set": kwargs})
+        kwargs = dict(('set__' + k, v)
+                      for (k, v) in locals().get("kwargs", {}).items())
+        HostModel.objects(id=id).update(
+            upsert=True,
+            **kwargs
+        )
+
+        return HostModel.objects.get(id=id)
 
     def db_update_one(self, filter, operations, after=True):
         """

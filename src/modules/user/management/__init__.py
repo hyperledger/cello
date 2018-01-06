@@ -9,3 +9,6 @@ from .update import UpdateUser
 from .delete import DeleteUser
 from .info import UserInfo
 from .search import UserSearch
+from .active import UserActive
+from .change_password import ChangePassword
+from .reset_password import ResetPassword

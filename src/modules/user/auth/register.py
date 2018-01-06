@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 from flask_restful import Resource, reqparse, fields, marshal_with
-from flask_login import login_required
 import logging
 import sys
 import os
@@ -13,8 +12,10 @@ import bcrypt
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 from common import log_handler, LOG_LEVEL
-from modules.models import ADMIN
 from modules.user.user import User
+
+ENABLE_EMAIL_ACTIVE = os.environ.get("ENABLE_EMAIL_ACTIVE", "False")
+ENABLE_EMAIL_ACTIVE = ENABLE_EMAIL_ACTIVE == "True"
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
@@ -47,8 +48,9 @@ class Register(Resource):
         salt = app.config.get("SALT", b"")
         password = bcrypt.hashpw(password.encode('utf8'), bytes(salt.encode()))
 
+        default_active = not ENABLE_EMAIL_ACTIVE
         try:
-            user = User(username, password)
+            user = User(username, password, active=default_active)
             user_id = user.save()
             user = user.get_by_id(user_id)
             data = {
