@@ -32,7 +32,7 @@ user_search_parser.add_argument('username',
 
 
 class UserSearch(Resource):
-    @login_required
+    # @login_required
     @marshal_with(user_search_fields)
     def get(self):
         """

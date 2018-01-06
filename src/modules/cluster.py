@@ -9,7 +9,9 @@ import os
 import sys
 import time
 import copy
+from uuid import uuid4
 from threading import Thread
+import socket
 
 import requests
 from pymongo.collection import ReturnDocument
@@ -26,7 +28,7 @@ from common import CLUSTER_PORT_START, CLUSTER_PORT_STEP, \
     WORKER_TYPE_VSPHERE, SYS_CREATOR, SYS_DELETER, SYS_USER, \
     SYS_RESETTING, VMIP, \
     NETWORK_SIZE_FABRIC_PRE_V1, \
-    PEER_SERVICE_PORTS, CA_SERVICE_PORTS, EXPLORER_PORT
+    PEER_SERVICE_PORTS, CA_SERVICE_PORTS, EXPLORER_PORT, ORDERER_SERVICE_PORTS
 
 from common import FabricPreNetworkConfig, FabricV1NetworkConfig
 from common.fabric_network import FabricV1Network
@@ -34,10 +36,23 @@ from common.fabric_network import FabricV1Network
 from modules import host
 
 from agent import ClusterOnDocker, ClusterOnVsphere
+from modules.models import Cluster as ClusterModel
+from modules.models import Host as HostModel
+from modules.models import ClusterSchema, CLUSTER_STATE, \
+    CLUSTER_STATUS, Container, ServicePort
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
 logger.addHandler(log_handler)
+
+peer_service_ports = {
+    'peer{}_org{}_grpc': 7051,
+    'peer{}_org{}_event': 7053,
+}
+
+ca_service_ports = {
+    'ca_org{}_ecap': 7054,
+}
 
 
 class ClusterHandler(object):
@@ -63,14 +78,13 @@ class ClusterHandler(object):
         :return: list of serialized doc
         """
         result = []
-        if col_name == "active":
-            logger.debug("List all active clusters")
-            result = list(map(self._serialize, self.col_active.find(
-                filter_data)))
-        elif col_name == "released":
-            logger.debug("List all released clusters")
-            result = list(map(self._serialize, self.col_released.find(
-                filter_data)))
+        if col_name in [e.name for e in CLUSTER_STATE]:
+            logger.debug("List all {} clusters".format(col_name))
+            filter_data.update({
+                "state": col_name
+            })
+            clusters = ClusterModel.objects(__raw__=filter_data)
+            result = self._schema(clusters, many=True)
         else:
             logger.warning("Unknown cluster col_name=" + col_name)
         return result
@@ -82,19 +96,19 @@ class ClusterHandler(object):
         :param col_name: collection to check
         :return: serialized result or obj
         """
-        if col_name != "released":
-            # logger.debug("Get a cluster with id=" + id)
-            cluster = self.col_active.find_one({"id": id})
-        else:
-            # logger.debug("Get a released cluster with id=" + id)
-            cluster = self.col_released.find_one({"id": id})
-        if not cluster:
+        try:
+            state = CLUSTER_STATE.active.name if \
+                col_name != CLUSTER_STATE.released.name else \
+                CLUSTER_STATE.released.name
+            logger.info("find state {} cluster".format(state))
+            cluster = ClusterModel.objects.get(id=id, state=state)
+        except Exception:
             logger.warning("No cluster found with id=" + id)
             return {}
-        return self._serialize(cluster)
+        return self._schema(cluster)
 
     def create(self, name, host_id, config, start_port=0,
-               user_id=""):
+               user_id=SYS_USER):
         """ Create a cluster based on given data
 
         TODO: maybe need other id generation mechanism
@@ -112,61 +126,91 @@ class ClusterHandler(object):
         logger.info("Create cluster {}, host_id={}, config={}, start_port={}, "
                     "user_id={}".format(name, host_id, config.get_data(),
                                         start_port, user_id))
+        size = int(config.get_data().get("size", 4))
 
         worker = self.host_handler.get_active_host_by_id(host_id)
         if not worker:
             return None
 
-        if worker.get("type") == WORKER_TYPE_VSPHERE:
+        if worker.type == WORKER_TYPE_VSPHERE:
             vm_params = self.host_handler.get_vm_params_by_id(host_id)
             docker_daemon = vm_params.get(VMIP) + ":2375"
             worker.update({"worker_api": "tcp://" + docker_daemon})
             logger.info(worker)
 
-        if len(worker.get("clusters")) >= worker.get("capacity"):
+        if ClusterModel.objects(host=worker).count() >= worker.capacity:
             logger.warning("host {} is already full".format(host_id))
             return None
 
-        worker_api = worker.get("worker_api")
+        worker_api = worker.worker_api
         logger.debug("worker_api={}".format(worker_api))
 
+        ca_num = 1
+        request_port_num = \
+            len(ORDERER_SERVICE_PORTS.items()) + \
+            len(ca_service_ports.items()) * ca_num + \
+            size * (len(peer_service_ports.items()))
+        logger.debug("request port number {}".format(request_port_num))
+        ports = []
+
         if start_port <= 0:
-            ports = self.find_free_start_ports(host_id, 1)
+            ports = self.find_free_start_ports(host_id, request_port_num)
             if not ports:
                 logger.warning("No free port is found")
                 return None
-            start_port = ports[0]
 
-        peer_mapped_ports, ca_mapped_ports, explorer_mapped_port, \
-            mapped_ports = {}, {}, {}, {}
-        for k, v in PEER_SERVICE_PORTS.items():
-            peer_mapped_ports[k] = v - PEER_SERVICE_PORTS['rest'] + start_port
-        for k, v in CA_SERVICE_PORTS.items():
-            ca_mapped_ports[k] = v - PEER_SERVICE_PORTS['rest'] + start_port
+        logger.debug("ports {}".format(ports))
+        peers_ports, ca_mapped_ports, orderer_service_ports,\
+            explorer_mapped_port, mapped_ports = \
+            {}, {}, {}, {}, {}
+        port_pos = 0
+
+        if size > 1:
+            org_num_list = [1, 2]
+            peer_num_end = int(size / 2)
+        else:
+            org_num_list = [1]
+            peer_num_end = 1
+
+        logger.debug("org num list {} peer_num_end {}".
+                     format(org_num_list, peer_num_end))
+
+        for org_num in org_num_list:
+            for peer_num in range(0, peer_num_end):
+                for k, v in peer_service_ports.items():
+                    peers_ports[k.format(peer_num, org_num)] = ports[port_pos]
+                    logger.debug("port_pos {}".format(port_pos))
+                    port_pos += 1
+        # for org_num in org_num_list:
+        for k, v in ca_service_ports.items():
+            ca_mapped_ports[k.format(1)] = ports[port_pos]
+            logger.debug("port_pos {}".format(port_pos))
+            port_pos += 1
+        for k, v in ORDERER_SERVICE_PORTS.items():
+            orderer_service_ports[k] = ports[port_pos]
+            logger.debug("port_pos {}".format(port_pos))
+            port_pos += 1
+
         for k, v in EXPLORER_PORT.items():
             explorer_mapped_port[k] = \
                 v - PEER_SERVICE_PORTS['rest'] + start_port
 
-        mapped_ports.update(peer_mapped_ports)
+        mapped_ports.update(peers_ports)
         mapped_ports.update(ca_mapped_ports)
+        mapped_ports.update(orderer_service_ports)
         mapped_ports.update(explorer_mapped_port)
-        logger.debug("mapped_ports={}".format(mapped_ports))
+        env_mapped_ports = dict(((k + '_port').upper(),
+                                 str(v)) for (k, v) in mapped_ports.items())
 
         network_type = config['network_type']
+        cid = uuid4().hex
         net = {  # net is a blockchain network instance
-            'id': '',
+            'id': cid,
             'name': name,
             'user_id': user_id or SYS_CREATOR,  # avoid applied
-            'host_id': host_id,
             'worker_api': worker_api,
             'network_type': network_type,  # e.g., fabric-1.0
-            'create_ts': datetime.datetime.now(),
-            'apply_ts': '',
-            'release_ts': '',
-            'status': 'running',
-            'containers': [],
-            'duration': '',
-            'health': ''
+            'env': env_mapped_ports
         }
         if network_type == NETWORK_TYPE_FABRIC_V1:  # TODO: fabric v1.0
             net.update({
@@ -181,46 +225,39 @@ class ClusterHandler(object):
 
         net.update(config.get_data())
 
-        uuid = self.col_active.insert_one(net).inserted_id  # object type
-        cid = str(uuid)
-        self.col_active.update_one({"_id": uuid}, {"$set": {"id": cid}})
         # try to start one cluster at the host
-        worker = self.host_handler.db_update_one(
-            {"id": host_id}, {"$addToSet": {"clusters": cid}})
-        # worker get worker_api from host collection
-        if worker.get("type") == WORKER_TYPE_VSPHERE:
-            worker.update({"worker_api": worker_api})
-
-        if not worker or len(worker.get("clusters")) > worker.get("capacity"):
-            self.col_active.delete_one({"id": cid})
-            self.host_handler.db_update_one({"id": host_id},
-                                            {"$pull": {"clusters": cid}})
-            return None
+        cluster = ClusterModel(**net)
+        cluster.host = worker
+        cluster.save()
 
         # from now on, we should be safe
 
         # start compose project, failed then clean and return
         logger.debug("Start compose project with name={}".format(cid))
-        containers = self.cluster_agents[worker.get('type')]\
-            .create(cid, mapped_ports, worker, config=config, user_id=user_id)
+        containers = self.cluster_agents[worker.type]\
+            .create(cid, mapped_ports, self.host_handler.schema(worker),
+                    config=config, user_id=user_id)
+        for k, v in containers.items():
+            container = Container(id=v, name=k, cluster=cluster)
+            container.save()
         if not containers:
             logger.warning("failed to start cluster={}, then delete"
                            .format(name))
             self.delete(id=cid, record=False, forced=True)
             return None
 
-        access_peer, access_ca, access_explorer = '', '', ''
+        access_peer, access_ca = '', ''
         if network_type == NETWORK_TYPE_FABRIC_V1:  # fabric v1.0
             access_peer = 'peer0.org1.example.com'
             access_ca = 'ca.example.com'
-            access_explorer = 'explorer'
+            # access_explorer = 'explorer'
         elif network_type == NETWORK_TYPE_FABRIC_PRE_V1:  # fabric v0.6
             access_peer = 'vp0'
             access_ca = 'membersrvc'
 
         peer_host_ip = self._get_service_ip(cid, access_peer)
         ca_host_ip = self._get_service_ip(cid, access_ca)
-        explorer_host_ip = self._get_service_ip(cid, access_explorer)
+        # explorer_host_ip = self._get_service_ip(cid, access_explorer)
         # no api_url, then clean and return
         if not peer_host_ip:  # not valid api_url
             logger.error("Error to find peer host url, cleanup")
@@ -228,21 +265,29 @@ class ClusterHandler(object):
             return None
 
         service_urls = {}
-        for k, v in peer_mapped_ports.items():
+        for k, v in peers_ports.items():
             service_urls[k] = "{}:{}".format(peer_host_ip, v)
 
         for k, v in ca_mapped_ports.items():
             service_urls[k] = "{}:{}".format(ca_host_ip, v)
 
-        for k, v in explorer_mapped_port.items():
-            service_urls[k] = "{}:{}".format(explorer_host_ip, v)
+        for k, v in orderer_service_ports.items():
+            service_urls[k] = "{}:{}".format(ca_host_ip, v)
 
+        for k, v in service_urls.items():
+            service_port = ServicePort(name=k, ip=v.split(":")[0],
+                                       port=int(v.split(":")[1]),
+                                       cluster=cluster)
+            service_port.save()
         # update api_url, container, and user_id field
         self.db_update_one(
             {"id": cid},
-            {"$set": {"containers": containers, "user_id": user_id,
-                      'api_url': service_urls['rest'],
-                      'service_url': service_urls}})
+            {
+                "user_id": user_id,
+                'api_url': service_urls.get('rest', ""),
+                'service_url': service_urls
+            }
+        )
 
         def check_health_work(cid):
             time.sleep(5)
@@ -266,40 +311,46 @@ class ClusterHandler(object):
         """
         logger.debug("Delete cluster: id={}, forced={}".format(id, forced))
 
-        c = self.db_update_one({"id": id}, {"$set": {"user_id": SYS_DELETER}},
-                               after=False)
-        if not c:
+        try:
+            cluster = ClusterModel.objects.get(id=id)
+        except Exception:
             logger.warning("Cannot find cluster {}".format(id))
             return False
+
+        c = self.db_update_one({"id": id}, {"user_id": SYS_DELETER},
+                               after=False)
         # we are safe from occasional applying now
-        user_id = c.get("user_id")  # original user_id
+        user_id = c.user_id  # original user_id
         if not forced and user_id != "" and not user_id.startswith(SYS_USER):
             # not forced, and chain is used by normal user, then no process
             logger.warning("Cannot delete cluster {} by "
                            "user {}".format(id, user_id))
-            self.col_active.update_one({"id": id},
-                                       {"$set": {"user_id": user_id}})
+            cluster.update(
+                set__user_id=user_id,
+                upsert=True
+            )
             return False
 
         # 0. forced
         #  1. user_id == SYS_DELETER or ""
         #  Then, add deleting flag to the db, and start deleting
         if not user_id.startswith(SYS_DELETER):
-            self.col_active.update_one(
-                {"id": id},
-                {"$set": {"user_id": SYS_DELETER + user_id}})
+            cluster.update(
+                set__user_id=SYS_DELETER + user_id,
+                upsert=True
+            )
         host_id, worker_api, network_type, consensus_plugin, cluster_size = \
-            c.get("host_id"), c.get("worker_api"), \
-            c.get("network_type", NETWORK_TYPE_FABRIC_PRE_V1), \
-            c.get("consensus_plugin", CONSENSUS_PLUGINS_FABRIC_V1[0]), \
-            c.get("size", NETWORK_SIZE_FABRIC_PRE_V1[0])
+            str(c.host.id), c.worker_api, \
+            c.network_type if c.network_type else NETWORK_TYPE_FABRIC_PRE_V1, \
+            c.consensus_plugin if c.consensus_plugin else \
+            CONSENSUS_PLUGINS_FABRIC_V1[0], \
+            c.size if c.size else NETWORK_SIZE_FABRIC_PRE_V1[0]
 
         # port = api_url.split(":")[-1] or CLUSTER_PORT_START
         h = self.host_handler.get_active_host_by_id(host_id)
         if not h:
             logger.warning("Host {} inactive".format(host_id))
-            self.col_active.update_one({"id": id},
-                                       {"$set": {"user_id": user_id}})
+            cluster.update(set__user_id=user_id, upsert=True)
             return False
 
         if network_type == NETWORK_TYPE_FABRIC_V1:
@@ -312,24 +363,16 @@ class ClusterHandler(object):
         else:
             return False
 
-        if not self.cluster_agents[h.get('type')].delete(id, worker_api,
-                                                         config):
+        config.update({
+            "env": cluster.env
+        })
+        if not self.cluster_agents[h.type].delete(id, worker_api,
+                                                  config):
             logger.warning("Error to run compose clean work")
-            self.col_active.update_one({"id": id},
-                                       {"$set": {"user_id": user_id}})
+            cluster.update(set__user_id=user_id, upsert=True)
             return False
 
-        self.host_handler.db_update_one({"id": c.get("host_id")},
-                                        {"$pull": {"clusters": id}})
-        self.col_active.delete_one({"id": id})
-        if record:  # record original c into release collection
-            logger.debug("Record the cluster info into released collection")
-            c["release_ts"] = datetime.datetime.now()
-            c["duration"] = str(c["release_ts"] - c["apply_ts"])
-            # seems mongo reject timedelta type
-            if user_id.startswith(SYS_DELETER):
-                c["user_id"] = user_id[len(SYS_DELETER):]
-            self.col_released.insert_one(c)
+        c.delete()
         return True
 
     def delete_released(self, id):
@@ -356,23 +399,21 @@ class ClusterHandler(object):
             c = self.col_active.find_one(filt)
             if c:
                 logger.debug("Already assigned cluster for " + user_id)
-                return self._serialize(c)
+                return self._schema(c)
         logger.debug("Try find available cluster for " + user_id)
-        hosts = self.host_handler.list({"status": "active",
-                                        "schedulable": "true"})
-        host_ids = [h.get("id") for h in hosts]
-        logger.debug("Find active and schedulable hosts={}".format(host_ids))
-        for h_id in host_ids:  # check each active and schedulable host
-            filt = {"user_id": "", "host_id": h_id, "health": "OK"}
-            filt.update(condition)
-            c = self.db_update_one(
-                filt,
-                {"$set": {"user_id": user_id,
-                          "apply_ts": datetime.datetime.now()}})
-            if c and c.get("user_id") == user_id:
-                logger.info("Now have cluster {} at {} for user {}".format(
-                    c.get("id"), h_id, user_id))
-                return self._serialize(c)
+        cluster = ClusterModel.\
+            objects(user_id=SYS_USER,
+                    network_type__icontains=condition.get("apply_type"),
+                    size=condition.get("size", 0),
+                    health="OK").first()
+        if cluster:
+            cluster.update(upsert=True, **{
+                "user_id": user_id,
+                "apply_ts": datetime.datetime.now()
+            })
+            logger.info("Now have cluster {} at {} for user {}".format(
+                cluster.id, cluster.host.id, user_id))
+            return self._schema(cluster)
         logger.warning("Not find matched available cluster for " + user_id)
         return {}
 
@@ -402,12 +443,12 @@ class ClusterHandler(object):
         """
         c = self.db_update_one(
             {"id": cluster_id},
-            {"$set": {"release_ts": datetime.datetime.now()}})
+            {"release_ts": datetime.datetime.now()})
         if not c:
             logger.warning("No cluster find for released with id {}".format(
                 cluster_id))
             return True
-        if not c.get("release_ts"):  # not have one
+        if not c.release_ts:  # not have one
             logger.warning("No cluster can be released for id {}".format(
                 cluster_id))
             return False
@@ -453,7 +494,7 @@ class ClusterHandler(object):
         )
         if result:
             self.db_update_one({"id": cluster_id},
-                               {"$set": {'status': 'running'}})
+                               {'status': 'running'})
             return True
         else:
             return False
@@ -497,7 +538,7 @@ class ClusterHandler(object):
         )
         if result:
             self.db_update_one({"id": cluster_id},
-                               {"$set": {'status': 'running'}})
+                               {'status': 'running'})
             return True
         else:
             return False
@@ -539,7 +580,7 @@ class ClusterHandler(object):
         )
         if result:
             self.db_update_one({"id": cluster_id},
-                               {"$set": {'status': 'stopped', 'health': ''}})
+                               {'status': 'stopped', 'health': ''})
             return True
         else:
             return False
@@ -556,10 +597,9 @@ class ClusterHandler(object):
 
         c = self.get_by_id(cluster_id)
         logger.debug("Run recreate_work in background thread")
-        cluster_name, host_id, mapped_ports, network_type, \
-            = \
-            c.get("name"), c.get("host_id"), \
-            c.get("mapped_ports"), c.get("network_type")
+        cluster_name, host_id, network_type, \
+            = c.get("name"), c.get("host_id"), \
+            c.get("network_type")
         if not self.delete(cluster_id, record=record, forced=True):
             logger.warning("Delete cluster failed with id=" + cluster_id)
             return False
@@ -576,7 +616,7 @@ class ClusterHandler(object):
         else:
             return False
         if not self.create(name=cluster_name, host_id=host_id,
-                           start_port=mapped_ports['rest'], config=config):
+                           config=config):
             logger.warning("Fail to recreate cluster {}".format(cluster_name))
             return False
         return True
@@ -590,7 +630,7 @@ class ClusterHandler(object):
         """
         logger.debug("Try reseting cluster {}".format(cluster_id))
         c = self.db_update_one({"id": cluster_id, "user_id": ""},
-                               {"$set": {"user_id": SYS_RESETTING}})
+                               {"user_id": SYS_RESETTING})
         if c.get("user_id") != SYS_RESETTING:  # not have one
             logger.warning("No free cluster can be reset for id {}".format(
                 cluster_id))
@@ -629,7 +669,7 @@ class ClusterHandler(object):
         if not host:
             logger.warning("No host found with cluster {}".format(cluster_id))
             return ""
-        worker_api, host_type = host.get('worker_api'), host.get('type')
+        worker_api, host_type = host.worker_api, host.type
         if host_type not in WORKER_TYPES:
             logger.warning("Found invalid host_type=%s".format(host_type))
             return ""
@@ -669,16 +709,19 @@ class ClusterHandler(object):
         if number <= 0:
             logger.warning("number {} <= 0".format(number))
             return []
-        if not self.host_handler.get_by_id(host_id):
+        host = self.host_handler.get_by_id(host_id)
+        if not host:
             logger.warning("Cannot find host with id={}", host_id)
             return ""
 
-        clusters_exists = self.col_active.find({"host_id": host_id})
-        clusters_valid = list(filter(lambda c: c.get("service_url"),
-                                     clusters_exists))
-        ports_existed = list(map(
-            lambda c: int(c["service_url"]["rest"].split(":")[-1]),
-            clusters_valid))
+        clusters_exists = ClusterModel.objects(host=host)
+        # clusters_valid = list(filter(lambda c: c.get("service_url"),
+        #                              clusters_exists))
+        # ports_existed = list(map(
+        #     lambda c: int(c["service_url"]["rest"].split(":")[-1]),
+        #     clusters_valid))
+        ports_existed = [service.port for service in
+                         ServicePort.objects(cluster__in=clusters_exists)]
 
         logger.debug("The ports existed: {}".format(ports_existed))
         if len(ports_existed) + number >= 1000:
@@ -727,27 +770,35 @@ class ClusterHandler(object):
 
             if len(peers) == cluster["size"]:
                 self.db_update_one({"id": cluster_id},
-                                   {"$set": {"health": "OK"}})
+                                   {"health": "OK"})
                 return True
             else:
                 logger.debug("checking result of cluster id={}".format(
                     cluster_id, peers))
                 self.db_update_one({"id": cluster_id},
-                                   {"$set": {"health": "FAIL"}})
+                                   {"health": "FAIL"})
                 return False
         elif cluster.get('network_type') == NETWORK_TYPE_FABRIC_V1:
-            logger.debug("Cluster_id ={}".format(cluster_id))
-            logger.debug("checking health of cluster={}".format(cluster))
-            health_status = FabricV1Network.\
-                health_check(cluster, cluster_id, timeout=5)
-            if health_status == "OK":
+            service_url = cluster.get("service_url", {})
+            health_ok = True
+            for url in service_url.values():
+                ip = url.split(":")[0]
+                port = int(url.split(":")[1])
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                result = sock.connect_ex((ip, port))
+                sock.close()
+                logger.debug("check {}:{} result {}".format(ip, port, result))
+                if result != 0:
+                    health_ok = False
+            if not health_ok:
                 self.db_update_one({"id": cluster_id},
-                                   {"$set": {"health": "OK"}})
+                                   {"health": "FAIL"})
+                return False
             else:
                 self.db_update_one({"id": cluster_id},
-                                   {"$set": {"health": "FAIL"}})
-            logger.debug("health_status: {}".format(health_status))
-            return health_status
+                                   {"health": "OK"})
+                return True
+        return True
 
     def db_update_one(self, filter, operations, after=True, col="active"):
         """
@@ -759,17 +810,29 @@ class ClusterHandler(object):
         :param col: collection to operate on
         :return: The updated host json dict
         """
-        if after:
-            return_type = ReturnDocument.AFTER
-        else:
-            return_type = ReturnDocument.BEFORE
-        if col == "active":
-            doc = self.col_active.find_one_and_update(
-                filter, operations, return_document=return_type)
-        else:
-            doc = self.col_released.find_one_and_update(
-                filter, operations, return_document=return_type)
-        return self._serialize(doc)
+        state = CLUSTER_STATE.active.name if col == "active" \
+            else CLUSTER_STATE.released.name
+        filter.update({
+            "state": state
+        })
+        logger.info("filter {} operations {}".format(filter, operations))
+        kwargs = dict(('set__' + k, v) for (k, v) in operations.items())
+        for k, v in kwargs.items():
+            logger.info("k {} v {}".format(k, v))
+        try:
+            ClusterModel.objects(id=filter.get("id")).update(
+                upsert=True,
+                **kwargs
+            )
+            doc = ClusterModel.objects.get(id=filter.get("id"))
+        except Exception as exc:
+            logger.info("exception {}".format(exc.message))
+            return None
+        return doc
+
+    def _schema(self, doc, many=False):
+        cluster_schema = ClusterSchema(many=many)
+        return cluster_schema.dump(doc).data
 
 
 cluster_handler = ClusterHandler()

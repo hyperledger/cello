@@ -29,6 +29,8 @@ def email(email_str):
     :return: email address string or raise exception
     """
     validator = StringValidator()
+    if email_str == "":
+        return email_str
     if validator.validate(email_str, ["is_email"]):
         return email_str
     else:

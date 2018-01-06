@@ -82,6 +82,27 @@ def _clean_project_containers(worker_api, name_prefix, timeout=5):
         logger.debug("Remove container {}".format(_))
 
 
+def _clean_project_networks(worker_api, name_prefix, timeout=5):
+    """
+    Clean cluster node networks
+
+    All containers with the name prefix will be removed.
+
+    :param worker_api: Docker daemon url
+    :param name_prefix: image name prefix
+    :param timeout: Time to wait for the response
+    :return: None
+    """
+    logger.debug("Clean project networks, worker_api={}, prefix={}".format(
+        worker_api, name_prefix))
+    client = Client(base_url=worker_api, version="auto", timeout=timeout)
+    networks = client.networks(names=["%s_default" % name_prefix])
+    id_removes = [e['Id'] for e in networks]
+    for network_id in id_removes:
+        client.remove_network(network_id)
+        logger.debug("Remove network id {}".format(network_id))
+
+
 def start_containers(worker_api, name_prefix, timeout=5):
     """Start containers with given prefix
 
@@ -365,6 +386,8 @@ def _compose_set_env(name, worker_api, mapped_ports=SERVICE_PORTS,
             'PBFT_GENERAL_MODE': config['consensus_mode'],
             'PBFT_GENERAL_N': str(config['size']),
         })
+    envs.update(config.get("env", {}))
+    logger.debug("envs {}".format(envs))
     os.environ.update(envs)
 
     for k, v in mapped_ports.items():
@@ -401,6 +424,7 @@ def compose_up(name, host, mapped_ports, config=None, timeout=5):
     try:
         template_path = COMPOSE_FILE_PATH + os.sep + config['network_type'] + \
             os.sep + log_type
+        logger.debug('template path {}'.format(template_path))
         project = get_project(template_path)
         containers = project.up(detached=True, timeout=timeout)
     except Exception as e:
@@ -436,6 +460,12 @@ def compose_clean(name, worker_api, config):
         _clean_project_containers(worker_api=worker_api, name_prefix=name)
     except Exception as e:
         logger.error("Error in clean compose project containers")
+        logger.error(e)
+        has_exception = True
+    try:
+        _clean_project_networks(worker_api=worker_api, name_prefix=name)
+    except Exception as e:
+        logger.error("Error in clean compose project networks")
         logger.error(e)
         has_exception = True
     try:

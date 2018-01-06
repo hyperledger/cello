@@ -13,8 +13,8 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME}_fabric-ca
     hostname: ca
   #  command: /go/src/github.com/hyperledger/fabric-ca/bin/ca server start -ca testdata/ec.pem -ca-key testdata/ec-key.pem -config testdata/testconfig.json
-    expose:
-      - "7054"
+    ports:
+      - ${CA_ORG1_ECAP_PORT}:7054
     command: fabric-ca-server start -b admin:adminpw
 
   orderer.example.com:  # There  can be multiple orderers
@@ -46,8 +46,8 @@ services:
       - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
       - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
       - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
-    expose:
-      - "7050"
+    ports:
+      - ${ORDERER_PORT}:7050
     volumes: # docker.sock is mapped as the default CORE_VM_ENDPOINT
       #- /var/run/docker.sock:/var/run/docker.sock
       - ${COMPOSE_PROJECT_PATH}/channel-artifacts/orderer.genesis.block:/var/hyperledger/orderer/orderer.genesis.block
@@ -91,9 +91,10 @@ services:
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org1.example.com:7051
       - CORE_PEER_LOCALMSPID=Org1MSP
     expose:
-      - "7051"  # Grpc
       - "7052"  # Peer CLI
-      - "7053"  # Peer Event
+    ports:
+      - ${PEER0_ORG1_GRPC_PORT}:7051
+      - ${PEER0_ORG1_EVENT_PORT}:7053
     volumes: # docker.sock is mapped as the default CORE_VM_ENDPOINT
       - /var/run/docker.sock:/var/run/docker.sock
       - ${COMPOSE_PROJECT_PATH}/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp:/etc/hyperledger/fabric/msp
@@ -137,9 +138,10 @@ services:
       - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org1.example.com:7051
       - CORE_PEER_LOCALMSPID=Org1MSP
     expose:
-      - "7051"  # Grpc
       - "7052"  # Peer CLI
-      - "7053"  # Peer Event
+    ports:
+      - ${PEER1_ORG1_GRPC_PORT}:7051
+      - ${PEER1_ORG1_EVENT_PORT}:7053
     volumes: # docker.sock is mapped as the default CORE_VM_ENDPOINT
       - /var/run/docker.sock:/var/run/docker.sock
       - ${COMPOSE_PROJECT_PATH}/crypto-config/peerOrganizations/org1.example.com/peers/peer1.org1.example.com/msp:/etc/hyperledger/fabric/msp
@@ -183,9 +185,10 @@ services:
       - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org2.example.com:7051
       - CORE_PEER_LOCALMSPID=Org2MSP
     expose:
-      - "7051"  # Grpc
       - "7052"  # Peer CLI
-      - "7053"  # Peer Event
+    ports:
+      - ${PEER0_ORG2_GRPC_PORT}:7051
+      - ${PEER0_ORG2_EVENT_PORT}:7053
     volumes: # docker.sock is mapped as the default CORE_VM_ENDPOINT
       - /var/run/docker.sock:/var/run/docker.sock
       - ${COMPOSE_PROJECT_PATH}/crypto-config/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/msp:/etc/hyperledger/fabric/msp
@@ -229,9 +232,10 @@ services:
       - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.org2.example.com:7051
       - CORE_PEER_LOCALMSPID=Org2MSP
     expose:
-      - "7051"  # Grpc
       - "7052"  # Peer CLI
-      - "7053"  # Peer Event
+    ports:
+      - ${PEER1_ORG2_GRPC_PORT}:7051
+      - ${PEER1_ORG2_EVENT_PORT}:7053
     volumes: # docker.sock is mapped as the default CORE_VM_ENDPOINT
       - /var/run/docker.sock:/var/run/docker.sock
       - ${COMPOSE_PROJECT_PATH}/crypto-config/peerOrganizations/org2.example.com/peers/peer1.org2.example.com/msp:/etc/hyperledger/fabric/msp

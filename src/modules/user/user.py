@@ -119,6 +119,17 @@ class User(UserMixin):
 
             return self
 
+    def set_active(self, active):
+        self.dbUser.update(set__active=active,
+                           upsert=True)
+
+    def update_password(self, password):
+        try:
+            self.dbUser.update(set__password=password,
+                               upsert=True)
+        except Exception as exc:
+            logger.info("error {}".format(exc.message))
+
     def update_profile(self, name, email, bio, url, location):
         """
         Update user profile
