@@ -105,8 +105,8 @@ command -v docker-compose >/dev/null 2>&1 || { echo_r >&2 "No docker-compose fou
 [ `sudo docker ps -qa|wc -l` -gt 0 ] \
 	&& echo_r "Warn: existing containers may cause unpredictable failure, suggest to clean them using docker rm"
 
-echo_b "Download dependent Images..."
-#bash ./download_images.sh
+echo_b "Download required Docker images..."
+bash ./download_images.sh
 
 echo_b "Checking local mounted database path ${DB_DIR}..."
 [ ! -d ${DB_DIR} ] \

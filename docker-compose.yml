@@ -119,6 +119,7 @@ services:
       - USERNAME=admin
       - PASSWORD=pass
 
+ #TODO: need to follow other images to put at dockerhub
   user-dashboard:
     build:
       context: user-dashboard

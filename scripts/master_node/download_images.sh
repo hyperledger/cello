@@ -23,10 +23,15 @@ else
 	}
 fi
 
-echo_b "This script will setup the docker images for master node"
-echo_b "Pull python:3.5, mongo:3.2, mongo-express:0.30(optional for debugging) and yeasy/nginx"
+echo_b "Downloading the docker images for master node"
 
-docker pull python:3.5 \
-	&& docker pull mongo:3.2 \
-	&& docker pull mongo-express:0.30 \
-	&& docker pull yeasy/nginx:latest
+
+ARCH=$(uname -m)
+
+docker pull node:9.2 \
+	&& docker pull hyperledger/cello-baseimage:${ARCH}-latest \
+	&& docker pull hyperledger/cello-mongo:${ARCH}-latest \
+	&& docker pull hyperledger/cello-nginx:${ARCH}-latest \
+	&& docker tag hyperledger/cello-baseimage:${ARCH}-latest hyperledger/cello-baseimage \
+	&& docker tag hyperledger/cello-mongo:${ARCH}-latest hyperledger/cello-mongo \
+	&& docker tag hyperledger/cello-nginx:${ARCH}-latest hyperledger/cello-nginx
