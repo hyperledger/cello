@@ -291,7 +291,7 @@ class HostHandler(object):
             logger.warning("Cannot delete non-existed host")
             return False
 
-        host_type = h.host.type
+        host_type = h.type
 
         if ClusterModel.objects(host=h).count():
             logger.warning("Host type not found.")
