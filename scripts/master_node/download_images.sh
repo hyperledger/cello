@@ -25,13 +25,23 @@ fi
 
 echo_b "Downloading the docker images for master node"
 
+# TODO: will be removed after we have the user dashboard image
+echo_b "Check node:9.2 image."
+[ -z "$(docker images -q node:9.2 2> /dev/null)" ] && { echo "pulling node:9.2"; docker pull node:9.2; }
 
+# docker image
 ARCH=$(uname -m)
+VERSION=latest
 
-docker pull node:9.2 \
-	&& docker pull hyperledger/cello-baseimage:${ARCH}-latest \
-	&& docker pull hyperledger/cello-mongo:${ARCH}-latest \
-	&& docker pull hyperledger/cello-nginx:${ARCH}-latest \
-	&& docker tag hyperledger/cello-baseimage:${ARCH}-latest hyperledger/cello-baseimage \
-	&& docker tag hyperledger/cello-mongo:${ARCH}-latest hyperledger/cello-mongo \
-	&& docker tag hyperledger/cello-nginx:${ARCH}-latest hyperledger/cello-nginx
+for IMG in baseimage mongo nginx ; do
+	HC_IMG=hyperledger/cello-${IMG}
+	if [ -z "$(docker images -q ${HC_IMG} 2> /dev/null)" ]; then  # not exist
+		echo_b "Pulling ${HC_IMG}:${ARCH}-${VERSION} from dockerhub"
+		docker pull ${HC_IMG}:${ARCH}-${VERSION}
+		docker tag ${HC_IMG}:${ARCH}-${VERSION} ${HC_IMG}
+	else
+		echo_g "${HC_IMG} already exist locally"
+	fi
+done
+
+echo_g "All Image downloaded "

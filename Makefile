@@ -7,15 +7,15 @@
 # This makefile defines the following targets
 #
 #   - all (default):  Builds all targets and runs all tests/checks
-#   - checks:         Runs all tests/checks, will be triggered by CI
+#   - checks:         Setup as master node, and runs all tests/checks, will be triggered by CI
 #   - clean:          Cleans the build area
 #   - doc:            Start a local web service to explore the documentation
-#   - docker[-clean]: Ensures all docker images are available[/cleaned]
+#   - docker[-clean]: Build/clean docker images locally
 #   - help:           Output the help instructions for each command
 #   - log:            Check the recent log output of all services
 #   - restart:        Stop the cello service and then start
-#   - setup-master:   Setup the host as a master node
-#   - setup-worker:   Setup the host as a worker node
+#   - setup-master:   Setup the host as a master node, install pkg and download docker images
+#   - setup-worker:   Setup the host as a worker node, install pkg and download docker images
 #   - start:          Start the cello service
 #   - stop:           Stop the cello service, and remove all service containers
 
@@ -100,7 +100,7 @@ build/docker/baseimage/$(DUMMY): build/docker/baseimage/$(DUMMY)
 build/docker/nginx/$(DUMMY): build/docker/nginx/$(DUMMY)
 build/docker/mongo/$(DUMMY): build/docker/mongo/$(DUMMY)
 
-build/docker/%/$(DUMMY):
+build/docker/%/$(DUMMY): ##@Build an image locally
 	$(eval TARGET = ${patsubst build/docker/%/$(DUMMY),%,${@}})
 	$(eval IMG_NAME = $(BASENAME)-$(TARGET))
 	@mkdir -p $(@D)
@@ -110,12 +110,10 @@ build/docker/%/$(DUMMY):
 		| sed -e 's|_NS_|$(DOCKER_NS)|g' \
 		| sed -e 's|_TAG_|$(IMG_TAG)|g' \
 		> $(@D)/Dockerfile
-	if [ "$$(docker images -q $(IMG_NAME) 2> /dev/null)" == "" ]; then \
-		docker build -f $(@D)/Dockerfile \
-			-t $(IMG_NAME) \
-			-t $(IMG_NAME):$(IMG_TAG) \
-			. ; \
-	fi
+	docker build -f $(@D)/Dockerfile \
+		-t $(IMG_NAME) \
+		-t $(IMG_NAME):$(IMG_TAG) \
+		. ; \
 	@touch $@
 
 build/docker/%/.push: build/docker/%/$(DUMMY)
@@ -124,7 +122,7 @@ build/docker/%/.push: build/docker/%/$(DUMMY)
 		--password=$(DOCKER_HUB_PASSWORD)
 	@docker push $(BASENAME)-$(patsubst build/docker/%/.push,%,$@):$(IMG_TAG)
 
-docker: $(patsubst %,build/docker/%/$(DUMMY),$(DOCKER_IMAGES))
+docker: $(patsubst %,build/docker/%/$(DUMMY),$(DOCKER_IMAGES)) ##@Generate docker images locally
 
 docker-clean: image-clean ##@Clean all existing images
 
@@ -148,7 +146,7 @@ changelog: ##@Update the changelog.md file in the root folder
 	#bash scripts/changelog.sh bd0c6db v$(PREV_VERSION)
 	bash scripts/changelog.sh v$(PREV_VERSION) HEAD
 
-doc: ##@Create local online documentation
+doc: ##@Create local online documentation and start serve
 	pip install mkdocs
 	mkdocs serve
 
@@ -183,9 +181,9 @@ initial-env: ##@Configuration Initial Configuration for dashboard
 	$(SED) 's/\(WEBROOT=\).*/\1${WEBROOT}/' .env
 	$(SED) 's/\(THEME=\).*/\1${THEME}/' .env
 
-start: docker ##@Service Start service
+start: ##@Service Start service
 	@$(MAKE) $(START_OPTIONS)
-	echo "Start all services..."
+	echo "Start all services... docker images must exist local now, otherwise, run `make setup-master first` !"
 	docker-compose up -d --no-recreate
 
 stop: ##@Service Stop service
@@ -196,7 +194,7 @@ stop: ##@Service Stop service
 
 restart: stop start ##@Service Restart service
 
-setup-master: docker ##@Environment Setup dependency for master node
+setup-master: ##@Environment Setup dependency for master node
 	cd scripts/master_node && bash setup.sh
 
 setup-worker: ##@Environment Setup dependency for worker node

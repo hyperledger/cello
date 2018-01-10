@@ -31,6 +31,8 @@ $ git clone http://gerrit.hyperledger.org/r/cello && cd cello
 
 For the first time running, please setup the master node with the [setup.sh](https://github.com/hyperledger/cello/blob/master/scripts/master_node/setup.sh).
 
+Just run (safe to repeat it):
+
 ```sh
 $ make setup-master
 ```
@@ -48,7 +50,7 @@ $ make start
 
 To stop or restart the whole services, run `make stop` or `make restart`.
 
-#### Redploy a service
+#### Redeploy a service
 To redeploy one specific service, e.g., dashboard, please run
 
 ```sh
@@ -83,8 +85,8 @@ Please keep it safe by backups or using more high-available solutions.
 
 In MacOS, Docker cannot mount local path from host by default. Hence for mongo container data volume, users need to:
 
-* Make sure the `/opt/cello` path exists locally, and it is writable for the current user account. `make setup-master` should handle this already.
-* Add the path to sharing list in the preference of [Docker for MacOS](https://docs.docker.com/docker-for-mac/install/), to make it mountable by container.
+* Make sure the `/opt/cello` path exists locally, and it is writable for the current user account. Simply just run `make setup-master`.
+* Add the path to `File Sharing` list in the preference of [Docker for MacOS](https://docs.docker.com/docker-for-mac/install/), to make it mountable by container.
 
 ## Cello Baseimage
 ![BaseImage](imgs/cello_baseimage.png)
@@ -94,7 +96,7 @@ required for supporting a Hyperledger Cello environment. The build process is ge
 inefficient to JIT assemble these components on demand. Hence bundled into baseimage and subsequently cached on
 the public repositories, so they can be simply consumed without requiring a local build cycle.
 
-### Usuage
+### Usage
 * "make docker" will build the docker images and commit it to your local environment; e.g. "hyperledger/cello-baseimage".
 The docker image is also tagged with architecture and release details.
 
