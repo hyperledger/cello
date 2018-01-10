@@ -56,7 +56,7 @@ class ClusterOnDocker(ClusterBase):
         if not containers:
             logger.warning("failed to create cluster, with container={}"
                            .format(containers))
-            return []
+            return {}
         else:
             logger.debug("Created containers={}".format(containers))
             return containers

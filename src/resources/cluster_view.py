@@ -34,6 +34,8 @@ def cluster_info_show(cluster_id):
         cluster_id, r.args.get('released', '0'), r.method))
     released = (r.args.get('released', '0') != '0')
     if not released:
+        logger.debug("cluster_info.html: item={}".format(
+            cluster_handler.get_by_id(cluster_id)))
         return render_template("cluster_info.html",
                                item=cluster_handler.get_by_id(cluster_id),
                                consensus_plugins=CONSENSUS_PLUGINS_FABRIC_V1)

@@ -206,6 +206,7 @@ def detect_daemon_type(worker_api, timeout=5):
                 return WORKER_TYPES[1]
         except Exception as e:
             logger.debug(e)
+            logger.debug("Try Swarm mode failed, should be docker host")
         return WORKER_TYPES[0]
     except Exception as e:
         logger.error(e)

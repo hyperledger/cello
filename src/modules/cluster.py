@@ -151,19 +151,20 @@ class ClusterHandler(object):
             len(ca_service_ports.items()) * ca_num + \
             size * (len(peer_service_ports.items()))
         logger.debug("request port number {}".format(request_port_num))
-        ports = []
 
         if start_port <= 0:
             ports = self.find_free_start_ports(host_id, request_port_num)
             if not ports:
                 logger.warning("No free port is found")
                 return None
+        else:
+            ports = [i for i in
+                     range(start_port, start_port + request_port_num)]
 
         logger.debug("ports {}".format(ports))
         peers_ports, ca_mapped_ports, orderer_service_ports,\
             explorer_mapped_port, mapped_ports = \
             {}, {}, {}, {}, {}
-        port_pos = 0
 
         if size > 1:
             org_num_list = [1, 2]
@@ -175,21 +176,22 @@ class ClusterHandler(object):
         logger.debug("org num list {} peer_num_end {}".
                      format(org_num_list, peer_num_end))
 
+        pos = 0
         for org_num in org_num_list:
             for peer_num in range(0, peer_num_end):
                 for k, v in peer_service_ports.items():
-                    peers_ports[k.format(peer_num, org_num)] = ports[port_pos]
-                    logger.debug("port_pos {}".format(port_pos))
-                    port_pos += 1
+                    peers_ports[k.format(peer_num, org_num)] = ports[pos]
+                    logger.debug("pos {}".format(pos))
+                    pos += 1
         # for org_num in org_num_list:
         for k, v in ca_service_ports.items():
-            ca_mapped_ports[k.format(1)] = ports[port_pos]
-            logger.debug("port_pos {}".format(port_pos))
-            port_pos += 1
+            ca_mapped_ports[k.format(1)] = ports[pos]
+            logger.debug("pos={}".format(pos))
+            pos += 1
         for k, v in ORDERER_SERVICE_PORTS.items():
-            orderer_service_ports[k] = ports[port_pos]
-            logger.debug("port_pos {}".format(port_pos))
-            port_pos += 1
+            orderer_service_ports[k] = ports[pos]
+            logger.debug("pos={}".format(pos))
+            pos += 1
 
         for k, v in EXPLORER_PORT.items():
             explorer_mapped_port[k] = \
@@ -234,17 +236,17 @@ class ClusterHandler(object):
 
         # start compose project, failed then clean and return
         logger.debug("Start compose project with name={}".format(cid))
-        containers = self.cluster_agents[worker.type]\
+        containers = self.cluster_agents[worker.type] \
             .create(cid, mapped_ports, self.host_handler.schema(worker),
                     config=config, user_id=user_id)
-        for k, v in containers.items():
-            container = Container(id=v, name=k, cluster=cluster)
-            container.save()
         if not containers:
             logger.warning("failed to start cluster={}, then delete"
                            .format(name))
             self.delete(id=cid, record=False, forced=True)
             return None
+        for k, v in containers.items():
+            container = Container(id=v, name=k, cluster=cluster)
+            container.save()
 
         access_peer, access_ca = '', ''
         if network_type == NETWORK_TYPE_FABRIC_V1:  # fabric v1.0
@@ -279,6 +281,7 @@ class ClusterHandler(object):
                                        port=int(v.split(":")[1]),
                                        cluster=cluster)
             service_port.save()
+
         # update api_url, container, and user_id field
         self.db_update_one(
             {"id": cid},
