@@ -484,11 +484,11 @@ class ClusterHandler(object):
         else:
             return False
 
-        result = self.cluster_agents[h.get('type')].start(
-            name=cluster_id, worker_api=h.get('worker_api'),
+        result = self.cluster_agents[h.type].start(
+            name=cluster_id, worker_api=h.worker_api,
             mapped_ports=c.get('mapped_ports', PEER_SERVICE_PORTS),
-            log_type=h.get('log_type'),
-            log_level=h.get('log_level'),
+            log_type=h.log_type,
+            log_level=h.log_level,
             log_server='',
             config=config,
         )
@@ -528,11 +528,11 @@ class ClusterHandler(object):
         else:
             return False
 
-        result = self.cluster_agents[h.get('type')].restart(
-            name=cluster_id, worker_api=h.get('worker_api'),
+        result = self.cluster_agents[h.type].restart(
+            name=cluster_id, worker_api=h.worker_api,
             mapped_ports=c.get('mapped_ports', PEER_SERVICE_PORTS),
-            log_type=h.get('log_type'),
-            log_level=h.get('log_level'),
+            log_type=h.log_type,
+            log_level=h.log_level,
             log_server='',
             config=config,
         )
@@ -570,11 +570,11 @@ class ClusterHandler(object):
                 size=c.get('size'))
         else:
             return False
-        result = self.cluster_agents[h.get('type')].stop(
-            name=cluster_id, worker_api=h.get('worker_api'),
+        result = self.cluster_agents[h.type].stop(
+            name=cluster_id, worker_api=h.worker_api,
             mapped_ports=c.get('mapped_ports', PEER_SERVICE_PORTS),
-            log_type=h.get('log_type'),
-            log_level=h.get('log_level'),
+            log_type=h.log_type,
+            log_level=h.log_level,
             log_server='',
             config=config,
         )
