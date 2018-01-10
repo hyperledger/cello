@@ -281,8 +281,8 @@ services:
       - peer0.org2.example.com
       - peer1.org2.example.com
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
-    command: bash -c 'sleep 2; bash ./scripts/initialize.sh; while true; do sleep 20170504; done'
-
+    #command: bash -c 'sleep 2; bash ./scripts/initialize.sh; while true; do sleep 20170504; done'
+    command: bash -c 'sleep 2; while true; do sleep 20170504; done'
 
   explorer:
     image: yeasy/blockchain-explorer:latest
@@ -306,7 +306,7 @@ services:
       - peer1.org1.example.com
       - peer0.org2.example.com
       - peer1.org2.example.com
-    command: bash -c 'sleep 10; node main.js'
+    command: bash -c 'sleep 30; node main.js'
 
   mysql: # mysql service
     image: mysql:5.7
@@ -322,8 +322,6 @@ services:
     expose:
       - "3306"
     command: mysqld
-
-
 
 networks:
   default:

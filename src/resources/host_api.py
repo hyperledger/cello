@@ -102,7 +102,7 @@ def host_create():
                 'vcpus': int(r.form['vm_cpus']),
                 'memory': int(r.form['vm_memory'])}}
 
-        logger.debug("name={}, capacity={}"
+        logger.debug("name={}, capacity={},"
                      "fillup={}, schedulable={}, log={}/{}, vsphere_param={}".
                      format(name, capacity, autofill, schedulable,
                             log_type, log_server, vsphere_param))
