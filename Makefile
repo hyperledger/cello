@@ -113,8 +113,8 @@ build/docker/%/$(DUMMY): ##@Build an image locally
 	docker build -f $(@D)/Dockerfile \
 		-t $(IMG_NAME) \
 		-t $(IMG_NAME):$(IMG_TAG) \
-		. ; \
-	@touch $@
+		. ;
+	@touch $@ ;
 
 build/docker/%/.push: build/docker/%/$(DUMMY)
 	@docker login \
