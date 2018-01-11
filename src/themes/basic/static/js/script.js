@@ -367,14 +367,14 @@ $(document).ready(function () {
   });
 
   $('#newClusterModal').on('shown.bs.modal', function (e) {
-    var selected = $("#newClusterModal #consensus_plugin option:selected").text();
+    var selected_plugin = $("#newClusterModal #consensus_plugin option:selected").text();
     $('#newClusterModal #consensus_plugin').change(function () {
-      selected = $("#newClusterModal #consensus_plugin option:selected").text().toUpperCase();
-      console.log(selected);
-      if (selected == 'NOOPS') {
-        $('#newClusterModal #form_consensus_mode').hide(200);
-      } else {
+      selected_plugin = $("#newClusterModal #consensus_plugin option:selected").text().toUpperCase();
+      console.log(selected_plugin);
+      if (selected_plugin == 'PBFT') {
         $('#newClusterModal #form_consensus_mode').show(200);
+      } else {
+        $('#newClusterModal #form_consensus_mode').hide(200);
       }
     })
   });

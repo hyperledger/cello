@@ -34,13 +34,13 @@ ARCH=$(uname -m)
 VERSION=latest
 
 for IMG in baseimage mongo nginx ; do
-	HC_IMG=hyperledger/cello-${IMG}
-	if [ -z "$(docker images -q ${HC_IMG} 2> /dev/null)" ]; then  # not exist
-		echo_b "Pulling ${HC_IMG}:${ARCH}-${VERSION} from dockerhub"
-		docker pull ${HC_IMG}:${ARCH}-${VERSION}
-		docker tag ${HC_IMG}:${ARCH}-${VERSION} ${HC_IMG}
+	HLC_IMG=hyperledger/cello-${IMG}
+	if [ -z "$(docker images -q ${HLC_IMG} 2> /dev/null)" ]; then  # not exist
+		echo_b "Pulling ${HLC_IMG}:${ARCH}-${VERSION} from dockerhub"
+		docker pull ${HLC_IMG}:${ARCH}-${VERSION}
+		docker tag ${HLC_IMG}:${ARCH}-${VERSION} ${HLC_IMG}
 	else
-		echo_g "${HC_IMG} already exist locally"
+		echo_g "${HLC_IMG} already exist locally"
 	fi
 done
 

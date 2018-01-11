@@ -138,7 +138,7 @@ test-case: ##@Code Run test case for flask server
 
 clean: ##@Code Clean tox result
 	rm -rf .tox .cache *.egg-info build/
-	find . -name "*.pyc" -o -name "__pycache__" -exec rm -rf "{}" \;
+	find . -name "*.pyc" -o -name "__pycache__" | xargs rm -rf
 
 # TODO (david_dornseier): As long as there are no release versions, always rewrite
 # the entire changelog (bug)
@@ -183,7 +183,7 @@ initial-env: ##@Configuration Initial Configuration for dashboard
 
 start: ##@Service Start service
 	@$(MAKE) $(START_OPTIONS)
-	echo "Start all services... docker images must exist local now, otherwise, run `make setup-master first` !"
+	echo "Start all services... docker images must exist local now, otherwise, run 'make setup-master first' !"
 	docker-compose up -d --no-recreate
 
 stop: ##@Service Stop service

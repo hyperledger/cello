@@ -130,6 +130,7 @@ class ClusterHandler(object):
 
         worker = self.host_handler.get_active_host_by_id(host_id)
         if not worker:
+            logger.error("Cannot find available host to create new network")
             return None
 
         if worker.type == WORKER_TYPE_VSPHERE:

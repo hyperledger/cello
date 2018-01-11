@@ -13,7 +13,8 @@ from flask import request as r
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from common import log_handler, LOG_LEVEL, \
     request_debug, NETWORK_TYPES, \
-    CONSENSUS_PLUGINS_FABRIC_V1, CONSENSUS_MODES, NETWORK_SIZE_FABRIC_V1
+    CONSENSUS_PLUGINS_FABRIC_V1, NETWORK_SIZE_FABRIC_V1, \
+    CONSENSUS_MODES_FABRIC_V1
 from modules import cluster_handler, host_handler
 from flask_login import login_required
 
@@ -75,10 +76,12 @@ def clusters_show():
     hosts = list(host_handler.list())
     hosts_avail = list(filter(lambda e: e["status"] == "active" and len(
         e["clusters"]) < e["capacity"], hosts))
+
+    # TODO: need to use consensus_type as the combination of plugin+mode
     return render_template("clusters.html", type=show_type, col_name=col_name,
                            items_count=total_items, items=clusters,
                            hosts_available=hosts_avail,
                            network_type=NETWORK_TYPES,
                            consensus_plugins=CONSENSUS_PLUGINS_FABRIC_V1,
-                           consensus_modes=CONSENSUS_MODES,
+                           consensus_modes=CONSENSUS_MODES_FABRIC_V1,
                            cluster_sizes=NETWORK_SIZE_FABRIC_V1)
