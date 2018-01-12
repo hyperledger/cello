@@ -41,6 +41,9 @@ class DockerHost(HostBase):
         self.col = db["host"]
         self.host_type = host_type
 
+    def is_active(self, *args):
+        return check_daemon(args[1])
+
     def create(self, worker_api):
         """ Create a new docker host node
 

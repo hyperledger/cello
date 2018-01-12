@@ -390,11 +390,11 @@ class HostHandler(object):
         """
         logger.debug("clean host with id = {}".format(id))
         host = self.get_by_id(id)
-        if not host or ClusterModel.objects(host=host).count() > 0:
+        if not host or ClusterModel.objects(host=host).count() < 0:
             logger.warning("No find resettable host with id ={}".format(id))
             return False
-        return self.host_agents[host.type].reset(
-            host_type=host.type, worker_api=host.worker_api)
+        host_type = host.type
+        return self.host_agents[host_type].reset(host_type, host.worker_api)
 
     def refresh_status(self, id):
         """
@@ -410,10 +410,10 @@ class HostHandler(object):
         if not self.host_agents[host.type]\
                 .refresh_status(host.worker_api):
             logger.warning("Host {} is inactive".format(id))
-            self.db_set_by_id(id, status="inactive")
+            self.db_set_by_id(id, **{"status": "inactive"})
             return False
         else:
-            self.db_set_by_id(id, status="active")
+            self.db_set_by_id(id, **{"status": "active"})
             return True
 
     def is_active(self, host_id):

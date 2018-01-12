@@ -19,6 +19,8 @@ from common import log_handler, LOG_LEVEL, \
     request_debug
 
 from modules import host_handler
+from modules.models import Cluster as ClusterModel
+from modules.models import Host as HostModel
 from agent import detect_daemon_type
 
 logger = logging.getLogger(__name__)
@@ -246,6 +248,13 @@ def host_actions():
         elif action == "reset":
             if host_handler.reset(host_id):
                 logger.debug("reset successfully")
+                try:
+                    host_model = HostModel.objects.get(id=host_id)
+                    clusters = ClusterModel.objects(host=host_model)
+                    for cluster_item in clusters:
+                        cluster_item.delete()
+                except Exception:
+                    pass
                 return make_ok_resp()
             else:
                 error_msg = "Failed to reset the host."
