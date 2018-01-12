@@ -28,21 +28,48 @@ HLF_VERSION=1.0.5  # TODO: should be the same with src/common/utils.py
 
 echo_b "Downloading fabric images from DockerHub...with tag = ${IMG_TAG}... need a while"
 # TODO: we may need some checking on pulling result?
-docker pull hyperledger/fabric-peer:$ARCH-$IMG_TAG
-docker pull hyperledger/fabric-tools:$ARCH-$IMG_TAG
-docker pull hyperledger/fabric-orderer:$ARCH-$IMG_TAG
-docker pull hyperledger/fabric-ca:$ARCH-$IMG_TAG
-docker pull hyperledger/fabric-ccenv:$ARCH-$IMG_TAG
-docker pull hyperledger/fabric-baseimage:$ARCH-$BASEIMAGE_RELEASE
-docker pull hyperledger/fabric-baseos:$ARCH-$BASEIMAGE_RELEASE
+for IMG in peer tools orderer ca ccenv; do
+	HLF_IMG=hyperledger/fabric-${IMG}:$ARCH-$IMG_TAG
+	if [ -z "$(docker images -q ${HLF_IMG} 2> /dev/null)" ]; then  # not exist
+		docker pull ${HLF_IMG}
+	else
+		echo_g "${HLF_IMG} already exist locally"
+	fi
+done
+
+HLF_IMG=hyperledger/fabric-baseimage:$ARCH-$BASEIMAGE_RELEASE
+[ -z "$(docker images -q ${HLF_IMG} 2> /dev/null)" ] && docker pull ${HLF_IMG}
+HLF_IMG=hyperledger/fabric-baseos:$ARCH-$BASEIMAGE_RELEASE
+[ -z "$(docker images -q ${HLF_IMG} 2> /dev/null)" ] && docker pull ${HLF_IMG}
 
 # Only useful for debugging
 # docker pull yeasy/hyperledger-fabric
 
-echo_b "===Re-tagging images to *:${HLF_VERSION}* tag"
-docker tag hyperledger/fabric-peer:$ARCH-$IMG_TAG hyperledger/fabric-peer:${HLF_VERSION}
-docker tag hyperledger/fabric-tools:$ARCH-$IMG_TAG hyperledger/fabric-tools:${HLF_VERSION}
-docker tag hyperledger/fabric-orderer:$ARCH-$IMG_TAG hyperledger/fabric-orderer:${HLF_VERSION}
-docker tag hyperledger/fabric-ca:$ARCH-$IMG_TAG hyperledger/fabric-ca:${HLF_VERSION}
+echo_b "===Re-tagging fabric images to *:${HLF_VERSION}* tag"
+for IMG in peer tools orderer ca; do
+	HLF_IMG=hyperledger/fabric-${IMG}
+	docker tag ${HLF_IMG}:$ARCH-$IMG_TAG ${HLF_IMG}:${HLF_VERSION}
+done
 
-echo_g "Done, now worker node should have all images, use `docker images` to check"
+echo_b "Downloading images for fabric explorer"
+for IMG in mysql:5.7 yeasy/blockchain-explorer:0.1.0-preview; do
+	if [ -z "$(docker images -q ${IMG} 2> /dev/null)" ]; then  # not exist
+		docker pull ${IMG}
+	else
+		echo_g "${IMG} already exist locally"
+	fi
+done
+
+ # TODO: fix this if there's official images
+IMG_TAG=1.0.4
+echo_b "Downloading and retag images for kafka/zookeeper separately, as they are still v1.0.4"
+for IMG in kafka zookeeper; do
+	HLF_IMG=hyperledger/fabric-${IMG}
+	if [ -z "$(docker images -q ${HLF_IMG}:${ARCH}-${HLF_VERSION} 2> /dev/null)" ]; then  # not exist
+		docker pull ${HLF_IMG}:$ARCH-$IMG_TAG
+		docker tag ${HLF_IMG}:$ARCH-$IMG_TAG ${HLF_IMG}:${HLF_VERSION}
+	else
+		echo_g "${HLF_IMG}:$ARCH-$IMG_TAG already exist locally"
+	fi
+done
+echo_g "Done, now worker node should have all required images, use 'docker images' to check"
