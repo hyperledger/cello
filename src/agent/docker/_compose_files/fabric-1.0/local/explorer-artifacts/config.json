@@ -1,14 +1,8 @@
 {
    "network-config": {
-      "orderer": [{
-         "url": "grpcs://orderer.example.com:7050",
-         "server-hostname": "orderer.example.com",
-         "tls_cacerts": "/first-network/crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/tls/ca.crt"
-      }],
       "org1": {
          "name": "peerOrg1",
          "mspid": "Org1MSP",
-         "ca": "http://ca.org1.example.com:7054",
          "peer1": {
             "requests": "grpcs://peer0.org1.example.com:7051",
             "events": "grpcs://peer0.org1.example.com:7053",
@@ -29,7 +23,6 @@
       "org2": {
         "name": "peerOrg2",
         "mspid": "Org2MSP",
-        "ca": "http://ca.org2.example.com:7054",
         "peer1": {
            "requests": "grpcs://peer0.org2.example.com:7051",
            "events": "grpcs://peer0.org2.example.com:7053",
@@ -54,15 +47,6 @@
    "GOPATH":"/opt/gopath",
    "keyValueStore":"/tmp/fabric-client-kvs",
    "eventWaitTime":"30000",
-   "peer":"peer1",
-   "org":["org1", "org2"],
-   "enableTls":true,
-   "users":[
-      {
-         "username":"admin",
-         "secret":"adminpw"
-      }
-   ],
    "mysql":{
       "host":"mysql",
       "port":"3306",

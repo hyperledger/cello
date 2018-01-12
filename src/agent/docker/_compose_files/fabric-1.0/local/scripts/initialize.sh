@@ -160,25 +160,6 @@ updateAnchorPeers 0
 echo_b "Updating anchor peers for org2..."
 updateAnchorPeers 2
 
-## Install chaincode on Peer0/Org1 and Peer2/Org2
-echo_b "Installing chaincode on org1/peer0..."
-installChaincode 0
-
-echo_b "Install chaincode on org1/peer1..."
-installChaincode 1
-
-echo_b "Install chaincode on org2/peer0..."
-installChaincode 2
-
-echo_b "Install chaincode on org2/peer1..."
-installChaincode 3
-
-# Instantiate chaincode on Peer0/Org2
-# Instantiate can only be executed once on any node
-echo_b "Instantiating chaincode on peer0/org2..."
-instantiateChaincode 2
-
-
 echo
 echo_g "===================== All GOOD, initialization completed ===================== "
 echo

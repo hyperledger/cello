@@ -281,11 +281,11 @@ services:
       - peer0.org2.example.com
       - peer1.org2.example.com
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
-    #command: bash -c 'sleep 2; bash ./scripts/initialize.sh; while true; do sleep 20170504; done'
-    command: bash -c 'sleep 2; while true; do sleep 20170504; done'
+    command: bash -c 'sleep 2; bash ./scripts/initialize.sh; while true; do sleep 20170504; done'
+    #command: bash -c 'sleep 2; while true; do sleep 20170504; done'
 
   explorer:
-    image: yeasy/blockchain-explorer:latest
+    image: yeasy/blockchain-explorer:0.1.0-preview
     container_name: ${COMPOSE_PROJECT_NAME}_explorer
     hostname: explorer
     volumes:
