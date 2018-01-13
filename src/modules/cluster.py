@@ -150,6 +150,7 @@ class ClusterHandler(object):
         request_port_num = \
             len(ORDERER_SERVICE_PORTS.items()) + \
             len(ca_service_ports.items()) * ca_num + \
+            len(EXPLORER_PORT.items()) + \
             size * (len(peer_service_ports.items()))
         logger.debug("request port number {}".format(request_port_num))
 
@@ -195,8 +196,8 @@ class ClusterHandler(object):
             pos += 1
 
         for k, v in EXPLORER_PORT.items():
-            explorer_mapped_port[k] = \
-                v - PEER_SERVICE_PORTS['rest'] + start_port
+            explorer_mapped_port[k] = ports[pos]
+            pos += 1
 
         mapped_ports.update(peers_ports)
         mapped_ports.update(ca_mapped_ports)
@@ -276,6 +277,9 @@ class ClusterHandler(object):
 
         for k, v in orderer_service_ports.items():
             service_urls[k] = "{}:{}".format(ca_host_ip, v)
+
+        for k, v in explorer_mapped_port.items():
+            service_urls[k] = "{}:{}".format(peer_host_ip, v)
 
         for k, v in service_urls.items():
             service_port = ServicePort(name=k, ip=v.split(":")[0],
