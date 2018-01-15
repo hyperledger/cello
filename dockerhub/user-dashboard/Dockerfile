@@ -37,8 +37,7 @@ RUN mkdir -p /usr/app
 RUN cp -r /tmp/cello/user-dashboard /usr/app/src
 WORKDIR /usr/app/src
 ENV FABRIC_VERSION 1.0.5
-RUN cd /tmp && wget -c https://nexus.hyperledger.org/content/repositories/releases/org/hyperledger/fabric/hyperledger-fabric/linux-amd64-${FABRIC_VERSION}/hyperledger-fabric-linux-amd64-${FABRIC_VERSION}.tar.gz \
-	&& tar -zxvf hyperledger-fabric-linux-amd64-${FABRIC_VERSION}.tar.gz && mv bin/configtxgen /usr/local/bin/configtxgen
+RUN cd /tmp && ARCH=$(echo "$(uname -s|tr '[:upper:]' '[:lower:]'|sed 's/mingw64_nt.*/windows/')-$(uname -m | sed 's/x86_64/amd64/g')" | awk '{print tolower($0)}') && echo $ARCH &&wget -c https://nexus.hyperledger.org/content/repositories/releases/org/hyperledger/fabric/hyperledger-fabric/${ARCH}-${FABRIC_VERSION}/hyperledger-fabric-${ARCH}-${FABRIC_VERSION}.tar.gz && tar -zxvf hyperledger-fabric-${ARCH}-${FABRIC_VERSION}.tar.gz && mv bin/configtxgen /usr/local/bin/configtxgen
 RUN mkdir -p /etc/hyperledger
 RUN cp -r /tmp/cello/user-dashboard/fabric/fabric /etc/hyperledger/fabric
 COPY --from=build_login /usr/app/src/src/public/js/dist /usr/app/src/src/public/js/dist
