@@ -121,7 +121,7 @@ router.post("/instantiate", function (req, res) {
   const id = req.body.id;
   const user_id = req.apikey;
   const args = req.body.parameter;
-  const channelName = "mychannel";
+  const channelName = config.defaultChannelName;
   const orgName = "org1";
   const chaincodeVersion = "v0"
   const fcn = null

@@ -119,6 +119,14 @@ services:
       - USERNAME=admin
       - PASSWORD=pass
 
+  dashboard_mongo:
+    image: hyperledger/cello-mongo
+    restart: unless-stopped
+    environment:
+      - NO_USED=0
+    volumes:
+      - /opt/cello/dashboard_mongo:/data/db
+
  #TODO: need to follow other images to put at dockerhub
   user-dashboard:
     build:
@@ -127,13 +135,14 @@ services:
     container_name: user-dashboard
     links:
       - mongo:dashboard_mongo
+      - dashboard_mongo
       - dashboard
     ports:
       - "8081:8080"
     environment:
       - SV_BaseURL=http://dashboard:8080/api/
       - RESTful_Server=dashboard:8080
-      - RESTful_BaseURL=/api/v2/
+      - RESTful_BaseURL=/api/
       - DEBUG=node:*
       - DEV=$DEV
       - ENABLE_EMAIL_ACTIVE=$ENABLE_EMAIL_ACTIVE
@@ -146,4 +155,5 @@ services:
       - FABRIC_CFG_PATH=/etc/hyperledger/fabric
     volumes:
       - ./user-dashboard:/usr/app/src
+      - /opt/cello/baas:/opt/data
     command: bash -c "cd /usr/app/src && [ "$DEV" = True ] && npm run dev || npm start"
