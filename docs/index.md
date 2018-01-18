@@ -30,6 +30,7 @@ For new users, it is highly recommended to read the [Tutorial for Beginners](tut
 * [Adoption Scenarios](scenario.md)
 * [Configuration for Production](production_config.md)
 * [Manage Cello services](service_management.md)
+* [User Dashboard operate](user_dashboard.md)
 
 ## Contribute to the Project
 * [How to Contribute](CONTRIBUTING.md)
