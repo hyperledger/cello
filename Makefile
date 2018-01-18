@@ -11,6 +11,7 @@
 #   - clean:          Cleans the build area
 #   - doc:            Start a local web service to explore the documentation
 #   - docker[-clean]: Build/clean docker images locally
+#	- license:		  checks sourrce files for Apache license header
 #   - help:           Output the help instructions for each command
 #   - log:            Check the recent log output of all services
 #   - restart:        Stop the cello service and then start
@@ -126,10 +127,15 @@ docker: $(patsubst %,build/docker/%/$(DUMMY),$(DOCKER_IMAGES)) ##@Generate docke
 
 docker-clean: image-clean ##@Clean all existing images
 
+.PHONY: license
+license:
+	bash scripts/check_license.sh
+
 install: $(patsubst %,build/docker/%/.push,$(DOCKER_IMAGES))
 
 check: setup-master ##@Code Check code format
 	tox
+	@$(MAKE) license
 	@$(MAKE) test-case
 	make start && sleep 10 && make stop
 
@@ -245,3 +251,5 @@ HELP_FUN = \
 	restart \      # restart all services
 	stop \         # stop all services
 	docker \       # create docker image
+	license \	   # check for Apache license header
+
