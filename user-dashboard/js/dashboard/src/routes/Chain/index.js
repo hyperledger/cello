@@ -6,7 +6,7 @@ import { connect } from 'dva';
 import { Link } from 'dva/router';
 import { Row, Col, Card, List, Avatar, Badge, Button, Modal, Select } from 'antd';
 import { routerRedux } from 'dva/router';
-import {EmptyView, ChainView, EditModal} from './components'
+import {EmptyView, ChainView, EditModal, BlockInfoModal, TxInfoModal} from './components'
 import { injectIntl, intlShape, FormattedMessage} from 'react-intl';
 import messages from './messages'
 import localStorage from 'localStorage'
@@ -83,9 +83,18 @@ class Chain extends PureComponent {
   }
 
   render() {
-    const {dispatch, chain: {chains, currentChain, currentChainId, editModalVisible, editing, chainLimit},
+    const {dispatch, chain: {chains, currentChain, currentBlockTxList, loadingCurrentBlockTxList,
+      currentTxInfo, loadingCurrentTxInfo, txInfoModalVisible,
+      editModalVisible, blockInfoModalVisible, editing, chainLimit},
       fabric: {channelHeight, queryingChannelHeight}, intl} = this.props;
     const {loading} = this.state;
+    const { queryByBlockId:{queryByBlockId } } = this.props.chain;
+    const { queryByTransactionId : {queryByTransactionId}} = this.props.chain
+    const cb = () => {
+      console.log('expired callback')
+    }
+    const {remainSeconds} = currentChain;
+    const chainId = window.localStorage.getItem(`${window.apikey}-chainId`)
 
     const emptyViewProps = {
       onClickButton() {
@@ -93,6 +102,7 @@ class Chain extends PureComponent {
       }
     }
     const chainViewProps = {
+      dispatch,
       chain: currentChain,
       onRelease (data) {
         dispatch({
@@ -106,7 +116,46 @@ class Chain extends PureComponent {
         })
       },
       currentChain,
+      currentBlockTxList,
+      loadingCurrentBlockTxList,
+      currentTxInfo,
+      loadingCurrentTxInfo,
       channelHeight
+    }
+    const blockInfoModalProps = {
+      visible: blockInfoModalVisible,
+      title: "Block info",
+      currentBlockTxList,
+      loadingCurrentBlockTxList,
+      onCancel () {
+        dispatch({
+          type: 'chain/hideBlockInfoModal'
+        })
+      },
+      onClickTx: function (txId) {
+        dispatch({
+          type: 'chain/showTxInfoModal'
+        })
+        dispatch({
+          type: 'chain/queryByTransactionId',
+          payload: {
+            id: txId,
+            chainId
+          }
+        })
+      }
+    }
+
+    const txInfoModalProps = {
+      visible: txInfoModalVisible,
+      title: "Transaction Info",
+      currentTxInfo,
+      loadingCurrentTxInfo,
+      onCancel () {
+        dispatch({
+          type: 'chain/hideTxInfoModal'
+        })
+      }
     }
     const editModalProps = {
       visible: editModalVisible,
@@ -196,18 +245,24 @@ class Chain extends PureComponent {
       <PageHeaderLayout
         content={pageHeaderContent}
         extraContent={pageHeaderExtra}
+        style={{minWidth:'1400px'}}
       >
+        <div style={{paddingBottom: 50}}>
         {chains && chains.length ?
           <ChainView {...chainViewProps}/> :
           <Card
             loading={loading}
             bordered={false}
             bodyStyle={{ padding: 0 }}
+            style={{marginRight:'40px'}}
           >
-            <EmptyView {...emptyViewProps}/>
+            <EmptyView style={{height:'100%', marginRight:'20px'}}  {...emptyViewProps}/>
           </Card>
         }
         {editModalVisible && <EditModal {...editModalProps}/>}
+        {blockInfoModalVisible && <BlockInfoModal {...blockInfoModalProps}/>}
+        {txInfoModalVisible && <TxInfoModal {...txInfoModalProps}/>}
+        </div>
       </PageHeaderLayout>
     );
   }

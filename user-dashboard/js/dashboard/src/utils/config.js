@@ -22,7 +22,12 @@ module.exports = {
       list: `${API}/chain/{apikey}/list`,
       dbList: `${API}/chain/{apikey}/db-list`,
       release: `${API}/chain/{apikey}/{id}/release`,
-      edit: `${API}/chain/{apikey}/{id}/edit`
+      edit: `${API}/chain/{apikey}/{id}/edit`,
+      blocks: `${API}/chain/{dbId}/recentBLock`,
+      transaction: `${API}/chain/{dbId}/recentTransaction`,
+      queryByBlockId: `${API}/chain/{chainId}/queryByBlockId`,
+      queryByTransactionId: `${API}/chain/{chainId}/queryByTransactionId`,
+      search:`${API}/chain/search`
     },
     fabric: {
       channelHeight: `${API}/fabric/{id}/channelHeight`

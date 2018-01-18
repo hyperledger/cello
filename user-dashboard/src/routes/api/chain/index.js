@@ -289,15 +289,16 @@ router.get("/:id/queryByTransactionId", function (req, res) {
     query.initialize(chain.template)
     query.getTransactionByID('peer1', trxnId, req.username, 'org1')
       .then(function(message) {
-        const {transactionEnvelope: {payload: {data: {actions}}}, validationCode} = message
-        const action = actions.length ? actions[0] : {}
-        const {payload: {chaincode_proposal_payload: {input: {chaincode_spec: {type, chaincode_id: {name}, input: {args}}}}}} = action
+        logger.debug(`message ${JSON.stringify(message, null, 2)}`)
+        const {transactionEnvelope: {payload: {header: {channel_header: {type}}}}, validationCode} = message
+        // const action = actions.length ? actions[0] : {}
+        // const {payload: {chaincode_proposal_payload: {input: {chaincode_spec: {type, chaincode_id: {name}, input: {args}}}}}} = action
         res.json({
           success: true,
           validationCode,
-          type,
-          name,
-          args
+          type
+          // name
+          // args
         })
       }, (err) => {
         res.json({
