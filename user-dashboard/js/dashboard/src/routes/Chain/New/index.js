@@ -32,43 +32,22 @@ class NewChain extends PureComponent {
       selectedConfig: null,
       chainType: '',
       configs: [
+        //{
+        //  id: 1,
+        //  type: "fabric",
+        //  configName: "Fabric",
+        //  configType: 'basic',
+        //  config: {
+        //    size: 1,
+        //    org: 1,
+        //    peer: 1
+        //  }
+        //}
+        //,
         {
           id: 1,
           type: "fabric",
           configName: "Fabric",
-          configType: 'basic',
-          config: {
-            size: 1,
-            org: 1,
-            peer: 1
-          }
-        },
-        {
-          id: 2,
-          type: "fabric",
-          configName: "Fabric",
-          configType: 'advance',
-          config: {
-            size: 4,
-            org: 2,
-            peer: 4
-          }
-        },
-        {
-          id: 3,
-          type: "ink",
-          configName: "InkChain",
-          configType: 'basic',
-          config: {
-            size: 1,
-            org: 1,
-            peer: 2
-          }
-        },
-        {
-          id: 4,
-          type: "ink",
-          configName: "InkChain",
           configType: 'advance',
           config: {
             size: 4,
@@ -213,7 +192,6 @@ class NewChain extends PureComponent {
               })(
                 <Select onChange={this.onTypeChange} placeholder={intl.formatMessage(messages.form.placeholder.chainType)}>
                   <Option value="fabric">Fabric</Option>
-                  <Option value="ink">InkChain</Option>
                 </Select>
               )}
             </FormItem>
