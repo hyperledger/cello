@@ -36,3 +36,24 @@ export async function editChain(params) {
     body: params
   })
 }
+
+export async function recentBlocks(params) {
+  return request(`${chain.blocks.format({dbId: params.dbId})}?${stringify(params)}`)
+}
+
+export async function recentTransactions(params) {
+  return request(`${chain.transaction.format({dbId: params.dbId})}?${stringify(params)}`)
+}
+
+export async function recentTokenTransfer(params) {
+  return request(`${chain.recentTokenTransfer.format({dbId: params.dbId})}?${stringify(params)}`)
+}
+
+export async function queryByBlockId(params) {
+  return request(`${chain.queryByBlockId.format({chainId: params.chainId})}?${stringify(params)}`)
+
+}
+export async function queryByTransactionId(params) {
+  return request(`${chain.queryByTransactionId.format({chainId: params.chainId})}?${stringify(params)}`)
+
+}
