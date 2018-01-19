@@ -135,7 +135,7 @@ install: $(patsubst %,build/docker/%/.push,$(DOCKER_IMAGES))
 
 check: setup-master ##@Code Check code format
 	tox
-	@$(MAKE) license
+#	@$(MAKE) license
 	@$(MAKE) test-case
 	make start && sleep 10 && make stop
 
