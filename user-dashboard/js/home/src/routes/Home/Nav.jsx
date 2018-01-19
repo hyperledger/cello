@@ -29,18 +29,18 @@ class Header extends React.Component {
           case 'login':
               window.location.href = "/login";
               break;
-          case '0':
-              window.location.href = "/dashboard/chain";
-              break;
-          case '1':
-              window.location.href = "/dashboard/contract";
-              break;
-          case '2':
-              window.location.href = "/dashboard/analytics";
-              break;
-          case '3':
-              window.location.href = "/dashboard/store";
-              break;
+          //case '0':
+          //    window.location.href = "/dashboard/chain";
+          //    break;
+          //case '1':
+          //    window.location.href = "/dashboard/contract";
+          //    break;
+          //case '2':
+          //    window.location.href = "/dashboard/analytics";
+          //    break;
+          //case '3':
+          //    window.location.href = "/dashboard/store";
+          //    break;
           case 'profile':
               onClickProfile();
               break;
@@ -51,7 +51,7 @@ class Header extends React.Component {
     const props = { ...this.props };
     const isMode = props.isMode;
     delete props.isMode;
-    let navData = { menu1: 'Chain', menu2: 'Smart Contract', menu3: 'Analytics', menu4: 'Store' };
+    let navData = { };
     let navChildren = Object.keys(navData)
       .map((key, i) => (<Item key={i}>{navData[key]}</Item>));
     if (window.username !== '') {

@@ -5,6 +5,11 @@ import TweenOne from 'rc-tween-one';
 import OverPack from 'rc-scroll-anim/lib/ScrollOverPack';
 
 class Content extends React.Component {
+
+  goDashboard = () =>{
+    window.location.href = "/dashboard";
+  }
+
   render() {
     const props = { ...this.props };
     delete props.isMode;
@@ -34,7 +39,7 @@ class Content extends React.Component {
           >
             BLOCKCHAIN FOR DEVELOPERS
           </p>
-          <Button type="ghost" key="button" id={`${props.id}-button`}>
+          <Button type="ghost" key="button" id={`${props.id}-button`} onClick={this.goDashboard}>
             MY DASHBOARD
           </Button>
         </QueueAnim>
