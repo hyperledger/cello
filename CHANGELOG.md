@@ -1,6 +1,55 @@
-## HEAD
-Sun Dec 10 10:46:32 UTC 2017
+## v0.8.0-alpha
+Sat Jan 20 12:20:20 UTC 2018
 
+* [4fd7d61](https://github.com/hyperledger/cello/commit/4fd7d61) [CE-243](https://jira.hyperledger.org/browse/CE-243) Add link to dashboard in home page
+* [4862395](https://github.com/hyperledger/cello/commit/4862395) [CE-242](https://jira.hyperledger.org/browse/CE-242) Modify options for new chain
+* [1551dea](https://github.com/hyperledger/cello/commit/1551dea) [CE-237](https://jira.hyperledger.org/browse/CE-237) Add recent block&transaction query
+* [c3d84da](https://github.com/hyperledger/cello/commit/c3d84da) [CE-241](https://jira.hyperledger.org/browse/CE-241) Test build error of license check
+* [39e2c06](https://github.com/hyperledger/cello/commit/39e2c06) [CE-239](https://jira.hyperledger.org/browse/CE-239) Add document for user dashboard
+* [ab76cd0](https://github.com/hyperledger/cello/commit/ab76cd0) [CE-233](https://jira.hyperledger.org/browse/CE-233) Add license header check to make checks
+* [4e00425](https://github.com/hyperledger/cello/commit/4e00425) [CE-236](https://jira.hyperledger.org/browse/CE-236) Add background api in user-dashboard
+* [ebcbfe6](https://github.com/hyperledger/cello/commit/ebcbfe6) [CE-234](https://jira.hyperledger.org/browse/CE-234) Fix edit host fail in admin
+* [8e7d1eb](https://github.com/hyperledger/cello/commit/8e7d1eb) [CE-213](https://jira.hyperledger.org/browse/CE-213) Can create fabric and explorer successfully
+* [38f1e68](https://github.com/hyperledger/cello/commit/38f1e68) [CE-232](https://jira.hyperledger.org/browse/CE-232) Pull architecture specific binaries
+* [1758996](https://github.com/hyperledger/cello/commit/1758996) [CE-229](https://jira.hyperledger.org/browse/CE-229) Fix create chain map port for explorer
+* [cddecce](https://github.com/hyperledger/cello/commit/cddecce) [CE-215](https://jira.hyperledger.org/browse/CE-215) Enable user-dashboard in dockerhub
+* [fe39bbc](https://github.com/hyperledger/cello/commit/fe39bbc) [CE-227](https://jira.hyperledger.org/browse/CE-227) Enable fabric kafka mode
+* [2cd24d6](https://github.com/hyperledger/cello/commit/2cd24d6) [CE-225](https://jira.hyperledger.org/browse/CE-225) Fix explorer version error
+* [36bcd57](https://github.com/hyperledger/cello/commit/36bcd57) [CE-226](https://jira.hyperledger.org/browse/CE-226) make docker fails
+* [bf06e57](https://github.com/hyperledger/cello/commit/bf06e57) [CE-223](https://jira.hyperledger.org/browse/CE-223) Decouple the local image gen from setup
+* [3e2e0a2](https://github.com/hyperledger/cello/commit/3e2e0a2) [CE-220](https://jira.hyperledger.org/browse/CE-220) Fix host reset operation
+* [52ba538](https://github.com/hyperledger/cello/commit/52ba538) [CE-218](https://jira.hyperledger.org/browse/CE-218) Fix port range calculation
+* [95a691e](https://github.com/hyperledger/cello/commit/95a691e) [CE-219](https://jira.hyperledger.org/browse/CE-219) Fix host clean operation in admin dashboard
+* [f5f8ce8](https://github.com/hyperledger/cello/commit/f5f8ce8) [CE-217](https://jira.hyperledger.org/browse/CE-217) Fix chain operation in admin dashboard
+* [8524352](https://github.com/hyperledger/cello/commit/8524352) [CE-216](https://jira.hyperledger.org/browse/CE-216) Fix host can not delete in admin dashboard
+* [d7ffeb2](https://github.com/hyperledger/cello/commit/d7ffeb2) [CE-214](https://jira.hyperledger.org/browse/CE-214) Improve service provision process
+* [41a9103](https://github.com/hyperledger/cello/commit/41a9103) [CE-212](https://jira.hyperledger.org/browse/CE-212) Change mongodb library to mongoengine
+* [d13eb9b](https://github.com/hyperledger/cello/commit/d13eb9b) [CE-204](https://jira.hyperledger.org/browse/CE-204) Update Cello Docs
+* [d634fd3](https://github.com/hyperledger/cello/commit/d634fd3) [CE-210](https://jira.hyperledger.org/browse/CE-210) Change build js method, and remove npm-install
+* [69f9b25](https://github.com/hyperledger/cello/commit/69f9b25) [CE-209](https://jira.hyperledger.org/browse/CE-209) Add smart contract view in user dashboard
+* [10f6e49](https://github.com/hyperledger/cello/commit/10f6e49) [CE-211](https://jira.hyperledger.org/browse/CE-211) Change to pm2 for start express service
+* [c0d5b26](https://github.com/hyperledger/cello/commit/c0d5b26) [CE-208](https://jira.hyperledger.org/browse/CE-208) Add api view in user dashboard
+* [7228fb3](https://github.com/hyperledger/cello/commit/7228fb3) [CE-207](https://jira.hyperledger.org/browse/CE-207) Add chain view page in user dashboard
+* [67a1970](https://github.com/hyperledger/cello/commit/67a1970) [CE-205](https://jira.hyperledger.org/browse/CE-205) Update Makefile
+* [88e4615](https://github.com/hyperledger/cello/commit/88e4615) [CE-206](https://jira.hyperledger.org/browse/CE-206) Fix vue theme npm install & build error
+* [ff2be7f](https://github.com/hyperledger/cello/commit/ff2be7f) [CE-200](https://jira.hyperledger.org/browse/CE-200) Add smart contract background service
+* [5e563a9](https://github.com/hyperledger/cello/commit/5e563a9) [CE-192](https://jira.hyperledger.org/browse/CE-192) Update Dockerfiles
+* [4addfe1](https://github.com/hyperledger/cello/commit/4addfe1) [CE-201](https://jira.hyperledger.org/browse/CE-201) Enable s390x in cello
+* [ddb0267](https://github.com/hyperledger/cello/commit/ddb0267) [CE-192](https://jira.hyperledger.org/browse/CE-192) Support Github Auto-Trigger Plugin
+* [5cc1d4c](https://github.com/hyperledger/cello/commit/5cc1d4c) [CE-117](https://jira.hyperledger.org/browse/CE-117) Add chain background service
+* [b206732](https://github.com/hyperledger/cello/commit/b206732) [CE-199](https://jira.hyperledger.org/browse/CE-199) Remove .env file
+* [4e34f89](https://github.com/hyperledger/cello/commit/4e34f89) [CE-136](https://jira.hyperledger.org/browse/CE-136) Integrate blockchain-explorer
+* [af6dc14](https://github.com/hyperledger/cello/commit/af6dc14) [CE-198](https://jira.hyperledger.org/browse/CE-198) Enable Docker Compose v3 support
+* [5576127](https://github.com/hyperledger/cello/commit/5576127) [CE-197](https://jira.hyperledger.org/browse/CE-197) Update download_images.sh
+* [79945bf](https://github.com/hyperledger/cello/commit/79945bf) [CE-196](https://jira.hyperledger.org/browse/CE-196) Fix script mis-usage with alias
+* [3bcb3e3](https://github.com/hyperledger/cello/commit/3bcb3e3) [CE-185](https://jira.hyperledger.org/browse/CE-185)[CE-191] Fix build target change errors
+* [b40a1ef](https://github.com/hyperledger/cello/commit/b40a1ef) [CE-189](https://jira.hyperledger.org/browse/CE-189) Add mongoose support
+* [86ec7ff](https://github.com/hyperledger/cello/commit/86ec7ff) [CE-165](https://jira.hyperledger.org/browse/CE-165) Remove unused js in basic theme
+* [2ec1de4](https://github.com/hyperledger/cello/commit/2ec1de4) [CE-190](https://jira.hyperledger.org/browse/CE-190) Fix documentation name and links
+* [4e013dc](https://github.com/hyperledger/cello/commit/4e013dc) [CE-188](https://jira.hyperledger.org/browse/CE-188) Refine docs and prepare for v0.8.0
+* [ab2f6f2](https://github.com/hyperledger/cello/commit/ab2f6f2) [CE-184](https://jira.hyperledger.org/browse/CE-184) Update Makefile
+* [5621c1a](https://github.com/hyperledger/cello/commit/5621c1a) [CE-186](https://jira.hyperledger.org/browse/CE-186) Update clean & image-clean targets
+* [7b5f99b](https://github.com/hyperledger/cello/commit/7b5f99b) [CE-187](https://jira.hyperledger.org/browse/CE-187) Pull ARCH relevant docker images
 * [3e001cc](https://github.com/hyperledger/cello/commit/3e001cc) [CE-183](https://jira.hyperledger.org/browse/CE-183) Fixed a bug in roles/verify/main.yml
 * [e75be2a](https://github.com/hyperledger/cello/commit/e75be2a) [CE-182](https://jira.hyperledger.org/browse/CE-182) Refactor docker-compose and Dockerfile
 * [dfc974f](https://github.com/hyperledger/cello/commit/dfc974f) :Fix [CE-181](https://jira.hyperledger.org/browse/CE-181)
