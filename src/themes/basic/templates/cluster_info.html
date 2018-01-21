@@ -39,7 +39,7 @@
             <dt>Containers<dt>
             <dd>
             {% if item.containers|length >0 %}
-                {% for c in item.containers.keys()%}
+                {% for c in item.containers%}
                     <a href="">{{ c }}</a><br>
                 {% endfor %}
             {% endif %}
