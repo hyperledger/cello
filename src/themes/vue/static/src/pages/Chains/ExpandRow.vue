@@ -28,6 +28,10 @@ SPDX-License-Identifier: Apache-2.0
       <span class="expand-key">Host Capacity: </span>
       <span class="expand-value">{{ host.capacity }}</span>
       </Col>
+      <Col span="8">
+      <span class="expand-key">Explorer URL: </span>
+      <a class="expand-value" v-for="(item, index) in chain.service_url" v-if="index === 'dashboard'" :href="'http://'+item ">http://{{ item }}</a>
+      </Col>
     </Row>
   </div>
 </template>
