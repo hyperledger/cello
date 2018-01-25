@@ -34,6 +34,12 @@
         {% for k in item.service_url%}
             {{ k }}: {{item.service_url[k]}}<br>
         {% endfor %}
+    <dt>Explorer URL<dt> <dd>
+        {% for k in item.service_url%}
+            {% if k== "dashboard"%}
+                <a href="http://{{item.service_url[k]}}">{{ item.service_url[k]}}</a><br>
+            {% endif %}
+        {% endfor %}
     </dd>
         {% if item.containers %}
             <dt>Containers<dt>
