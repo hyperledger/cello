@@ -1,20 +1,42 @@
 ---
 logging:
+{% if project_version | version_compare('1.1.0','>=') %}
+    level:      info
+{% else %}
     peer:       info
+{% endif %}
     cauthdsl:   warning
     gossip:     warning
     ledger:     info
     msp:        warning
     policies:   warning
     grpc:       error
+{% if project_version | version_compare('1.1.0','>=') %}
+    peer:
+        gossip: warning
+{% endif %}
 
     format: '%{color}%{time:2006-01-02 15:04:05.000 MST} [%{module}] %{shortfunc} -> %{level:.4s} %{id:03x}%{color:reset} %{message}'
 
 peer:
+{% if project_version | version_compare('1.1.0','>=') %}
+    id: jdoe
+    address: 0.0.0.0:7051
+{% endif %}
     networkId: dev
     listenAddress: 0.0.0.0:7051
     addressAutoDetect: false
     gomaxprocs: -1
+{% if project_version | version_compare('1.1.0','>=') %}
+    keepalive:
+        minInterval: 60s
+        client:
+            interval: 60s
+            timeout: 20s
+        deliveryClient:
+            interval: 60s
+            timeout: 20s
+{% endif %}
     gossip:
         bootstrap: 127.0.0.1:7051
 
@@ -34,7 +56,11 @@ peer:
         dialTimeout: 3s
         connTimeout: 2s
         recvBuffSize: 20
+{% if project_version | version_compare('1.1.0','>=') %}
+        sendBuffSize: 200
+{% else %}
         sendBuffSize: 20
+{% endif %}
         digestWaitTime: 1s
         requestWaitTime: 1s
         responseWaitTime: 2s
@@ -48,10 +74,22 @@ peer:
             leaderAliveThreshold: 10s
             leaderElectionDuration: 5s
 
+{% if project_version | version_compare('1.1.0','>=') %}
+        pvtData:
+            pullRetryThreshold: 60s
+            transientstoreMaxBlockRetention: 1000
+            pushAckTimeout: 3s
+{% endif %}
+
     events:
         address: 0.0.0.0:7053
         buffersize: 100
         timeout: 10ms
+{% if project_version | version_compare('1.1.0','>=') %}
+        timewindow: 15m
+        keepalive:
+            minInterval: 60s
+{% endif %}
 
     tls:
         enabled:  false
@@ -61,9 +99,18 @@ peer:
             file: tls/server.key
         rootcert:
             file: tls/ca.crt
-
+{% if project_version | version_compare('1.1.0','>=') %}
+        clientAuthRequired: false
+        clientRootCAs:
+            files:
+              - tls/ca.crt
+        clientKey:
+            file:
+        clientCert:
+            file:
+{% else %}
         serverhostoverride:
-
+{% endif %}
     fileSystemPath: /var/hyperledger/production
 
     BCCSP:
@@ -76,9 +123,32 @@ peer:
 
     mspConfigPath: msp
 
+{% if project_version | version_compare('1.1.0','>=') %}
+    localMspId: DEFAULT
+
+    deliveryclient:
+        reconnectTotalTimeThreshold: 3600s
+
+    localMspType: bccsp
+{% endif %}
+
     profile:
         enabled:     false
         listenAddress: 0.0.0.0:6060
+
+{% if project_version | version_compare('1.1.0','>=') %}
+    handlers:
+        authFilters:
+          -
+            name: DefaultAuth
+          -
+            name: ExpirationCheck
+        decorators:
+          -
+            name: DefaultDecorator
+
+    validatorPoolSize:
+{% endif %}
 
 vm:
     endpoint: unix:///var/run/docker.sock
@@ -95,7 +165,11 @@ vm:
         attachStdout: false
 
         hostConfig:
+{% if project_version | version_compare('1.1.0','>=') %}
+            NetworkMode: host
+{% else %}
             NetworkMode: bridge
+{% endif %}
             Dns:
             LogConfig:
                 Type: json-file
@@ -105,16 +179,25 @@ vm:
             Memory: 2147483648
 
 chaincode:
-
+{% if project_version | version_compare('1.1.0','<') %}
     peerAddress:
+{% endif %}
 
     id:
         path:
         name:
 
     builder: $(DOCKER_NS)/fabric-ccenv:$(ARCH)-$(PROJECT_VERSION)
+{% if project_version | version_compare('1.1.0','>=') %}
+    pull: false
+{% endif %}
     golang:
         runtime: $(BASE_DOCKER_NS)/fabric-baseos:$(ARCH)-$(BASE_VERSION)
+{% if project_version | version_compare('1.1.0','>=') %}
+        dynamicLink: false
+    node:
+        runtime: $(BASE_DOCKER_NS)/fabric-baseimage:$(ARCH)-$(BASE_VERSION)
+{% endif %}
     car:
         runtime: $(BASE_DOCKER_NS)/fabric-baseos:$(ARCH)-$(BASE_VERSION)
     java:
@@ -132,6 +215,9 @@ chaincode:
         vscc: enable
         qscc: enable
 
+{% if project_version | version_compare('1.1.0','>=') %}
+    systemPlugins:
+{% endif %}
     logging:
       level:  info
       shim:   warning
@@ -151,6 +237,22 @@ ledger:
        maxRetriesOnStartup: 10
        requestTimeout: 35s
        queryLimit: 10000
+{% if project_version | version_compare('1.1.0','>=') %}
+       maxBatchUpdateSize: 1000
+{% endif %}
 
   history:
     enableHistoryDatabase: true
+
+{% if project_version | version_compare('1.1.0','>=') %}
+metrics:
+        enabled: false
+        reporter: statsd
+        interval: 1s
+        statsdReporter:
+              address: 0.0.0.0:8125
+              flushInterval: 2s
+              flushBytes: 1432
+        promReporter:
+              listenAddress: 0.0.0.0:8080
+{% endif %}
