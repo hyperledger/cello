@@ -38,6 +38,10 @@ Orderer: &OrdererDefaults
 {% for org in ordererorgs %}
     - *{{ org }}
 {% endfor %}
+{% if project_version | version_compare('1.1.0','>=') %}
+  Capabilities:
+    <<: *OrdererCapabilities
+{% endif %}
 
 Application: &ApplicationDefaults
   Organizations:
@@ -50,14 +54,31 @@ Profiles:
     Consortium: FabricConsortium
     Application:
       <<: *ApplicationDefaults
-
+{% if project_version | version_compare('1.1.0','>=') %}
+    Capabilities:
+      <<: *ApplicationCapabilities
+{% endif %}
   OrdererGenesis:
     Orderer:
       <<: *OrdererDefaults
-
+{% if project_version | version_compare('1.1.0','>=') %}
+    Capabilities:
+      <<: *ChannelCapabilities
+{% endif %}
     Consortiums:
       FabricConsortium:
         Organizations:
 {%   for org in peerorgs %}
           - *{{ org }}
 {%   endfor %}
+{% if project_version | version_compare('1.1.0','>=') %}
+Capabilities:
+  Global: &ChannelCapabilities
+    V1_1: true
+
+  Orderer: &OrdererCapabilities
+    V1_1: true
+
+  Application: &ApplicationCapabilities
+    V1_1: true
+{% endif %}
