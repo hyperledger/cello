@@ -3,11 +3,16 @@
   shell: uname -m | sed 's|i686|386|' | sed 's|x86_64|amd64|'
   register: rawarch
 
+- name: Figuring out the OS release
+  shell: lsb_release -cs
+  register: rawrelease
+
 - name: Setup variables
   set_fact:
     goroot: "/opt/go"
     gopath: "/opt/gopath"
     arch: "{{ rawarch.stdout}}"
+    osrelease: "{{ rawrelease.stdout }}"
 
 - name: Ensure gopath exists
   file:
@@ -23,9 +28,22 @@
   apt:
     name: "{{ item }}"
   with_items:
-    - ['docker.io', 'python-dev', 'python-pip', 'libtool', 'libltdl-dev']
-    - ['git', 'net-tools', 'netcat-openbsd', 'autoconf', 'automake']
-    - ['libtool', 'curl', 'make', 'g++', 'unzip', 'build-essential']
+    - ['python-dev', 'python-pip', 'libtool', 'libltdl-dev', 'apt-transport-https']
+    - ['git', 'net-tools', 'netcat-openbsd', 'autoconf', 'automake', 'ca-certificates']
+    - ['libtool', 'curl', 'make', 'g++', 'unzip', 'build-essential', 'software-properties-common']
+
+- name: Add Docker offical GPG key
+  shell: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+
+- name: Add docker-ce repository
+  apt_repository:
+    repo: "deb [arch={{ arch }}] https://download.docker.com/linux/ubuntu {{ osrelease }} stable"
+    state: present
+
+- name: Update apt and Install Docker-ce
+  apt:
+    name: docker-ce
+    update_cache: yes
 
 - name: Install pip and upgrade
   pip:
@@ -47,7 +65,7 @@
 
 - name: Retrive golang binary and unpackage it
   unarchive:
-    src: "https://storage.googleapis.com/golang/go{{ cluster.go_ver }}.linux-{{ arch }}.tar.gz"
+    src: "{{ cluster.go_repo }}"
     dest: "/opt"
     remote_src: True
 
