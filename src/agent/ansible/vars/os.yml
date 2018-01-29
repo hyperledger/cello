@@ -63,5 +63,6 @@ cluster: {
 
   # If volume want to be used, specify a size in GB, make volume size 0 if wish
   # not to use volume from your cloud
-  volume_size: 8
+  volume_size: 0,
+  block_device_name: "/dev/vdb"
 }
