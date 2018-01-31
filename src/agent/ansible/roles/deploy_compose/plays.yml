@@ -6,7 +6,7 @@
   vars_files:
     - "./../../vars/{{ env }}.yml"
   tasks:
-    - include: "fabricbuild/tasks/{{ mode }}.yml"
+    - include_tasks: "fabricbuild/tasks/{{ mode }}.yml"
   tags: "fabricbuild"
 
 - name: generate certificates

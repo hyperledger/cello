@@ -15,7 +15,7 @@ spec:
   restartPolicy: Always
   containers:
     - name: {{ zookeeper }}
-      image: hyperledger/fabric-zookeeper:{{ (fabric.helper_tag == "") | ternary(thetag, helpertag) }}
+      image: {{ fabric.repo.url }}fabric-zookeeper:{{ helpertag }}
       imagePullPolicy: IfNotPresent
       env:
         - { name: "ZOO_MY_ID", value: "{{ zoo_ids[zookeeper] }}" }
@@ -53,7 +53,7 @@ spec:
   restartPolicy: Always
   containers:
     - name: {{ kafka }}
-      image: hyperledger/fabric-kafka:{{ (fabric.helper_tag == "") | ternary(thetag, helpertag) }}
+      image: {{ fabric.repo.url }}fabric-kafka:{{ helpertag }}
       imagePullPolicy: IfNotPresent
       env:
         - { name: "KAFKA_MESSAGE_MAX_BYTES", value: "103809024" }
@@ -96,7 +96,7 @@ spec:
         path: {{ fabricworkdir }}/run/keyfiles/{{ ca.org }}
   containers:
     - name: {{ ca.name }}
-      image: hyperledger/fabric-ca:{{ (fabric.helper_tag == "") | ternary(thetag, helpertag) }}
+      image: {{ fabric.repo.url }}fabric-ca:{{ helpertag }}
       imagePullPolicy: IfNotPresent
       env:
         - { name: "FABRIC_CA_HOME", value: "/etc/hyperledger/fabric-ca-server-config/ca" }
@@ -152,13 +152,13 @@ spec:
   containers:
 {% if fabric.peer_db == 'CouchDB' %}
     - name: couchdb-{{ peer.name }}
-      image: hyperledger/fabric-couchdb:{{ (fabric.helper_tag == "") | ternary(thetag, helpertag) }}
+      image: {{ fabric.repo.url }}fabric-couchdb:{{ helpertag }}
       imagePullPolicy: IfNotPresent
       securityContext:
         privileged: true
 {% endif %}
     - name: {{ peer.name }}
-      image: hyperledger/fabric-peer:{{ thetag }}
+      image: {{ fabric.repo.url }}fabric-peer:{{ thetag }}
       imagePullPolicy: IfNotPresent
       securityContext:
         privileged: true
@@ -177,8 +177,10 @@ spec:
         - { name: "CORE_PEER_TLS_ROOTCERT_FILE", value: "/etc/hyperledger/fabric/tls/ca.crt" }
 {% endif %}
         - { name: "CORE_PEER_ID", value: "{{ peer.name }}" }
-        - { name: "CORE_PEER_ADDRESS", value: "{{ peer.name }}:7051" }
         - { name: "CORE_PEER_GOSSIP_EXTERNALENDPOINT", value: "{{ peer.name }}:7051" }
+        - { name: "CORE_PEER_ADDRESS", value: "{{ peer.name }}:7051" }
+        - { name: "CORE_PEER_LISTENADDRESS", value: "{{ peer.name }}:7051" }
+        - { name: "CORE_PEER_CHAINCODELISTENADDRESS", value: "{{ peer.name }}:7052" }
         - { name: "CORE_PEER_LOCALMSPID", value: "{{ peer.org }}" }
         - { name: "CORE_PEER_MSPCONFIGPATH", value: "/etc/hyperledger/fabric/msp" }
 {% if fabric.peer_db == 'CouchDB' %}
@@ -204,6 +206,8 @@ spec:
   ports:
   - name: port1
     port: 7051
+  - name: port2
+    port: 7052
 {% endfor %}
 
 {% for orderer in orderers %}
@@ -226,7 +230,7 @@ spec:
         path: {{ fabricworkdir }}/run/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}
   containers:
     - name: {{ orderer.name }}
-      image: hyperledger/fabric-orderer:{{ thetag }}
+      image: {{ fabric.repo.url }}fabric-orderer:{{ thetag }}
       imagePullPolicy: IfNotPresent
       env:
         - { name: "ORDERER_GENERAL_LOGLEVEL", value: "debug" }

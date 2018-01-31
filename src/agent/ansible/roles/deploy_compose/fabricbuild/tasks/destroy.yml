@@ -20,4 +20,5 @@
     GOROOT: "{{ goroot }}"
     GOPATH: "{{ gopath }}"
     PATH: "{{ ansible_env.PATH}}:{{ goroot }}/bin"
+  when: fabric.baseimage_tag|length == 0
   tags: "clean"

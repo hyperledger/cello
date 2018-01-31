@@ -7,14 +7,14 @@ services:
 {% if fabric.peer_db == 'CouchDB' %}
   couchdb-{{ peer.name }}:
     container_name: couchdb-{{ peer.name }}
-    image: hyperledger/fabric-couchdb:{{ (fabric.helper_tag == "") | ternary(thetag, helpertag) }}
+    image: {{ fabric.repo.url }}fabric-couchdb:{{ helpertag | default(thetag) }}
     network_mode: bridge
     hostname: couchdb-{{ peer.name }}
 {% endif %}
 
   {{ peer.name }}:
     container_name: {{ peer.name }}
-    image: hyperledger/fabric-peer:{{ thetag }}
+    image: {{ fabric.repo.url }}fabric-peer:{{ thetag }}
     network_mode: bridge
     hostname: {{ peer.name }}
     environment:

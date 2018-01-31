@@ -1,14 +1,9 @@
 ---
-- name: Figuring out the server architecture
-  shell: uname -m
-  register: rawarch
-
 - name: Setup and initialize variables
   set_fact:
     current_host: "{{ hostvars[inventory_hostname].inter_name }}"
     fabricworkdir: "/opt/gopath/{{ env }}/fabric"
     gopath: "/opt/gopath/{{ env }}"
-    arch: "{{ rawarch.stdout}}"
     peers: "{{ [] }}"
     orderers: "{{ [] }}"
     cas: "{{ [] }}"
@@ -29,8 +24,6 @@
     allpeers: "{{ [] }}"
     clihost: ""
     filterstr: ""
-    thetag: "{{ rawarch.stdout + '-' + fabric.baseimage_tag }}"
-    helpertag: "{{ rawarch.stdout + '-' + fabric.helper_tag }}"
 
 - name: Make sure that working directory is clean
   become: true
@@ -143,23 +136,25 @@
     scp -i "/opt/gopath/id_rsa" -r -o "StrictHostKeyChecking no" "{{ fabric.
     ssh_user }}@{{ hostvars[groups['builders'][0]].private_ip }}:{{ fabricworkdir }}/images/VERSION"
     "{{ fabricworkdir }}/VERSION"
-  when: fabric.baseimage_tag == ''
-
-- name: Load all the docker images created by build machine
-  shell: >-
-    docker load -i {{ fabricworkdir }}/fabricimages.tar
-  when: fabric.baseimage_tag == '' and inventory_hostname not in groups['builders']
 
 - name: Find out the image tags
   slurp:
     src: "{{ fabricworkdir }}/VERSION"
-  register: project_version
-  when: fabric.baseimage_tag == ''
+  register: imagetag
 
-- name: Set the container tag
+- name: Set image tag from the file
   set_fact:
-    thetag: "{{ arch + '-' + (project_version['content'] | b64decode) }}"
-  when: fabric.baseimage_tag == ''
+    thetag: "{{ imagetag['content'] | b64decode }}"
+    helpertag: "{{ fabric.helper_tag }}"
+
+- stat:
+    path: "{{ fabricworkdir }}/fabricimages.tar"
+  register: imagepack
+
+- name: Load all the docker images created by build machine
+  shell: >-
+    docker load -i {{ fabricworkdir }}/fabricimages.tar
+  when: imagepack.stat.exists == true and inventory_hostname not in groups['builders']
 
 - name: Unpack the certificates
   unarchive:
@@ -199,17 +194,19 @@
   set_fact:
     orgmembers: "{{ peers | map(attribute='org') | list  | unique | sort | join(\".member' '\") | trim | replace(' ', ',') }}"
 
-- name: Pull container images from the docker hub
-  command: "docker pull {{ item }}"
-  when: fabric.baseimage_tag | length > 0
+- name: Pull necessary container images from the docker hub
+  command: "docker pull {{ fabric.repo.url }}{{ item.name }}"
+  when: item.flag | length > 0 and fabric.baseimage_tag | length > 0
   with_items:
-    - "hyperledger/fabric-tools:{{ thetag }}"
-    - "hyperledger/fabric-ccenv:{{ thetag }}"
-    - "hyperledger/fabric-kafka:{{ thetag }}"
-    - "hyperledger/fabric-zookeeper:{{ thetag }}"
-    - "hyperledger/fabric-peer:{{ thetag }}"
-    - "hyperledger/fabric-orderer:{{ thetag }}"
-    - "hyperledger/fabric-couchdb:{{ thetag }}"
+    - { name: "fabric-ca:{{ helpertag }}", flag: "{{ cas }}" }
+    - { name: "fabric-zookeeper:{{ helpertag }}", flag: "{{ zookeepers }}" }
+    - { name: "fabric-kafka:{{ helpertag }}", flag: "{{ kafkas }}" }
+    - { name: "fabric-couchdb:{{ helpertag }}", flag: "{{ peers }}" }
+    - { name: "fabric-orderer:{{ thetag }}", flag: "{{ orderers }}" }
+    - { name: "fabric-peer:{{ thetag }}", flag: "{{ peers }}" }
+    - { name: "fabric-ccenv:{{ thetag }}", flag: "{{ peers }}" }
+    - { name: "fabric-tools:{{ thetag }}", flag: "tools" }
+  tags: "pullimages"
 
 - name: Create docker compose files
   template:

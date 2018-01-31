@@ -27,59 +27,52 @@
     - "absent"
     - "directory"
 
-- name: Extract hyperledger fabric code
-  git:
-    repo: "{{ GIT_URL | default('http://gerrit.hyperledger.org/r/fabric') }}"
-    dest: "{{ fabricpath }}"
+- name: Download fabric docker images
+  include_tasks: "download.yml"
+  when: fabric.baseimage_tag|length > 0
+  tag: "downloadartifacts"
+
+- name: build fabric artifacts
+  include_tasks: "build.yml"
+  when: fabric.baseimage_tag|length == 0
+  tags: "buildartifacts"
+
+- name: Setup hyperledger directory
+  file:
+    path: "{{ fabricpath }}/build"
+    state: directory
     force: yes
-    refspec: "{{ GERRIT_REFSPEC | default('') }}"
-    version: "{{ (GERRIT_REFSPEC == '') | ternary('HEAD','FETCH_HEAD') }}"
-    depth: 1
-  tags: "code"
+    mode: 0775
 
-- name: Make targets
-  shell: "make {{ item }} >> {{ gopath }}/build.log"
-  args:
-    chdir: "{{ fabricpath }}"
-  with_items: "{{ target.split(',') }}"
-  environment:
-    GOROOT: "{{ goroot }}"
-    GOPATH: "{{ gopath }}"
-    PATH: "{{ ansible_env.PATH}}:{{ goroot }}/bin"
-  tags: "make"
+- stat:
+    path: "{{ fabricpath }}/build/bin/cryptogen"
+  register: binexists
 
-- name: Figure out the build tag
-  shell: "git rev-parse --short HEAD"
-  args:
-    chdir: "{{ fabricpath }}"
-  register: rawtag
+- name: Download fabric binaries
+  unarchive:
+    src: "{{ fabric.repo.bin }}"
+    dest: "{{ fabricpath }}/build"
+    remote_src: yes
+  when: fabric.repo.bin|length > 0 and binexists.stat.exists == false
+  tags: "downloadbin"
 
-- name: Get base version
-  shell: grep '^BASE_VERSION' Makefile | cut -d '=' -f 2 | xargs
-  args:
-    chdir: "{{ fabricpath }}"
-  register: baseversion
+- name: Validate the version, baseimage_tag and helper_tag to be deployed
+  fail:
+    msg: >-
+      the project version is empty, most likely configuration is not correct.
+      Please check baseimage_tag and helper_tag are set correct or you set
+      up to build fabric binaries and docker images!
+  when: >
+    project_version|length == 0 or baseimage_tag|length == 0 or
+    helper_tag|length == 0
 
-- name: Check if it is a release
-  shell: grep '^IS_RELEASE' Makefile | cut -d '=' -f 2 | xargs
-  args:
-    chdir: "{{ fabricpath }}"
-  register: isrelease
-
-- name: Get the project version
-  set_fact:
-    project_version: >-
-      {{ (isrelease.stdout|lower == 'true') | ternary(baseversion.stdout,
-      baseversion.stdout+'-snapshot-'+rawtag.stdout) | trim }}
-
-- name: Get all images for this build
+- name: Get all images for this deployment
   shell: >-
-    docker images --format {% raw %}'{{.Repository}}:{{.Tag }}' {% endraw %} |
-    grep {{ project_version }}
+    docker images --format {% raw %}'{{.Repository}}:{{.Tag }}' {% endraw %}
+    | grep 'hyperledger/fabric-' || :
   args:
     chdir: "{{ fabricpath }}"
   register: rawimages
-  when: fabric.baseimage_tag == ''
 
 - name: Save all the docker images
   shell: >-
@@ -87,7 +80,8 @@
     {{ rawimages.stdout_lines | join(' ') }}
   args:
     chdir: "{{ gopath }}"
-  when: fabric.baseimage_tag == '' and rawimages is defined and rawimages.stdout_lines|length > 0
+  when: rawimages.stdout_lines|length > 0 and fabric.baseimage_tag == ''
+  tags: "saveimages"
 
 - name: Create the project version file
   template:

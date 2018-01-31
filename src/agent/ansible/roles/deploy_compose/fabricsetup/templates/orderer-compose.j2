@@ -6,7 +6,7 @@ services:
 {% for orderer in orderers %}
   {{ orderer.name }}:
     container_name: {{ orderer.name }}
-    image: hyperledger/fabric-orderer:{{ thetag }}
+    image: {{ fabric.repo.url }}fabric-orderer:{{ thetag }}
     network_mode: bridge
     hostname: {{ orderer.name }}
     environment:

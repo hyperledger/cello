@@ -20,7 +20,7 @@ spec:
         path: {{ fabricworkdir }}/run/keyfiles/chaincode
   containers:
     - name: fabriccli
-      image: hyperledger/fabric-tools:{{ thetag }}
+      image: {{ fabric.repo.url }}fabric-tools:{{ thetag }}
       imagePullPolicy: IfNotPresent
       securityContext:
         privileged: true

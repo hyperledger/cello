@@ -7,6 +7,8 @@ export CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/allorgs/{{ clipeer.org }}/peers/{
 export CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/allorgs/{{ clipeer.org }}/peers/{{ clipeer.name }}.{{ clipeer.org }}/tls/ca.crt
 export CORE_PEER_ID={{ clipeer.name }}
 export CORE_PEER_ADDRESS={{ clipeer.name }}:7051
+export CORE_PEER_LISTENADDRESS={{ clipeer.name }}:7051
+export CORE_PEER_CHAINCODELISTENADDRESS={{ clipeer.name }}:7052
 export CORE_PEER_LOCALMSPID={{ clipeer.org }}
 export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/allorgs/{{ clipeer.org }}/users/Admin@{{ clipeer.org }}/msp
 
@@ -26,6 +28,8 @@ export CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/allorgs/{{ peer.org }}/peers/{{ p
 export CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/allorgs/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}/tls/ca.crt
 export CORE_PEER_ID={{ peer.name }}
 export CORE_PEER_ADDRESS={{ peer.name }}:7051
+export CORE_PEER_LISTENADDRESS={{ peer.name }}:7051
+export CORE_PEER_CHAINCODELISTENADDRESS={{ peer.name }}:7052
 export CORE_PEER_LOCALMSPID={{ peer.org }}
 export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/allorgs/{{ peer.org }}/users/Admin@{{ peer.org }}/msp
 
@@ -43,6 +47,8 @@ export CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/allorgs/{{ chainpeer.org }}/peers
 export CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/allorgs/{{ chainpeer.org }}/peers/{{ chainpeer.name }}.{{ chainpeer.org }}/tls/ca.crt
 export CORE_PEER_ID={{ chainpeer.name }}
 export CORE_PEER_ADDRESS={{ chainpeer.name }}:7051
+export CORE_PEER_LISTENADDRESS={{ chainpeer.name }}:7051
+export CORE_PEER_CHAINCODELISTENADDRESS={{ chainpeer.name }}:7052
 export CORE_PEER_LOCALMSPID={{ chainpeer.org }}
 export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/allorgs/{{ chainpeer.org }}/users/Admin@{{ chainpeer.org }}/msp
 
@@ -58,6 +64,8 @@ echo '-------------- Query chaincode'
 {% else %}
 export CORE_PEER_ID={{ clipeer.name }}
 export CORE_PEER_ADDRESS={{ clipeer.name }}:7051
+export CORE_PEER_LISTENADDRESS={{ clipeer.name }}:7051
+export CORE_PEER_CHAINCODELISTENADDRESS={{ clipeer.name }}:7052
 export CORE_PEER_LOCALMSPID={{ clipeer.org }}
 export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/allorgs/{{ clipeer.org }}/users/Admin@{{ clipeer.org }}/msp
 
@@ -74,6 +82,9 @@ mkdir -p $GOPATH/src/chaincode
 
 export CORE_PEER_ID={{ peer.name }}
 export CORE_PEER_ADDRESS={{ peer.name }}:7051
+export CORE_PEER_LISTENADDRESS={{ peer.name }}:7051
+export CORE_PEER_CHAINCODELISTENADDRESS={{ peer.name }}:7052
+
 export CORE_PEER_LOCALMSPID={{ peer.org }}
 export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/allorgs/{{ peer.org }}/users/Admin@{{ peer.org }}/msp
 
@@ -89,6 +100,8 @@ echo '-------------- Instantiate chaincode'
 {% set chainpeer = peers[0] %}
 export CORE_PEER_ID={{ chainpeer.name }}
 export CORE_PEER_ADDRESS={{ chainpeer.name }}:7051
+export CORE_PEER_LISTENADDRESS={{ chainpeer.name }}:7051
+export CORE_PEER_CHAINCODELISTENADDRESS={{ chainpeer.name }}:7052
 export CORE_PEER_LOCALMSPID={{ chainpeer.org }}
 export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/allorgs/{{ chainpeer.org }}/users/Admin@{{ chainpeer.org }}/msp
 
