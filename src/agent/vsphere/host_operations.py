@@ -120,7 +120,7 @@ class VsphereOperation():
         :return:
         """
         try:
-            self.initializesi(self, vcip, username, pwd, port)
+            self.initializesi(vcip, username, pwd, port)
             return True
         except Exception as e:
             logger.error(e)

@@ -46,7 +46,7 @@
         "Mounts": [
             {
                 "Type": "bind",
-                "Source": "/opt/cello/fabric-1.0/local/channel-artifacts",
+                "Source": "/opt/cello/fabric-1.0/channel-artifacts",
                 "Destination": "/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts",
                 "Mode": "rw",
                 "RW": true,
@@ -54,7 +54,7 @@
             },
             {
                 "Type": "bind",
-                "Source": "/opt/cello/fabric-1.0/local/crypto-config",
+                "Source": "/opt/cello/fabric-1.0/crypto-config",
                 "Destination": "/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto",
                 "Mode": "rw",
                 "RW": true,
@@ -62,7 +62,7 @@
             },
             {
                 "Type": "bind",
-                "Source": "/opt/cello/fabric-1.0/local/scripts",
+                "Source": "/opt/cello/fabric-1.0/scripts",
                 "Destination": "/opt/gopath/src/github.com/hyperledger/fabric/peer/scripts",
                 "Mode": "rw",
                 "RW": true,
@@ -184,7 +184,7 @@
         "Mounts": [
             {
                 "Type": "bind",
-                "Source": "/opt/cello/fabric-1.0/local/crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/tls",
+                "Source": "/opt/cello/fabric-1.0/crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/tls",
                 "Destination": "/var/hyperledger/orderer/tls",
                 "Mode": "rw",
                 "RW": true,
@@ -192,7 +192,7 @@
             },
             {
                 "Type": "bind",
-                "Source": "/opt/cello/fabric-1.0/local/crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/msp",
+                "Source": "/opt/cello/fabric-1.0/crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/msp",
                 "Destination": "/var/hyperledger/orderer/msp",
                 "Mode": "rw",
                 "RW": true,
@@ -200,7 +200,7 @@
             },
             {
                 "Type": "bind",
-                "Source": "/opt/cello/fabric-1.0/local/channel-artifacts/orderer.genesis.block",
+                "Source": "/opt/cello/fabric-1.0/channel-artifacts/orderer.genesis.block",
                 "Destination": "/var/hyperledger/orderer/orderer.genesis.block",
                 "Mode": "rw",
                 "RW": true,
@@ -303,7 +303,7 @@
             },
             {
                 "Type": "bind",
-                "Source": "/opt/cello/fabric-1.0/local/crypto-config/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/msp",
+                "Source": "/opt/cello/fabric-1.0/crypto-config/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/msp",
                 "Destination": "/etc/hyperledger/fabric/msp",
                 "Mode": "rw",
                 "RW": true,
@@ -311,7 +311,7 @@
             },
             {
                 "Type": "bind",
-                "Source": "/opt/cello/fabric-1.0/local/crypto-config/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls",
+                "Source": "/opt/cello/fabric-1.0/crypto-config/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls",
                 "Destination": "/etc/hyperledger/fabric/tls",
                 "Mode": "rw",
                 "RW": true,
@@ -410,7 +410,7 @@
         "Mounts": [
             {
                 "Type": "bind",
-                "Source": "/opt/cello/fabric-1.0/local/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp",
+                "Source": "/opt/cello/fabric-1.0/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp",
                 "Destination": "/etc/hyperledger/fabric/msp",
                 "Mode": "rw",
                 "RW": true,
@@ -418,7 +418,7 @@
             },
             {
                 "Type": "bind",
-                "Source": "/opt/cello/fabric-1.0/local/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls",
+                "Source": "/opt/cello/fabric-1.0/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls",
                 "Destination": "/etc/hyperledger/fabric/tls",
                 "Mode": "rw",
                 "RW": true,
@@ -525,7 +525,7 @@
         "Mounts": [
             {
                 "Type": "bind",
-                "Source": "/opt/cello/fabric-1.0/local/crypto-config/peerOrganizations/org1.example.com/peers/peer1.org1.example.com/msp",
+                "Source": "/opt/cello/fabric-1.0/crypto-config/peerOrganizations/org1.example.com/peers/peer1.org1.example.com/msp",
                 "Destination": "/etc/hyperledger/fabric/msp",
                 "Mode": "rw",
                 "RW": true,
@@ -533,7 +533,7 @@
             },
             {
                 "Type": "bind",
-                "Source": "/opt/cello/fabric-1.0/local/crypto-config/peerOrganizations/org1.example.com/peers/peer1.org1.example.com/tls",
+                "Source": "/opt/cello/fabric-1.0/crypto-config/peerOrganizations/org1.example.com/peers/peer1.org1.example.com/tls",
                 "Destination": "/etc/hyperledger/fabric/tls",
                 "Mode": "rw",
                 "RW": true,
@@ -640,7 +640,7 @@
         "Mounts": [
             {
                 "Type": "bind",
-                "Source": "/opt/cello/fabric-1.0/local/crypto-config/peerOrganizations/org2.example.com/peers/peer1.org2.example.com/msp",
+                "Source": "/opt/cello/fabric-1.0/crypto-config/peerOrganizations/org2.example.com/peers/peer1.org2.example.com/msp",
                 "Destination": "/etc/hyperledger/fabric/msp",
                 "Mode": "rw",
                 "RW": true,
@@ -648,7 +648,7 @@
             },
             {
                 "Type": "bind",
-                "Source": "/opt/cello/fabric-1.0/local/crypto-config/peerOrganizations/org2.example.com/peers/peer1.org2.example.com/tls",
+                "Source": "/opt/cello/fabric-1.0/crypto-config/peerOrganizations/org2.example.com/peers/peer1.org2.example.com/tls",
                 "Destination": "/etc/hyperledger/fabric/tls",
                 "Mode": "rw",
                 "RW": true,

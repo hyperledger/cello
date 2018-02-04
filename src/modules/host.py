@@ -330,10 +330,9 @@ class HostHandler(object):
             cluster_name = "{}_{}".format(
                 host.name,
                 int((start_port - CLUSTER_PORT_START) / CLUSTER_PORT_STEP))
-            consensus_plugin = CONSENSUS_PLUGIN_SOLO
             cluster_size = random.choice(NETWORK_SIZE_FABRIC_V1)
             config = FabricV1NetworkConfig(
-                consensus_plugin=consensus_plugin,
+                consensus_plugin=CONSENSUS_PLUGIN_SOLO,
                 size=cluster_size)
             cid = cluster.cluster_handler.create(name=cluster_name,
                                                  host_id=id, config=config,

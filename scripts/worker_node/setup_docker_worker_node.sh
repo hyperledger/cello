@@ -35,8 +35,9 @@ echo_b "Checking local artifacts path ${ARTIFACTS_DIR}..."
 [ ! -d ${ARTIFACTS_DIR} ] \
 	&& echo_r "Local artifacts path ${ARTIFACTS_DIR} not existed, creating one" \
 	&& sudo mkdir -p ${ARTIFACTS_DIR} \
-	&& sudo cp -r ../../src/agent/docker/_compose_files/fabric-1.0 ${ARTIFACTS_DIR} \
 	&& sudo chown -R ${USER}:${USERGROUP} ${ARTIFACTS_DIR}
+
+cp -r ../../src/agent/docker/_compose_files/fabric-1.0 ${ARTIFACTS_DIR} \
 
 echo_b "Setup ip forward rules"
 sudo sysctl -w net.ipv4.ip_forward=1

@@ -32,9 +32,9 @@
 				<dt>Duration<dt> <dd>{{item.duration}}</dd>
     <dt>Service URL<dt> <dd>
         {% for k in item.service_url%}
-            {{ k }}: {{item.service_url[k]}}<br>
+	        {{ k }}: <a href="http://{{item.service_url[k]}}">{{item.service_url[k]}}</a><br>
         {% endfor %}
-    <dt>Explorer URL<dt> <dd>
+    <dt>Hyperledger Explorer<dt> <dd>
         {% for k in item.service_url%}
             {% if k== "dashboard"%}
                 <a href="http://{{item.service_url[k]}}">{{ item.service_url[k]}}</a><br>

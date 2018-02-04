@@ -62,7 +62,7 @@ EXPLORER_PORT = {
 SERVICE_PORTS = dict(list(PEER_SERVICE_PORTS.items()) +
                      list(CA_SERVICE_PORTS.items()))
 
-NETWORK_TYPE_FABRIC_PRE_V1 = 'fabric-0.6'
+NETWORK_TYPE_FABRIC_PRE_V1 = 'fabric-0.6'  # TODO: deprecate 0.6 support soon
 NETWORK_TYPE_FABRIC_V1 = 'fabric-1.0'
 NETWORK_TYPES = [NETWORK_TYPE_FABRIC_V1]  # only support fabric v1.x now
 
@@ -98,14 +98,14 @@ WORKER_TYPES = [WORKER_TYPE_DOCKER, WORKER_TYPE_SWARM, WORKER_TYPE_K8S,
                 WORKER_TYPE_VSPHERE]
 
 # TODO: might deprecate as can use agent to collect log seperately
-CLUSTER_LOG_TYPES = ['local', 'syslog']
+CLUSTER_LOG_TYPES = ['local']  # TODO: we may remove this option
 CLUSTER_LOG_LEVEL = ['DEBUG', 'INFO', 'NOTICE', 'WARNING', 'ERROR',
                      'CRITICAL']
 
-SYS_USER = "__SYSTEM__"
-SYS_CREATOR = SYS_USER + "CREATING"
-SYS_DELETER = SYS_USER + "DELETING"
-SYS_RESETTING = SYS_USER + "RESETTING"
+NETWORK_STATUS_CREATING = 'creating'  # just in-creation
+NETWORK_STATUS_RUNNING = 'running'  # running now, waiting for health check
+NETWORK_STATUS_DELETING = 'deleting'  # network is in deleting
+NETWORK_STATUS_STOPPED = 'stopped'  # network is stopped
 
 # Vcenter and VirtualMachine Confs
 VIRTUAL_MACHINE = 'vm'

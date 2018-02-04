@@ -69,7 +69,7 @@ class FabricV1NetworkConfig(BlockchainNetworkConfig):
     FabricV1NetworkConfig includes configs for fabric v1.0 network.
     """
 
-    def __init__(self, consensus_plugin, size):
+    def __init__(self, consensus_plugin=CONSENSUS_MODES[0], size=4):
         """
         Init.
 

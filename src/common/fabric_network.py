@@ -72,11 +72,13 @@ class FabricV1Network(FabricNetwork):
     def set_config(self):
         self.config = FabricV1NetworkConfig()
 
+# TODO: need re-implement this
     @classmethod
     def health_check(cls, cluster, cluster_id, timeout=5):
         """
         Check if the peer or cluster is healthy by checking its
         ports and number of containers running
+        :param cluster: cluster to check
         :param cluster_id:
         :param timeout:
         :return: True or False
@@ -88,7 +90,7 @@ class FabricV1Network(FabricNetwork):
             if len(segs) != 3:
                 rest_api = 'http://' + rest_api
                 swarm_api = 'http://' + rest_api + '/swarm'
-            if len(segs) == 3:
+            else:
                 rest_api = 'http:' + segs[1] + ':' + segs[2] + \
                     '/containers/json'
                 swarm_api = 'http:' + segs[1] + ':' + segs[2] + \

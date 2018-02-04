@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
-
+#
+# Copyright O Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
 
 # Detecting whether can import the header file to render colorful cli output
 if [ -f ../header.sh ]; then
@@ -65,7 +69,7 @@ IMG_TAG=1.0.4
 echo_b "Downloading and retag images for kafka/zookeeper separately, as they are still v1.0.4"
 for IMG in kafka zookeeper; do
 	HLF_IMG=hyperledger/fabric-${IMG}
-	if [ -z "$(docker images -q ${HLF_IMG}:${ARCH}-${HLF_VERSION} 2> /dev/null)" ]; then  # not exist
+	if [ -z "$(docker images -q ${HLF_IMG}:${HLF_VERSION} 2> /dev/null)" ]; then  # not exist
 		docker pull ${HLF_IMG}:$ARCH-$IMG_TAG
 		docker tag ${HLF_IMG}:$ARCH-$IMG_TAG ${HLF_IMG}:${HLF_VERSION}
 	else

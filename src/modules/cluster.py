@@ -8,7 +8,6 @@ import logging
 import os
 import sys
 import time
-import copy
 from uuid import uuid4
 from threading import Thread
 import socket
@@ -23,12 +22,14 @@ from agent import get_swarm_node_ip
 from common import db, log_handler, LOG_LEVEL
 from common import CLUSTER_PORT_START, CLUSTER_PORT_STEP, \
     NETWORK_TYPE_FABRIC_PRE_V1, NETWORK_TYPE_FABRIC_V1, \
-    CONSENSUS_PLUGINS_FABRIC_V1, CONSENSUS_MODES, \
+    CONSENSUS_PLUGINS_FABRIC_V1, \
     WORKER_TYPES, WORKER_TYPE_DOCKER, WORKER_TYPE_SWARM, WORKER_TYPE_K8S, \
-    WORKER_TYPE_VSPHERE, SYS_CREATOR, SYS_DELETER, SYS_USER, \
-    SYS_RESETTING, VMIP, \
+    WORKER_TYPE_VSPHERE, VMIP, \
     NETWORK_SIZE_FABRIC_PRE_V1, \
-    PEER_SERVICE_PORTS, CA_SERVICE_PORTS, EXPLORER_PORT, ORDERER_SERVICE_PORTS
+    PEER_SERVICE_PORTS, CA_SERVICE_PORTS, EXPLORER_PORT, \
+    ORDERER_SERVICE_PORTS, \
+    NETWORK_STATUS_CREATING, NETWORK_STATUS_RUNNING, NETWORK_STATUS_DELETING
+
 
 from common import FabricPreNetworkConfig, FabricV1NetworkConfig
 from common.fabric_network import FabricV1Network
@@ -107,8 +108,108 @@ class ClusterHandler(object):
             return {}
         return self._schema(cluster)
 
+    def gen_service_urls(self, cid, peer_ports, ca_ports, orderer_ports,
+                         explorer_ports):
+        """
+        Generate the service urls based on the mapping ports
+        :param cid: cluster id to operate with
+        :param peer_ports: peer ports mapping
+        :param ca_ports: ca ports mapping
+        :param orderer_ports: orderer ports mapping
+        :param explorer_ports: explorer ports mapping
+        :return: service url mapping. {} means failure
+        """
+        access_peer = 'peer0.org1.example.com'
+        access_ca = 'ca.example.com'
+
+        peer_host_ip = self._get_service_ip(cid, access_peer)
+        # explorer_host_ip = self._get_service_ip(cid, access_explorer)
+        # no api_url, then clean and return
+        if not peer_host_ip:  # not valid api_url
+            logger.error("Error to find peer host url, cleanup")
+            self.delete(id=cid, record=False, forced=True)
+            return {}
+        ca_host_ip = self._get_service_ip(cid, access_ca)
+
+        service_urls = {}
+        for k, v in peer_ports.items():
+            service_urls[k] = "{}:{}".format(peer_host_ip, v)
+        for k, v in ca_ports.items():
+            service_urls[k] = "{}:{}".format(ca_host_ip, v)
+        for k, v in orderer_ports.items():
+            service_urls[k] = "{}:{}".format(ca_host_ip, v)
+        for k, v in explorer_ports.items():
+            service_urls[k] = "{}:{}".format(peer_host_ip, v)
+        return service_urls
+
+    def gen_ports_mapping(self, peer_num, ca_num, start_port, host_id):
+        """
+        Generate the ports and service mapping for given size of network
+        :param peer_num: number of peers
+        :param ca_num: number of cas
+        :param start_port: mapping range start with
+        :param host_id: find ports at which host
+        :return: the mapping ports, empty means failure
+        """
+        request_port_num = \
+            peer_num * (len(peer_service_ports.items())) + \
+            ca_num * len(ca_service_ports.items()) + \
+            len(ORDERER_SERVICE_PORTS.items()) + \
+            len(EXPLORER_PORT.items())
+        logger.debug("request port number {}".format(request_port_num))
+
+        if start_port <= 0:  # need to dynamic find available ports
+            ports = self.find_free_start_ports(host_id, request_port_num)
+        else:
+            ports = list(range(start_port, start_port + request_port_num))
+        if not ports:
+            logger.warning("No free port is found")
+            return {}, {}, {}, {}, {}
+        else:
+            logger.debug("ports {}".format(ports))
+
+        peer_ports, ca_ports, orderer_ports = {}, {}, {}
+        explorer_ports, all_ports = {}, {}
+
+        if peer_num > 1:
+            org_num_list = [1, 2]
+            peer_num_end = int(peer_num / 2)
+        else:
+            org_num_list = [1]
+            peer_num_end = 1
+
+        logger.debug("org num list {} peer_num_end {}".
+                     format(org_num_list, peer_num_end))
+
+        pos = 0
+        for org_num in org_num_list:  # map peer ports
+            for peer_num in range(0, peer_num_end):
+                for k, v in peer_service_ports.items():
+                    peer_ports[k.format(peer_num, org_num)] = ports[pos]
+                    logger.debug("pos {}".format(pos))
+                    pos += 1
+        for org_num in org_num_list:  # map ca ports
+            for k, v in ca_service_ports.items():
+                ca_ports[k.format(org_num)] = ports[pos]
+                logger.debug("pos={}".format(pos))
+                pos += 1
+        for k, v in ORDERER_SERVICE_PORTS.items():  # orderer ports
+            orderer_ports[k] = ports[pos]
+            logger.debug("pos={}".format(pos))
+            pos += 1
+        for k, v in EXPLORER_PORT.items():  # exporer ports
+            explorer_ports[k] = ports[pos]
+            pos += 1
+
+        all_ports.update(peer_ports)
+        all_ports.update(ca_ports)
+        all_ports.update(orderer_ports)
+        all_ports.update(explorer_ports)
+
+        return all_ports, peer_ports, ca_ports, orderer_ports, explorer_ports
+
     def create(self, name, host_id, config, start_port=0,
-               user_id=SYS_USER):
+               user_id=""):
         """ Create a cluster based on given data
 
         TODO: maybe need other id generation mechanism
@@ -126,11 +227,14 @@ class ClusterHandler(object):
         logger.info("Create cluster {}, host_id={}, config={}, start_port={}, "
                     "user_id={}".format(name, host_id, config.get_data(),
                                         start_port, user_id))
-        size = int(config.get_data().get("size", 4))
 
         worker = self.host_handler.get_active_host_by_id(host_id)
         if not worker:
             logger.error("Cannot find available host to create new network")
+            return None
+
+        if ClusterModel.objects(host=worker).count() >= worker.capacity:
+            logger.warning("host {} is already full".format(host_id))
             return None
 
         if worker.type == WORKER_TYPE_VSPHERE:
@@ -139,102 +243,37 @@ class ClusterHandler(object):
             worker.update({"worker_api": "tcp://" + docker_daemon})
             logger.info(worker)
 
-        if ClusterModel.objects(host=worker).count() >= worker.capacity:
-            logger.warning("host {} is already full".format(host_id))
+        peer_num = int(config.get_data().get("size", 4))
+        ca_num = 2 if peer_num > 1 else 1
+
+        cid = uuid4().hex
+        mapped_ports, peer_ports, ca_ports, orderer_ports, explorer_ports = \
+            self.gen_ports_mapping(peer_num, ca_num, start_port, host_id)
+        if not mapped_ports:
+            logger.error("mapped_ports={}".format(mapped_ports))
             return None
 
-        worker_api = worker.worker_api
-        logger.debug("worker_api={}".format(worker_api))
-
-        ca_num = 2 if size > 1 else 1
-        request_port_num = \
-            len(ORDERER_SERVICE_PORTS.items()) + \
-            len(ca_service_ports.items()) * ca_num + \
-            len(EXPLORER_PORT.items()) + \
-            size * (len(peer_service_ports.items()))
-        logger.debug("request port number {}".format(request_port_num))
-
-        if start_port <= 0:
-            ports = self.find_free_start_ports(host_id, request_port_num)
-            if not ports:
-                logger.warning("No free port is found")
-                return None
-        else:
-            ports = [i for i in
-                     range(start_port, start_port + request_port_num)]
-
-        logger.debug("ports {}".format(ports))
-        peers_ports, ca_mapped_ports, orderer_service_ports,\
-            explorer_mapped_port, mapped_ports = \
-            {}, {}, {}, {}, {}
-
-        if size > 1:
-            org_num_list = [1, 2]
-            peer_num_end = int(size / 2)
-        else:
-            org_num_list = [1]
-            peer_num_end = 1
-
-        logger.debug("org num list {} peer_num_end {}".
-                     format(org_num_list, peer_num_end))
-
-        pos = 0
-        for org_num in org_num_list:
-            for peer_num in range(0, peer_num_end):
-                for k, v in peer_service_ports.items():
-                    peers_ports[k.format(peer_num, org_num)] = ports[pos]
-                    logger.debug("pos {}".format(pos))
-                    pos += 1
-        for org_num in org_num_list:
-            for k, v in ca_service_ports.items():
-                ca_mapped_ports[k.format(org_num)] = ports[pos]
-                logger.debug("pos={}".format(pos))
-                pos += 1
-        for k, v in ORDERER_SERVICE_PORTS.items():
-            orderer_service_ports[k] = ports[pos]
-            logger.debug("pos={}".format(pos))
-            pos += 1
-
-        for k, v in EXPLORER_PORT.items():
-            explorer_mapped_port[k] = ports[pos]
-            pos += 1
-
-        mapped_ports.update(peers_ports)
-        mapped_ports.update(ca_mapped_ports)
-        mapped_ports.update(orderer_service_ports)
-        mapped_ports.update(explorer_mapped_port)
         env_mapped_ports = dict(((k + '_port').upper(),
                                  str(v)) for (k, v) in mapped_ports.items())
 
         network_type = config['network_type']
-        cid = uuid4().hex
         net = {  # net is a blockchain network instance
             'id': cid,
             'name': name,
-            'user_id': user_id or SYS_CREATOR,  # avoid applied
-            'worker_api': worker_api,
+            'user_id': user_id,
+            'worker_api': worker.worker_api,
             'network_type': network_type,  # e.g., fabric-1.0
-            'env': env_mapped_ports
+            'env': env_mapped_ports,
+            'status': NETWORK_STATUS_CREATING,
+            'mapped_ports': mapped_ports,
+            'service_url': {},  # e.g., {rest: xxx:7050, grpc: xxx:7051}
         }
-        if network_type == NETWORK_TYPE_FABRIC_V1:  # TODO: fabric v1.0
-            net.update({
-                'mapped_ports': mapped_ports,
-                'service_url': {},  # e.g., {rest: xxx:7050, grpc: xxx:7051}
-            })
-        elif network_type == NETWORK_TYPE_FABRIC_PRE_V1:  # fabric v0.6
-            net.update({
-                'mapped_ports': mapped_ports,
-                'service_url': {},  # e.g., {rest: xxx:7050, grpc: xxx:7051}
-            })
-
         net.update(config.get_data())
 
         # try to start one cluster at the host
         cluster = ClusterModel(**net)
         cluster.host = worker
         cluster.save()
-
-        # from now on, we should be safe
 
         # start compose project, failed then clean and return
         logger.debug("Start compose project with name={}".format(cid))
@@ -246,67 +285,41 @@ class ClusterHandler(object):
                            .format(name))
             self.delete(id=cid, record=False, forced=True)
             return None
+
+        # creation done, update the container table in db
         for k, v in containers.items():
             container = Container(id=v, name=k, cluster=cluster)
             container.save()
 
-        access_peer, access_ca = '', ''
-        if network_type == NETWORK_TYPE_FABRIC_V1:  # fabric v1.0
-            access_peer = 'peer0.org1.example.com'
-            access_ca = 'ca.example.com'
-            # access_explorer = 'explorer'
-        elif network_type == NETWORK_TYPE_FABRIC_PRE_V1:  # fabric v0.6
-            access_peer = 'vp0'
-            access_ca = 'membersrvc'
-
-        peer_host_ip = self._get_service_ip(cid, access_peer)
-        ca_host_ip = self._get_service_ip(cid, access_ca)
-        # explorer_host_ip = self._get_service_ip(cid, access_explorer)
-        # no api_url, then clean and return
-        if not peer_host_ip:  # not valid api_url
-            logger.error("Error to find peer host url, cleanup")
-            self.delete(id=cid, record=False, forced=True)
-            return None
-
-        service_urls = {}
-        for k, v in peers_ports.items():
-            service_urls[k] = "{}:{}".format(peer_host_ip, v)
-
-        for k, v in ca_mapped_ports.items():
-            service_urls[k] = "{}:{}".format(ca_host_ip, v)
-
-        for k, v in orderer_service_ports.items():
-            service_urls[k] = "{}:{}".format(ca_host_ip, v)
-
-        for k, v in explorer_mapped_port.items():
-            service_urls[k] = "{}:{}".format(peer_host_ip, v)
-
-        for k, v in explorer_mapped_port.items():
-            service_urls[k] = "{}:{}".format(peer_host_ip, v)
-
+        # service urls can only be calculated after service is created
+        service_urls = self.gen_service_urls(cid, peer_ports, ca_ports,
+                                             orderer_ports, explorer_ports)
+        # update the service port table in db
         for k, v in service_urls.items():
             service_port = ServicePort(name=k, ip=v.split(":")[0],
                                        port=int(v.split(":")[1]),
                                        cluster=cluster)
             service_port.save()
 
-        # update api_url, container, and user_id field
+        # update api_url, container, user_id and status
         self.db_update_one(
             {"id": cid},
             {
                 "user_id": user_id,
                 'api_url': service_urls.get('rest', ""),
-                'service_url': service_urls
+                'service_url': service_urls,
+                'status': NETWORK_STATUS_RUNNING
             }
         )
 
         def check_health_work(cid):
             time.sleep(5)
             self.refresh_health(cid)
-
         t = Thread(target=check_health_work, args=(cid,))
         t.start()
 
+        host = HostModel.objects.get(id=host_id)
+        host.update(add_to_set__clusters=[cid])
         logger.info("Create cluster OK, id={}".format(cid))
         return cid
 
@@ -328,11 +341,11 @@ class ClusterHandler(object):
             logger.warning("Cannot find cluster {}".format(id))
             return False
 
-        c = self.db_update_one({"id": id}, {"user_id": SYS_DELETER},
+        c = self.db_update_one({"id": id}, {"status": NETWORK_STATUS_DELETING},
                                after=False)
         # we are safe from occasional applying now
         user_id = c.user_id  # original user_id
-        if not forced and user_id != "" and not user_id.startswith(SYS_USER):
+        if not forced and user_id != "":
             # not forced, and chain is used by normal user, then no process
             logger.warning("Cannot delete cluster {} by "
                            "user {}".format(id, user_id))
@@ -341,15 +354,9 @@ class ClusterHandler(object):
                 upsert=True
             )
             return False
+        else:
+            cluster.update(set__status=NETWORK_STATUS_DELETING, upsert=True)
 
-        # 0. forced
-        #  1. user_id == SYS_DELETER or ""
-        #  Then, add deleting flag to the db, and start deleting
-        if not user_id.startswith(SYS_DELETER):
-            cluster.update(
-                set__user_id=SYS_DELETER + user_id,
-                upsert=True
-            )
         host_id, worker_api, network_type, consensus_plugin, cluster_size = \
             str(c.host.id), c.worker_api, \
             c.network_type if c.network_type else NETWORK_TYPE_FABRIC_PRE_V1, \
@@ -413,10 +420,11 @@ class ClusterHandler(object):
                 return self._schema(c)
         logger.debug("Try find available cluster for " + user_id)
         cluster = ClusterModel.\
-            objects(user_id=SYS_USER,
+            objects(user_id="",
                     network_type__icontains=condition.get("apply_type",
                                                           "fabric"),
                     size=condition.get("size", 0),
+                    status=NETWORK_STATUS_RUNNING,
                     health="OK").first()
         if cluster:
             cluster.update(upsert=True, **{
@@ -610,25 +618,18 @@ class ClusterHandler(object):
         c = self.get_by_id(cluster_id)
         logger.debug("Run recreate_work in background thread")
         cluster_name, host_id, network_type, \
-            = c.get("name"), c.get("host_id"), \
-            c.get("network_type")
+            = c.get("name"), c.get("host_id"), c.get("network_type")
         if not self.delete(cluster_id, record=record, forced=True):
             logger.warning("Delete cluster failed with id=" + cluster_id)
             return False
         network_type = c.get('network_type')
-        if network_type == NETWORK_TYPE_FABRIC_PRE_V1:
-            config = FabricPreNetworkConfig(
-                consensus_plugin=c.get('consensus_plugin'),
-                consensus_mode=c.get('consensus_mode'),
-                size=c.get('size'))
-        elif network_type == NETWORK_TYPE_FABRIC_V1:
+        if network_type == NETWORK_TYPE_FABRIC_V1:
             config = FabricV1NetworkConfig(
                 consensus_plugin=c.get('consensus_plugin'),
                 size=c.get('size'))
         else:
             return False
-        if not self.create(name=cluster_name, host_id=host_id,
-                           config=config):
+        if not self.create(name=cluster_name, host_id=host_id, config=config):
             logger.warning("Fail to recreate cluster {}".format(cluster_name))
             return False
         return True
@@ -641,12 +642,8 @@ class ClusterHandler(object):
         :return: True or False
         """
         logger.debug("Try reseting cluster {}".format(cluster_id))
-        c = self.db_update_one({"id": cluster_id, "user_id": ""},
-                               {"user_id": SYS_RESETTING})
-        if c.get("user_id") != SYS_RESETTING:  # not have one
-            logger.warning("No free cluster can be reset for id {}".format(
-                cluster_id))
-            return False
+        self.db_update_one({"id": cluster_id, "user_id": ""},
+                           {"status": NETWORK_STATUS_DELETING})
         return self.reset(cluster_id)
 
     def _serialize(self, doc, keys=('id', 'name', 'user_id', 'host_id',
@@ -668,8 +665,9 @@ class ClusterHandler(object):
                 result[k] = doc.get(k, '')
         return result
 
-    def _get_service_ip(self, cluster_id, node='vp0'):
+    def _get_service_ip(self, cluster_id, node='peer0'):
         """
+        Get the node's servie ip
 
         :param cluster_id: The name of the cluster
         :param host: On which host to search the cluster
@@ -830,7 +828,7 @@ class ClusterHandler(object):
         logger.info("filter {} operations {}".format(filter, operations))
         kwargs = dict(('set__' + k, v) for (k, v) in operations.items())
         for k, v in kwargs.items():
-            logger.info("k {} v {}".format(k, v))
+            logger.info("k={}, v={}".format(k, v))
         try:
             ClusterModel.objects(id=filter.get("id")).update(
                 upsert=True,

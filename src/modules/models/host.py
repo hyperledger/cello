@@ -34,6 +34,7 @@ class Host(Document):
     autofill = BooleanField(default=False)
     schedulable = BooleanField(default=False)
     capacity = IntField(default=0)
+    clusters = ListField(default=[])
 
 
 class Cluster(Document):

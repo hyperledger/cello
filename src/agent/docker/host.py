@@ -50,15 +50,7 @@ class DockerHost(HostBase):
         A docker host is potentially a single node or a swarm.
         Will full fill with clusters of given capacity.
 
-        :param name: name of the node
         :param worker_api: worker_api of the host
-        :param capacity: The number of clusters to hold
-        :param log_type: type of the log
-        :param log_level: level of the log
-        :param log_server: server addr of the syslog
-        :param autofill: Whether automatically fillup with chains
-        :param schedulable: Whether can schedule cluster request to it
-        :param serialization: whether to get serialized result or object
         :return: True or False
         """
 
@@ -101,7 +93,8 @@ class DockerHost(HostBase):
         """
         Clean a host's free clusters.
 
-        :param id: host id
+        :param host_type: host type
+        :param worker_api: worker api
         :return: True or False
         """
         return reset_container_host(host_type=host_type,
@@ -111,7 +104,7 @@ class DockerHost(HostBase):
         """
         Refresh the status of the host by detection
 
-        :param host: the host to update status
+        :param worker_api: api to the worker
         :return: Updated host
         """
         return check_daemon(worker_api)

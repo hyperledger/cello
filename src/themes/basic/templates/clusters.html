@@ -37,7 +37,7 @@
                     <thead align="center">
                     <tr>
                         <th>Name</th>
-                        <th>Type</th>
+                        <th>Consensus Type</th>
                         <th>Status</th>
                         <th>Health</th>
                         <th>Size</th>
@@ -55,7 +55,7 @@
                     <td>
                         <a href="/view/cluster/{{ item.id }}?released=0">{{ item.name }}</a>
                     </td>
-                    {% if item.consensus_mode=="" %}
+                    {% if item.consensus_mode|string=="" %}
                         <td>{{ item.consensus_plugin }}</td>
                     {% else %}
                         <td>{{ item.consensus_plugin }}/{{ item.consensus_mode }}</td>

@@ -111,13 +111,13 @@ class HostCreateTest(TestCase):
         Test create a host with host_type
         """
         return self.client.post("/api/host",
-                                        data=dict(
-                                            name="test_host",
-                                            worker_api=MOCK_HOST,
-                                            capacity=5,
-                                            log_type="local",
-                                            log_server="",
-                                            log_level="INFO",
-                                            host_type=host_type
-                                        ),
-                                        follow_redirects=True)
+                                data=dict(
+                                    name="test_host",
+                                    worker_api=MOCK_HOST,
+                                    capacity=5,
+                                    log_type="local",
+                                    log_server="",
+                                    log_level="INFO",
+                                    host_type=host_type
+                                ),
+                                follow_redirects=True)

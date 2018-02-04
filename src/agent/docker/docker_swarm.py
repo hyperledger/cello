@@ -378,7 +378,7 @@ def _compose_set_env(name, worker_api, mapped_ports=SERVICE_PORTS,
             'COMPOSE_FILE': "fabric-{}-{}.yaml".format(
                 config['consensus_plugin'],
                 config['size']),
-            'COMPOSE_PROJECT_PATH': '/opt/cello/fabric-1.0/local',
+            'COMPOSE_PROJECT_PATH': '/opt/cello/fabric-1.0',
         })
     elif config['network_type'] == NETWORK_TYPE_FABRIC_PRE_V1:
         envs.update({
@@ -423,8 +423,7 @@ def compose_up(name, host, mapped_ports, config=None, timeout=5):
                      log_server, config)
 
     try:
-        template_path = COMPOSE_FILE_PATH + os.sep + config['network_type'] + \
-            os.sep + log_type
+        template_path = COMPOSE_FILE_PATH + os.sep + config['network_type']
         logger.debug('template path {}'.format(template_path))
         project = get_project(template_path)
         containers = project.up(detached=True, timeout=timeout)
@@ -506,7 +505,7 @@ def compose_start(name, worker_api, mapped_ports=SERVICE_PORTS,
 
     # project = get_project(COMPOSE_FILE_PATH+"/"+consensus_plugin)
     project = get_project(COMPOSE_FILE_PATH +
-                          "/{}/".format(config['network_type']) + log_type)
+                          "/{}".format(config['network_type']))
     try:
         project.start()
         start_containers(worker_api, name + '-')
@@ -539,8 +538,7 @@ def compose_restart(name, worker_api, mapped_ports=SERVICE_PORTS,
                      log_server, config)
 
     # project = get_project(COMPOSE_FILE_PATH+"/"+consensus_plugin)
-    project = get_project(COMPOSE_FILE_PATH + os.sep + config['network_type'] +
-                          os.sep + log_type)
+    project = get_project(COMPOSE_FILE_PATH + os.sep + config['network_type'])
     try:
         project.restart()
         start_containers(worker_api, name + '-')
@@ -575,8 +573,7 @@ def compose_stop(name, worker_api, mapped_ports=SERVICE_PORTS,
     _compose_set_env(name, worker_api, mapped_ports, log_level, log_type,
                      log_server, config)
 
-    project = get_project(COMPOSE_FILE_PATH + os.sep + config['network_type'] +
-                          os.sep + log_type)
+    project = get_project(COMPOSE_FILE_PATH + os.sep + config['network_type'])
     try:
         project.stop(timeout=timeout)
     except Exception as e:
@@ -609,8 +606,7 @@ def compose_down(name, worker_api, mapped_ports=SERVICE_PORTS,
 
     # project = get_project(COMPOSE_FILE_PATH+"/"+consensus_plugin)
     logger.debug(os.environ)
-    project = get_project(COMPOSE_FILE_PATH + os.sep + config['network_type'] +
-                          os.sep + log_type)
+    project = get_project(COMPOSE_FILE_PATH + os.sep + config['network_type'])
 
     # project.down(remove_orphans=True)
     project.stop(timeout=timeout)
