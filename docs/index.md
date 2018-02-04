@@ -30,7 +30,8 @@ For new users, it is highly recommended to read the [Tutorial for Beginners](tut
 * [Adoption Scenarios](scenario.md)
 * [Configuration for Production](production_config.md)
 * [Manage Cello services](service_management.md)
-* [User Dashboard operate](user_dashboard.md)
+* [Operator Dashboard operate](dashboard_operator.md)
+* [User Dashboard operate](dashboard_user.md)
 
 ## Contribute to the Project
 * [How to Contribute](CONTRIBUTING.md)
@@ -41,7 +42,7 @@ For new users, it is highly recommended to read the [Tutorial for Beginners](tut
 ## Design Documentation
 * [Architecture Design](arch.md)
 * [Database Model](db.md)
-* [API Design](api/restserver_v2.md)
+* [API Design](api/rest_api_v2.md)
 
 ## Communication Channels
 

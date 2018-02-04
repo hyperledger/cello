@@ -1,6 +1,6 @@
-# Dashboard
+# Dashboard for Operator
 
-By default, the dashboard will listen on port `8080` at the Master Node, and operators can login in with default `admin:pass` credential.
+By default, the operator dashboard will listen on port `8080` at the Master Node, and operators can login in with default `admin:pass` credential.
 
 The left panel gives quick link to various functions, including `overview`, `system status`, `Hosts`, `Active Clusters`, `Inused Clusters`, `Release History` and `About`.
 

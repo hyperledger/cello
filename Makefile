@@ -11,7 +11,7 @@
 #   - clean:          Cleans the build area
 #   - doc:            Start a local web service to explore the documentation
 #   - docker[-clean]: Build/clean docker images locally
-#	- license:		  checks sourrce files for Apache license header
+#	  - license:		  checks sourrce files for Apache license header
 #   - help:           Output the help instructions for each command
 #   - log:            Check the recent log output of all services
 #   - restart:        Stop the cello service and then start
@@ -93,7 +93,6 @@ else
 	endif
 	START_OPTIONS = initial-env $(BUILD_JS)
 endif
-
 
 all: check
 

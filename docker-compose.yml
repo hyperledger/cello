@@ -5,24 +5,52 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # Local `/opt/cello/mongo` will be used for the db storage.
-#  dashboard: dashboard service of cello, listen on 8080
-#  app: app service of cello, listen on 80
-#  nginx: front end
-#  mongo: mongo db
+
+#  cello-nginx: proxy to access operator dashboard service, listen on 8080
+#  cello-operator-dashboard: dashboard service for operators
+#  cello-user-dashboard: user service of cello, listen on 8081
+#  engine: engine service of cello to provide RESTful APIs, listen on 80
+#  cello-mongo: mongo db
 
 version: '3.2'
 services:
-  # cello dashboard service
-  dashboard:
-    build:
+  # nginx as front end for the operator dashboard
+  nginx:
+    image: hyperledger/cello-nginx
+    hostname: cello-nginx
+    container_name: cello-nginx
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 2048M
+        reservations:
+          cpus: '0.10'
+          memory: 256M
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.default.conf
+      #- /opt/cello/nginx/log/:/var/log/nginx/
+    ports:
+      - "80:80"
+      - "8080:8080"
+    environment:
+      - BACKEND=cello-operator-dashboard
+      - PORT=8080
+      - USERNAME=admin
+      - PASSWORD=pass
+
+  # cello dashboard service for network operator
+  operator-dashboard:
+    build: # Remove soon
       context: src
       dockerfile: Dockerfile-dashboard
-    image: hyperledger/cello-dashboard
-    container_name: dashboard
-    hostname: cello-dashboard
+    image: hyperledger/cello-operator-dashboard
+    container_name: cello-operator-dashboard
+    hostname: cello-operator-dashboard
     restart: unless-stopped
     environment:
-      - MONGO_URL=mongodb://mongo:27017
+      - MONGO_URL=mongodb://cello-mongo:27017
       - MONGO_DB=dev
       - DEBUG=True    # in debug mode, service will auto-restart
       - LOG_LEVEL=DEBUG  # what level log will be output
@@ -34,17 +62,49 @@ services:
     volumes:  # This should be removed in product env
       - ./src:/app
 
-  # cello restserver service
-  restserver:
+ #TODO: need to follow other images to put at dockerhub
+  user-dashboard:
+    build: # Remove soon
+      context: user-dashboard
+    image: hyperledger/cello-user-dashboard
+    container_name: cello-user-dashboard
+    hostname: cello-user-dashboard
+    links:
+      - mongo:dashboard_mongo
+      - dashboard_mongo
+      - operator-dashboard
+    ports:
+      - "8081:8080"
+    environment:
+      - SV_BaseURL=http://operator-dashboard:8080/api/
+      - RESTful_Server=operator-dashboard:8080
+      - RESTful_BaseURL=/api/
+      - DEBUG=node:*
+      - DEV=$DEV
+      - ENABLE_EMAIL_ACTIVE=$ENABLE_EMAIL_ACTIVE
+      - SMTP_SERVER=$SMTP_SERVER
+      - SMTP_PORT=$SMTP_PORT
+      - SMTP_AUTH_USERNAME=$SMTP_AUTH_USERNAME
+      - SMTP_AUTH_PASSWORD=$SMTP_AUTH_PASSWORD
+      - FROM_EMAIL=$FROM_EMAIL
+      - WEBROOT=$WEBROOT
+      - FABRIC_CFG_PATH=/etc/hyperledger/fabric
+    volumes:
+      - ./user-dashboard:/usr/app/src
+      - /opt/cello/baas:/opt/data
+    command: bash -c "cd /usr/app/src && [ "$DEV" = True ] && npm run dev || npm start"
+
+  # cello engine service
+  engine:
     build:
       context: src
-      dockerfile: Dockerfile-restserver
-    image: hyperledger/cello-restserver
-    container_name: restserver
-    hostname: cello-restserver
+      dockerfile: Dockerfile-restserver # Remove soon
+    image: hyperledger/cello-engine
+    container_name: cello-engine
+    hostname: cello-engine
     restart: unless-stopped
     environment:
-      - MONGO_URL=mongodb://mongo:27017
+      - MONGO_URL=mongodb://cello-mongo:27017
       - MONGO_DB=dev
       - DEBUG=True    # in debug mode, service will auto-restart
       - LOG_LEVEL=DEBUG  # what level log will be output
@@ -55,15 +115,15 @@ services:
 
   # cello watchdog service
   watchdog:
-    build:
+    build: # Remove soon
       context: src
       dockerfile: Dockerfile-watchdog
     image: hyperledger/cello-watchdog
-    container_name: watchdog
+    container_name: cello-watchdog
     hostname: cello-watchdog
     restart: unless-stopped
     environment:
-      - MONGO_URL=mongodb://mongo:27017
+      - MONGO_URL=mongodb://cello-mongo:27017
       - MONGO_DB=dev
       - DEBUG=True    # in debug mode, service will auto-restart
       - LOG_LEVEL=DEBUG  # what level log will be output
@@ -73,8 +133,8 @@ services:
   # mongo database, may use others in future
   mongo:
     image: hyperledger/cello-mongo
-    hostname: mongo
-    container_name: mongo
+    hostname: cello-mongo
+    container_name: cello-mongo
     restart: unless-stopped
     deploy:
       resources:
@@ -93,32 +153,7 @@ services:
     volumes:
       - /opt/cello/mongo:/data/db
 
-  # nginx to forward front request, may split it out in future
-  nginx:
-    image: hyperledger/cello-nginx
-    hostname: nginx
-    container_name: nginx
-    restart: always
-    deploy:
-      resources:
-        limits:
-          cpus: '0.50'
-          memory: 2048M
-        reservations:
-          cpus: '0.10'
-          memory: 256M
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.default.conf
-      #- /opt/cello/nginx/log/:/var/log/nginx/
-    ports:
-      - "80:80"
-      - "8080:8080"
-    environment:
-      - BACKEND=dashboard
-      - PORT=8080
-      - USERNAME=admin
-      - PASSWORD=pass
-
+  # TODO: we may keep only one mongo instance, that should be enough
   dashboard_mongo:
     image: hyperledger/cello-mongo
     restart: unless-stopped
@@ -126,34 +161,3 @@ services:
       - NO_USED=0
     volumes:
       - /opt/cello/dashboard_mongo:/data/db
-
- #TODO: need to follow other images to put at dockerhub
-  user-dashboard:
-    build:
-      context: user-dashboard
-    image: hyperledger/cello-user-dashboard
-    container_name: user-dashboard
-    links:
-      - mongo:dashboard_mongo
-      - dashboard_mongo
-      - dashboard
-    ports:
-      - "8081:8080"
-    environment:
-      - SV_BaseURL=http://dashboard:8080/api/
-      - RESTful_Server=dashboard:8080
-      - RESTful_BaseURL=/api/
-      - DEBUG=node:*
-      - DEV=$DEV
-      - ENABLE_EMAIL_ACTIVE=$ENABLE_EMAIL_ACTIVE
-      - SMTP_SERVER=$SMTP_SERVER
-      - SMTP_PORT=$SMTP_PORT
-      - SMTP_AUTH_USERNAME=$SMTP_AUTH_USERNAME
-      - SMTP_AUTH_PASSWORD=$SMTP_AUTH_PASSWORD
-      - FROM_EMAIL=$FROM_EMAIL
-      - WEBROOT=$WEBROOT
-      - FABRIC_CFG_PATH=/etc/hyperledger/fabric
-    volumes:
-      - ./user-dashboard:/usr/app/src
-      - /opt/cello/baas:/opt/data
-    command: bash -c "cd /usr/app/src && [ "$DEV" = True ] && npm run dev || npm start"

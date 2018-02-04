@@ -1,8 +1,8 @@
 ## Master Node Setup
 The [Master Node](./terminology.md) includes several services:
 
-* `dashboard`: Provide Web UI for operators.
-* `restserver`: Provide RESTful APIs for chain consumers.
+* `operator dashboard`: Provide Web UI for operators.
+* `engine`: Provide RESTful APIs for chain consumers.
 * `watchdog`: Watch for health checking.
 
 *More details can be found at the [Architecture Design](./arch.md).*
@@ -69,7 +69,7 @@ To check the logs for one specific service, please run
 $ make log service=watchdog
 ```
 
-Now you can access the `MASTER_NODE_IP:8080` to open the Web-based [operational dashboard](./dashboard.md).
+Now you can access the `MASTER_NODE_IP:8080` to open the Web-based [operation dashboard](./dashboard_operator.md).
 
 ### Configuration
 The application configuration can be imported from file named `CELLO_CONFIG_FILE`.

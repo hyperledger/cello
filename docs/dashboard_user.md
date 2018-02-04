@@ -1,4 +1,4 @@
-# User Dashboard
+# Dashboard for User
 
 By default, the user dashboard will listen on port `8081` at the Master Node, and operators can login in with default `admin:pass` credential.
 

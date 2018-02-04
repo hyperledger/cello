@@ -28,8 +28,8 @@ Each layer should maintain stable APIs for upper layers, to achieve pluggability
 
 ![Architecture Overview](imgs/architecture.png)
 
-* `dashboard`: Provide the dashboard for the pool administrator, also the core engine to automatically maintain everything.
-* `restserver`: Provide the restful api for other system to apply/release/list chains.
+* `operator dashboard`: Provide the dashboard for the pool administrator, also the core engine to automatically maintain everything.
+* `engine`: Provide the restful api for other system to apply/release/list chains.
 * `watchdog`: Timely checking system status, keep everything healthy and clean.
 
 ## Implementation

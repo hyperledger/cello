@@ -5,7 +5,7 @@ Each url should have the `/v2` prefix, e.g., `/cluster_op` should be `/v2/cluste
 ## Rest Server
 These APIs will be called by front web services.
 
-Latest version please see [restserver.yaml](restserver.yaml).
+Latest version please see [rest_api_v2.yaml](rest_api_v2.yaml).
 
 ### Cluster
 

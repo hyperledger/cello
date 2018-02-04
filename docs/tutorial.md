@@ -57,6 +57,6 @@ It will be difficult if you have a numbers of chains to create manually. Cello p
 
 Try these methods as you like.
 
-If you want to know more advanced operational skills, please continue to the [Dashboard](./dashboard.md).
+If you want to know more advanced operational skills, please continue to the [Dashboard](./dashboard_operator.md).
 
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
