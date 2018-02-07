@@ -1,386 +1,429 @@
-# Cello Ansible agent how to
+Cello ansible agent how-to
+==========================
 
-Recently added ansible agent is a cello agent which allows developers and fabric
-network operators to stand up fabric network on cloud environment, physical
-machines or virtual machines by using ansible.
+Cello ansible agent is a set of ansible playbooks which allows developers and
+fabric network operators to stand up fabric network very quickly in a set of
+virtual or physical servers in cloud or lab.
 
-To use the cello ansible agent (the agent), you will need to install ansible
-version 2.3.0.0 or above and some ansible could modules based on which cloud
-you may use, for example, if you like to use OpenStack cloud to deploy fabric
-network, in addition to ansible, you will also need to install OpenStack Shade
-which is the ansible OpenStack cloud module. If you choose to use AWS, then in
-addition to ansible, you will need to install boto and boto3 which are Ansible
-AWS cloud modules.
+The following is the list of the general steps you can follow to use the
+ansible agent to stand up your own fabric network::
 
-The general steps of using the agent::
+1. [Setup ansible controller](#setup-ansible-controller)
+2. [Create configuration files](#create-configuration-files)
+3. [Provision the servers](#provision-the-servers)
+4. [Initialize the servers](#initialize-the-servers)
+5. [Setup fabric network](#setup-fabric-network)
+6. [Verify fabric network](#verify-fabric-network)
 
-1. Install Ansible and necessary cloud modules, the machine you install ansible and cloud modules is normally called ansible controller.
-2. Use ssh-keygen to generate a key pair which you will be using to access virtual machines provisioned against a cloud, or virtual or physical machines that you already have.
-3. According to your choice of environment, create a cloud configuration file and a fabric network layout configuration file.
-4. Provision the servers
-5. Initialize and prepare the servers
-6. Setup fabric network
-7. Verify that the fabric network is working correctly
-8. Cleanup
+This document also provides the following sections to help you use
+Cello ansible agent:
 
-This document goes into great details to describe these files. If you choose
-to use some existing servers regardless they are physical or virtual, you will
-need to manually create a runhosts file and inject the ssh public key into
-echo server so that ansible controller can access them. These servers will also
-need to be made sure having python installed, otherwise, ansible cannot work
-appropriately.
+[Cloud configuration file details](#cloud-configuration-file-details)<br/>
+[Fabric configuration file details](#fabric-configuration-file-details)<br/>
+[Running an ansible playbook](#running-an-ansible-playbook)<br/>
+[Use ssh-agent to help Ansible](#ssh-agent-to-help-ansible)<br/>
+[Convenient configurations and commands](#ccac)<br/>
+[Use the existing servers](#use-the-existing-servers)<br/>
+[Security rule references](#srrwy)<br/>
 
-The following sections describe in details about each step
+# <a name="setup-ansible-controller"></a>Setup ansible controller
 
-## Setup ansible controller
+Ansible playbooks run on Ansible controller. Ansible controller is basically
+a computer which has ansible and dependent software installed. It can be your
+own laptop, virtual or physical machine. Here are four steps to create an
+ansible controller to run cello ansible agent.
 
-Ansible controller can be any machine, as long as you can install ansible
-2.3.0.0 or above onto, it can be a small virtualbox VM or your own laptop.
-Please follow offical ansible installation instructions from ansible if you
-have questions on how to install ansible on a specific platform.
-
-## Use ssh-keygen to create a key pair for ansible to work with servers
-
-Ansible heavily rely on ssh to work with virtual or physical machines. When
-you have a cloud such as OpenStack, AWS, the ssh public key is automatically
-injected into the severs, when you are working with servers not setup by the
-provisioning modules of the agent, you will have to manually inject the public
-key into each machine. But in any case, you will need a pair of key.
-
-To generate a ssh key pair, you just need to run ssh-keygen.
-To inject a ssh public key into a server, you will need to add the public key
-onto ~/.ssh/authorized_keys in the user's home directory. That user should be
-the user that you use to access the machine.
-
-## Create cloud configuration file and fabric layout configuration file
+1. [Install ansible](#install-ansible)
+2. [Generate a ssh key pair](#generate-a-ssh-key-pair)
+3. [Clone ansible agent code](#clone-ansible-agent-code)
+4. [Install ansible cloud module](#install-ansible-cloud-module)
 
 
-To work with a cloud, you will need to have an account from a cloud. To create
-a set of machines from a cloud, you will also need to tell a cloud a bit more
-about your desire on how the machines will be created. All the information needed
-to accomplish this is specified in the cloud configuration file. Examples of
-these files can be found in src/agent/ansible/vars directory. Cloud
-configuration file is used to access your cloud, provide credentials, specify
-network attributes and virtual machine specs (flavor) etc. For pupular clouds
-such as OpenStack, AWS and Azure, you can see examples in the directory, files
-os.yml, aws.yml and azure.yml are examples for OpenStack, AWS and Azure cloud
-environment.
+## <a name="install-ansible"></a>Install ansible
 
-To stand up a fabric network, you will need to specify how many organizations
-participating in the network, how many fabric components such as peers,
-orderers in each organization, and how the kafka and zookeeper cluster should
-look like. All the information needed to accomplish this is specified in
-fabric network layout configuration file. A typical fabric network will be
-comprised of orderers, peers, kafka, zookeeper, and ca nodes. For details on
-what each component does and how they interact with each other, please see
-the [Hyperledger Fabric docs](https://hyperledger-fabric.readthedocs.io/en/release/)
-Layout configuration file specifies how you want to layout your fabric network
-components cross the servers that you have, for example, how many organizations,
-how many peers, ordereres from each org, how many kafka, zookeeper nodes in
-the cluster. The examles of this kind configuration file can be found in
-src/agent/ansible/vars directory, files bc1st.yml, vb1st.yml are examples for
-multiple nodes fabric network, file bc2nd.yml is an example for a single node
-fabric network.
+To run ansible playbooks ansible controller can be any machine, as long as
+you can install ansible 2.3.0.0 or above onto, it can be a small virtualbox
+VM, your own laptop or an existing VM which runs in your own cloud.
 
-## Provision the servers
+Please follow offical [ansible installation instructions](http://docs.ansible.com/ansible/latest/intro_installation.html)
+from ansible web site to install ansible. If you like to start quickly and
+have a clean Ubuntu 16.04 system, here are the commands to install ansible::
 
-This step is to provision a set of virtual servers from an OpenStack cloud.
-Before you run the following command, you will need to either make a copy
-of the vars/os.yml file or make changes to that file to reflect your cloud
-settings. If you already have a set of servers (such as a set of VirtualBox
-virtual machines), you can skip this step, but you will need to follow the
-instructions below to manually create a runhosts file.
+        sudo apt-get update
+        sudo apt-get install python-pip -y
+        sudo pip install 'ansible>=2.3.0.0'
 
-With the correct cloud environment settings in vars/os.yml, run the script
-to provision a set of virtual machines::
+Once it is installed, you should run following command to check its version::
 
-    ansible-playbook -e "mode=apply cloud_type=os env=os password=XXXXX" provcluster.yml
+        ansible --version
 
+The results should show something at or above 2.3.0.0. It is entirely possible
+that you may have to install additional software that ansible depends on in
+some older versions of operating systems.
+
+## <a name="generate-a-ssh-key-pair"></a>Generate a ssh key pair
+
+Ansible heavily rely on ssh to work with virtual or physical servers. To
+establish a ssh connection with the servers, you will need to have a pair of
+ssh key, you may choose to use your own existing one, but it is highly
+recommended to create one for test purposes. Here are the steps to generate
+a key pair::
+
+        mkdir -p ~/.ssh && cd ~/.ssh && ssh-keygen -t rsa -f fd -P ""
+
+The above procedure will create a non passphrase ssh key pair in your ~/.ssh
+directory. The name of the files will be fd and fd.pub. In default ansible
+agent default configuration files, the ssh key is assumed at that location
+with the name fd and fd.pub. If you use different name, then you will need
+to change the configuration with your own ssh key name.
+
+When you work with have a cloud such as OpenStack, AWS, the ssh public key
+you generated here will be automatically injected into the severs in
+[Provision the servers](#provision-the-servers) step. If your servers were
+not provisioned by ansible agent, you will have to manually inject the public
+key into each machine. You will need to place the ssh public key in the file
+named ~/.ssh/authorized_keys in the user account which you will use to log
+into the server. You will need to do this for each server.
+
+Once you have the ssh keys, you will need to start up the ssh agent to so
+that the following steps will not keep asking you. Do execute the following
+two commands:
+
+        eval $(ssh-agent -s) && ssh-add ~/.ssh/fd
+
+## <a name="clone-ansible-agent-code"></a>Clone ansible agent code
+
+Ansible agent is part of the hyperledger cello project. To run its playbooks,
+you will need to extract the code. Follow the follow procedure to get code::
+
+       cd ~
+       git clone --depth=1 https://gerrit.hyperledger.org/r/cello
+
+This command will extract the latest cello code. Ansible agent is at the
+following directory::
+
+       ~/cello/src/agent/ansible
+
+from this point on, you should stay in that directory for all command
+executions. This directory is also referred to root agent directory. For
+convenience, you can execute the following command to help you get back to
+the root easily
+
+       export AAROOT=~/cello/src/agent/ansible
+       cd $AAROOT
+
+## <a name="install-ansible-cloud-module"></a>Install ansible cloud module
+
+When deals with cloud such as AWS, Azure or OpenStack, Ansible requires
+some libraries to access these clouds. These libraries are normally called
+[ansible cloud modules](http://docs.ansible.com/ansible/latest/list_of_cloud_modules.html).
+You will find a great details regarding these modules. When you work with
+a specific cloud, you will need only to install the cloud modules for that
+cloud. Here are the steps to install ansible modules for AWS, Azure and
+OpenStack::
+
+        AWS:
+        sudo pip install boto boto3
+
+        Azure:
+        sudo pip install azure
+
+        OpenStack:
+        sudo pip install shade
+
+These modules are needed in the [Provision the servers](#provision-the-servers)
+step, if you are not using ansible agent to provision your servers, you do
+not need any of these modules.
+
+# <a name="create-configuration-files"></a>Create configuration files
+
+Ansible agent relies on two configuration files to work and stand up your
+fabric network. One is called cloud configuration file, the other is called
+fabric configuration file.
+
+Cloud configuration file is used to work with the cloud such as AWS, Azure
+and OpenStack to create virtaul machines, create security rules for network,
+inject ssh key, eventually delete virtual machines when you decide to destroy
+everything you created. Ansible agent provides the following sample
+cloud configuration files::
+
+        $AAROOT/vars/aws.yml
+        $AAROOT/vars/azure.yml
+        $AAROOT/vars/os.yml
+
+Fabric configuration file is used to create a fabric network according to
+your need. This file will let you specify what release of fabric you want to
+use, what organizations to create, how many peers or orderers in an
+organization, how many kafka and zookeeper nodes you like to have and how
+you want to layout your fabric network on the servers you have. Ansible
+agent provides the following sample fabric configuration files::
+
+        $AAROOT/vars/bc1st.yml
+        $AAROOT/vars/bc2nd.yml
+        $AAROOT/vars/vb1st.yml
+
+It is these two files ultimately control how your fabric network look like.
+You are expected to use the listed files above as examples to create your
+own cloud configuration and fabric configuration files. You should make a
+copy from each type of the examples files, then make changes based on your
+own desire and credentials to run ansible playbook to produce your fabric
+network. The copy of your own configuration files should also be in the same
+directory where these example files reside. Otherwise, ansible agent will
+not be able to find them. You can certainly make changes directly to one of
+these files and use them.
+
+For an easier discussion, assume you have created your own cloud configuration
+file namde `mycloud.yml` and your own fabric configuration file named
+`myfabric.yml`. The content of each the two files must follow the respective
+sample file. Since both files are relatively large, have a good understanding
+of what each field means in both files is absolutely critical. Please refer
+to the following two sections for details on each field in the two files.
+
+[Cloud configuration file details](#cloud-configuration-file-details)<br/>
+[Fabric configuration file details](#fabric-configuration-file-details)
+
+# <a name="provision-the-servers"></a>Provision the servers
+
+This step is to provision a set of virtual servers from a cloud.
+
+        ansible-playbook -e "mode=apply env=mycloud cloud_type=os" provcluster.yml
 
 The above command will provision (prov is short for provision) a cluster of
-virtual machines on your OpenStack cloud the environment defined in vars/os.yml
-file. Replace xxxxx with your own password from your cloud provider. Replace
-os with your own cloud environment file if you decided to create a new one.
-If you like to provision from other cloud, you will need to specify the
-cloud_type to be aws, azure, or other cloud (plan to support aws).
+virtual machines on your OpenStack cloud the environment defined in
+vars/mycloud.yml file. value apply for parameter mode indicates you like to
+create resources, value os for parameter cloud_type indicates that you are
+using OpenStack cloud, value mycloud for parameter env indicates you are
+using vars/mycloud.yml file. The possible values for mode are `apply` and
+`destroy`, the possible values for cloud_type are `os`, `aws` and `azure` at
+present.
 
-This step produces a set of servers and an ansible host file named run/runhosts.
+This step produces a set of servers in your cloud and an ansible host file
+named runhosts in this directory on your ansible controller::
 
-### Manually create a runhosts file with servers already available
+        $AAROOT/run
 
-If you already have a set of servers available that you wish to use, then you
-can create a file by following the example below. And also make sure these
-server's hostname get setup as XXXXX001, XXXXX002, etc and they can can see
-each other by their hostnames. The XXXXX should be replaced with your own
-perference which gets used in the later configuration. In this example, the
-word "fabric" is used, but it can be anything that you prefer, make sure
-they are consistent.
+If you are working with servers already exist, you will need to follow
+the section [Use the existing servers](#use-the-existing-servers) to continue
+setting up your fabric network.
 
-    cloud ansible_host=127.0.0.1 ansible_python_interpreter=python
-    169.45.102.186 private_ip=10.0.10.246 public_ip=169.45.102.186 inter_name=fabric001
-    169.45.102.187 private_ip=10.0.10.247 public_ip=169.45.102.187 inter_name=fabric002
-    169.45.102.188 private_ip=10.0.10.248 public_ip=169.45.102.188 inter_name=fabric003
+To remove everything this step created, run the following command::
 
-    [allnodes]
-    169.45.102.186
-    169.45.102.187
-    169.45.102.188
+        ansible-playbook -e "mode=destroy env=mycloud cloud_type=os" provcluster.yml
 
-    [etcdnodes]
-    169.45.102.186
-    169.45.102.187
-    169.45.102.188
+# <a name="initialize-the-servers"></a>Initialize the servers
 
-    [builders]
-    169.45.102.186
+This step will install all necessary software packages, setup an overlay
+network, dns services and registrator services on the machines created in
+previous step::
 
-The above file is a typical ansible host file. The cloud ansible_host should be your ansible
-controller server, you should not change that line. All other lines in the file represent
-a server, private_ip and public_ip are the concept for cloud, if your servers are not in
-a cloud, then you can use the server's IP address for both private_ip and public_ip field,
-but you can not remove these two fields. The inter_name is also important, you should name
-the server sequentially and these names will be used in later configuration to allocate
-hyperledger fabric components. Group allnodes should list all the servers other than the
-ansible controller node. Group etcdnodes should list all the servers that you wish to install
-etcd services on. Group builders should list all the servers that you wish to use to build
-hyperledger fabric artifacts such as executables and docker images.
+        ansible-playbook -i run/runhosts -e "mode=apply env=mycloud env_type=flanneld" initcluster.yml
 
-## Initialize and prepare the servers
+The parameter env is same as in previous step. The parameter env_type
+indicates what communication environment you like to setup. The possible
+values for this parameter are `flanneld` and `k8s`. Value `flanneld` is to
+setup a docker swarm like environment. Value `k8s` is to setup kuberenetes
+environment.
 
-    ansible-playbook -i run/runhosts -e "mode=apply env=os env_type=flanneld" initcluster.yml
+To remove everything this step created, run the following command::
 
-The above command will initilize the cluster using flanneld overlay network. It installs
-flanneld network, dns and registrator services. Plan to support kubernetes in future.
+        ansible-playbook -i run/runhosts -e "mode=destroy env=mycloud env_type=flanneld" initcluster.yml
 
-## Setup the fabric network
+# <a name="setup-fabric-network"></a>Setup the fabric network
 
-    ansible-playbook -i run/runhosts -e "mode=apply env=bc1st deploy_type=compose" setupfabric.yml
+This step will build or download from a docker repository fabric binaries
+and docker images, create certificates, and eventually run various fabric
+components such as peer, orderer, kafka, zookeeper, fabric ca on the
+environment produced in previous steps::
 
-The env value in the command indicates which fabric network configuration to use.
-Variable deploy_type needs to be set to compose. If it is set to k8s, it means
-that you choose to use kubernetes environment. In above example, ansible looks
-file bc1st.yml in vars directory, you can create as many files in that directory
-to reflect your own fabric network.
+        ansible-playbook -i run/runhosts -e "mode=apply env=myfabric deploy_type=compose" setupfabric.yml
 
-## Verify that the fabric network is working correctly
+The env value in the command indicates which fabric network configuration to
+use. The meaning of this parameter is a bit different comparing to the
+previous commands. The parameter deploy_type indicates if like to use docker
+compose to deploy or use k8s to deploy.
 
-    ansible-playbook -i run/runhosts -e "mode=verify env=bc1st" verify.yml
+To remove everything this step created, run the following command::
 
-The above command should acess the server and display all the container status
-in your next work.
+        ansible-playbook -i run/runhosts -e "mode=destroy env=myfabric deploy_type=compose" setupfabric.yml
 
-## Cleanup
+# <a name="verify-fabric-network"></a>Verify fabric network
 
-Once you're done with it, don't forget to nuke the whole thing::
+If all previous steps run without any errors, you should have a running
+status of each container::
 
-    ansible-playbook -e "mode=destroy env=bc1st deploy_type=compose" setupfabric.yml
+        ansible-playbook -i run/runhosts -e "mode=verify env=bc1st" verify.yml
 
-The above command will destroy all the fabric resources created such as
-the executables on the build machines and all the fabric containers on
-all the servers.
+The above command should acess all the servers and display all the container
+status in your fabric network. If these containers did not exit, then you know
+you have successfully deployed your own fabric network.
 
-If you created the entire environment on your cloud, and you do not
-want these machines any more, execute the following command to get rid
-of all the servers::
+# Useful tips for running ansible agent
 
-    ansible-playbook -e "mode=destroy env=os password=XXXXX cloud_type=os" provcluster.yml
+## <a name="cloud-configuration-file-details"></a>Cloud configuration file details
 
-## Details about the cloud configuration file
+Cloud configuration file is used by ansible agent to work with cloud. It is
+very important to make every field in the file accurate according to your
+own cloud. Most of the information in this type of the files should be
+provided by your cloud providers. If you are not 100% sure what value a field
+should have, it would be a good idea to use the corresponding value in the
+sample cloud configuration file. The following section describes what each
+field means. Please use [vars/os.yml](https://github.com/hyperledger/cello/blob/master/src/agent/ansible/vars/os.yml)
+as a reference and see example values for these fields::
 
-Here is the os.yml file in cello/src/agent/ansible/vars directory.
+```
+auth: Authorization fields for a cloud
+auth_url: url for cloud Authorization
+username: User name to log in to the cloud account
+password: Password for the user of the cloud account
+project_name: Name of the project of your cloud, specific to OpenStack
+domain: The domain of the project, specific to OpenStack
+cluster: This section defines how virtual machines should be created
+target_os: The operating system we are targeting, it has to be `ubuntu`
+    at present
+image_name: Cloud image name to be used to create virtual machines
+region_name: Region name for VMs to reside in, leave blank if unsure
+ssh_user: The user id to be used to access the virtual machines via ssh
+availability_zone: The availability zone, leave blank to use default
+validate_certs: When access cloud, should the certs to be validated?
+    Set to false if your cloud use self signed certificate
+private_net_name: The private network name from your cloud account on
+    which your VMs should be created
+flavor_name: Flavor name to create your virtual machine
+public_key_file: The public ssh key file used to connect to servers,
+    use absolute path
+private_key_file: The private ssh key file, use absolute path,
+    public_key_file and this key file should make a pair
+node_ip: Use public ip or private ip to access each server, only possible
+    value are `public_ip` and `private_ip`
+assign_public_ip: Should each VM be allocated public IP address or not, true
+    or false, default is true
+container_network: This section defines overlay network, you should not
+    change this unless you absolutely know what you are doing
+Network: Overlay network address space, should be always in cidr notion,
+    such as 172.16.0.0/16
+SubnetLen: The bit length for subnets, it should be 24 normally, do not
+    change it unless you absolutely know what you are doing
+SubnetMin: minimum subnet
+SubnetMax: maximum subnet
+Backend: backend for flanneld setup
+Type: the type for flanneld setup
+Port: the port to use
+service_ip_range: when use k8s, this defines service ip range
+dns_service_ip: dns service ip address for k8s
+node_ips: a list of public IP addresses if you like the VMs to be accessible
+    and using preallocated IP addresses
+name_prefix: VM name prefix when create new VMs, this combines with
+    stack_size to make VM names. These names will be used in fabric
+    configuration For example,if your prefix is fabric, and stack
+    size is 3, then you will have 3 VMs named fabric001, fabric002,
+    fabric003, these names will be referred as server logic names
+domain: domain name to use when create fabric network nodes.
+stack_size: how many VMs to be created
+etcdnodes: which nodes you like the etcd to be set up on. only needed
+    for k8s, should be a list of logic name like fabric001, fabric002,
+    fabric003
+builders: which VM to be used to build fabric binaries. should be only one
+    machine, use logic name like fabric001, fabric002, etc.
+flannel_repo: The url point to the flanneld tar gz file
+etcd_repo: The url point to the etcd tar gz file
+k8s_repo: The url point to the k8s binary root directory
+go_repo: The url point to the go lang tar gz file
+volume_size: when create VMs the size of the volume
+block_device_name: block device name when create volume on OpenStack cloud
+    fabric network, to verify that, you can run the following command to see
+```
 
-    ---
-    auth: {
-      auth_url: "https://salesdemo-sjc.openstack.blueboxgrid.com:5000/v2.0",
-      username: "litong01",
-      password: "{{ password | default(lookup('env', 'password')) }}",
-      project_name: "Interop"
-    }
+## <a name="fabric-configuration-file-details"></a>Fabric configuration file details
 
-    # This variable defines cloud provision attributes
-    cluster: {
-      target_os: "ubuntu",
-      image_name: "Ubuntu 16.04",
-      region_name: "",
-      ssh_user: "ubuntu",
-      availability_zone: "compute_enterprise",
-      validate_certs: True,
-      private_net_name: "demonet",
-      flavor_name: "m1.medium",
-      public_key_file: "/home/ubuntu/.ssh/fd.pub",
-      private_key_file: "/home/ubuntu/.ssh/fd",
-      # This variable indicate what IP should be used, only valid values are
-      # private_ip or public_ip
-      node_ip: "public_ip",
+Fabric configuration file defines how your fabric network should look like,
+how many servers you will use and how many organizations you would like to
+create and how many peers, orderers should each organization has, how many
+kafka and zookeeper containers you like to setup. what names you like to
+give to organizations, peers, orderers etc. It is this file that controls
+ultimately the topology of your fabric network. Get a good understanding
+of this file is essential to create a fabric network according to your
+need. Please use [vars/bc1st.yml](https://github.com/hyperledger/cello/blob/master/src/agent/ansible/vars/bc1st.yml)
+as a reference and see example values for these fields::
 
-      container_network: {
-        Network: "172.16.0.0/16",
-        SubnetLen: 24,
-        SubnetMin: "172.16.0.0",
-        SubnetMax: "172.16.255.0",
-        Backend: {
-          Type: "udp",
-          Port: 8285
-        }
-      },
+```
+GIT_URL: hyperledger fabric git project url. should be always
+    "http://gerrit.hyperledger.org/r/fabric"
+GERRIT_REFSPEC: ref spec when build a specifc patch set. for example, it
+    can be "refs/tags/v1.0.5"
+fabric: This section define hyperledger fabric network layout
+ssh_user: The user name to be used to log in to the remote servers
+peer_db: The peer database type, possible values are CouchDB and leveldb
+tls: Should this deployment use tls, default is false,
+network: This section defines the layout of the fabric network
+fabric001: This defines fabric containers running on the node named
+    fabric001, each virtual or physical machine should have a section
+    like this.
+cas: list of the fabric certificate authority for an organization,
+    the name of each ca should be in the format of <name>.<orgname>,
+    for example, ["ca1st.orga", "ca1st.orgb"]
+peers: list of the peers run on this node, the format of the names
+    shuold be <role>@<name>.<orgname>, for example,
+    ["anchor@peer1st.orga","worker@peer2nd.orga"], this means that
+    there will be two peers running on this node, they are both from
+    organization named orga, one is acting as
+    anchor node, the other is the worker node.
+orderers: list of the orderers run on this node, the format of the
+    names should be <name>.<orgname>, for example, ["orderer1st.orgc",
+    "orderer2nd.orgc"], this means that there will be two orderers
+    running on this node, they are both from organization named orc,
+    one is named orderer1st, and the other named orderer2nd.
+zookeepers: list of the zookeeper containers run on this node. The
+    format for zookeeper containers are <name>, since zookeeper
+    containers do not belong to any organization, their names should
+    be simply a string. For example: ["zookeeper1st", "zookeeper2nd"],
+    this means that there will be two zookeeper containers running on
+    this node, their names are zookeeper1st and zookeeper2nd respectively.
+kafkas: list of the kafka containers run on this node The format for
+    kafka containers are <name>, since kafka containers do not belong
+    to any organization, their name should be simply a string. For
+    example, ["kafka1", "kafka2"], this means that there will be two
+    kafka containers running on this node, their names are kafka1 and
+    kafka2.
+baseimage_tag: docker image tag for fabric-peer, fabric-orderer,
+    fabric-ccenv,fabric-tools. for example, it can be "x86_64-1.1.0-alpha",
+    The value of this field is very important, if this value is empty,
+    that means you like to build the fabric binaries and possibly docker
+    container images. This field and the repo section determins where to
+    download binaries or should binaries be downloaded.
+helper_tag: docker image tag for container fabric-ca, fabric-kafka,
+    fabric-zookeeper, for example, it be "x86_64-1.1.0-preview"
+ca: This section defines how the fabric-ca admin user id and password
+admin: ca user admin name
+adminpw: ca admin user password
+repo: This section defines where to get the fabric docker image and
+    binary tar gz file. This allows you to use a local docker repository
+url: Docker image repository for fabric, for example if you are using
+    docker hub, the value will be "hyperledger/", if you are using
+    nexus3, the value will be "nexus3.hyperledger.org:10001/hyperledger/"
+bin: The url point to the fabric binary tar gz file which contains
+    configtxgen, configtxlator, cryptogen etc.
+```
 
-      service_ip_range: "172.15.0.0/16",
-      dns_service_ip: "172.15.0.4",
+## <a name="running-an-ansible-playbook"></a>Running an ansible playbook
 
-      # the section defines preallocated IP addresses for each node, if there is no
-      # preallocated IPs, leave it blank
-      node_ips: ["169.45.102.186", "169.45.102.187", "169.45.102.188"],
+Ansible allows you to run tasks in a playbook with particular tags or skip
+particular tags. For example, you can run the follow command
 
-      # fabric network node names expect to be using a clear pattern, this defines
-      # the prefix for the node names.
-      name_prefix: "fabric",
-      domain: "fabricnet",
+```
+    ansible-playbook -i run/runhosts -e "mode=apply env=bc1st \
+    deploy_type=compose" setupfabric.yml --tags "certsetup"
+```
+The above command will use the runhosts inventory file and only run tasks
+or plays taged certsetup, all other plays in the play books will be
+skipped.
 
-      # stack_size determines how many virtual or physical machines we will have
-      # each machine will be named ${name_prefix}001 to ${name_prefix}${stack_size}
-      stack_size: 3,
+```
+    ansible-playbook -i run/runhosts -e "mode=apply env=bc1st \
+    deploy_type=compose" setupfabric.yml --skip-tags "certsetup"
+```
+The above command will run all the tasks but the tasks/plays taged certsetup
 
-      etcdnodes: ["fabric001", "fabric002", "fabric003"],
-      builders: ["fabric001"],
-
-      flannel_repo: "https://github.com/coreos/flannel/releases/download/v0.7.1/flannel-v0.7.1-linux-amd64.tar.gz",
-      etcd_repo: "https://github.com/coreos/etcd/releases/download/v3.2.0/etcd-v3.2.0-linux-amd64.tar.gz",
-      k8s_repo: "https://storage.googleapis.com/kubernetes-release/release/v1.7.0/bin/linux/amd64/",
-
-      go_ver: "1.8.3",
-      # If volume want to be used, specify a size in GB, make volume size 0 if wish
-      # not to use volume from your cloud
-      volume_size: 0,
-      # cloud block device name presented on virtual machines.
-      block_device_name: "/dev/vdb"
-    }
-
-auth section specifies the credentials to access your cloud. cluster section
-provides more detailed information how virtual machines will be created on
-OpenStack cloud. private_key_file and public_key_file should point to the
-ssh key pair that you may have created in step #2. stack_size in this example
-was set to 3, that means you will create 3 VMs in your cloud, their names
-will be fabric001, fabric002 and fabric003 since the name_prefix field was
-set to "fabric". domain field specifies the fabric network domain, it can be
-anything you like, it is just a string. etcdnodes field indicates on which
-nodes that you want to setup etcd services which is required by overlay
-network and also kuberenetes. builders field specifies on which node you
-like to build fabric binaries such as cryotogen, configtxgen, docker images.
-Remember that the name fabric001, fabric002 etc are logic names. They do not
-have to be set to your machine's hostname. When you do things in the OpenStack
-or AWS, these logic name will be alos be used as hostnames of the virtual
-machines, but they do not have to be. Other fields such as flanneld_repo,
-etcd_repo, k8s_repo, go_ver are the fields indicate where to download needed
-binaries.
-
-A bit more information for each field::
-
-    target_os: operating system that your servers will be using
-    image_name: cloud image you like to use to create virtual servers.
-    ssh_user: user id used by ssh to log in each server,
-    availability_zone: OpenStack availability zone
-    validate_certs: if validate the certificates when access servers.
-    private_net_name: private network name where servers being created on
-    flavor_name: virtual server specs
-    public_key_file: ssh public key file
-    private_key_file: ssh private key file
-    node_ip: use either private_ip or public_ip when access the servers
-    node_ips: preallocated ip addresses for each server
-    container_network: overlay network settings, do not change this
-      unless you absolutely know what you are doing
-    name_prefix: how to name virtual servers, can be any character except dot
-    domain: the fabric network domain name, can be any character except dot
-    stack_size: how many virtual servers to create,
-
-    etcdnodes: which servers to install etcd services
-    builders: which server to be used for building hyperledger fabric
-
-    flannel_repo: where to download flanneld
-    etcd_repo: where to download etcd
-
-    go_ver: version of golang to be installed
-    volume_size: future use
-    block_device_name: future use
-
-
-## Details about the fabric netowkr layout configuration file
-
-Here is the bc1st.yml (short for block chain 1st network)::
-
-    ---
-    # The url to the fabric source repository
-    GIT_URL: "http://gerrit.hyperledger.org/r/fabric"
-
-    # The gerrit patch set reference, should be automatically set by gerrit
-    GERRIT_REFSPEC: "refs/tags/v1.0.0-rc1"
-
-    # This variable defines fabric network attributes
-    fabric: {
-      ssh_user: "ubuntu",
-      network: {
-        fabric001: {
-          cas: ["ca.orga", "ca.orgb"],
-          peers: ["leader@1stpeer.orga", "leader@1stpeer.orgb"],
-          orderers: ["1storderer.orgc", "1storderer.orgd"],
-          zookeepers: ["zookeeper1st"],
-          kafkas: ["kafka1st"]
-        },
-        fabric002: {
-          cas: ["ca.orgc", "ca.orgd"],
-          peers: ["anchor@2ndpeer.orga", "anchor@2ndpeer.orgb"],
-          orderers: ["2ndorderer.orgc", "2ndorderer.orgd"],
-          zookeepers: ["zookeeper2nd"],
-          kafkas: ["kafka2nd"]
-        },
-        fabric003: {
-          peers: ["worker@3rdpeer.orga", "worker@3rdpeer.orgb"],
-          zookeepers: ["zookeeper3rd"],
-          kafkas: ["kafka3rd", "kafka4th"]
-        }
-      },
-      baseimage_tag: "1.0.0-rc1"
-    }
-
-In above configuration, the fabric network will use 3 servers. The ansible
-controller will use ssh_user value to ssh connect to these servers to setup
-various components. baseimage_tag dictates what container images will be
-used to start fabric containers. If you intend to build images from the
-source code, you can happily leave the value of baseimage_tag to be blank,
-ansible controller will extract the source code using variables GERRIT_REFSPEC
-and GIT_URL to get the code, then compile and build all artifacts. These
-artifacts will be eventually pushed onto all the nodes and containers will
-be started using these images. If you just want to build from the latest
-code, then you can leave GERRIT_REFSPEC to be also blank. Other fields in
-the configuration file is self explanatory. Make changes according to your
-desire. The example bc1st.yml file defined 3 zookeeper nodes, 4 kafka nodes,
-4 organizations, peers and orderers. Peers also being defined as anchor peer,
-leader peer or just simply worker peer. For your own configuration, you
-should create similar file to reflect your own fabric network setups, then
-use the file name in the place of bc1st in the ansible command to ultimately
-setup your fabric network.
-
-
-# Extra information about cello ansible agent
-
-## The method for running just a play, not the entire playbook
-
-The script will create an ansible inventory file named runhosts at the very
-first time you run the playbook, the inventory file will be place at a
-directory named "run" at the root directory of the playbook. This file will be
-updated in later runs if there are changes such as adding or removing hosts.
-With this file, if you like to run only few plays, you will be able to do
-that by following the example below:
-
-    ansible-playbook -i run/runhosts -e "mode=apply env=bc1st deploy_type=compose" setupfabric.yml
-      --<skip->tags "certsetup"
-
-The above command will use the runhosts inventory file and only run play
-named certsetup, all other plays in the play books will be skipped. All
-available plays can be found in roles directory, each directory name is
-a name can be used in either --tags to be executed or --skip-tags not to
-be executed.
-
-## ssh-agent to help ansible
+## <a name="ssh-agent-to-help-ansible"></a>Use ssh-agent to help ansible
 
 Since ansible access either the virtual machines that you create on a
 cloud or machines that you may already have by using ssh, setting up
@@ -403,7 +446,93 @@ you. For the existing servers, you will need to make sure that the fd.pub
 key is in the file ~/.ssh/authorized_keys. Otherwise, the servers will
 reject the ssh connection from ansible controller.
 
-## Security rule references when you setup fabric network on a cloud
+## <a name="ccac"></a>Convenient configurations and commands
+
+At the root directory of the ansible agent, there are set of preconfigured
+playbooks, they were developed as a convienent playbooks for you if you
+mainly work with a particular cloud. Here are the list of these playbooks.
+
+```
+aws.yml
+awsk8s.yml
+os.yml
+osk8s.yml
+vb.yml
+vbk8s.yml
+```
+
+These files were created to use coresponding cloud and fabric configuration
+files. For example, aws.yml uses vars/aws.yml and vars/bc1st.yml to setup
+multiple nodes fabric network on AWS cloud. awsk8s.yml uses vars/aws.yml and
+vars/bc1st.yml to setup multiple node fabric network on AWS with k8s cluster.
+To use these playbooks, you simply need to make small changes in the coresponding
+configuration files in vars directory, then issue the following command:
+
+To stand up a fabric network on AWS:
+```
+    ansible-playbook -e "mode=apply" aws.yml
+```
+To destroy a fabric network on AWS:
+```
+    ansible-playbook -e "mode=destroy" aws.yml
+```
+
+If your target environment is OpenStack, then you will be using a slightly different
+commands:
+
+```
+    ansible-playbook -e "mode=apply" os.yml or osk8s.yml
+    ansible-playbook -e "mode=destroy" os.yml or osk8s.yml
+```
+
+## <a name="use-the-existing-servers"></a>Use the existing servers
+
+When you have a set of physical servers or a virtual machines already
+available, you can still use the ansible agent to stand up your fabric
+network. To do that, you will need to provide what provisioning step create.
+
+There are two things you basically need to do, one is to ensure that
+your servers can be accessed via ssh, the second is to produce a runhosts
+file like below, the hostnames of these servers have to form a patten using
+a prefix then three digits, for example, fabric001, fabric002, fabric003.
+The word fabric serves as a prefix which can be changed to any string in
+the cloud configuration file. After prefix, three digits should start at
+001, then all the way to the stack size. In below example, the prefix is
+fabric, but you can use any string you prefer as long as it is same as
+the cloud configuration file name_prefix field::
+
+```
+cloud ansible_host=127.0.0.1 ansible_python_interpreter=python
+169.45.102.186 private_ip=10.0.10.246 public_ip=169.45.102.186 inter_name=fabric001
+169.45.102.187 private_ip=10.0.10.247 public_ip=169.45.102.187 inter_name=fabric002
+169.45.102.188 private_ip=10.0.10.248 public_ip=169.45.102.188 inter_name=fabric003
+
+[allnodes]
+169.45.102.186
+169.45.102.187
+169.45.102.188
+
+[etcdnodes]
+169.45.102.186
+169.45.102.187
+169.45.102.188
+
+[builders]
+169.45.102.186
+```
+
+The above file is a typical ansible host file. The cloud ansible_host should be your ansible
+controller server, you should not change that line. All other lines in the file represent
+a server, private_ip and public_ip are the concept for cloud, if your servers are not in
+a cloud, then you can use the server's IP address for both private_ip and public_ip field,
+but you can not remove these two fields. The inter_name is also important, you should name
+the server sequentially and these names will be used in later configuration to allocate
+hyperledger fabric components. Group allnodes should list all the servers other than the
+ansible controller node. Group etcdnodes should list all the servers that you wish to install
+etcd services on. Group builders should container just one server that you wish to use to build
+hyperledger fabric artifacts such as executables and docker images.
+
+## <a name="srrwy"></a>Security rule references when you setup fabric network on a cloud
 
 When you work with a cloud, often it is important to open or close certain
 ports for the security and communication reasons. The following port are
@@ -420,6 +549,7 @@ that the overlay network is 10.17.0.0/16 and the docker host network is
     DNS (UDP)        UDP  53                172.31.16.0/20
     DNS (UDP)        UDP  53                10.17.0.0/16
     All ICMP - IPv4  All  N/A               0.0.0.0/0
+
 
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">
 <img alt="Creative Commons License" style="border-width:0"
