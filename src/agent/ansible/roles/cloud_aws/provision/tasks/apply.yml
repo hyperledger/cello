@@ -19,7 +19,7 @@
     key_name: "{{ cluster.ssh_key_name }}"
     validate_certs: "{{ cluster.validate_certs }}"
     group_id: "{{ sg_id }}"
-    image: "{{ cluster.image_id }}"
+    image: "{{ ami_id }}"
     instance_type: "{{ cluster.flavor_name }}"
     state: present
     user_data: "{{ lookup('template', tp_path) }}"
