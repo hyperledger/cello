@@ -33,7 +33,7 @@ echo_b "Check node:9.2 image."
 ARCH=$(uname -m)
 VERSION=latest
 
-for IMG in baseimage mongo nginx ; do
+for IMG in baseimage engine mongo nginx operator-dashboard user-dashboard watchdog ; do
 	HLC_IMG=hyperledger/cello-${IMG}
 	if [ -z "$(docker images -q ${HLC_IMG} 2> /dev/null)" ]; then  # not exist
 		echo_b "Pulling ${HLC_IMG}:${ARCH}-${VERSION} from dockerhub"
