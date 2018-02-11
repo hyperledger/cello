@@ -26,9 +26,14 @@
     {{ fabricroot }}/bin/kubectl --server={{ private_ip }}:8080 label --overwrite=true
     nodes {{ node_name }} dashboardId=master
 
+- name: Create secret for dashboard
+  command: >-
+    {{ fabricroot }}/bin/kubectl --server={{ private_ip }}:8080 create secret generic
+    kubernetes-dashboard-certs --from-file=/etc/kubernetes/secrets/certs -n kube-system
+
 - name: Create addon services
   command: >-
-    {{ fabricroot }}/bin/kubectl --server={{ private_ip }}:8080 create
+    {{ fabricroot }}/bin/kubectl --server={{ private_ip }}:8080 apply
     -f /etc/kubernetes/{{ item }}.yaml
   with_items:
     - dnscontroller

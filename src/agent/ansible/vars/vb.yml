@@ -54,7 +54,7 @@ cluster: {
 
   flannel_repo: "https://github.com/coreos/flannel/releases/download/v0.7.1/flannel-v0.7.1-linux-amd64.tar.gz",
   etcd_repo: "https://github.com/coreos/etcd/releases/download/v3.2.0/etcd-v3.2.0-linux-amd64.tar.gz",
-  k8s_repo: "https://storage.googleapis.com/kubernetes-release/release/v1.7.0/bin/linux/amd64/",
+  k8s_repo: "https://storage.googleapis.com/kubernetes-release/release/v1.9.1/bin/linux/amd64/",
   go_repo: "https://dl.google.com/go/go1.9.2.linux-amd64.tar.gz",
 
   # If volume want to be used, specify a size in GB, make volume size 0 if wish

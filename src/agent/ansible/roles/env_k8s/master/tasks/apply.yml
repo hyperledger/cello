@@ -16,7 +16,8 @@
     mode: 0775
   with_items:
     - "{{ fabricroot }}/bin"
-    - "/etc/kubernetes"
+    - "/etc/kubernetes/secrets/certs"
+    - "/etc/kubernetes/secrets/users"
 
 - name: Create etcd cluster endpoint parameter
   set_fact:
@@ -64,12 +65,26 @@
       --bind-address={{ private_ip }}
       --insecure-bind-address={{ private_ip }}
       --allow-privileged=true
+      --tls-cert-file=/etc/kubernetes/secrets/certs/server.crt
+      --tls-private-key-file=/etc/kubernetes/secrets/certs/server.key
+      --token-auth-file=/etc/kubernetes/secrets/users/token.csv
+      --admission-control=NamespaceLifecycle,LimitRanger,PersistentVolumeLabel,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota
     controller_params: >-
       --master=http://{{ private_ip }}:8080
       --cluster-cidr={{ cluster.container_network.Network }}
       --cluster-name=k8s
     scheduler_params: >-
       --master=http://{{ private_ip }}:8080
+
+- name: Upload certificats
+  copy:
+    src: "{{ playbook_dir }}/../../secrets/{{ item }}"
+    dest: "/etc/kubernetes/secrets/{{ item }}"
+    mode: 0644
+  with_items:
+    - certs/server.crt
+    - certs/server.key
+    - users/token.csv
 
 - name: Configure the services
   template:

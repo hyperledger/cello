@@ -404,6 +404,23 @@ bin: The url point to the fabric binary tar gz file which contains
     configtxgen, configtxlator, cryptogen etc.
 ```
 
+## <a name="k8s-admin-dashboard"></a>K8S admin dashboard
+
+Started in cello 0.8.0, ansible agent has been upgraded to secure enable
+k8s dashboard when you choose to deploy fabric network over k8s. Ansible
+agent comes with a set of self-signed certificates in a directory named
+secrets/certs, if you do not want to use the default certificates, you
+should replace these certificates with your own. Agent also provides a pair
+of users named admin and fabric. They were defined in secrets/users/token.csv
+file. You can change and set your own password before you run the playbooks.
+Once you have everything setup, you should be able to access k8s dashboard
+at the following url:
+
+        https://<node_ip>>:32334/
+
+When you are asked for the token, you can use either either token `admintoken`
+or `fabrictoken` to login.
+
 ## <a name="running-an-ansible-playbook"></a>Running an ansible playbook
 
 Ansible allows you to run tasks in a playbook with particular tags or skip
