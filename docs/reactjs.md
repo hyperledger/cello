@@ -1,4 +1,4 @@
-** **This is another Front-end implementation for cello dashboard, if you want to use this version, must change the theme into reactjs. 
+** **This is another Front-end implementation for cello dashboard, if you want to use this version, must change the theme into reactjs.
 
 How to start service with react theme?
 --------------------------------------

@@ -42,9 +42,9 @@ services:
 
   # cello dashboard service for network operator
   operator-dashboard:
-    build: # Remove soon
-      context: src
-      dockerfile: Dockerfile-dashboard
+    #build: # Remove soon
+    #  context: src
+    #  dockerfile: Dockerfile-dashboard
     image: hyperledger/cello-operator-dashboard
     container_name: cello-operator-dashboard
     hostname: cello-operator-dashboard
@@ -64,8 +64,8 @@ services:
 
  #TODO: need to follow other images to put at dockerhub
   user-dashboard:
-    build: # Remove soon
-      context: user-dashboard
+    #build: # Remove soon
+    #  context: user-dashboard
     image: hyperledger/cello-user-dashboard
     container_name: cello-user-dashboard
     hostname: cello-user-dashboard
@@ -96,9 +96,9 @@ services:
 
   # cello engine service
   engine:
-    build:
-      context: src
-      dockerfile: Dockerfile-restserver # Remove soon
+    #build:
+    #  context: src
+    #  dockerfile: Dockerfile-restserver # Remove soon
     image: hyperledger/cello-engine
     container_name: cello-engine
     hostname: cello-engine
@@ -115,9 +115,9 @@ services:
 
   # cello watchdog service
   watchdog:
-    build: # Remove soon
-      context: src
-      dockerfile: Dockerfile-watchdog
+    #build: # Remove soon
+    #  context: src
+    #  dockerfile: Dockerfile-watchdog
     image: hyperledger/cello-watchdog
     container_name: cello-watchdog
     hostname: cello-watchdog
@@ -153,7 +153,7 @@ services:
     volumes:
       - /opt/cello/mongo:/data/db
 
-  # TODO: we may keep only one mongo instance, that should be enough
+  # TODO: we may use one mongo instance, that should be enough
   dashboard_mongo:
     image: hyperledger/cello-mongo
     restart: unless-stopped

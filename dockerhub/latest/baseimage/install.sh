@@ -81,7 +81,7 @@ rm -f /tmp/node*.tar.gz
 if [[ $ARCH = 'ppc64le' ]];then
 apt-get install build-essential libssl-dev libffi-dev python3-dev libxslt-dev python3 -y
 else
-apt-get install python3 -y
+apt-get install python3 git -y
 fi
 
 update-alternatives --install /usr/bin/python python /usr/bin/python3 10

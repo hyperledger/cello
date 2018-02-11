@@ -8,7 +8,7 @@
 CHECK=$(git diff --name-only HEAD * | grep -v check_license.sh | grep -v .json$ | grep -v .jpg$ | grep -v .JPG$ | grep -v .png$ | grep -v .ico$ \
   | grep -v .graffle$ | grep -v .svg$ | grep -v .pug$ | grep -v .rst$ | grep -v .git \
   | grep -v .pem$ | grep -v .crt$ | grep -v .key$ | grep -v lib/ | grep -v fonts/ | grep -v .min.css$ \
-  | grep -v .block$ | grep -v .less$ | grep -v crypto-config/ | grep -v .min.js$ | grep -v .tx$ | grep -v .go$ | grep -v agent/ \
+  | grep -v .block$ | grep -v .less$ | grep -v crypto-config/ | grep -v .min.js$ | grep -v .tx$ | grep -v .go$ | grep -v docker/ | grep -v dockerhub/ | grep -v agent/ \
   | grep -v .md$ | grep -v ^vendor/ | grep -v ^build/ | grep -v .pb.go$ | grep -v .txt | grep -v .env | sort -u)
 
 if [[ -z "$CHECK" ]]; then
@@ -16,7 +16,7 @@ if [[ -z "$CHECK" ]]; then
     --pretty=format:"%h") | grep -v check_license.sh | grep -v .json$ | grep -v .jpg$ | grep -v .JPG$ | grep -v .png$ | grep -v .ico$ \
   | grep -v .graffle$ | grep -v .svg$ | grep -v .pug$ | grep -v .rst$ | grep -v .git \
   | grep -v .pem$ | grep -v .crt$ | grep -v .key$ | grep -v lib/ | grep -v fonts/ | grep -v .min.css$ \
-  | grep -v .block$ | grep -v .less$ | grep -v crypto-config/ | grep -v .min.js$  | grep -v .tx$ | grep -v .go$ | grep -v agent/ \
+  | grep -v .block$ | grep -v .less$ | grep -v crypto-config/ | grep -v .min.js$  | grep -v .tx$ | grep -v .go$ | grep -v docker/ | grep -v dockerhub/ | grep -v agent/ \
   | grep -v .md$ | grep -v ^vendor/ | grep -v ^build/ | grep -v .pb.go$ | grep -v .txt | grep -v .env | sort -u)
 fi
 

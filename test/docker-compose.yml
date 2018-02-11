@@ -12,14 +12,11 @@
 
 version: '2'
 services:
-  # cello dashboard service
-  dashboard:
-    build:
-      context: ../src
-      dockerfile: Dockerfile-dashboard
-    image: hyperledger/cello-dashboard
-    container_name: dashboard-test
-    hostname: cello-dashboard
+  # cello operator dashboard service
+  operator-dashboard:
+    image: hyperledger/cello-operator-dashboard
+    container_name: operator-dashboard-test
+    hostname: cello-operator-dashboard
     environment:
       - MONGO_URL=mongodb://mongo:27017
       - MONGO_DB=dev

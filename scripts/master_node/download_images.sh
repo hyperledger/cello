@@ -23,22 +23,23 @@ else
 	}
 fi
 
-echo_b "Downloading the docker images for master node"
+ARCH=$(uname -m)
+VERSION="${VERSION:-latest}"
+
+echo_b "Downloading the docker images for Cello services: VERSION=${VERSION} ARCH=${ARCH}"
 
 # TODO: will be removed after we have the user dashboard image
 echo_b "Check node:9.2 image."
 [ -z "$(docker images -q node:9.2 2> /dev/null)" ] && { echo "pulling node:9.2"; docker pull node:9.2; }
 
 # docker image
-ARCH=$(uname -m)
-VERSION=latest
 
 for IMG in baseimage engine mongo nginx operator-dashboard user-dashboard watchdog ; do
 	HLC_IMG=hyperledger/cello-${IMG}
-	if [ -z "$(docker images -q ${HLC_IMG} 2> /dev/null)" ]; then  # not exist
+	if [ -z "$(docker images -q ${HLC_IMG}:${ARCH}-${VERSION} 2> /dev/null)" ]; then  # not exist
 		echo_b "Pulling ${HLC_IMG}:${ARCH}-${VERSION} from dockerhub"
 		docker pull ${HLC_IMG}:${ARCH}-${VERSION}
-		docker tag ${HLC_IMG}:${ARCH}-${VERSION} ${HLC_IMG}
+		docker tag ${HLC_IMG}:${ARCH}-${VERSION} ${HLC_IMG}  # match the docker-compose file
 	else
 		echo_g "${HLC_IMG} already exist locally"
 	fi

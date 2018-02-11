@@ -88,20 +88,36 @@ In MacOS, Docker cannot mount local path from host by default. Hence for mongo c
 * Make sure the `/opt/cello` path exists locally, and it is writable for the current user account. Simply just run `make setup-master`.
 * Add the path to `File Sharing` list in the preference of [Docker for MacOS](https://docs.docker.com/docker-for-mac/install/), to make it mountable by container.
 
-## Cello Baseimage
-![BaseImage](imgs/cello_baseimage.png)
-
-The purpose of this baseimage is to act as a bridge between a raw ubuntu/xenial configuration and the customizations
-required for supporting a Hyperledger Cello environment. The build process is generally expensive so it is fairly
-inefficient to JIT assemble these components on demand. Hence bundled into baseimage and subsequently cached on
-the public repositories, so they can be simply consumed without requiring a local build cycle.
-
-### Usage
-* "make docker" will build the docker images and commit it to your local environment; e.g. "hyperledger/cello-baseimage".
-The docker image is also tagged with architecture and release details.
-
-### More Commands using make
+## More Commands using make
 
 To know more what the following make commands does please refer [make_support](./make_support.md) page.
+
+## Cello Docker Images
+
+Cello project also provide Docker images for quick adoptions, users can pull these images from dockerhub or build locally.
+
+![Docker Images](imgs/cello_baseimage.png)
+
+### Pull from Dockerhub
+The build process is generally expensive so you may wanna just pull those images from Dockerhub.
+
+Run `cd scripts/master_node && bash download_images.sh` will pull the following images:
+
+* [hyperledger/cello-baseimage](https://hub.docker.com/r/hyperledger/cello-baseimage/): Base images for the service images.
+* [hyperledger/cello-engine](https://hub.docker.com/r/hyperledger/cello-engine/): Docker images for the engine service.
+* [hyperledger/cello-mongo](https://hub.docker.com/r/hyperledger/cello-mongo/): Docker images for the Mongo DB service.
+* [hyperledger/cello-nginx](https://hub.docker.com/r/hyperledger/cello-nginx/): Docker images for the Nginx service.
+* [hyperledger/cello-operator-dashboard](https://hub.docker.com/r/hyperledger/cello-operator-dashboard/): Docker images for the Operator Dashboard service.
+* [hyperledger/cello-user-dashboard](https://hub.docker.com/r/hyperledger/cello-user-dashboard/): Docker images for the User Dashboard service.
+
+By default, the `laetst` version of images will be pulled, and you may optionally specify the version of images to pull down:
+
+```
+$ cd scripts/master_node
+$ VERSION=0.8.0-beta bash download_images.sh
+```
+
+### Local Building
+Run `make docker` will build the docker images locally and commit with architecture and version tag; e.g. "hyperledger/cello-baseimage:x86_64-0.8.0-snapshot-7b7fab6".
 
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
