@@ -62,7 +62,7 @@ SLASH:=/
 REPLACE_SLASH:=\/
 
 -include .makerc/email
--include .makerc/admin-dashboard
+-include .makerc/operator-dashboard
 -include .makerc/user-dashboard
 
 export ROOT_PATH = ${PWD}
@@ -203,11 +203,11 @@ initial-env: ##@Configuration Initial Configuration for dashboard
 start: ##@Service Start service
 	@$(MAKE) $(START_OPTIONS)
 	echo "Start all services... docker images must exist local now, otherwise, run 'make setup-master first' !"
-	docker-compose up -d --no-recreate
+	docker-compose -f ${DEPLOY_COMPOSE_FILE} up -d --no-recreate
 
 stop: ##@Service Stop service
 	echo "Stop all services..."
-	docker-compose stop
+	docker-compose -f ${DEPLOY_COMPOSE_FILE} stop
 	echo "Remove all services..."
 	docker-compose rm -f -a
 

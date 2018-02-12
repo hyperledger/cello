@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 # Theme name for admin dashboard basic/vue/react
 THEME?=basic
 STATIC_FOLDER?=themes\/${THEME}\/static
@@ -5,8 +7,14 @@ TEMPLATE_FOLDER?=themes\/${THEME}\/templates
 # npm registry repo
 NPM_REGISTRY?=https://registry.npmjs.org
 # service running dev/production mode
-DEV?=True
+DEV?=False
 # whether enable user active, if enable user must be active to use user dashboard
 ENABLE_EMAIL_ACTIVE?=False
 
 NPM_REGISTRY_REPLACE=$(subst $(SLASH),$(REPLACE_SLASH),$(NPM_REGISTRY))
+
+ifeq (${DEV}, True)
+    DEPLOY_COMPOSE_FILE:=docker-compose-dev.yml
+else
+    DEPLOY_COMPOSE_FILE:=docker-compose.yml
+endif

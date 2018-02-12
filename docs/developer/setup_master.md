@@ -1,11 +1,11 @@
 ## Master Node Setup
-The [Master Node](./terminology.md) includes several services:
+The [Master Node](../terminology.md) includes several services:
 
 * `operator dashboard`: Provide Web UI for operators.
 * `engine`: Provide RESTful APIs for chain consumers.
 * `watchdog`: Watch for health checking.
 
-*More details can be found at the [Architecture Design](./arch.md).*
+*More details can be found at the [Architecture Design](../arch.md).*
 
 ### System Requirement
 
@@ -13,7 +13,7 @@ The [Master Node](./terminology.md) includes several services:
 * Docker engine: 1.10.0~1.13.0 (Docker 17.0+ support is experimental)
 * docker-compose: 1.8.0~1.12.0
 
-The [Master Node](./terminology.md) can be deployed by in 2 steps.
+The [Master Node](../terminology.md) can be deployed by in 2 steps.
 
 * Clone code
 * Run setup script
@@ -45,8 +45,18 @@ Make sure there is no error during the setup. Otherwise, please check the log ms
 To start the whole services, please run
 
 ```sh
-$ make start
+$ DEV=True make start
 ```
+
+* THEME `Theme name for operator dashboard basic/vue/react, default is basic`
+* NPM_REGISTRY `npm registry for install node packages`
+* DEV `Start service in dev/product mode, options is True/False, default is True`
+* ENABLE_EMAIL_ACTIVE `Whether register user in user-dashboard need to active manually`
+* SMTP_SERVER `smtp server address for send active email to user`
+* SMTP_PORT `smtp server port`
+* SMTP_AUTH_USERNAME `Username for authenticate of smtp server`
+* SMTP_AUTH_PASSWORD `Password for authenticate of smtp server`
+* FROM_EMAIL `Email address display to user`
 
 To stop or restart the whole services, run `make stop` or `make restart`.
 
@@ -69,7 +79,7 @@ To check the logs for one specific service, please run
 $ make log service=watchdog
 ```
 
-Now you can access the `MASTER_NODE_IP:8080` to open the Web-based [operation dashboard](./dashboard_operator.md).
+Now you can access the `MASTER_NODE_IP:8080` to open the Web-based [operation dashboard](../dashboard_operator.md).
 
 ### Configuration
 The application configuration can be imported from file named `CELLO_CONFIG_FILE`.
@@ -90,7 +100,7 @@ In MacOS, Docker cannot mount local path from host by default. Hence for mongo c
 
 ## More Commands using make
 
-To know more what the following make commands does please refer [make_support](./make_support.md) page.
+To know more what the following make commands does please refer [make_support](../make_support.md) page.
 
 ## Cello Docker Images
 
