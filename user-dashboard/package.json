@@ -49,7 +49,7 @@
     "nodemon": "^1.12.1"
   },
   "scripts": {
-    "start": "pm2 start dist/index.js -i max",
+    "start": "pm2 --interpreter babel-node start src/index.js --no-daemon",
     "build": "babel src -s --ignore src/public -D -d dist && cp -r src/public dist/",
     "dev": "pm2 --interpreter babel-node start src/index.js --no-daemon --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
