@@ -101,7 +101,7 @@ Cello project also provide Docker images for quick adoptions, users can pull the
 ### Pull from Dockerhub
 The build process is generally expensive so you may wanna just pull those images from Dockerhub.
 
-Run `cd scripts/master_node && bash download_images.sh` will pull the following images:
+Run `make dockerhub-pull` will pull the following images:
 
 * [hyperledger/cello-baseimage](https://hub.docker.com/r/hyperledger/cello-baseimage/): Base images for the service images.
 * [hyperledger/cello-engine](https://hub.docker.com/r/hyperledger/cello-engine/): Docker images for the engine service.
@@ -113,8 +113,7 @@ Run `cd scripts/master_node && bash download_images.sh` will pull the following 
 By default, the `latest` version of images will be pulled, and you may optionally specify the version of images to pull down:
 
 ```
-$ cd scripts/master_node
-$ VERSION=0.8.0-beta bash download_images.sh
+$ VERSION=0.8.0-beta make dockerhub-pull
 ```
 
 ### Local Building

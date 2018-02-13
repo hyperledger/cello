@@ -36,13 +36,13 @@ echo_b "Check node:9.2 image."
 
 for IMG in baseimage engine mongo nginx operator-dashboard user-dashboard watchdog ; do
 	HLC_IMG=hyperledger/cello-${IMG}
-	if [ -z "$(docker images -q ${HLC_IMG}:${ARCH}-${VERSION} 2> /dev/null)" ]; then  # not exist
-		echo_b "Pulling ${HLC_IMG}:${ARCH}-${VERSION} from dockerhub"
-		docker pull ${HLC_IMG}:${ARCH}-${VERSION}
-		docker tag ${HLC_IMG}:${ARCH}-${VERSION} ${HLC_IMG}  # match the docker-compose file
-	else
-		echo_g "${HLC_IMG} already exist locally"
-	fi
+	#if [ -z "$(docker images -q ${HLC_IMG}:${ARCH}-${VERSION} 2> /dev/null)" ]; then  # not exist
+	echo_b "Pulling ${HLC_IMG}:${ARCH}-${VERSION} from dockerhub"
+	docker pull ${HLC_IMG}:${ARCH}-${VERSION}
+	docker tag ${HLC_IMG}:${ARCH}-${VERSION} ${HLC_IMG}  # match the docker-compose file
+	#else
+	#	echo_g "${HLC_IMG} already exist locally"
+	#fi
 done
 
 echo_g "All Image downloaded "

@@ -12,7 +12,8 @@
 #   - doc:            Start a local web service to explore the documentation
 #   - docker[-clean]: Build/clean docker images locally
 #   - dockerhub:      Build using dockerhub materials, to verify them
-#   - license:		  Checks sourrce files for Apache license header
+#   - dockerhub-pull: Pulling service images from dockerhub
+#   - license:		    Checks sourrce files for Apache license header
 #   - help:           Output the help instructions for each command
 #   - log:            Check the recent log output of all services
 #   - restart:        Stop the cello service and then start
@@ -139,6 +140,9 @@ dockerhub-%: ##@Building latest images with dockerhub materials, to valid them
 	-t $$IMG \
 	-t $$IMG:x86_64-latest \
 	dockerhub/latest/$$dir
+
+dockerhub-pull: ##@Pull service images from dockerhub
+	cd scripts/master_node && bash download_images.sh
 
 license:
 	bash scripts/check_license.sh
