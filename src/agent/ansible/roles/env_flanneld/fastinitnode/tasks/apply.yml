@@ -24,14 +24,6 @@
     - "{{ goroot }}"
     - "{{ gopath }}"
 
-- name: Install packages
-  apt:
-    name: "{{ item }}"
-  with_items:
-    - ['python-dev', 'python-pip', 'libtool', 'libltdl-dev', 'apt-transport-https']
-    - ['git', 'net-tools', 'netcat-openbsd', 'autoconf', 'automake', 'ca-certificates']
-    - ['libtool', 'curl', 'make', 'g++', 'unzip', 'build-essential', 'software-properties-common']
-
 - name: Add Docker offical GPG key
   shell: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
 
@@ -40,12 +32,13 @@
     repo: "deb [arch={{ arch }}] https://download.docker.com/linux/ubuntu {{ osrelease }} stable"
     state: present
 
-- name: Update apt and Install Docker-ce
+- name: Install docker, pip and other tools via apt
   apt:
-    name: docker-ce
-    update_cache: yes
+    name: "{{ item }}"
+  with_items:
+    - ['python-pip', 'docker-ce', 'libtool', 'libltdl-dev', 'autoconf']
 
-- name: Install pip and upgrade
+- name: Install python packages
   pip:
     name: "{{ item.name}}"
     extra_args: "{{ item.args | default('') }}"
