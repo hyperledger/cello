@@ -16,10 +16,9 @@ from pymongo.collection import ReturnDocument
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from common import \
-    db, log_handler, \
+    log_handler, \
     FabricV1NetworkConfig, \
     LOG_LEVEL, CLUSTER_LOG_TYPES, CLUSTER_LOG_LEVEL, \
-    NETWORK_TYPE_FABRIC_V1, \
     NETWORK_SIZE_FABRIC_V1, \
     CLUSTER_PORT_START, CLUSTER_PORT_STEP, \
     CONSENSUS_PLUGINS_FABRIC_V1, CONSENSUS_PLUGIN_SOLO, \
@@ -57,7 +56,6 @@ class HostHandler(object):
     A host can be a worker like Docker host, Swarm or Kubernetes
     """
     def __init__(self):
-        self.col = db["host"]
         self.host_agents = {
             'docker': DockerHost("docker"),
             'swarm': DockerHost("swarm"),
@@ -485,23 +483,6 @@ class HostHandler(object):
         )
 
         return HostModel.objects.get(id=id)
-
-    def db_update_one(self, filter, operations, after=True):
-        """
-        Update the data into the active db
-
-        :param filter: Which instance to update, e.g., {"id": "xxx"}
-        :param operations: data to update to db, e.g., {"$set": {}}
-        :param after: return AFTER or BEFORE
-        :return: The updated host json dict
-        """
-        if after:
-            return_type = ReturnDocument.AFTER
-        else:
-            return_type = ReturnDocument.BEFORE
-        doc = self.col.find_one_and_update(
-            filter, operations, return_document=return_type)
-        return self._serialize(doc)
 
 
 host_handler = HostHandler()

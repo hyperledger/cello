@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-from .db import db, col_host
+from .db import db
 from .response import make_ok_resp, make_fail_resp, CODE_NOT_FOUND, \
     CODE_BAD_REQUEST, CODE_CONFLICT, CODE_CREATED, CODE_FORBIDDEN, \
     CODE_METHOD_NOT_ALLOWED, CODE_NO_CONTENT, CODE_NOT_ACCEPTABLE, CODE_OK
