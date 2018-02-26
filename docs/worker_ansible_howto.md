@@ -117,13 +117,13 @@ modules for that cloud. Here are the steps to install Ansible modules for AWS,
 Azure and OpenStack respectively:
 
         AWS:
-        sudo pip3 install boto boto3
+        sudo pip install boto boto3
 
         Azure:
-        sudo pip3 install azure
+        sudo pip install azure
 
         OpenStack:
-        sudo pip3 install shade
+        sudo pip install shade
 
 These modules are used during the [Provision the servers](#provision-the-servers)
 step. If you are not running the Ansible agent against a cloud provider, you do
