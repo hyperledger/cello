@@ -194,6 +194,13 @@
   set_fact:
     orgmembers: "{{ peers | map(attribute='org') | list  | unique | sort | join(\".member' '\") | trim | replace(' ', ',') }}"
 
+- name: Login to docker repo
+  command: docker login "{{ fabric.repo.url }} -u {{ fabric.repo.username }} -p {{ fabric.repo.password }}"
+  when: >
+    fabric.baseimage_tag | length > 0 and
+    fabric.repo.username | default("") | length > 0 and
+    fabric.repo.password | default("") | length > 0
+
 - name: Pull necessary container images from the docker hub
   command: "docker pull {{ fabric.repo.url }}{{ item.name }}"
   when: item.flag | length > 0 and fabric.baseimage_tag | length > 0

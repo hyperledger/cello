@@ -12,7 +12,7 @@
     sshport: "{{ initial_port | int + item | int }}"
     name: "{{ cluster.name_prefix }}{{ item }}"
     groups: "prohosts"
-  with_sequence: count={{ cluster.stack_size }} format=%03x
+  with_sequence: count={{ cluster.stack_size }} format=%03d
 
 - name: Add netprocessing host group
   add_host:
@@ -22,5 +22,5 @@
     ansible_ssh_pass: "{{ cluster.ssh_pass }}"
     name: "AA_{{ cluster.name_prefix }}{{ item }}"
     groups: "nathosts"
-  with_sequence: count={{ cluster.stack_size }} format=%03x
+  with_sequence: count={{ cluster.stack_size }} format=%03d
   when: mode == "apply"

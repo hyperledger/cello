@@ -97,5 +97,5 @@
     sg_id: "{{ vpcsg.security_groups[0].group_id }}"
     ami_id: "{{ (found_amis.results | first).ami_id }}"
     groups: "prohosts"
-  with_sequence: count={{ cluster.stack_size }} format=%03x
+  with_sequence: count={{ cluster.stack_size }} format=%03d
   no_log: True

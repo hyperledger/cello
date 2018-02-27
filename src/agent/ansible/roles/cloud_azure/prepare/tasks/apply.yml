@@ -88,7 +88,7 @@
     name: "{{ cluster.name_prefix }}{{ item }}"
     ansible_host: "127.0.0.1"
     groups: prohosts
-  with_sequence: count={{ cluster.stack_size }} format=%03x
+  with_sequence: count={{ cluster.stack_size }} format=%03d
 - name: Scan the public key for master and added it to known hosts
   debug: "arggg  {{ item }}  "
   with_items: "{{ groups['prohosts'] }}"
