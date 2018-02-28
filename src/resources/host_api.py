@@ -45,7 +45,7 @@ def hosts_list():
 @bp_host_api.route('/host/<host_id>', methods=['GET'])
 def host_query(host_id):
     request_debug(r, logger)
-    result = host_handler.get_by_id(host_id)
+    result = host_handler.schema(host_handler.get_by_id(host_id))
     logger.debug(result)
     if result:
         return make_ok_resp(data=result)

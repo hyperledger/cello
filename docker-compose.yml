@@ -44,8 +44,10 @@ services:
     hostname: cello-operator-dashboard
     restart: unless-stopped
     environment:
-      - MONGO_URL=mongodb://cello-mongo:27017
+      - MONGO_URL=mongodb://cello-mongo:27017  # used by pymongo, deprecate soon
+      - MONGO_HOST=mongo
       - MONGO_DB=dev
+      - MONGODB_PORT=27017
       - DEBUG=True    # in debug mode, service will auto-restart
       - LOG_LEVEL=DEBUG  # what level log will be output
       - STATIC_FOLDER=$STATIC_FOLDER
@@ -53,6 +55,8 @@ services:
       - ENABLE_EMAIL_ACTIVE=$ENABLE_EMAIL_ACTIVE
     ports:
       - "8080:8080"
+    #volumes:
+    #  - ./src:/app
 
  #TODO: need to follow other images to put at dockerhub
   user-dashboard:
@@ -90,12 +94,16 @@ services:
     hostname: cello-engine
     restart: unless-stopped
     environment:
-      - MONGO_URL=mongodb://cello-mongo:27017
+      - MONGO_URL=mongodb://cello-mongo:27017  # used by pymongo, deprecate soon
+      - MONGO_HOST=mongo
       - MONGO_DB=dev
+      - MONGODB_PORT=27017
       - DEBUG=True    # in debug mode, service will auto-restart
       - LOG_LEVEL=DEBUG  # what level log will be output
     ports:
       - "80:80"
+    #volumes:
+    #  - ./src:/app
 
   # cello watchdog service
   watchdog:
@@ -104,10 +112,14 @@ services:
     hostname: cello-watchdog
     restart: unless-stopped
     environment:
-      - MONGO_URL=mongodb://cello-mongo:27017
+      - MONGO_URL=mongodb://mongo:27017  # used by pymongo, deprecate soon
+      - MONGO_HOST=mongo
       - MONGO_DB=dev
+      - MONGODB_PORT=27017
       - DEBUG=True    # in debug mode, service will auto-restart
       - LOG_LEVEL=DEBUG  # what level log will be output
+    #volumes:
+    #  - ./src:/app
 
   # mongo database, may use others in future
   mongo:
@@ -135,6 +147,8 @@ services:
   # TODO: we may use one mongo instance, that should be enough
   dashboard_mongo:
     image: hyperledger/cello-mongo
+    hostname: cello-dashboard_mongo
+    container_name: cello-dashboard_mongo
     restart: unless-stopped
     environment:
       - NO_USED=0

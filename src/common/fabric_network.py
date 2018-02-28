@@ -8,7 +8,7 @@ import requests
 from common.blockchain_network import BlockchainNetwork
 from common.fabric_network_config import \
     FabricPreNetworkConfig, FabricV1NetworkConfig
-from common import db, log_handler, LOG_LEVEL
+from common import log_handler, LOG_LEVEL
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)

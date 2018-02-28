@@ -11,7 +11,7 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from common import \
-    db, log_handler, \
+    log_handler, \
     LOG_LEVEL
 
 from ..host_base import HostBase
@@ -38,7 +38,6 @@ class DockerHost(HostBase):
     """ Main handler to operate the Docker hosts
     """
     def __init__(self, host_type):
-        self.col = db["host"]
         self.host_type = host_type
 
     def is_active(self, *args):

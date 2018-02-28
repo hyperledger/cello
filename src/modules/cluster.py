@@ -26,13 +26,12 @@ from common import CLUSTER_PORT_START, CLUSTER_PORT_STEP, \
     WORKER_TYPES, WORKER_TYPE_DOCKER, WORKER_TYPE_SWARM, WORKER_TYPE_K8S, \
     WORKER_TYPE_VSPHERE, VMIP, \
     NETWORK_SIZE_FABRIC_PRE_V1, \
-    PEER_SERVICE_PORTS, CA_SERVICE_PORTS, EXPLORER_PORT, \
+    PEER_SERVICE_PORTS, EXPLORER_PORT, \
     ORDERER_SERVICE_PORTS, \
     NETWORK_STATUS_CREATING, NETWORK_STATUS_RUNNING, NETWORK_STATUS_DELETING
 
 
 from common import FabricPreNetworkConfig, FabricV1NetworkConfig
-from common.fabric_network import FabricV1Network
 
 from modules import host
 
@@ -40,7 +39,7 @@ from agent import ClusterOnDocker, ClusterOnVsphere
 from modules.models import Cluster as ClusterModel
 from modules.models import Host as HostModel
 from modules.models import ClusterSchema, CLUSTER_STATE, \
-    CLUSTER_STATUS, Container, ServicePort
+    Container, ServicePort
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
