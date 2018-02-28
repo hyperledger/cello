@@ -195,7 +195,7 @@
     orgmembers: "{{ peers | map(attribute='org') | list  | unique | sort | join(\".member' '\") | trim | replace(' ', ',') }}"
 
 - name: Login to docker repo
-  command: docker login "{{ fabric.repo.url }} -u {{ fabric.repo.username }} -p {{ fabric.repo.password }}"
+  command: "docker login {{ fabric.repo.url }} -u {{ fabric.repo.username }} -p {{ fabric.repo.password }}"
   when: >
     fabric.baseimage_tag | length > 0 and
     fabric.repo.username | default("") | length > 0 and
