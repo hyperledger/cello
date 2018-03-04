@@ -1,3 +1,38 @@
+## v0.8.0-beta
+Sun Mar 4 16:00:20 UTC 2018
+
+* [e6ad3e9](https://github.com/hyperledger/cello/commit/e6ad3e9) [CE-290](https://jira.hyperledger.org/browse/CE-290) Fix ca,tls key file name error in compose
+* [c24906d](https://github.com/hyperledger/cello/commit/c24906d) [CE-289](https://jira.hyperledger.org/browse/CE-289) Upgrade fabric client version
+* [25d0496](https://github.com/hyperledger/cello/commit/25d0496) [CE-282](https://jira.hyperledger.org/browse/CE-282) DB first connection error
+* [df23ce4](https://github.com/hyperledger/cello/commit/df23ce4) [CE-279](https://jira.hyperledger.org/browse/CE-279) Start clean unused code
+* [cb52f71](https://github.com/hyperledger/cello/commit/cb52f71) [CE-281](https://jira.hyperledger.org/browse/CE-281) Fix the misplaced double quotes
+* [17fe0fa](https://github.com/hyperledger/cello/commit/17fe0fa) [CE-280](https://jira.hyperledger.org/browse/CE-280) remove docker.io install
+* [fe513ab](https://github.com/hyperledger/cello/commit/fe513ab) [CE-278](https://jira.hyperledger.org/browse/CE-278) Disable nginx frontend
+* [f24829b](https://github.com/hyperledger/cello/commit/f24829b) [CE-277](https://jira.hyperledger.org/browse/CE-277) Remove references to `pip3`
+* [389a8e3](https://github.com/hyperledger/cello/commit/389a8e3) [CE-276](https://jira.hyperledger.org/browse/CE-276) Tweak Ansible readme + tidy apt package list.
+* [e3726b9](https://github.com/hyperledger/cello/commit/e3726b9) [CE-275](https://jira.hyperledger.org/browse/CE-275) Support pulling newer images
+* [72b0401](https://github.com/hyperledger/cello/commit/72b0401) [CE-271](https://jira.hyperledger.org/browse/CE-271) Ansible agent needs to be updated
+* [a5cce26](https://github.com/hyperledger/cello/commit/a5cce26) [CE-274](https://jira.hyperledger.org/browse/CE-274) Fix user dashboard start scripts
+* [bd6d527](https://github.com/hyperledger/cello/commit/bd6d527) [CE-273](https://jira.hyperledger.org/browse/CE-273) Add dev/production start options
+* [2f23940](https://github.com/hyperledger/cello/commit/2f23940) [CE-272](https://jira.hyperledger.org/browse/CE-272) Update Dockerfiles for beta
+* [697f38d](https://github.com/hyperledger/cello/commit/697f38d) [CE-270](https://jira.hyperledger.org/browse/CE-270) Update Dockerfiles and docs
+* [2891c4f](https://github.com/hyperledger/cello/commit/2891c4f) [CE-260](https://jira.hyperledger.org/browse/CE-260) Add dockerfiles for latest
+* [fd9a147](https://github.com/hyperledger/cello/commit/fd9a147) [CE-268](https://jira.hyperledger.org/browse/CE-268) Derive AMI ID, allow custom Subnet/VPC
+* [1c1a332](https://github.com/hyperledger/cello/commit/1c1a332) [CE-261](https://jira.hyperledger.org/browse/CE-261) Create dockerfiles for v0.8.0
+* [44b31eb](https://github.com/hyperledger/cello/commit/44b31eb) [CE-253](https://jira.hyperledger.org/browse/CE-253) Ansible agent needs a document
+* [c7f1918](https://github.com/hyperledger/cello/commit/c7f1918) [CE-266](https://jira.hyperledger.org/browse/CE-266) Create dockerfiles for v0.8.0-beta
+* [a1f8a06](https://github.com/hyperledger/cello/commit/a1f8a06) [CE-263](https://jira.hyperledger.org/browse/CE-263) Create dockerfiles for v0.8.0-beta
+* [1a2c810](https://github.com/hyperledger/cello/commit/1a2c810) [CE-257](https://jira.hyperledger.org/browse/CE-257) Fix chain starting health checking bug
+* [e5880a7](https://github.com/hyperledger/cello/commit/e5880a7) [CE-258](https://jira.hyperledger.org/browse/CE-258) Fix service names
+* [f79f349](https://github.com/hyperledger/cello/commit/f79f349) [CE-255](https://jira.hyperledger.org/browse/CE-255) Allow ansible agent to avoid build any thing
+* [a902a14](https://github.com/hyperledger/cello/commit/a902a14) [CE-254](https://jira.hyperledger.org/browse/CE-254) Block device name should not be removed
+* [0ea3531](https://github.com/hyperledger/cello/commit/0ea3531) [CE-252](https://jira.hyperledger.org/browse/CE-252) Upgrade docker and go for ansible agent
+* [19f8025](https://github.com/hyperledger/cello/commit/19f8025) [CE-251](https://jira.hyperledger.org/browse/CE-251) Changes to core.yaml in cello ansible
+* [1b86bde](https://github.com/hyperledger/cello/commit/1b86bde) [CE-246](https://jira.hyperledger.org/browse/CE-246) Add explorer url in dashboard
+* [20d7016](https://github.com/hyperledger/cello/commit/20d7016) [CE-248](https://jira.hyperledger.org/browse/CE-248) changes to configtx.j2 in cello ansible
+* [fe31b70](https://github.com/hyperledger/cello/commit/fe31b70) [CE-249](https://jira.hyperledger.org/browse/CE-249) Update Cello with Release Process
+* [55c3285](https://github.com/hyperledger/cello/commit/55c3285) [CE-202](https://jira.hyperledger.org/browse/CE-202) Update Dockerfiles for v0.8.0-alpha
+
 ## v0.8.0-alpha
 Sat Jan 20 12:20:20 UTC 2018
 

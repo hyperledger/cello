@@ -1,5 +1,31 @@
 # Release Notes
 
+## [v0.8.0-beta](https://github.com/hyperledger/cello/releases/tag/v0.8.0-beta) March 4, 2018
+
+### Add new features
+
+none
+
+### Improvement
+
+* Support pulling newest docker images in Makefile.
+* Add dev/production start options for service deploy.
+* Derive AMI ID, allow custom Subnet/VPC.
+
+### Known Vulnerabilities
+none
+
+### Resolved Vulnerabilities
+* Fix start scripts for user dashboard.
+* Fix health check bug.
+* Fix the misplaced double quotes.
+* Upgrade fabric client version in user dashboard
+* Fix ca, tls files error in compose files for fabric client.
+
+### Known Issues & Workarounds
+
+* Deploying smart contract in user dashboard is not finished.
+
 ## [v0.8.0-alpha](https://github.com/hyperledger/cello/releases/tag/v0.8.0-alpha) January 20, 2018
 
 ### Add new features
