@@ -34,8 +34,23 @@ const io = require('./io').initialize(server);
 
 mongoose.Promise = global.Promise;
 logger.info(config.mongodb.ip, config.mongodb.port, config.mongodb.name)
-mongoose.connect('mongodb://'+config.mongodb.ip+':'+config.mongodb.port+'/' + config.mongodb.name, {useMongoClient: true});
-
+var conn = mongoose.connect('mongodb://'+config.mongodb.ip+':'+config.mongodb.port+'/' + config.mongodb.name, {useMongoClient: true});
+conn.on('error', function(err){
+  if (err.message && err.message.match(/failed to connect to server .* on first connect/)) {
+      logger.info(String(err));
+      // Wait for a bit, then try to connect again
+      setTimeout(function () {
+          logger.info("Retrying first connect...");
+          conn.openUri('mongodb://'+config.mongodb.ip+':'+config.mongodb.port+'/' + config.mongodb.name).catch(() => {});
+      }, 20 * 1000);
+  } else {
+        // Some other error occurred.  Log it.
+        logger.error(String(err));
+  }
+});
+conn.once('open',function(){
+  logger.info("Connection to " + config.mongodb.name + " established.")
+});
 app.engine('html', cons.swig)
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "html");
