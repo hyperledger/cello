@@ -18,6 +18,7 @@ fabric: {
   # options are "goleveldb", "CouchDB", default is goleveldb
   peer_db: "CouchDB",
   tls: false,
+  logging_level: "ERROR",
 
   # The following section defines how the fabric network is going to be made up
   # cas indicates certificate authority containers
