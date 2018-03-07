@@ -10,7 +10,7 @@ services:
     network_mode: bridge
     hostname: {{ orderer.name }}
     environment:
-      - ORDERER_GENERAL_LOGLEVEL=debug
+      - ORDERER_GENERAL_LOGLEVEL={{ fabric.logging_level | default('ERROR') }}
       - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
       - ORDERER_GENERAL_GENESISMETHOD=file
       - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.block/genesis.block

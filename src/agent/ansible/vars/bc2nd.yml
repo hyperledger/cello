@@ -12,6 +12,7 @@ fabric: {
   ssh_user: "ubuntu",
   peer_db: "goleveldb",
   tls: true,
+  logging_level: "ERROR",
 
   network: {
     fabric001: {
