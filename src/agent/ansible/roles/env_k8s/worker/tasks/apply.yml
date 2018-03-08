@@ -70,6 +70,7 @@
       --cluster-domain={{ cluster.domain }}
       --allow-privileged=true
       --resolv-conf=''
+      --fail-swap-on=false
     proxy_params: >-
       --master={{ private_ip }}:8080
       --cluster-cidr={{ cluster.container_network.Network }}
