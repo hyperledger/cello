@@ -35,6 +35,7 @@ class Host(Document):
     schedulable = BooleanField(default=False)
     capacity = IntField(default=0)
     clusters = ListField(default=[])
+    vcparam = DictField(default={})
 
 
 class Cluster(Document):

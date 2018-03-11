@@ -19,7 +19,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 from agent import get_swarm_node_ip
 
-from common import db, log_handler, LOG_LEVEL
+from common import db, log_handler, LOG_LEVEL, utils
 from common import CLUSTER_PORT_START, CLUSTER_PORT_STEP, \
     NETWORK_TYPE_FABRIC_PRE_V1, NETWORK_TYPE_FABRIC_V1, \
     CONSENSUS_PLUGINS_FABRIC_V1, \
@@ -236,12 +236,6 @@ class ClusterHandler(object):
             logger.warning("host {} is already full".format(host_id))
             return None
 
-        if worker.type == WORKER_TYPE_VSPHERE:
-            vm_params = self.host_handler.get_vm_params_by_id(host_id)
-            docker_daemon = vm_params.get(VMIP) + ":2375"
-            worker.update({"worker_api": "tcp://" + docker_daemon})
-            logger.info(worker)
-
         peer_num = int(config.get_data().get("size", 4))
         ca_num = 2 if peer_num > 1 else 1
 
@@ -312,7 +306,7 @@ class ClusterHandler(object):
         )
 
         def check_health_work(cid):
-            time.sleep(5)
+            time.sleep(60)
             self.refresh_health(cid)
         t = Thread(target=check_health_work, args=(cid,))
         t.start()
@@ -695,8 +689,7 @@ class ClusterHandler(object):
                 cluster_id, node))
             logger.debug("swarm host, ip = {}".format(host_ip))
         elif host_type == WORKER_TYPE_VSPHERE:
-            vm_params = self.host_handler.get_vm_params_by_id(host_id)
-            host_ip = vm_params.get(VMIP)
+            host_ip = host.vcparam[utils.VMIP]
             logger.debug(" host, ip = {}".format(host_ip))
         else:
             logger.error("Unknown host type = {}".format(host_type))

@@ -29,7 +29,7 @@ class VsphereHost(HostBase):
     def __init__(self):
         self.collection = db["host"]
 
-    def create(self, vcip, username, pwd, port, params):
+    def create(self, vcip, username, pwd, port, params, hid):
         """ Create a new vSphere host
         :param vcip : vCenter address
         :param username: vCenter username
@@ -131,7 +131,7 @@ class VsphereHost(HostBase):
         else:
             vc_resources[NETWORK] = network
 
-        operation.create_vm(connection, params)
+        operation.create_vm(connection, params, hid)
         return True
 
     def delete(self, vmuuid, vcip, username, pwd, port=443):

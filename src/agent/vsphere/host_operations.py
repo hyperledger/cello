@@ -18,6 +18,7 @@ import atexit
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from common import log_handler, LOG_LEVEL, db, utils
 from agent import setup_container_host
+from modules.models import Host as HostModel
 
 context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
 context.verify_mode = ssl.CERT_NONE
@@ -46,6 +47,7 @@ class VsphereOperation():
         try:
             self.pull_and_tag_fabric_images(client)
             self.pull_and_tag_fabric_base_images(client)
+            self.pull_and_tag_blockchain_explorer_images(client)
             return True
         except Exception as e:
             logger.error('{}'.format(e))
@@ -73,6 +75,26 @@ class VsphereOperation():
             self.tag_image(docker_client, image, utils.ARCH,
                            utils.BASEIMAGE_RELEASE)
 
+    def pull_and_tag_blockchain_explorer_images(self, docker_client):
+        """
+        pull base fabric explorer images, blockchain-explorer, mysql5.7.
+        :param docker_client: DockerClient object
+        :return:
+        """
+        try:
+            image = utils.BLOCKCHAIN_EXPLORER_IMAGE
+            tag = utils.BLOCKCHAIN_EXPLORER_TAG
+            logger.info("pulling image: {}".format(image))
+            docker_client.images.pull(image, tag)
+            image = utils.MYSQL_IMAGE
+            tag = utils.MYSQL_TAG
+            logger.info("pulling image: {}".format(image))
+            docker_client.images.pull(image, tag)
+        except Exception as e:
+            logger.error("Docker client error msg: {}".format(e))
+            error_msg = "Cannot pull image:{}".format("explorer images")
+            raise Exception(error_msg)
+
     def pull_image(self, client, image, arch, version):
         """
         pull specific fabric images
@@ -82,7 +104,7 @@ class VsphereOperation():
         :param version: fabric image version
         """
         try:
-            image_to_be_pull = utils.FABRIC_IMAGE_TAG.format(image)
+            image_to_be_pull = utils.FABRIC_IMAGE.format(image)
             name = utils.FABRIC_IMAGE_FULL.format(image, arch, version)
             logger.info("pulling image: {}".format(name))
             client.images.pull(image_to_be_pull, tag=arch + '-' + version)
@@ -101,7 +123,7 @@ class VsphereOperation():
         """
         try:
             name = utils.FABRIC_IMAGE_FULL.format(image, arch, version)
-            tag = utils.FABRIC_IMAGE_TAG.format(image)
+            tag = utils.FABRIC_IMAGE_TAG.format(image, version)
             image_to_be_tag = client.images.get(name)
             logger.info("tag {} => {}".format(name, tag))
             image_to_be_tag.tag(tag)
@@ -172,7 +194,7 @@ class VsphereOperation():
         atexit.register(Disconnect, si)
         return si
 
-    def create_vm(self, connection, params):
+    def create_vm(self, connection, params, hid):
         """
         start a thread to create vm and will update db.
         :param connection: vc connection return by initializesi
@@ -180,11 +202,11 @@ class VsphereOperation():
         :return:
         """
         t = threading.Thread(target=self.setup_vm,
-                             args=(connection, params),
+                             args=(connection, params, hid),
                              name="setupvm")
         t.start()
 
-    def setup_vm(self, connection, params):
+    def setup_vm(self, connection, params, hid):
         """
         setup  a new vritualmachine.
         :param connection: vc connection return by initializesi
@@ -206,6 +228,10 @@ class VsphereOperation():
         vmgateway = vm.get(utils.VMGATEWAY)
 
         # Get vc params
+        vcip = vc.get(utils.VCIP)
+        vcusername = vc.get(utils.VCUSERNAME)
+        vcpwd = vc.get(utils.VCPWD)
+        vcport = vc.get(utils.VCPORT)
         template = vc.get(utils.TEMPLATE)
         datacenter = vc.get(utils.VC_DATACENTER)
         cluster = vc.get(utils.VC_CLUSTER)
@@ -257,7 +283,13 @@ class VsphereOperation():
         clonespec.config = vmconf
         clonespec.powerOn = True
 
-        host = {
+        try:
+            host = HostModel.objects.get(id=hid)
+        except Exception:
+            logger.error("No vsphere host found with id=" + hid)
+            return
+
+        host.vcparam = {
             utils.VMUUID: '',
             utils.VMIP: vmip,
             utils.VMNETMASK: vmnetmask,
@@ -268,6 +300,10 @@ class VsphereOperation():
             utils.VC_CLUSTER: cluster.name,
             utils.VC_DATASTORE: datastore.name,
             utils.VC_DATACENTER: datacenter.name,
+            utils.VCIP: vcip,
+            utils.VCUSERNAME: vcusername,
+            utils.VCPWD: vcpwd,
+            utils.VCPORT: vcport
         }
         try:
             task = template.Clone(folder=destfolder, name=vmname,
@@ -276,28 +312,34 @@ class VsphereOperation():
             self.wait_for_task(task)
             vm = self.check_object(connection, [vim.VirtualMachine], vmname)
             workerapi = "tcp://" + vmip + ":2375"
+            host.worker_api = workerapi
             uuid = vm.summary.config.uuid
-            host.update({utils.VMUUID: uuid})
+            host.vcparam[utils.VMUUID] = uuid
+            host.save()
             if self.check_isport_open(vmip, utils.WORKER_API_PORT,
                                       utils.DEFAULT_TIMEOUT):
                 if (self.pull_images(workerapi) and
                     setup_container_host(utils.WORKER_TYPE_DOCKER,
                                          workerapi)):
-                    host['status'] = 'active'
+                    host.status = 'active'
                     logger.info(host)
                 else:
-                    host["status"] = 'error'
+                    host.status = 'error'
                     logger.error("Failed to setup container host")
             else:
-                host["status"] = 'error'
+                host.status = 'error'
                 logger.error("Failed to ping docker daemon:{}:{}"
                              .format(vmip, "2375"))
-            self.col.find_one_and_update({utils.VMNAME: vmname},
-                                         {"$set": host})
+            host.save()
             # Should be safe to delete vm though VsphereHost layer.
         except Exception as e:
             logger.error(e)
-            self.col.delete_one({utils.VMNAME: vmname})
+            if self.check_isport_open(vmip, utils.WORKER_API_PORT,
+                                      utils.DEFAULT_TIMEOUT):
+                host = HostModel.objects.get(id=hid)
+                uuid = host.vcparam[utils.VMUUID]
+                self.delete_vm(vcip, vcusername, vcpwd, vcport, uuid)
+            host.delete()
             return
 
     def wait_for_task(self, task):

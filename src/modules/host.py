@@ -17,7 +17,7 @@ from pymongo.collection import ReturnDocument
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from common import \
     log_handler, \
-    FabricV1NetworkConfig, \
+    FabricV1NetworkConfig, utils, \
     LOG_LEVEL, CLUSTER_LOG_TYPES, CLUSTER_LOG_LEVEL, \
     NETWORK_SIZE_FABRIC_V1, \
     CLUSTER_PORT_START, CLUSTER_PORT_STEP, \
@@ -107,6 +107,19 @@ class HostHandler(object):
             logger.warning("Host {} cannot be setup".format(name))
             return {}
 
+        hid = uuid4().hex
+        host = HostModel(id=hid,
+                         name=name,
+                         worker_api=worker_api,
+                         capacity=capacity,
+                         type=host_type,
+                         log_level=log_level,
+                         log_type=log_type,
+                         log_server=log_server,
+                         autofill=autofill == "true",
+                         schedulable=schedulable == "true"
+                         )
+
         if (host_type == WORKER_TYPE_DOCKER or
            host_type == WORKER_TYPE_SWARM):
             if not self.host_agents[host_type].create(worker_api):
@@ -118,7 +131,7 @@ class HostHandler(object):
             vc = params.get(VCENTER)
             vm = params.get(VIRTUAL_MACHINE)
 
-            worker_api = vc.get(VCIP)
+            vc_ip = vc.get(VCIP)
             vc_username = vc.get(VCUSERNAME)
             vc_passwd = vc.get(VCPWD)
             vc_port = vc.get(VCPORT)
@@ -142,11 +155,12 @@ class HostHandler(object):
                 HOST_STATUS: HOST_STATUS_PENDING
             }
             logger.debug("update {}".format(h_update))
+            host.status = HOST_STATUS_PENDING
             try:
-                if self.host_agents[host_type].create(worker_api,
+                if self.host_agents[host_type].create(vc_ip,
                                                       vc_username,
                                                       vc_passwd, vc_port,
-                                                      params):
+                                                      params, hid):
                     logger.info("Creating vSphere host{}".format(name))
 
             except Exception as e:  # Catch failure while connecting to vc.
@@ -154,18 +168,6 @@ class HostHandler(object):
                 logger.error("{}".format(e))
                 return {"msg": "{}".format(e)}
 
-        hid = uuid4().hex
-        host = HostModel(id=hid,
-                         name=name,
-                         worker_api=worker_api,
-                         capacity=capacity,
-                         type=host_type,
-                         log_level=log_level,
-                         log_type=log_type,
-                         log_server=log_server,
-                         autofill=autofill == "true",
-                         schedulable=schedulable == "true"
-                         )
         host.save()
 
         if capacity > 0 and autofill == "true":  # should autofill it
@@ -186,33 +188,6 @@ class HostHandler(object):
             return None
 
         return ins
-
-    # def get_vc_params_by_id(self, id):
-    #     """ Get vCenter params while host type is vsphere
-    #
-    #     :param id: id of the doc
-    #     :return: serialized result or obj
-    #     """
-    #     ins = self.col.find_one({"id": id})
-    #     if not ins:
-    #         logger.warning("No host found with id=" + id)
-    #         return {}
-    #     return self._serialize(ins, keys=[VCUSERNAME,
-    #                                       VCPWD, VCPORT])
-    #
-    # def get_vm_params_by_id(self, id):
-    #     """ Get VM params while host type is vsphere
-    #
-    #     :param id: id of the doc
-    #     :return: serialized result or obj
-    #     """
-    #     ins = self.col.find_one({"id": id})
-    #     if not ins:
-    #         logger.warning("No host found with id=" + id)
-    #         return {}
-    #     return self._serialize(ins, keys=[VMUUID,
-    #                                       VMIP,
-    #                                       VMNAME])
 
     def update(self, id, d):
         """ Update a host's property
@@ -286,17 +261,19 @@ class HostHandler(object):
               host_type == WORKER_TYPE_SWARM):
             self.host_agents[host_type].delete(h.worker_api)
 
-        # elif host_type == WORKER_TYPE_VSPHERE:
-        #     if h.status == "pending":
-        #         return False
-        #     vc_params = self.get_vc_params_by_id(id)
-        #     vm_params = self.get_vm_params_by_id(id)
-        #     logger.info(vc_params)
-        #     self.host_agents[host_type].delete(vm_params.get(VMUUID),
-        #                                        h.worker_api,
-        #                                        vc_params.get(VCUSERNAME),
-        #                                        vc_params.get(VCPWD),
-        #                                        vc_params.get(VCPORT))
+        elif host_type == WORKER_TYPE_VSPHERE:
+            if h.status == "pending":
+                return False
+            vmuuid = h.vcparam[utils.VMUUID]
+            vcip = h.vcparam[utils.VCIP]
+            vcusername = h.vcparam[utils.VCUSERNAME]
+            vcpwd = h.vcparam[utils.VCPWD]
+            vcport = h.vcparam[utils.VCPORT]
+            self.host_agents[host_type].delete(vmuuid,
+                                               vcip,
+                                               vcusername,
+                                               vcpwd,
+                                               vcport)
         h.delete()
         return True
 

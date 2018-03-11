@@ -22,10 +22,18 @@ ARCH = 'x86_64'
 VERSION = '1.0.5'
 BASEIMAGE_RELEASE = '0.3.2'
 FABRIC_IMAGE_FULL = 'hyperledger/fabric-{}:{}-{}'
-FABRIC_IMAGE_TAG = 'hyperledger/fabric-{}'
+FABRIC_IMAGE_TAG = 'hyperledger/fabric-{}:{}'
+FABRIC_IMAGE = 'hyperledger/fabric-{}'
 FABRIC_IMAGES = ['peer', 'tools', 'orderer', 'ca', 'ccenv', 'kafka',
                  'zookeeper']
 FABRIC_BASE_IMAGES = ['baseimage', 'baseos']
+
+# explorer images
+BLOCKCHAIN_EXPLORER_IMAGE = 'yeasy/blockchain-explorer'
+BLOCKCHAIN_EXPLORER_TAG = '0.1.0-preview'
+
+MYSQL_IMAGE = 'mysql'
+MYSQL_TAG = '5.7'
 
 # host status
 HOST_STATUS = 'status'

@@ -49,7 +49,7 @@ Upload the template OS OVA to vCenter before create vSphere type host in Cello. 
 1. Login to vSphere Client.
 2. Right-Click on ESX host on which you want to deploy template.
 3. Select Deploy OVF template.
-4. Copy and paste URL for [OVA for Cello](https://drive.google.com/file/d/0B4Ioua6jjCH9b0ROOE14SUlqUk0/view?usp=sharing)
+4. Copy and paste URL for [OVA for Cello](https://drive.google.com/file/d/1VN4FDlgd0Q7tqBtGNBN5trP7upaswUWS/view?usp=sharing)
 5. Please deploy the ova on the same cluster which will be planned to be used by cello later
 6. **Check the name of the VM created** , this will be used to create vSphere type host in Cello later. (Should default to PhotonOSTemplate.ova)
 
