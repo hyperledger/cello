@@ -4,5 +4,5 @@ run this command::
 
    ansible-playbook -i run/runhosts -e "mode=apply env=vb1st" setupfabric.yml
 
-Make sure that these host machines already up running, run the above
+Make sure that these host machines are already up running, run the above
 command to setup fabric network defined in vars/vb1st.yml file

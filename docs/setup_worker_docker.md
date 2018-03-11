@@ -55,7 +55,7 @@ $ sudo systemctl stop docker.service
 $ sudo dockerd -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock --api-cors-header='*' --default-ulimit=nofile=8192:16384 --default-ulimit=nproc=8192:16384 -D &
 ```
 
-At last, run the follow test at Master node and get OK response, to make sure it can access Worker node successfully.
+At last, run the follow test at Master node and get OK response, to make sure it can access the Worker node successfully.
 
 ```sh
 [Master] $ docker -H Worker_Node_IP:2375 info

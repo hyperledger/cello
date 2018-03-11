@@ -7,7 +7,7 @@ Hyperledger Cello is a blockchain provision and operation system, which helps ma
 ## Introduction
 Using Cello, everyone can easily:
 
-* Build up a Blockchain as a Service (BaaS) platform quickly from the scratch.
+* Build up a Blockchain as a Service (BaaS) platform quickly from scratch.
 * Provision customizable Blockchains instantly, e.g., a Hyperledger fabric network v1.0.
 * Maintain a pool of running blockchain networks on top of baremetals, Virtual Clouds (e.g., virtual machines, vsphere Clouds), Container clusters (e.g., Docker, Swarm, Kubernetes).
 * Check the system status, adjust the chain numbers, scale resources... through dashboards.

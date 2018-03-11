@@ -15,8 +15,8 @@ Hyperledger Cello provides the following features:
 
 Using Cello, application developers can:
 
-* Build up a Blockchain as a Service (BaaS) platform quickly from the scratch.
-* Provision customizable Blockchains instantly, e.g., a Hyperledger fabric v1.0.x network.
+* Build up a Blockchain as a Service (BaaS) platform quickly from scratch.
+* Provision customizable Blockchains instantly, e.g., a Hyperledger fabric network v1.0.x.
 * Maintain a pool of running blockchain networks on top of bare-metals, virtual clouds (e.g., virtual machines, vsphere Clouds), container clusters (e.g., Docker, Swarm, Kubernetes).
 * Check the system status, adjust the chain numbers, scale resources... through dashboards.
 
