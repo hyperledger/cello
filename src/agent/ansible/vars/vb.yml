@@ -28,8 +28,8 @@ cluster: {
     SubnetMin: "172.16.0.0",
     SubnetMax: "172.16.255.0",
     Backend: {
-      Type: "udp",
-      Port: 8285
+      Type: "ipip",
+      DirectRouting: True
     }
   },
 
@@ -52,8 +52,8 @@ cluster: {
   etcdnodes: ["fabric001"],
   builders: ["fabric001"],
 
-  flannel_repo: "https://github.com/coreos/flannel/releases/download/v0.7.1/flannel-v0.7.1-linux-amd64.tar.gz",
-  etcd_repo: "https://github.com/coreos/etcd/releases/download/v3.2.0/etcd-v3.2.0-linux-amd64.tar.gz",
+  flannel_repo: "https://github.com/coreos/flannel/releases/download/v0.10.0/flannel-v0.10.0-linux-amd64.tar.gz",
+  etcd_repo: "https://github.com/coreos/etcd/releases/download/v3.3.2/etcd-v3.3.2-linux-amd64.tar.gz",
   k8s_repo: "https://storage.googleapis.com/kubernetes-release/release/v1.9.1/bin/linux/amd64/",
   go_repo: "https://dl.google.com/go/go1.9.2.linux-amd64.tar.gz",
 
