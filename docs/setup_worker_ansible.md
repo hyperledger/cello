@@ -1,6 +1,6 @@
 # Cello Ansible Worker Node
 
-Cello supports to deploy hybperledger fabric onto multiple physical or virtual servers using [ansible](https://ansible.com), and achieve:
+Cello supports to deploy hyperledger fabric onto multiple physical or virtual servers using [ansible](https://ansible.com), and achieve:
 
  - Provision virtual servers to participate in fabric network
  - Install necessary hyperledger dependent libraries and packages
@@ -8,7 +8,7 @@ Cello supports to deploy hybperledger fabric onto multiple physical or virtual s
  - Install registrator and dns services so that containers can be referenced by name
  - Build hyperledger fabric artifacts (optional)
  - Run hyperledger fabric tests (optional)
- - Generate fabric network certificats, genesis block, transaction blocks
+ - Generate fabric network certificates, genesis block, transaction blocks
  - Push new or tagged fabric images onto all docker hosts
  - Deploy fabric network
  - Join peers to channels, instantiate chaincode

@@ -14,7 +14,7 @@ Please follow the below steps to stand up an all-in-one fabric system
 ## Install dependencies and clone cello
 
 Use a clean Ubuntu system, login as a user who can do `sudo su` without
-prompting password, and run the following comamnds to install necessary
+prompting password, and run the following commands to install necessary
 dependencies, grant current user docker permissions and clone the cello
 project into the current user home directory::
 
@@ -66,7 +66,7 @@ Create file ~/cello/src/agent/ansible/run/runhosts.tpl with the following conten
         $ip
 
 Change your working directory to ~/cello/src/agent/ansible and run the
-followng commands to create runhosts file for your environment.
+following commands to create runhosts file for your environment.
 
         ipaddr=$(ip -4 addr show | awk -F '/' '/inet / {print $1}' | grep -v '127.0.0.1' | awk -F ' ' '{print $2;exit}')
         sed "s/\$ip/$ipaddr/g" run/runhosts.tpl > run/runhosts

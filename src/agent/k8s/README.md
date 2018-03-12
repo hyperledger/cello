@@ -6,7 +6,7 @@
 
 ##This part of Cello deploys **Fabric over Kubernetes**
 ---
-Note: This guide assumes that you already have running Kubernetes Cluster with a master and n-minions.
+Note: This guide assumes that you already have running Kubernetes Cluster with a master and n-nodes.
 
 ###--Steps to Deploy--
 
@@ -25,7 +25,7 @@ Note: This guide assumes that you already have running Kubernetes Cluster with a
     ```$ bash prepare-files.sh```
 
 4. Now, Copy "driving-files" directory to all the nodes, i.e.
-    Master along with all the Minions.
+    Master along with all the nodes.
 
 5. On Master, run "run.sh"
     ```$ bash run.sh```

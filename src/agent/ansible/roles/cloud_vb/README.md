@@ -9,7 +9,7 @@ can be used to clone new machines. The image should have both python 2.x and doc
 already installed. The configuration file is in vars/vb.yml. You should create your
 own configuration file by copy and change that file according to your own environment.
 
-To use this role to provision VirtualBxo vms once you create a configuration file like
+To use this role to provision VirtualBox vms once you create a configuration file like
 vars/vb.yml, and named it myvb.yml, you can run the following command in the root
 directory of the project, not in the directory where this file is located::
 
@@ -27,7 +27,7 @@ Few words about the base image::
 The base image should have the ssh user be a sudoer, for example if your ssh user
 is called ubuntu, do the following::
 
-    echo "ubuntu ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/ununtu
+    echo "ubuntu ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/ubuntu
 
 You may also want to disable the daily update which by default is enabled. When
 you start a VB instance using the base image, if it starts auto update, your ansible

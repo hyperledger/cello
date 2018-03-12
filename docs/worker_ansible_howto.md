@@ -29,7 +29,7 @@ Ansible agent:
 # <a name="setup-ansible-controller"></a>Set up the Ansible controller
 
 You need an Ansible controller to run Ansible playbooks. An Ansible controller
-can be any machine (Virtualbox VM, your laptop, AWS instance, etc) that has
+can be any machine (VirtualBox VM, your laptop, AWS instance, etc) that has
 Ansible 2.3.0.0 or greater installed on it.
 
 1. [Install Ansible](#install-ansible)
@@ -219,7 +219,7 @@ previous step:
 The parameter `env` is same as in previous step. The parameter `env_type`
 indicates what communication environment you would like to setup. The possible
 values for this parameter are `flanneld` and `k8s`. Value `flanneld` is used to
-setup a docker swarm like environment. Value `k8s` is to set up a Kuberenetes
+setup a docker swarm like environment. Value `k8s` is to set up a Kubernetes
 environment.
 
 To remove everything this step created, run the following command:
@@ -467,7 +467,7 @@ reject the ssh connection from Ansible controller.
 ## <a name="ccac"></a>Convenient configurations and commands
 
 At the root directory of the Ansible agent there are set of preconfigured
-playbooks, they were developed as convienent sample playbooks for you if you
+playbooks, they were developed as a convenient sample playbooks for you if you
 mainly work with a particular cloud. Here's a list of these playbooks.
 
 ```
