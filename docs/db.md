@@ -34,11 +34,11 @@ id  | service_url         | name      | user_id  | host_id | worker_api         
 --- | --------------- | --------- | -------- | ------- | ------------------- | ---------------- | -------------- | -------------  | -------- | ---------- | ------- | ------- | ------- | ------
 xxx | {}   | cluster_A | ""       | host_xx |  tcp://10.0.0.1:2375 | pbft            | batch          | 20160430101010 | 20160430101010 | | | 4  | [vp0,vp1,vp2,vp3] | OK
 
-* id (str): uuid of the host instance
+* id (str): uuid of the cluster instance
 * service_url (dict): urls to access the services on the chain, e.g., {'rest':10.0.0.1:7050, 'grpc':10.0.0.1:7051}
 * name (str): human-readable name
 * user_id (str): Which user occupies this chain, empty for no occupation
-* host_id (str): Where the chain exists
+* host_id (str): Which host the chain exists
 * worker_api (str): Through which url to access the Docker/Swarm Daemon
 * consensus_plugin (str): Consensus plugin name
 * consensus_mode (str): Consensus plugin mode name
