@@ -205,7 +205,7 @@
   command: "docker pull {{ fabric.repo.url }}{{ item.name }}"
   when: item.flag | length > 0 and fabric.baseimage_tag | length > 0
   with_items:
-    - { name: "fabric-ca:{{ helpertag }}", flag: "{{ cas }}" }
+    - { name: "fabric-ca:{{ fabric.ca.image_tag | default(thetag) }}", flag: "{{ cas }}" }
     - { name: "fabric-zookeeper:{{ helpertag }}", flag: "{{ zookeepers }}" }
     - { name: "fabric-kafka:{{ helpertag }}", flag: "{{ kafkas }}" }
     - { name: "fabric-couchdb:{{ helpertag }}", flag: "{{ peers }}" }

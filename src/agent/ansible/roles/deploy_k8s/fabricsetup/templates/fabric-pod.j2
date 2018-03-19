@@ -96,7 +96,7 @@ spec:
         path: {{ fabricworkdir }}/run/keyfiles/{{ ca.org }}
   containers:
     - name: {{ ca.name }}
-      image: {{ fabric.repo.url }}fabric-ca:{{ helpertag }}
+      image: {{ fabric.repo.url }}fabric-ca:{{ fabric.ca.image_tag | default(thetag) }}
       imagePullPolicy: IfNotPresent
       env:
         - { name: "FABRIC_CA_HOME", value: "/etc/hyperledger/fabric-ca-server-config/ca" }
