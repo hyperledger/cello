@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-FROM node:9.2 as build_login
+FROM node:8.9 as build_login
 MAINTAINER haitao yue "hightall@me.com"
 RUN cd /tmp && git clone https://github.com/hyperledger/cello.git
 RUN cp -r /tmp/cello/user-dashboard/js /app
@@ -10,7 +10,7 @@ RUN mkdir -p /usr/app
 RUN cp -r /tmp/cello/user-dashboard /usr/app/src
 RUN cd /app && npm install --loglevel http && npm run build
 
-FROM node:9.2 as build_home
+FROM node:8.9 as build_home
 MAINTAINER haitao yue "hightall@me.com"
 RUN cd /tmp && git clone https://github.com/hyperledger/cello.git
 RUN cp -r /tmp/cello/user-dashboard/js /app
@@ -18,7 +18,7 @@ RUN mkdir -p /usr/app
 RUN cp -r /tmp/cello/user-dashboard /usr/app/src
 RUN cd /app/home && npm install --loglevel http && npm run build
 
-FROM node:9.2 as build_dashboard
+FROM node:8.9 as build_dashboard
 MAINTAINER haitao yue "hightall@me.com"
 RUN cd /tmp && git clone https://github.com/hyperledger/cello.git
 RUN cp -r /tmp/cello/user-dashboard/js /app
@@ -26,7 +26,7 @@ RUN mkdir -p /usr/app
 RUN cp -r /tmp/cello/user-dashboard /usr/app/src
 RUN cd /app/dashboard && npm install --loglevel http && npm run build
 
-FROM node:9.2
+FROM node:8.9
 MAINTAINER haitao yue "hightall@me.com"
 RUN npm install -g requirejs
 RUN cd /tmp && git clone https://github.com/hyperledger/cello.git

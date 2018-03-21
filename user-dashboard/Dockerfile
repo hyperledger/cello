@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-FROM node:9.2
+FROM node:8.9
 MAINTAINER haitao yue "hightall@me.com"
 RUN npm install -g requirejs
 COPY package.json /
