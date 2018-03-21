@@ -2,6 +2,7 @@
 The [Master Node](./terminology.md) includes several services:
 
 * `operator dashboard`: Provide Web UI for operators.
+* `user dashboard`: Provide Web UI for users.
 * `engine`: Provide RESTful APIs for chain consumers.
 * `watchdog`: Watch for health checking.
 
@@ -45,16 +46,53 @@ Make sure there is no error during the setup. Otherwise, please check the log ms
 To start the whole services, please run
 
 ```sh
-$ make start
+$ [environment variables] make start
+```
+Environment variables which you can use in the command:
+
+* `THEME`: Theme name for operator dashboard basic/vue/react, default is basic
+* `NPM_REGISTRY`: npm registry for install node packages
+* `DEV`: Start service in dev/product mode, options is True/False, default is False
+* `ENABLE_EMAIL_ACTIVE`: Whether register user in user-dashboard need to active manually
+* `SMTP_SERVER`: smtp server address for send active email to user
+* `SMTP_PORT`: smtp server port
+* `SMTP_AUTH_USERNAME`: Username for authenticate of smtp server
+* `SMTP_AUTH_PASSWORD`: Password for authenticate of smtp server
+* `FROM_EMAIL`: Email address display to user
+
+
+To stop or restart the whole services, please run
+```sh
+$ make stop
+```
+To restart the whole services, please run
+```sh
+$ make restart
 ```
 
-To stop or restart the whole services, run `make stop` or `make restart`.
+#### Start/Stop/Restart in Development mode
+As a developer, you can start/stop/restart services in development mode. In development mode, [user dashboard](./dashboard_user.md) will watch and restart service if files change. And [operator dashboard](./dashboard_operator.md) will enalbe flask debug.
 
+To start the whole services in developer mode, please run
+```sh
+$ DEV=True make start
+```
+
+
+
+To stop or restart the whole services, please run
+```sh
+$ DEV=True make stop
+```
+To restart the whole services, please run
+```sh
+$ DEV=True make restart
+```
 #### Redeploy a service
-To redeploy one specific service, e.g., dashboard, please run
+To redeploy one specific service, e.g., operator dashboard, please run
 
 ```sh
-$ make redeploy service=dashboard
+$ make redeploy service=operator-dashboard
 ```
 
 #### Check Logs

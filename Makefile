@@ -175,7 +175,7 @@ doc: ##@Create local online documentation and start serve
 
 # Use like "make log service=dashboard"
 log: ##@Log tail special service log, Use like "make log service=dashboard"
-	docker-compose logs -f ${service} --tail=200
+	docker-compose logs --tail=200 -f ${service}
 
 logs: ##@Log tail for all service log
 	docker-compose logs -f --tail=200

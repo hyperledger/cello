@@ -9,7 +9,7 @@ Cello follows a typical Master-Worker architecture. There are two types of Nodes
 
 ## Master Node
 
-See [Setup a Master Node](setup_master.md), [Setup Master node in develop mode](developer/setup_master.md)
+See [Setup a Master Node](setup_master.md)
 
 ## Worker Node
 
