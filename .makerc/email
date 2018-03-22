@@ -1,9 +1,10 @@
+# SPDX-License-Identifier: Apache-2.0
 # smtp server for send email to user
-SMTP_SERVER?=
+export SMTP_SERVER?=
 # smtp port
-SMTP_PORT?=587
+export SMTP_PORT?=587
 # auth for smtp
-SMTP_AUTH_USERNAME?=
-SMTP_AUTH_PASSWORD?=
+export SMTP_AUTH_USERNAME?=
+export SMTP_AUTH_PASSWORD?=
 # email address where sent from
-FROM_EMAIL?=
+export FROM_EMAIL?=

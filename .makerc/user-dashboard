@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 # web site url for user active link
-ROOT_URL?=
+export ROOT_URL?=
 WEBROOT=$(subst $(SLASH),$(REPLACE_SLASH),$(ROOT_URL))

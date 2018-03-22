@@ -189,20 +189,7 @@ image-clean: clean ##@Clean all existing images to rebuild
 	docker images | grep "hyperledger/cello-" | awk '{print $3}' | xargs docker rmi -f
 
 initial-env: ##@Configuration Initial Configuration for dashboard
-	cp default.env .env
-	$(SED) 's/\(STATIC_FOLDER=\).*/\1${STATIC_FOLDER}/' .env
-	$(SED) 's/\(TEMPLATE_FOLDER=\).*/\1${TEMPLATE_FOLDER}/' .env
-	$(SED) 's/\(NPM_REGISTRY=\).*/\1${NPM_REGISTRY_REPLACE}/' .env
-	$(SED) 's/\(DEV=\).*/\1${DEV}/' .env
-	$(SED) 's/\(ROOT_PATH=\).*/\1${ROOT_PATH_REPLACE}/' .env
-	$(SED) 's/\(ENABLE_EMAIL_ACTIVE=\).*/\1${ENABLE_EMAIL_ACTIVE}/' .env
-	$(SED) 's/\(SMTP_SERVER=\).*/\1${SMTP_SERVER}/' .env
-	$(SED) 's/\(SMTP_PORT=\).*/\1${SMTP_PORT}/' .env
-	$(SED) 's/\(SMTP_AUTH_USERNAME=\).*/\1${SMTP_AUTH_USERNAME}/' .env
-	$(SED) 's/\(SMTP_AUTH_PASSWORD=\).*/\1${SMTP_AUTH_PASSWORD}/' .env
-	$(SED) 's/\(FROM_EMAIL=\).*/\1${FROM_EMAIL}/' .env
-	$(SED) 's/\(WEBROOT=\).*/\1${WEBROOT}/' .env
-	$(SED) 's/\(THEME=\).*/\1${THEME}/' .env
+	@envsubst < env.tmpl > .env
 
 start: ##@Service Start service
 	@$(MAKE) $(START_OPTIONS)

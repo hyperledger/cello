@@ -1,15 +1,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Theme name for admin dashboard basic/vue/react
-THEME?=basic
-STATIC_FOLDER?=themes\/${THEME}\/static
-TEMPLATE_FOLDER?=themes\/${THEME}\/templates
+export THEME?=basic
 # npm registry repo
-NPM_REGISTRY?=https://registry.npmjs.org
+export NPM_REGISTRY?=https://registry.npmjs.org
 # service running dev/production mode
-DEV?=False
+export DEV?=False
 # whether enable user active, if enable user must be active to use user dashboard
-ENABLE_EMAIL_ACTIVE?=False
+export ENABLE_EMAIL_ACTIVE?=False
 
 NPM_REGISTRY_REPLACE=$(subst $(SLASH),$(REPLACE_SLASH),$(NPM_REGISTRY))
 
