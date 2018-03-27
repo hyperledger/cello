@@ -36,6 +36,7 @@ class Host(Document):
     capacity = IntField(default=0)
     clusters = ListField(default=[])
     vcparam = DictField(default={})
+    k8s_param = DictField(default={})
 
 
 class Cluster(Document):

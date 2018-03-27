@@ -1,4 +1,4 @@
-# Copyright IBM Corp, All Rights Reserved.
+# Copyright 2018 (c) VMware, Inc. All Rights Reserved.
 #
 # SPDX-License-Identifier: Apache-2.0
 #
