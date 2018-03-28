@@ -1,5 +1,28 @@
 # Release Notes
 
+## [v0.8.0](https://github.com/hyperledger/cello/releases/tag/v0.8.0) March 28, 2018
+
+### Add new features
+
+none
+
+### Improvement
+
+* Documentation typos.
+* Update tutorial.
+* Allow logging level to be configurable
+
+### Known Vulnerabilities
+none
+
+### Resolved Vulnerabilities
+* Fix user dashboard image build fail.
+* Fix the incompatibility with vSphere host type
+
+### Known Issues & Workarounds
+
+none
+
 ## [v0.8.0-beta](https://github.com/hyperledger/cello/releases/tag/v0.8.0-beta) March 4, 2018
 
 ### Add new features

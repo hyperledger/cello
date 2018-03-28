@@ -1,3 +1,19 @@
+## v0.8.0
+Wed Mar 28 13:13:21 UTC 2018
+
+* [5b7a595](https://github.com/hyperledger/cello/commit/5b7a595) [CE-284](https://jira.hyperledger.org/browse/CE-284) The host class of kubernetes agent
+* [8397077](https://github.com/hyperledger/cello/commit/8397077) [CE-317](https://jira.hyperledger.org/browse/CE-317) Keep one copy of setup_master.md
+* [c1c84fe](https://github.com/hyperledger/cello/commit/c1c84fe) [CE-320](https://jira.hyperledger.org/browse/CE-320) Change .env file generate method
+* [377b139](https://github.com/hyperledger/cello/commit/377b139) [CE-318](https://jira.hyperledger.org/browse/CE-318) Fix user-dashboard image build fail
+* [b467b37](https://github.com/hyperledger/cello/commit/b467b37) [CE-302](https://jira.hyperledger.org/browse/CE-302) Update Tutorial
+* [833d2c0](https://github.com/hyperledger/cello/commit/833d2c0) [CE-312](https://jira.hyperledger.org/browse/CE-312) Add separate tag for fabric ca
+* [810dfbc](https://github.com/hyperledger/cello/commit/810dfbc) [CE-296](https://jira.hyperledger.org/browse/CE-296) Documentation typos
+* [cb4d5f0](https://github.com/hyperledger/cello/commit/cb4d5f0) [CE-298](https://jira.hyperledger.org/browse/CE-298) Upgrade flanneld and etcd
+* [f86c9ff](https://github.com/hyperledger/cello/commit/f86c9ff) [CE-297](https://jira.hyperledger.org/browse/CE-297) fix the incompatibility with vSphere host type
+* [7799713](https://github.com/hyperledger/cello/commit/7799713) [CE-294](https://jira.hyperledger.org/browse/CE-294) Set k8s kubelet fail on swap to be false
+* [0cb1269](https://github.com/hyperledger/cello/commit/0cb1269) [CE-293](https://jira.hyperledger.org/browse/CE-293) Allow logging level to be configurable
+* [f8dca97](https://github.com/hyperledger/cello/commit/f8dca97) [CE-292](https://jira.hyperledger.org/browse/CE-292) Update Makefile
+
 ## v0.8.0-beta
 Sun Mar 4 16:00:20 UTC 2018
 
