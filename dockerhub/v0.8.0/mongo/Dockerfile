@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-FROM hyperledger/cello-baseimage:x86_64-0.8.0-beta
+FROM hyperledger/cello-baseimage:x86_64-0.8.0
 
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 

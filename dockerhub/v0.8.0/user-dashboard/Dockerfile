@@ -5,7 +5,7 @@
 FROM node:9.2 as build_login
 MAINTAINER haitao yue "hightall@me.com"
 RUN cd /tmp && git clone https://github.com/hyperledger/cello.git
-RUN cd /tmp/cello && git checkout v0.8.0-beta
+RUN cd /tmp/cello && git checkout v0.8.0
 RUN cp -r /tmp/cello/user-dashboard/js /app
 RUN mkdir -p /usr/app
 RUN cp -r /tmp/cello/user-dashboard /usr/app/src
@@ -14,7 +14,7 @@ RUN cd /app && npm install --loglevel http && npm run build
 FROM node:9.2 as build_home
 MAINTAINER haitao yue "hightall@me.com"
 RUN cd /tmp && git clone https://github.com/hyperledger/cello.git
-RUN cd /tmp/cello && git checkout v0.8.0-beta
+RUN cd /tmp/cello && git checkout v0.8.0
 RUN cp -r /tmp/cello/user-dashboard/js /app
 RUN mkdir -p /usr/app
 RUN cp -r /tmp/cello/user-dashboard /usr/app/src
@@ -23,7 +23,7 @@ RUN cd /app/home && npm install --loglevel http && npm run build
 FROM node:9.2 as build_dashboard
 MAINTAINER haitao yue "hightall@me.com"
 RUN cd /tmp && git clone https://github.com/hyperledger/cello.git
-RUN cd /tmp/cello && git checkout v0.8.0-beta
+RUN cd /tmp/cello && git checkout v0.8.0
 RUN cp -r /tmp/cello/user-dashboard/js /app
 RUN mkdir -p /usr/app
 RUN cp -r /tmp/cello/user-dashboard /usr/app/src
@@ -33,7 +33,7 @@ FROM node:9.2
 MAINTAINER haitao yue "hightall@me.com"
 RUN npm install -g requirejs
 RUN cd /tmp && git clone https://github.com/hyperledger/cello.git
-RUN cd /tmp/cello && git checkout v0.8.0-beta
+RUN cd /tmp/cello && git checkout v0.8.0
 COPY package.json /
 RUN cd / && yarn install -g --verbose
 ENV PATH ${PATH}:/node_modules/.bin

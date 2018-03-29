@@ -15,7 +15,7 @@ RUN cd /tmp/ && \
 RUN cd /tmp && \
 		git clone https://github.com/hyperledger/cello.git && \
 		cd /tmp/cello && \
-		git checkout v0.8.0-beta && \
+		git checkout v0.8.0 && \
 		cp -r /tmp/cello/src/* /app && \
 		cd /app/ && \
 		pip install -r requirements.txt && \
