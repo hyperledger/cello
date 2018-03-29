@@ -29,13 +29,13 @@ RESET  := $(shell tput -Txterm sgr0)
 ARCH   := $(shell uname -m)
 
 # changelog specific version tags
-PREV_VERSION?=0.8.0-beta
+PREV_VERSION?=0.8.0
 
 # Building image usage
 DOCKER_NS ?= hyperledger
 BASENAME ?= $(DOCKER_NS)/cello
-VERSION ?= 0.8.0
-IS_RELEASE=true
+VERSION ?= 0.9.0
+IS_RELEASE=false
 
 DOCKER_BASE_x86_64=ubuntu:xenial
 DOCKER_BASE_ppc64le=ppc64le/ubuntu:xenial
