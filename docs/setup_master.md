@@ -88,12 +88,6 @@ To restart the whole services, please run
 ```sh
 $ DEV=True make restart
 ```
-#### Redeploy a service
-To redeploy one specific service, e.g., operator dashboard, please run
-
-```sh
-$ make redeploy service=operator-dashboard
-```
 
 #### Check Logs
 To check the logs for all the services, please run
