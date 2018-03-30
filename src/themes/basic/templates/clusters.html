@@ -97,6 +97,9 @@
                                        class="chain_action_start"
                                        data-id="{{ item.id }}"
                                        title="Start a chain"
+                                       {% if item.status == "running" %}
+                                           disabled
+                                       {% endif %}
                                     >
                                   <span class="glyphicon glyphicon-play"
                                         aria-hidden="true"></span>
@@ -112,6 +115,9 @@
                                        class="chain_action_stop"
                                        data-id="{{ item.id }}"
                                        title="Stop a chain"
+                                       {% if item.status != "running" %}
+                                           disabled
+                                       {% endif %}
                                     >
                                   <span class="glyphicon glyphicon-stop"
                                         aria-hidden="true"></span>
@@ -141,11 +147,18 @@
                                         Delete
                                     </a>
                                 </li>
-                                <li class="disabled">
+                                <li
+                                    {% if item.user_id==""%}
+                                        class="disabled"
+                                    {% endif %}
+                                >
                                     <a href="#"
                                        class="chain_action_release"
                                        data-id="{{ item.id }}"
                                        title="Release a chain"
+                                       {% if item.user_id==""%}
+                                            disabled
+                                       {% endif %}
                                     >
                                   <span class="glyphicon glyphicon-refresh"
                                         aria-hidden="true"></span>
@@ -240,6 +253,9 @@
                                                class="chain_action_stop"
                                                data-id="{{ item.id }}"
                                                title="Stop a chain"
+                                               {% if item.status != "running" %}
+                                                    disabled
+                                               {% endif %}
                                             >
                                   <span class="glyphicon glyphicon-stop"
                                         aria-hidden="true"></span>
