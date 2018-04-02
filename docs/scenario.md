@@ -1,9 +1,9 @@
 # Scenarios
 
 ## Admin Scenario
-After start up, Cello provides a dashboar for administrators, which listens on localhost:8080.
+After start up, Cello provides a dashboard for administrators, which listens on localhost:8080.
 
-The default login user name and password are `admin:pass`, you can modify this by changing the variables `USERNAME` and `PASSWORD` in the `nginx` section of the [docker-compose file](../docker-compose.yml).
+The default login user name and password are `admin:pass`.
 
 ### Add/Delete a host
 
@@ -28,10 +28,9 @@ Admin can run several operations on a host, including:
 
 * `fill`: Fill the host with chains to its capacity.
 * `clean`: Clean up the free chains on that host.
-* `reset`: Re-setup a host, e.g., cleaning useless docker containers.
-
-### Add/Delete chains
-Admin can also manually add some specific chain to a host, or delete one.
+* `config`: Edit the host config.
+* `reset`: Re-setup the host when no cluster at it, e.g., cleaning useless docker containers.
+* `delete`: Remove the host when no cluster at it.
 
 ### Automatic way
 
@@ -39,20 +38,44 @@ When the autofill box is checked on a host, then watchdog will automatically kee
 
 e.g., if the capacity of one host is set to 10, then the host will be filled with 10 chains quickly. When 2 chains are broken, they will be replaced by healthy ones soon.
 
+### Add/Delete chains
+Admin can also manually add some specific chain to a host, or delete one.
+
+### Operate a chain
+
+Admin can run several operations on a chain, including:
+
+* `start`: Start a chain if the chain is not running.
+* `stop`: Stop a chain if the chain is running.
+* `restart`: Restart a chain.
+* `release`: Delete a in-used chain, and recreate with the same config.
+* `delete`: Remove the chain.
+
+
 ## Users Scenario
+After start up, Cello provides a dashboard for user, which listens on localhost:8081.
 
-### apply a cluster
+The default login user name and password are `admin:pass`.
 
-User sends request to apply a cluster, Cello will try to find available chains in the pool, to see if it can match the request.
+### Apply a chain
 
-If found one, construct the response, otherwise, construct an error response.
+User can manually apply a cluster, Cello will try to find available chains in the pool, to see if it can match the request.
 
-### release a cluster
+If found one, Cello will return a chain for user, otherwise, construct an error response to user.
 
-User sends request to release a cluster, Cello will check if the request is valid.
+### Release a chain
 
-If found applied chain, then release and recreate it with the same name, at the same host, and potentially move it to released db collections.
+User can manually release a cluster, Cello will check if the request is valid.
 
-If not found, then just ignore or response.
+Cello will release it from user's available chains, and recreate it with the same name, at the same host, and potentially move it to active clusters pool. User can apply for it again.
+
+### Invoke
+
+User can invoke/query smart contract api, and get the response from api.
+
+### Smart Contract
+
+User can upload, install, instantiate, delete smart contract.
+
 
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
