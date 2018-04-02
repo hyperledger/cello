@@ -101,11 +101,11 @@ spec:
       env:
         - { name: "FABRIC_CA_HOME", value: "/etc/hyperledger/fabric-ca-server-config/ca" }
         - { name: "FABRIC_CA_SERVER_CA_NAME", value: "{{ ca.name}}" }
-        - { name: "FABRIC_CA_SERVER_CA_KEYFILE", value: "/etc/hyperledger/fabric-ca-server-config/ca/{{ cakeys[ca.org+'_ca'] }}" }
+        - { name: "FABRIC_CA_SERVER_CA_KEYFILE", value: "/etc/hyperledger/fabric-ca-server-config/ca/ca_private.key" }
         - { name: "FABRIC_CA_SERVER_CA_CERTFILE", value: "/etc/hyperledger/fabric-ca-server-config/ca/ca.{{ ca.org }}-cert.pem" }
 {% if fabric.tls %}
         - { name: "FABRIC_CA_SERVER_TLS_ENABLED", value: "true" }
-        - { name: "FABRIC_CA_SERVER_TLS_KEYFILE", value: "/etc/hyperledger/fabric-ca-server-config/tlsca/{{ cakeys[ca.org+'_tlsca'] }}" }
+        - { name: "FABRIC_CA_SERVER_TLS_KEYFILE", value: "/etc/hyperledger/fabric-ca-server-config/tlsca/tlsca_private.key" }
         - { name: "FABRIC_CA_SERVER_TLS_CERTFILE", value: "/etc/hyperledger/fabric-ca-server-config/tlsca/tlsca.{{ ca.org }}-cert.pem" }
 {% endif %}
       volumeMounts:

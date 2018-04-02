@@ -17,7 +17,7 @@ fabric: {
 
   # options are "goleveldb", "CouchDB", default is goleveldb
   peer_db: "goleveldb",
-  tls: true,
+  tls: false,
   logging_level: "ERROR",
 
   # The following section defines how the fabric network is going to be made up
@@ -73,6 +73,6 @@ fabric: {
     # locations to download fabric binaries. This url should point to a
     # compressed such as tar or zip file which contains necessary binaries
     # such as configtxgen, configtxlator, cryptogen etc.
-    bin: "https://nexus.hyperledger.org/content/repositories/releases/org/hyperledger/fabric/hyperledger-fabric/linux-amd64-1.1.0/hyperledger-fabric-linux-amd64-1.1.0.tar.gz"
+    bin: "http://192.168.56.32/flbin.tar.gz"
   }
 }

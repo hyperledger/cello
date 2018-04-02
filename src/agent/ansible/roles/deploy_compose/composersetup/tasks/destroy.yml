@@ -1,0 +1,23 @@
+---
+- name: Setup few variables
+  set_fact:
+    fabricworkdir: "/opt/gopath/{{ env }}/fabric"
+    fabricpath: "/opt/gopath/{{ env }}/src/github.com/hyperledger/fabric"
+    gopath: "/opt/gopath/{{ env }}"
+    localhome: "/home/{{ fabric.ssh_user }}/.composer"
+
+- name: Make sure that working directory is clean
+  file:
+    path: "{{ localhome }}"
+    state: "absent"
+  with_items:
+    - "absent"
+
+- name: Check if composer playground container exist
+  shell: docker ps -a|grep 'composer-playground'|cat|awk '{print $1}'
+  register: pgc_state
+
+- name: Stop composer playground
+  command: docker rm -f composer-playground
+  when: pgc_state.stdout != ""
+  tags: "stopplayground"

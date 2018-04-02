@@ -28,3 +28,13 @@
   tasks:
     - include: "fabricsetup/tasks/{{ mode }}.yml"
   tags: "fabricsetup"
+
+- name: setup composer
+  hosts: builders
+  gather_facts: false
+  user: "{{ fabric.ssh_user }}"
+  vars_files:
+    - "./../../vars/{{ env }}.yml"
+  tasks:
+    - include: "composersetup/tasks/{{ mode }}.yml"
+  tags: "composersetup"

@@ -7,7 +7,6 @@
     peers: "{{ [] }}"
     orderers: "{{ [] }}"
     cas: "{{ [] }}"
-    cakeys: "{{ {} }}"
     kafkas: "{{ [] }}"
     kafkanodes: ""
     zookeepers: "{{ [] }}"
@@ -163,28 +162,10 @@
     remote_src: true
 
 - name: Process private key files
-  find:
-    paths: "{{ fabricworkdir }}/run/keyfiles/{{ item[0].org }}/{{ item[1] }}"
-    patterns: "*_sk"
-    recurse: yes
-  with_nested:
-    - "{{ cas }}"
-    - ["ca", "tlsca"]
-  when: cas | length > 0
-  register: privatekeys
-
-- name: Process private key files
   template:
     src: "{{ playbook_dir }}/../deploy_compose/fabricsetup/templates/fabric-ca-server-config.j2"
     dest: "{{ fabricworkdir }}/run/keyfiles/{{ item.org }}/ca/fabric-ca-server-config.yaml"
   with_items: "{{ cas }}"
-
-- name: Setup ca private key values
-  set_fact:
-    cakeys: |
-      {{ cakeys | combine( {item.item[0].org+'_'+item.item[1]: item.files[0].path.split('/')[-1] } ) }}
-  with_items: "{{ privatekeys.results }}"
-  no_log: True
 
 - name: Get the peer org list
   set_fact:
@@ -280,3 +261,4 @@
 - name: Start fabriccli components
   command: "docker-compose -p {{ env }}.cli -f {{ fabricworkdir }}/run/cli-compose.yml up -d"
   when: clihost == inventory_hostname
+  tags: "dochaincode"

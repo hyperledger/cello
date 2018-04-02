@@ -1,0 +1,83 @@
+{
+  "name": "{{ item }}-network",
+  "x-type": "hlfv1",
+  "version": "1.0.0",
+  "client": {
+    "organization": "{{ item }}",
+    "connection": {
+      "timeout": {
+        "peer": { "endorser": "300", "eventHub": "300", "eventReg": "300"},
+        "orderer": "300"
+      }
+    }
+  },
+  "channels": {
+    "firstchannel": {
+      "orderers": [
+{% for orderer in orderers %}
+        "{{ orderer.name }}"{{ '' if loop.last else ',' }}
+{% endfor %}
+      ],
+      "peers": {
+{% for peer in peers %}
+        "{{ peer.name }}": {
+          "endorsingPeer": true, "chaincodeQuery": true, "eventSource": true
+        }{{ '' if loop.last else ',' }}
+{% endfor %}
+      }
+    }
+  },
+  "organizations": {
+{% for org in allorgs %}
+    "{{ org }}": {
+      "mspid": "{{ org }}",
+      "peers": [
+{% for peer in peers|selectattr('org', 'equalto', org)|list %}
+        "{{ peer.name }}"{{ '' if loop.last else ',' }}
+{% endfor %}
+      ],
+      "certificateAuthorities": [
+{% for ca in cas|selectattr('org', 'equalto', org)|list %}
+        "{{ ca.name }}"{{ '' if loop.last else ',' }}
+{% endfor %}
+      ]
+    }{{ '' if loop.last else ',' }}
+{% endfor %}
+  },
+  "orderers": {
+{% for orderer in orderers %}
+    "{{ orderer.name }}": {
+      "url": "{{ fabric.tls|ternary('grpcs','grpc') }}://{{ orderer.name }}:7050",
+      "grpcOptions": {
+        "ssl-target-name-override": "{{ orderer.name }}"
+      },
+      "tlsCACerts": {
+        "pem": "{{ fabricworkdir+'/run/keyfiles/'+orderer.org+'/orderers/'+orderer.name+'.'+orderer.org+'/tls/ca.crt' }}"
+      }
+    }{{ '' if loop.last else ',' }}
+{% endfor %}
+  },
+  "peers": {
+{% for peer in peers %}
+    "{{ peer.name }}": {
+      "url": "{{ fabric.tls|ternary('grpcs','grpc') }}://{{ peer.name }}:7051",
+      "eventUrl": "{{ fabric.tls|ternary('grpcs','grpc') }}://{{ peer.name }}:7053",
+      "grpcOptions": {
+        "ssl-target-name-override": "{{ peer.name }}"
+      },
+      "tlsCACerts": {
+        "pem": "{{ fabricworkdir+'/run/keyfiles/'+peer.org+'/tlsca/tlsca.'+peer.org+'-cert.pem' }}"
+      }
+    }{{ '' if loop.last else ',' }}
+{% endfor %}
+  },
+  "certificateAuthorities": {
+{% for ca in cas %}
+    "{{ ca.name }}": {
+      "url": "{{ fabric.tls|ternary('https','http') }}://{{ca.name}}:7054",
+      "caName": "{{ ca.name }}",
+      "httpOptions": {"verify": false}
+    }{{ '' if loop.last else ',' }}
+{% endfor %}
+  }
+}

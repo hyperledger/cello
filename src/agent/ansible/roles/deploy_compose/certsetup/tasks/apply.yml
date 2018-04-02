@@ -100,6 +100,51 @@
     - "peerOrganizations"
     - "ordererOrganizations"
 
+- name: Create connection profiles
+  template:
+    src: "{{ playbook_dir }}/../deploy_compose/certsetup/templates/connection.j2"
+    dest: "{{ fabricworkdir }}/keyfiles/{{ item }}/connection.json"
+  with_items: "{{ allorgs }}"
+  tags: "composer"
+
+- name: Create endorsement policy file
+  template:
+    src: "{{ playbook_dir }}/../deploy_compose/certsetup/templates/policy.j2"
+    dest: "{{ fabricworkdir }}/keyfiles/policy.json"
+  tags: "composer"
+
+- name: Rename admin private key
+  shell: >-
+    ls | cat -n | while read n f; do mv "$f" "admin_private.key"; done
+  args:
+    chdir: "{{ fabricworkdir }}/keyfiles/{{ item }}/users/Admin@{{ item }}/msp/keystore"
+  with_items: "{{ allorgs }}"
+  tags: "composer"
+
+- name: Rename ca private key
+  shell: >-
+    ls *_sk|cat -n|while read n f; do mv "$f" "ca_private.key"; done
+  args:
+    chdir: "{{ fabricworkdir }}/keyfiles/{{ item }}/ca"
+  with_items: "{{ allorgs }}"
+  tags: "composer"
+
+- name: Rename ca tls private key
+  shell: >-
+    ls *_sk|cat -n|while read n f; do mv "$f" "tlsca_private.key"; done
+  args:
+    chdir: "{{ fabricworkdir }}/keyfiles/{{ item }}/tlsca"
+  with_items: "{{ allorgs }}"
+  tags: "composer"
+
+- name: Upload bna file
+  copy:
+    src: "{{ item }}"
+    dest: "{{ fabricworkdir }}/keyfiles/"
+  with_fileglob:
+      - "{{ playbook_dir }}/../../secrets/networks/*.bna"
+  tags: "composer"
+
 - name: Create core.yml file for every peer
   template:
     src: "{{ playbook_dir }}/../deploy_compose/certsetup/templates/core.j2"

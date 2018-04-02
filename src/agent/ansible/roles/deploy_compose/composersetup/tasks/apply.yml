@@ -1,0 +1,133 @@
+---
+- name: Setup few variables
+  set_fact:
+    fabricworkdir: "/opt/gopath/{{ env }}/fabric"
+    fabricpath: "/opt/gopath/{{ env }}/src/github.com/hyperledger/fabric"
+    gopath: "/opt/gopath/{{ env }}"
+    localhome: "/home/{{ fabric.ssh_user }}/.composer"
+    alladmin: ""
+    networkname: "{{ lookup('env', 'NETWORKNAME') | default('') }}"
+
+- name: Process networkname
+  set_fact:
+    networkname: "{{ ((networkname|length)==0)|ternary('carauction-network', networkname) }}"
+
+- name: Make sure that working directory exists
+  file:
+    path: "{{ localhome }}"
+    state: "directory"
+
+- name: Pull composer container images from the docker hub
+  command: "docker pull {{ fabric.repo.url }}{{ item }}"
+  with_items:
+    - "composer-cli:next"
+    - "composer-playground:next"
+  tags: "pullcomposerimages"
+
+- name: Check if PeerAdmin card is already imported
+  stat:
+    path: "{{ localhome }}/cards/PeerAdmin@{{ peerorgs[0] }}"
+  register: peeradmin
+
+- name: Create the cards
+  command: >-
+    docker run -v {{ localhome }}:/home/composer/.composer
+    -v {{ fabricworkdir }}:{{ fabricworkdir }}
+    hyperledger/composer-cli:next card create
+    -p {{ fabricworkdir }}/run/keyfiles/{{ item }}/connection.json
+    -c {{ fabricworkdir }}/run/keyfiles/{{ item }}/users/Admin@{{ item }}/msp/admincerts/Admin@{{ item }}-cert.pem
+    -k {{ fabricworkdir }}/run/keyfiles/{{ item }}/users/Admin@{{ item }}/msp/keystore/admin_private.key
+    -r PeerAdmin -r ChannelAdmin
+    -u PeerAdmin@{{ item }}
+    -f {{ fabricworkdir }}/run/keyfiles/{{ item }}/{{ item }}-PeerAdmin.card
+  when: peeradmin.stat.exists == false
+  with_items: "{{ peerorgs }}"
+  tags: "createcards"
+
+- name: Import the cards
+  command: >-
+    docker run -v {{ localhome }}:/home/composer/.composer
+    -v {{ fabricworkdir }}:{{ fabricworkdir }}
+    hyperledger/composer-cli:next card import
+    -f {{ fabricworkdir }}/run/keyfiles/{{ item }}/{{ item }}-PeerAdmin.card
+    --name PeerAdmin@{{ item }}
+  when: peeradmin.stat.exists == false
+  with_items: "{{ peerorgs }}"
+  tags: "importcards"
+
+- name: Runtime install
+  command: >-
+    docker run -v {{ localhome }}:/home/composer/.composer
+    -v {{ fabricworkdir }}:{{ fabricworkdir }}
+    hyperledger/composer-cli:next runtime install
+    -c PeerAdmin@{{ item }} -n {{ networkname }}
+  with_items: "{{ peerorgs }}"
+  tags: "runtimeinstall"
+
+- name: Request identity
+  command: >-
+    docker run -v {{ localhome }}:/home/composer/.composer
+    -v {{ fabricworkdir }}:{{ fabricworkdir }}
+    hyperledger/composer-cli:next identity request
+    -c PeerAdmin@{{ item }}
+    -u {{ fabric.ca.admin }} -s {{ fabric.ca.adminpw }}
+    -d /home/composer/.composer/{{ item }}Admin
+  when: peeradmin.stat.exists == false
+  with_items: "{{ peerorgs }}"
+  tags: "requestidentity"
+
+- name: Generate all admin options
+  set_fact:
+    alladmin: "{{ alladmin + '-A ' + item + 'Admin -C /home/composer/.composer/' + item + 'Admin/admin-pub.pem ' }}"
+  with_items: "{{ peerorgs }}"
+  tags: "generatealladmin"
+
+- name: Start network
+  command: >-
+    docker run -v {{ localhome }}:/home/composer/.composer
+    -v {{ fabricworkdir }}:{{ fabricworkdir }}
+    hyperledger/composer-cli:next network start
+    -c PeerAdmin@{{ peerorgs[0] }}
+    -a {{ fabricworkdir }}/run/keyfiles/{{ networkname }}.bna
+    {{ alladmin }}
+  tags: "startnetwork"
+
+- name: Create admin business cards
+  command: >-
+    docker run -v {{ localhome }}:/home/composer/.composer
+    -v {{ fabricworkdir }}:{{ fabricworkdir }}
+    hyperledger/composer-cli:next card create
+    -p {{ fabricworkdir }}/run/keyfiles/{{ item }}/connection.json
+    -u {{ item }}Admin -n {{ networkname }}
+    -c /home/composer/.composer/{{ item }}Admin/admin-pub.pem
+    -k /home/composer/.composer/{{ item }}Admin/admin-priv.pem
+    -f /home/composer/.composer/{{ item}}Admin/{{ item }}-{{ networkname }}-Admin.card
+  with_items: "{{ peerorgs }}"
+  tags: "createadminbusinesscards"
+
+- name: Import the admin cards
+  command: >-
+    docker run -v {{ localhome }}:/home/composer/.composer
+    -v {{ fabricworkdir }}:{{ fabricworkdir }}
+    hyperledger/composer-cli:next card import
+    -f /home/composer/.composer/{{ item }}Admin/{{ item }}-{{ networkname }}-Admin.card
+  with_items: "{{ peerorgs }}"
+  tags: "importadmincards"
+
+- name: Ping the network
+  command: >-
+    docker run -v {{ localhome }}:/home/composer/.composer
+    -v {{ fabricworkdir }}:{{ fabricworkdir }}
+    hyperledger/composer-cli:next network ping
+    -c {{ item }}Admin@{{ networkname }}
+  with_items: "{{ peerorgs }}"
+  tags: "pingthenetwork"
+
+- name: Start composer playground
+  command: >-
+    docker run -v {{ localhome }}:/home/composer/.composer
+    -v {{ fabricworkdir }}:{{ fabricworkdir }}
+    --name composer-playground --publish 8080:8080
+    --detach hyperledger/composer-playground:next
+  when: peeradmin.stat.exists == false
+  tags: "startupplayground"

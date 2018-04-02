@@ -1,0 +1,14 @@
+{
+  "identities": [
+{% for org in peerorgs %}
+    {"role": { "name": "member", "mspId": "{{ org }}" } }{{ '' if loop.last else ',' }}
+{% endfor %}
+  ],
+  "policy": {
+    "{{ peerorgs | length }}-of": [
+{% for org in peerorgs %}
+      {"signed-by": {{ loop.index0 }} }{{ '' if loop.last else ',' }}
+{% endfor %}
+    ]
+  }
+}
