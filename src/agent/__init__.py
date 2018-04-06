@@ -11,12 +11,14 @@ from .docker.docker_swarm import get_project, \
     compose_up, compose_clean, compose_start, compose_stop, compose_restart, \
     setup_container_host, cleanup_host, reset_container_host
 
-from .vsphere.host_operations import VsphereOperation
-
 from .docker.host import DockerHost
 from .docker.cluster import ClusterOnDocker
 
+from .k8s.cluster_operations import K8sClusterOperation
+from .k8s.host_operations import KubernetesOperation
+from .k8s.cluster import ClusterOnKubernetes
 from .k8s.host import KubernetesHost
 
+from .vsphere.host_operations import VsphereOperation
 from .vsphere.host import VsphereHost
 from .vsphere.cluster import ClusterOnVsphere
