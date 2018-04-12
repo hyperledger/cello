@@ -3,8 +3,8 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-FROM node:9.2
+FROM node:8.11
 MAINTAINER haitao yue "hightall@me.com"
-COPY package.json /
-RUN cd / && npm config set registry 'https://registry.npm.taobao.org' && npm install --loglevel http
-ENV PATH ${PATH}:/node_modules/.bin
+COPY dashboard/package.json /
+RUN cd / && npm install
+CMD bash -c "ln -sf /node_modules /var/www/dashboard/node_modules && cd /var/www/dashboard && npm run build && rm -rf node_modules"

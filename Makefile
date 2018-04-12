@@ -80,19 +80,20 @@ endif
 ifeq (${THEME}, basic) # basic theme doesn't need js compiling
 	START_OPTIONS = initial-env
 else
-	ifeq (${THEME}, react) # react needs compiling js first
-		ifneq ($(wildcard ./src/${STATIC_FOLDER}/js/dist),)
-			BUILD_JS=
-		else
-			BUILD_JS=build-admin-js build-user-dashboard-js
-		endif
-	else
-		ifneq ($(wildcard ./src/${STATIC_FOLDER}/dist),)
-			BUILD_JS=
-		else
-			BUILD_JS=build-admin-js build-user-dashboard-js
-		endif
-	endif
+	BUILD_JS=
+#	ifeq (${THEME}, react) # react needs compiling js first
+#		ifneq ($(wildcard ./src/${STATIC_FOLDER}/dist),)
+#			BUILD_JS=
+#		else
+#			BUILD_JS=build-admin-js build-user-dashboard-js
+#		endif
+#	else
+#		ifneq ($(wildcard ./src/${STATIC_FOLDER}/dist),)
+#			BUILD_JS=
+#		else
+#			BUILD_JS=build-admin-js build-user-dashboard-js
+#		endif
+#	endif
 	START_OPTIONS = initial-env $(BUILD_JS)
 endif
 
@@ -149,10 +150,14 @@ license:
 
 install: $(patsubst %,build/docker/%/.push,$(DOCKER_IMAGES))
 
+check-js: ##@Code Check check js code format
+	docker-compose -f docker-compose-check-js.yaml up
+
 check: setup-master ##@Code Check code format
 	@$(MAKE) license
 	find ./docs -type f -name "*.md" -exec egrep -l " +$$" {} \;
 	tox
+	@$(MAKE) check-js
 	@$(MAKE) test-case
 	make start && sleep 60 && make stop
 
@@ -218,7 +223,7 @@ watch-mode: ##@Nodejs Run watch mode with js files for react
 
 npm-install: ##@Nodejs Install modules with npm package management
 	bash scripts/master_node/npm_install.sh
-	@$(MAKE) -C user-dashboard/ npm-install
+#	@$(MAKE) -C user-dashboard/ npm-install
 
 help: ##@other Show this help.
 	@perl -e '$(HELP_FUN)' $(MAKEFILE_LIST)
