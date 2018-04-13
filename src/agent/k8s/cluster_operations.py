@@ -128,6 +128,14 @@ class K8sClusterOperation():
                 pod_list.append(i.metadata.name)
         return pod_list
 
+    def _is_cluster_pods_running(self, namespace):
+        ret = self.corev1client.list_pod_for_all_namespaces(watch=False)
+        for i in ret.items:
+            if i.metadata.namespace == namespace:
+                if not i.status.phase == "Running":
+                    return False
+        return True
+
     def _get_cluster_pods(self, namespace):
         ret = self.corev1client.list_pod_for_all_namespaces(watch=False)
         pod_list = {}
@@ -458,6 +466,20 @@ class K8sClusterOperation():
 
         self._deploy_cluster_resource(cluster_name, cluster_ports,
                                       nfsServer_ip)
+
+        check_times = 0
+        while check_times < 10:
+            if self._is_cluster_pods_running(cluster_name):
+                break
+            logger.debug("Checking pods status...")
+            time.sleep(30)
+            check_times += 1
+
+        if check_times == 10:
+            logger.error("Failed to create cluster, the pods status is not "
+                         "Running.")
+            return None
+
         # Execute commands for cluster
         self._setup_cluster(cluster_name)
 
