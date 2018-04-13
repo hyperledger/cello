@@ -1,0 +1,13 @@
+# Copyright IBM Corp., All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+version: '2'
+services:
+  check-js:
+    build:
+      context: $ROOT_PATH/src/themes/react/static
+    volumes:
+      - ./src/themes/react/static:/var/www
+    command: bash -c "ln -sf /node_modules /var/www/dashboard/node_modules && cd /var/www/dashboard && npm run lint && rm -rf node_modules"

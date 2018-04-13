@@ -15,8 +15,6 @@ services:
   build-admin-js:
     build:
       context: $ROOT_PATH/src/themes/$THEME/static
-    image: build-$THEME
     volumes:
-      - ./src/$STATIC_FOLDER:/app
-      - ./src/$TEMPLATE_FOLDER:/app/templates
-    command: bash -c "cd /app && npm run build"
+      - ./src/$STATIC_FOLDER:/var/www
+      - ./src/$TEMPLATE_FOLDER:/templates
