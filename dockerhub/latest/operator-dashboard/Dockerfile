@@ -4,9 +4,4 @@
 #
 FROM hyperledger/cello-baseimage:x86_64-latest
 
-# use this in development
-CMD ["python", "dashboard.py"]
-
-# use this in product
-#CMD ["gunicorn", "-w", "128", "-b", "0.0.0.0:8080", "dashboard:app"]
-
+CMD if [ "$DEBUG" = "True" ]; then python dashboard.py ; else gunicorn -w $(( 2 * `cat /proc/cpuinfo | grep "core id" | wc -l` + 1 )) -b 0.0.0.0:8080 dashboard:app ;fi

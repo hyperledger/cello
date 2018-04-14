@@ -48,8 +48,8 @@ services:
       - MONGO_HOST=mongo
       - MONGO_DB=dev
       - MONGODB_PORT=27017
-      - DEBUG=True    # in debug mode, service will auto-restart
-      - LOG_LEVEL=DEBUG  # what level log will be output
+      - DEBUG=$DEV    # in debug mode, service will auto-restart
+      - LOG_LEVEL=$LOG_LEVEL  # what level log will be output
       - STATIC_FOLDER=$STATIC_FOLDER
       - TEMPLATE_FOLDER=$TEMPLATE_FOLDER
       - ENABLE_EMAIL_ACTIVE=$ENABLE_EMAIL_ACTIVE
@@ -98,8 +98,8 @@ services:
       - MONGO_HOST=mongo
       - MONGO_DB=dev
       - MONGODB_PORT=27017
-      - DEBUG=True    # in debug mode, service will auto-restart
-      - LOG_LEVEL=DEBUG  # what level log will be output
+      - DEBUG=$DEV    # in debug mode, service will auto-restart
+      - LOG_LEVEL=$LOG_LEVEL  # what level log will be output
     ports:
       - "80:80"
     #volumes:
@@ -116,8 +116,8 @@ services:
       - MONGO_HOST=mongo
       - MONGO_DB=dev
       - MONGODB_PORT=27017
-      - DEBUG=True    # in debug mode, service will auto-restart
-      - LOG_LEVEL=DEBUG  # what level log will be output
+      - DEBUG=$DEV    # in debug mode, service will auto-restart
+      - LOG_LEVEL=$LOG_LEVEL  # what level log will be output
     #volumes:
     #  - ./src:/app
 

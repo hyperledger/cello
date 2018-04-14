@@ -12,7 +12,9 @@ export ENABLE_EMAIL_ACTIVE?=False
 NPM_REGISTRY_REPLACE=$(subst $(SLASH),$(REPLACE_SLASH),$(NPM_REGISTRY))
 
 ifeq (${DEV}, True)
+    export LOG_LEVEL:=DEBUG
     DEPLOY_COMPOSE_FILE:=docker-compose-dev.yml
 else
+    export LOG_LEVEL:=INFO
     DEPLOY_COMPOSE_FILE:=docker-compose.yml
 endif
