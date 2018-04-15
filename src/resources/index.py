@@ -48,7 +48,8 @@ def show():
 
     clusters_temp = len(list(cluster_handler.list(filter_data={
         "user_id": "/^__/"}, col_name="active")))
-    username, is_admin = current_user.username, current_user.isAdmin
+    user_id, username, is_admin = \
+        str(current_user.id), current_user.username, current_user.isAdmin
 
     return render_template("index.html", hosts=hosts,
                            hosts_free=hosts_free,
@@ -68,6 +69,7 @@ def show():
                            log_types=CLUSTER_LOG_TYPES,
                            log_levels=CLUSTER_LOG_LEVEL,
                            username=username,
+                           user_id=user_id,
                            is_admin=is_admin
                            )
 

@@ -8,6 +8,7 @@ import os
 import bcrypt
 from flask import Flask, render_template, redirect, url_for
 from flask_login import LoginManager
+from flask_socketio import SocketIO
 from mongoengine import connect
 
 from common import log_handler, LOG_LEVEL
@@ -18,6 +19,7 @@ from resources import bp_index, \
     bp_host_view, bp_host_api, bp_auth_api, \
     bp_login, bp_user_api, bp_user_view, front_rest_user_v2
 from modules.user import User
+from sockets.custom import CustomSockets
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
@@ -27,6 +29,7 @@ STATIC_FOLDER = os.getenv("STATIC_FOLDER", "themes/basic/static")
 TEMPLATE_FOLDER = os.getenv("TEMPLATE_FOLDER", "themes/basic/templates")
 app = Flask(__name__, static_folder=STATIC_FOLDER,
             template_folder=TEMPLATE_FOLDER)
+socketio = SocketIO(app)
 
 app.config.from_object('config.DevelopmentConfig')
 app.config.from_envvar('CELLO_CONFIG_FILE', silent=True)
@@ -94,9 +97,8 @@ def load_user(id):
         return None
 
 
+socketio.on_namespace(CustomSockets('/socket.io'))
+
 if __name__ == '__main__':
-    app.run(
-        host='0.0.0.0',
-        port=8080,
-        debug=os.environ.get('DEBUG', app.config.get("DEBUG", True)),
-        threaded=True)
+    socketio.run(app, port=8080, host="0.0.0.0",
+                 debug=os.environ.get('DEBUG', app.config.get("DEBUG", True)))
