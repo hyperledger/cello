@@ -73,6 +73,6 @@ fabric: {
     # locations to download fabric binaries. This url should point to a
     # compressed such as tar or zip file which contains necessary binaries
     # such as configtxgen, configtxlator, cryptogen etc.
-    bin: "http://192.168.56.32/flbin.tar.gz"
+    bin: "https://nexus.hyperledger.org/content/repositories/releases/org/hyperledger/fabric/hyperledger-fabric/linux-amd64-1.1.0/hyperledger-fabric-linux-amd64-1.1.0.tar.gz"
   }
 }
