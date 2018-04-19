@@ -2,10 +2,13 @@
  SPDX-License-Identifier: Apache-2.0
 */
 import { IntlProvider, defineMessages } from 'react-intl';
-import { isUrl } from '../utils/utils';
-import enLocale from '../locales/en-US';
+import { isUrl, getLocale } from '../utils/utils';
 
-const intlProvider = new IntlProvider({ locale: enLocale.locale, messages: enLocale.messages }, {});
+const currentLocale = getLocale();
+const intlProvider = new IntlProvider(
+  { locale: currentLocale.locale, messages: currentLocale.messages },
+  {}
+);
 const { intl } = intlProvider.getChildContext();
 
 const messages = defineMessages({

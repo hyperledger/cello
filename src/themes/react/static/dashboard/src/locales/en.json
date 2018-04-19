@@ -3,5 +3,9 @@
   "Menu.Overview": "Overview",
   "Menu.Host": "Host",
   "Menu.Chain": "Chain",
-  "Menu.UserManagement": "User Management"
+  "Menu.UserManagement": "User Management",
+  "Overview.Title.Host": "Host",
+  "Overview.Title.Cluster": "Cluster",
+  "Overview.Title.Status": "Status",
+  "Overview.Title.Type": "Type"
 }

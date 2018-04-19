@@ -2,11 +2,13 @@
  SPDX-License-Identifier: Apache-2.0
 */
 import React, { PureComponent } from 'react';
-import { Menu, Icon, Spin, Dropdown, Avatar, Divider } from 'antd';
+import { Menu, Icon, Spin, Dropdown, Avatar, Divider, Button } from 'antd';
 import Debounce from 'lodash-decorators/debounce';
 import { Link } from 'dva/router';
 import styles from './index.less';
+import { getLang } from '../../utils/utils';
 
+const language = getLang();
 export default class GlobalHeader extends PureComponent {
   componentWillUnmount() {
     this.triggerResizeEvent.cancel();
@@ -23,6 +25,10 @@ export default class GlobalHeader extends PureComponent {
     event.initEvent('resize', true, false);
     window.dispatchEvent(event);
   }
+  changeLanguage = () => {
+    localStorage.setItem('language', language === 'en' ? 'zh-CN' : 'en');
+    window.location.reload();
+  };
   render() {
     const { collapsed, isMobile, logo, onMenuClick } = this.props;
     const menu = (
@@ -46,6 +52,9 @@ export default class GlobalHeader extends PureComponent {
           onClick={this.toggle}
         />
         <div className={styles.right}>
+          <Button size="small" onClick={this.changeLanguage}>
+            {language === 'en' ? '中文' : 'En'}
+          </Button>
           {window.username ? (
             <Dropdown overlay={menu}>
               <span className={`${styles.action} ${styles.account}`}>

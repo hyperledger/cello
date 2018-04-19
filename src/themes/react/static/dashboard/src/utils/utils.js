@@ -2,6 +2,8 @@
  SPDX-License-Identifier: Apache-2.0
 */
 import moment from 'moment';
+import enLocale from '../locales/en-US';
+import zhLocale from '../locales/zh-CN';
 
 export function fixedZero(val) {
   return val * 1 < 10 ? `0${val}` : val;
@@ -133,4 +135,14 @@ const reg = /(((^https?:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-
 
 export function isUrl(path) {
   return reg.test(path);
+}
+
+export function getLocale() {
+    return ((window.localStorage && localStorage.getItem('language')) || (navigator.language || navigator.browserLanguage).toLowerCase()) === 'en'
+    ? enLocale
+    : zhLocale;
+}
+
+export function getLang() {
+  return (window.localStorage && localStorage.getItem('language')) || (navigator.language || navigator.browserLanguage).toLowerCase();
 }

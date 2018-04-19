@@ -7,7 +7,7 @@
     "precommit": "npm run lint-staged",
     "start": "cross-env ESLINT=none roadhog dev",
     "start:no-proxy": "cross-env NO_PROXY=true ESLINT=none roadhog dev",
-    "build": "cross-env ESLINT=none roadhog build",
+    "build": "cross-env ESLINT=none COMPRESS=none roadhog build",
     "build:dev": "cross-env ESLINT=none COMPRESS=none roadhog build",
     "site": "roadhog-api-doc static && gh-pages -d dist",
     "analyze": "cross-env ANALYZE=true roadhog build",

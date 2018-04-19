@@ -3,5 +3,9 @@
   "Menu.Overview": "系统概况",
   "Menu.Host": "主机管理",
   "Menu.Chain": "链管理",
-  "Menu.UserManagement": "用户管理"
+  "Menu.UserManagement": "用户管理",
+  "Overview.Title.Host": "主机",
+  "Overview.Title.Cluster": "集群",
+  "Overview.Title.Status": "状态",
+  "Overview.Title.Type": "类型"
 }
