@@ -44,6 +44,12 @@ const menuData = [
     path: 'host',
   },
   {
+    name: 'Create Host',
+    path: 'host-create',
+    hideInMenu: true,
+    hideInBreadcrumb: false,
+  },
+  {
     name: intl.formatMessage(messages.menus.chain),
     icon: 'link',
     path: 'chain',

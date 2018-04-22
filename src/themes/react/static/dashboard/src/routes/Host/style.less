@@ -1,90 +1,180 @@
 @import '~antd/lib/style/themes/default.less';
+@import '../../utils/utils.less';
 
-.card {
-  margin-bottom: 24px;
+.status-badge {
+  text-transform: capitalize;
 }
 
-.heading {
-  font-size: 14px;
-  line-height: 22px;
-  margin: 0 0 16px 0;
-}
-
-.steps:global(.ant-steps) {
-  max-width: 750px;
-  margin: 16px auto;
-}
-
-.errorIcon {
-  cursor: pointer;
-  color: @error-color;
-  margin-right: 24px;
-  i {
-    margin-right: 4px;
-  }
-}
-
-.errorPopover {
+.standardList {
   :global {
-    .ant-popover-inner-content {
-      padding: 0;
-      max-height: 290px;
-      overflow: auto;
-      min-width: 256px;
+    .ant-card-head {
+      border-bottom: none;
+    }
+    .ant-card-head-title {
+      line-height: 32px;
+      padding: 24px 0;
+    }
+    .ant-card-extra {
+      padding: 24px 0;
+    }
+    .ant-list-pagination {
+      text-align: right;
+      margin-top: 24px;
+    }
+    .ant-avatar-lg {
+      width: 48px;
+      height: 48px;
+      line-height: 48px;
+    }
+  }
+  .headerInfo {
+    position: relative;
+    text-align: center;
+    & > span {
+      color: @text-color-secondary;
+      display: inline-block;
+      font-size: @font-size-base;
+      line-height: 22px;
+      margin-bottom: 4px;
+    }
+    & > p {
+      color: @heading-color;
+      font-size: 24px;
+      line-height: 32px;
+      margin: 0;
+    }
+    & > em {
+      background-color: @border-color-split;
+      position: absolute;
+      height: 56px;
+      width: 1px;
+      top: 0;
+      right: 0;
+    }
+  }
+  .listContent {
+    font-size: 0;
+    .listContentItem {
+      color: @text-color-secondary;
+      display: inline-block;
+      vertical-align: middle;
+      font-size: @font-size-base;
+      margin-left: 40px;
+      > span {
+        line-height: 20px;
+      }
+      > p {
+        margin-top: 4px;
+        margin-bottom: 0;
+        line-height: 22px;
+      }
+    }
+  }
+  .extraContentSearch {
+    margin-left: 16px;
+    width: 272px;
+  }
+}
+
+@media screen and (max-width: @screen-xs) {
+  .standardList {
+    :global {
+      .ant-list-item-content {
+        display: block;
+        flex: none;
+        width: 100%;
+      }
+      .ant-list-item-action {
+        margin-left: 0;
+      }
+    }
+    .listContent {
+      margin-left: 0;
+      & > div {
+        margin-left: 0;
+      }
+    }
+    .listCard {
+      :global {
+        .ant-card-head-title {
+          overflow: visible;
+        }
+      }
     }
   }
 }
 
-.errorListItem {
-  list-style: none;
-  border-bottom: 1px solid @border-color-split;
-  padding: 8px 16px;
-  cursor: pointer;
-  transition: all 0.3s;
-  &:hover {
-    background: @primary-1;
-  }
-  &:last-child {
-    border: 0;
-  }
-  .errorIcon {
-    color: @error-color;
-    float: left;
-    margin-top: 4px;
-    margin-right: 12px;
-    padding-bottom: 22px;
-  }
-  .errorField {
-    font-size: 12px;
-    color: @text-color-secondary;
-    margin-top: 2px;
-  }
-}
-
-.editable {
-  td {
-    padding-top: 13px !important;
-    padding-bottom: 12.5px !important;
-  }
-}
-
-// custom footer for fixed footer toolbar
-.advancedForm + div {
-  padding-bottom: 64px;
-}
-
-.advancedForm {
-  :global {
-    .ant-form .ant-row:last-child .ant-form-item {
-      margin-bottom: 24px;
+@media screen and (max-width: @screen-sm) {
+  .standardList {
+    .extraContentSearch {
+      margin-left: 0;
+      width: 100%;
     }
-    .ant-table td {
-      transition: none !important;
+    .headerInfo {
+      margin-bottom: 16px;
+      & > em {
+        display: none;
+      }
     }
   }
 }
 
-.optional {
-  color: @text-color-secondary;
-  font-style: normal;
+@media screen and (max-width: @screen-md) {
+  .standardList {
+    .listContent {
+      & > div {
+        display: block;
+      }
+      & > div:last-child {
+        top: 0;
+        width: 100%;
+      }
+    }
+  }
+  .listCard {
+    :global {
+      .ant-radio-group {
+        display: block;
+        margin-bottom: 8px;
+      }
+    }
+  }
+}
+
+@media screen and (max-width: @screen-lg) and (min-width: @screen-md) {
+  .standardList {
+    .listContent {
+      & > div {
+        display: block;
+      }
+      & > div:last-child {
+        top: 0;
+        width: 100%;
+      }
+    }
+  }
+}
+
+@media screen and (max-width: @screen-xl) {
+  .standardList {
+    .listContent {
+      & > div {
+        margin-left: 24px;
+      }
+      & > div:last-child {
+        top: 0;
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 1400px) {
+  .standardList {
+    .listContent {
+      text-align: right;
+      & > div:last-child {
+        top: 0;
+      }
+    }
+  }
 }

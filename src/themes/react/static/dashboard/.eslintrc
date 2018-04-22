@@ -19,6 +19,7 @@
     "react/jsx-no-bind": [0],
     "react/prop-types": [0],
     "react/prefer-stateless-function": [0],
+//    "react/jsx-closing-tag-location": [0],
     "react/jsx-wrap-multilines": [
       "error",
       {
@@ -45,6 +46,7 @@
     "no-bitwise": [0],
     "no-cond-assign": [0],
     "import/no-unresolved": [0],
+    "camelcase": [0],
     "comma-dangle": [
       "error",
       {
