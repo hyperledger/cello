@@ -58,23 +58,27 @@ def host_query(host_id):
 @bp_host_api.route('/host', methods=['POST'])
 def host_create():
     request_debug(r, logger)
+    if r.content_type.startswith("application/json"):
+        body = dict(r.get_json(force=True, silent=True))
+    else:
+        body = r.form
     name, worker_api, capacity, log_type, log_server, log_level, host_type = \
-        r.form['name'], r.form['worker_api'], r.form['capacity'], \
-        r.form['log_type'], r.form['log_server'], r.form['log_level'], \
-        r.form['host_type'] if 'host_type' in r.form else None
+        body['name'], body['worker_api'], body['capacity'], \
+        body['log_type'], body.get('log_server', ''), body['log_level'], \
+        body['host_type'] if 'host_type' in body else None
 
-    if "autofill" in r.form and r.form["autofill"] == "on":
+    if "autofill" in body and body["autofill"] == "on":
         autofill = "true"
     else:
         autofill = "false"
 
-    if "schedulable" in r.form and r.form["schedulable"] == "on":
+    if "schedulable" in body and body["schedulable"] == "on":
         schedulable = "true"
     else:
         schedulable = "false"
 
     if host_type == "vsphere":
-        vcaddress = r.form['vc_address']
+        vcaddress = body['vc_address']
         if vcaddress.find(":") == -1:
             address = vcaddress
             port = "443"
@@ -88,21 +92,21 @@ def host_create():
             'vc': {
                 'address': address,
                 'port': port,
-                'username': r.form['vc_user'],
-                'password': r.form['vc_password'],
-                'network': r.form['vc_network'],
-                'vc_datastore': r.form['datastore'],
-                'vc_datacenter': r.form['datacenter'],
-                'vc_cluster': r.form['cluster'],
-                'template': r.form['vm_template']},
+                'username': body['vc_user'],
+                'password': body['vc_password'],
+                'network': body['vc_network'],
+                'vc_datastore': body['datastore'],
+                'vc_datacenter': body['datacenter'],
+                'vc_cluster': body['cluster'],
+                'template': body['vm_template']},
             'vm': {
                 'vmname': vmname,
-                'ip': r.form['vm_ip'],
-                'gateway': r.form['vm_gateway'],
-                'netmask': r.form['vm_netmask'],
-                'dns': r.form['vm_dns'],
-                'vcpus': int(r.form['vm_cpus']),
-                'memory': int(r.form['vm_memory'])}}
+                'ip': body['vm_ip'],
+                'gateway': body['vm_gateway'],
+                'netmask': body['vm_netmask'],
+                'dns': body['vm_dns'],
+                'vcpus': int(body['vm_cpus']),
+                'memory': int(body['vm_memory'])}}
 
         logger.debug("name={}, capacity={},"
                      "fillup={}, schedulable={}, log={}/{}, vsphere_param={}".
@@ -114,20 +118,20 @@ def host_create():
             'Capacity': capacity,
             'LoggingType': log_type,
             'VCAddress': address,
-            'VCUser': r.form['vc_user'],
-            'VCPassword': r.form['vc_password'],
-            'VCNetwork': r.form['vc_network'],
-            'Datastore': r.form['datastore'],
-            'Datacenter': r.form['datacenter'],
-            'Cluster': r.form['cluster'],
-            'VMIp': r.form['vm_ip'],
-            'VMGateway': r.form['vm_gateway'],
-            'VMNetmask': r.form['vm_netmask']}
+            'VCUser': body['vc_user'],
+            'VCPassword': body['vc_password'],
+            'VCNetwork': body['vc_network'],
+            'Datastore': body['datastore'],
+            'Datacenter': body['datacenter'],
+            'Cluster': body['cluster'],
+            'VMIp': body['vm_ip'],
+            'VMGateway': body['vm_gateway'],
+            'VMNetmask': body['vm_netmask']}
         for key in vsphere_must_have_params:
             if vsphere_must_have_params[key] == '':
                 error_msg = "host POST without {} data".format(key)
                 logger.warning(error_msg)
-                return make_fail_resp(error=error_msg, data=r.form)
+                return make_fail_resp(error=error_msg, data=body)
         result = host_handler.create(name=name, worker_api=worker_api,
                                      capacity=int(capacity),
                                      autofill=autofill,
@@ -145,7 +149,7 @@ def host_create():
         if not name or not worker_api or not capacity or not log_type:
             error_msg = "host POST without enough data"
             logger.warning(error_msg)
-            return make_fail_resp(error=error_msg, data=r.form)
+            return make_fail_resp(error=error_msg, data=body)
         else:
             host_type = host_type if host_type \
                 else detect_daemon_type(worker_api)
@@ -167,7 +171,7 @@ def host_create():
         logger.debug("host creation successfully")
         return make_ok_resp(code=CODE_CREATED)
     else:
-        error_msg = "Failed to create host {}".format(r.form["name"])
+        error_msg = "Failed to create host {}".format(body["name"])
         logger.warning(error_msg)
         return make_fail_resp(error=error_msg)
 

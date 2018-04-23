@@ -5,7 +5,6 @@ import React from 'react';
 import { addLocaleData, IntlProvider } from 'react-intl';
 import { routerRedux, Route, Switch } from 'dva/router';
 import { LocaleProvider, Spin } from 'antd';
-import zhCN from 'antd/lib/locale-provider/zh_CN';
 import dynamic from 'dva/dynamic';
 import { getRouterData } from './common/router';
 import styles from './index.less';
@@ -23,7 +22,7 @@ function RouterConfig({ history, app }) {
   const BasicLayout = routerData['/'].component;
   return (
     <IntlProvider locale={currentLocale.locale} messages={currentLocale.messages}>
-      <LocaleProvider locale={zhCN}>
+      <LocaleProvider locale={currentLocale.antd}>
         <ConnectedRouter history={history}>
           <Switch>
             <Route path="/" render={props => <BasicLayout {...props} />} />

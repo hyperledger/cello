@@ -3,7 +3,9 @@
 */
 import { stringify } from 'qs';
 import request from '../utils/request';
+import config from '../utils/config';
 
+const { urls } = config;
 export async function queryStatus(params) {
-  return request(`/api/stat?${stringify(params)}`)
+  return request(`${urls.status}?${stringify(params)}`);
 }
