@@ -179,16 +179,20 @@ def host_create():
 @bp_host_api.route('/host', methods=['PUT'])
 def host_update():
     request_debug(r, logger)
-    if "id" not in r.form:
+    if r.content_type.startswith("application/json"):
+        body = dict(r.get_json(force=True, silent=True))
+    else:
+        body = r.form
+    if "id" not in body:
         error_msg = "host PUT without enough data"
         logger.warning(error_msg)
         return make_fail_resp(error=error_msg,
-                              data=r.form)
+                              data=body)
     else:
-        id, d = r.form["id"], {}
-        for k in r.form:
+        id, d = body["id"], {}
+        for k in body:
             if k != "id":
-                d[k] = r.form.get(k)
+                d[k] = body.get(k)
         result = host_handler.update(id, d)
         if result:
             logger.debug("host PUT successfully")
@@ -225,13 +229,17 @@ def host_delete():
 def host_actions():
     logger.info("/host_op, method=" + r.method)
     request_debug(r, logger)
+    if r.content_type.startswith("application/json"):
+        body = dict(r.get_json(force=True, silent=True))
+    else:
+        body = r.form
 
-    host_id, action = r.form['id'], r.form['action']
+    host_id, action = body['id'], body['action']
     if not host_id or not action:
         error_msg = "host POST without enough data"
         logger.warning(error_msg)
         return make_fail_resp(error=error_msg,
-                              data=r.form)
+                              data=body)
     else:
         if action == "fillup":
             if host_handler.fillup(host_id):
@@ -240,7 +248,7 @@ def host_actions():
             else:
                 error_msg = "Failed to fillup the host."
                 logger.warning(error_msg)
-                return make_fail_resp(error=error_msg, data=r.form)
+                return make_fail_resp(error=error_msg, data=body)
         elif action == "clean":
             if host_handler.clean(host_id):
                 logger.debug("clean successfully")
@@ -248,7 +256,7 @@ def host_actions():
             else:
                 error_msg = "Failed to clean the host."
                 logger.warning(error_msg)
-                return make_fail_resp(error=error_msg, data=r.form)
+                return make_fail_resp(error=error_msg, data=body)
         elif action == "reset":
             if host_handler.reset(host_id):
                 logger.debug("reset successfully")
@@ -263,8 +271,8 @@ def host_actions():
             else:
                 error_msg = "Failed to reset the host."
                 logger.warning(error_msg)
-                return make_fail_resp(error=error_msg, data=r.form)
+                return make_fail_resp(error=error_msg, data=body)
 
     error_msg = "unknown host action={}".format(action)
     logger.warning(error_msg)
-    return make_fail_resp(error=error_msg, data=r.form)
+    return make_fail_resp(error=error_msg, data=body)

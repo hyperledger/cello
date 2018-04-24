@@ -7,6 +7,7 @@ import isIP from 'validator/lib/isIP';
 import isNumeric from 'validator/lib/isNumeric';
 import { routerRedux } from 'dva/router';
 import { connect } from 'dva';
+import PropTypes from 'prop-types';
 import { defineMessages, injectIntl, FormattedMessage } from 'react-intl';
 import PageHeaderLayout from '../../../layouts/PageHeaderLayout';
 import styles from './index.less';
@@ -15,6 +16,18 @@ const FormItem = Form.Item;
 const { Option } = Select;
 
 const messages = defineMessages({
+  updateTitle: {
+    id: 'Host.Create.UpdateTitle',
+    defaultMessage: 'Update Host',
+  },
+  title: {
+    id: 'Host.Create.Title',
+    defaultMessage: 'Create New Host',
+  },
+  subTitle: {
+    id: 'Host.Create.SubTitle',
+    defaultMessage: 'Here you can create multiple type host, for creating fabric cluster.',
+  },
   label: {
     name: {
       id: 'Host.Create.Validate.Label.Name',
@@ -101,11 +114,27 @@ const messages = defineMessages({
 }))
 @Form.create()
 class CreateHost extends PureComponent {
-  state = {
-    schedulable: true,
-    autofill: false,
-    submitting: false,
+  static contextTypes = {
+    routes: PropTypes.array,
+    params: PropTypes.object,
+    location: PropTypes.object,
   };
+  constructor(props) {
+    super(props);
+    const { host } = this.props;
+    const location = this.props.location || this.context.location;
+    const search = new URLSearchParams(location.search);
+    const hostId = search.get('id');
+    const action = search.get('action') || 'create';
+    const { hosts } = host;
+    const filterHosts = hosts.filter(hostItem => hostItem.id === hostId);
+    const currentHost = filterHosts.length > 0 ? filterHosts[0] : {};
+    this.state = {
+      schedulable: action === 'create' ? true : currentHost.schedulable === 'true',
+      autofill: action === 'create' ? false : currentHost.autofill === 'true',
+      submitting: false,
+    };
+  }
   changeSchedulable = checked => {
     this.setState({
       schedulable: checked,
@@ -149,28 +178,53 @@ class CreateHost extends PureComponent {
   };
   handleSubmit = e => {
     e.preventDefault();
+    const location = this.props.location || this.context.location;
+    const search = new URLSearchParams(location.search);
+    const hostId = search.get('id');
+    const action = search.get('action') || 'create';
     this.props.form.validateFieldsAndScroll((err, values) => {
       if (!err) {
         const { schedulable, autofill } = this.state;
         this.setState({
           submitting: true,
         });
-        this.props.dispatch({
-          type: 'host/createHost',
-          payload: {
-            ...values,
-            schedulable: schedulable ? 'on' : 'off',
-            autofill: autofill ? 'on' : 'off',
-            callback: this.submitCallback,
-          },
-        });
+        if (action === 'create') {
+          this.props.dispatch({
+            type: 'host/createHost',
+            payload: {
+              ...values,
+              schedulable: schedulable ? 'on' : 'off',
+              autofill: autofill ? 'on' : 'off',
+              callback: this.submitCallback,
+            },
+          });
+        } else {
+          delete values.host_type;
+          this.props.dispatch({
+            type: 'host/updateHost',
+            payload: {
+              ...values,
+              schedulable: schedulable ? 'true' : 'false',
+              autofill: autofill ? 'true' : 'false',
+              id: hostId,
+              callback: this.submitCallback,
+            },
+          });
+        }
       }
     });
   };
   render() {
     const { getFieldDecorator } = this.props.form;
     const { schedulable, autofill, submitting } = this.state;
-    const { intl } = this.props;
+    const { intl, host } = this.props;
+    const location = this.props.location || this.context.location;
+    const search = new URLSearchParams(location.search);
+    const hostId = search.get('id');
+    const action = search.get('action') || 'create';
+    const { hosts } = host;
+    const filterHosts = hosts.filter(hostItem => hostItem.id === hostId);
+    const currentHost = filterHosts.length > 0 ? filterHosts[0] : {};
 
     const formItemLayout = {
       labelCol: {
@@ -210,13 +264,18 @@ class CreateHost extends PureComponent {
     ));
     return (
       <PageHeaderLayout
-        title="Create New Host"
-        content="Here you can create multiple type host, for creating fabric cluster."
+        title={
+          action === 'create'
+            ? intl.formatMessage(messages.title)
+            : intl.formatMessage(messages.updateTitle)
+        }
+        content={action === 'create' ? intl.formatMessage(messages.subTitle) : ''}
       >
         <Card bordered={false}>
           <Form onSubmit={this.handleSubmit} hideRequiredMark style={{ marginTop: 8 }}>
             <FormItem {...formItemLayout} label={intl.formatMessage(messages.label.name)}>
               {getFieldDecorator('name', {
+                initialValue: action === 'create' ? '' : currentHost.name,
                 rules: [
                   {
                     required: true,
@@ -239,6 +298,7 @@ class CreateHost extends PureComponent {
               }
             >
               {getFieldDecorator('worker_api', {
+                initialValue: action === 'create' ? '' : currentHost.worker_api.split('//')[1],
                 rules: [
                   {
                     required: true,
@@ -248,11 +308,17 @@ class CreateHost extends PureComponent {
                     validator: this.validateWorkerApi,
                   },
                 ],
-              })(<Input addonBefore="tcp://" placeholder="192.168.0.1:2375" />)}
+              })(
+                <Input
+                  disabled={action === 'update'}
+                  addonBefore="tcp://"
+                  placeholder="192.168.0.1:2375"
+                />
+              )}
             </FormItem>
             <FormItem {...formItemLayout} label={intl.formatMessage(messages.label.capacity)}>
               {getFieldDecorator('capacity', {
-                initialValue: 1,
+                initialValue: action === 'create' ? 1 : currentHost.capacity,
                 rules: [
                   {
                     required: true,
@@ -270,18 +336,18 @@ class CreateHost extends PureComponent {
             </FormItem>
             <FormItem {...formItemLayout} label={intl.formatMessage(messages.label.hostType)}>
               {getFieldDecorator('host_type', {
-                initialValue: hostTypeValues[0],
+                initialValue: action === 'create' ? hostTypeValues[0] : currentHost.type,
                 rules: [
                   {
                     required: true,
                     message: intl.formatMessage(messages.validate.required.hostType),
                   },
                 ],
-              })(<Select>{hostTypeOptions}</Select>)}
+              })(<Select disabled={action === 'update'}>{hostTypeOptions}</Select>)}
             </FormItem>
             <FormItem {...formItemLayout} label={intl.formatMessage(messages.label.logLevel)}>
               {getFieldDecorator('log_level', {
-                initialValue: logLevelValues[0],
+                initialValue: action === 'create' ? logLevelValues[0] : currentHost.log_level,
                 rules: [
                   {
                     required: true,
@@ -292,7 +358,7 @@ class CreateHost extends PureComponent {
             </FormItem>
             <FormItem {...formItemLayout} label={intl.formatMessage(messages.label.logType)}>
               {getFieldDecorator('log_type', {
-                initialValue: logTypeValues[0],
+                initialValue: action === 'create' ? logTypeValues[0] : currentHost.log_type,
                 rules: [
                   {
                     required: true,

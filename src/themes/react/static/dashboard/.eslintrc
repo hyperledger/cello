@@ -32,6 +32,10 @@
         "prop": "ignore"
       }
     ],
+    "no-param-reassign": [
+      "error",
+      { "props": false }
+    ],
     "no-else-return": [0],
     "no-restricted-syntax": [0],
     "import/no-extraneous-dependencies": [0],

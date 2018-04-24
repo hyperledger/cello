@@ -6,6 +6,7 @@ import { connect } from 'dva';
 import { routerRedux } from 'dva/router';
 import { defineMessages, injectIntl, FormattedMessage } from 'react-intl';
 import { List, Card, Button, Dropdown, Menu, Icon, Badge, Modal } from 'antd';
+import { stringify } from 'qs';
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
 import styles from './style.less';
 
@@ -18,6 +19,22 @@ const messages = defineMessages({
     delete: {
       id: 'Host.Button.Delete',
       defaultMessage: 'Delete',
+    },
+    fillUp: {
+      id: 'Host.Button.FillUp',
+      defaultMessage: 'Fill Up',
+    },
+    clean: {
+      id: 'Host.Button.Clean',
+      defaultMessage: 'Clean',
+    },
+    reset: {
+      id: 'Host.Button.Reset',
+      defaultMessage: 'Reset',
+    },
+    edit: {
+      id: 'Host.Button.Edit',
+      defaultMessge: 'Edit',
     },
     more: {
       id: 'Host.Button.More',
@@ -36,6 +53,10 @@ const messages = defineMessages({
     capacity: {
       id: 'Host.Label.Capacity',
       defaultMessage: 'Capacity',
+    },
+    runningChains: {
+      id: 'Host.Label.RunningChains',
+      defaultMessage: 'Running Chains',
     },
   },
   title: {
@@ -89,9 +110,32 @@ class Host extends PureComponent {
           },
         });
         break;
+      case 'fillup':
+      case 'clean':
+      case 'reset':
+        dispatch({
+          type: 'host/operateHost',
+          payload: {
+            id,
+            action: key,
+            name,
+          },
+        });
+        break;
       default:
         break;
     }
+  };
+  editHost = host => {
+    this.props.dispatch(
+      routerRedux.push({
+        pathname: '/create-host',
+        search: stringify({
+          id: host.id,
+          action: 'update',
+        }),
+      })
+    );
   };
   render() {
     const { host, loadingHosts, intl } = this.props;
@@ -135,10 +179,21 @@ class Host extends PureComponent {
     );
     const menu = hostItem => (
       <Menu onClick={this.clickMore}>
-        <Menu.Item key="delete" host={hostItem}>
-          <a>
-            <FormattedMessage {...messages.button.delete} />
-          </a>
+        <Menu.Item
+          key="fillup"
+          disabled={hostItem.clusters.length === hostItem.capacity}
+          host={hostItem}
+        >
+          <FormattedMessage {...messages.button.fillUp} />
+        </Menu.Item>
+        <Menu.Item key="clean" disabled={hostItem.clusters.length === 0} host={hostItem}>
+          <FormattedMessage {...messages.button.clean} />
+        </Menu.Item>
+        <Menu.Item key="reset" disabled={hostItem.clusters.length === 0} host={hostItem}>
+          <FormattedMessage {...messages.button.reset} />
+        </Menu.Item>
+        <Menu.Item key="delete" disabled={hostItem.clusters.length > 0} host={hostItem}>
+          <FormattedMessage {...messages.button.delete} />
         </Menu.Item>
       </Menu>
     );
@@ -174,14 +229,27 @@ class Host extends PureComponent {
               pagination={paginationProps}
               dataSource={hosts}
               renderItem={item => (
-                <List.Item actions={[<MoreBtn host={item} />]}>
+                <List.Item
+                  actions={[
+                    <a onClick={() => this.editHost(item)}>
+                      <FormattedMessage {...messages.button.edit} />
+                    </a>,
+                    <MoreBtn hostItem={item} />,
+                  ]}
+                >
                   <List.Item.Meta
                     title={<span>{item.name}</span>}
                     description={
                       <div>
                         <p>{item.worker_api}</p>
                         <p>
-                          <FormattedMessage {...messages.label.capacity} />: {item.capacity}
+                          <span style={{ marginRight: 5 }}>
+                            <FormattedMessage {...messages.label.capacity} />: {item.capacity}
+                          </span>
+                          <span>
+                            <FormattedMessage {...messages.label.runningChains} />:{' '}
+                            {item.clusters.length}
+                          </span>
                         </p>
                       </div>
                     }

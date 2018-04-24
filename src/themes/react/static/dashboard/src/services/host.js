@@ -23,3 +23,17 @@ export async function deleteHost(params) {
     body: JSON.stringify(params),
   });
 }
+
+export async function operateHost(params) {
+  return request(urls.host.operate, {
+    method: 'POST',
+    body: params,
+  })
+}
+
+export async function updateHost(params) {
+  return request(urls.host.crud, {
+    method: 'PUT',
+    body: params,
+  })
+}
