@@ -17,7 +17,7 @@ from pymongo.collection import ReturnDocument
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from agent import get_swarm_node_ip
+from agent import get_swarm_node_ip, KubernetesHost
 
 from common import db, log_handler, LOG_LEVEL, utils
 from common import CLUSTER_PORT_START, CLUSTER_PORT_STEP, \
@@ -35,7 +35,7 @@ from common import FabricPreNetworkConfig, FabricV1NetworkConfig
 
 from modules import host
 
-from agent import ClusterOnDocker, ClusterOnVsphere
+from agent import ClusterOnDocker, ClusterOnVsphere, ClusterOnKubernetes
 from modules.models import Cluster as ClusterModel
 from modules.models import Host as HostModel
 from modules.models import ClusterSchema, CLUSTER_STATE, \
@@ -67,7 +67,8 @@ class ClusterHandler(object):
         self.cluster_agents = {
             'docker': ClusterOnDocker(),
             'swarm': ClusterOnDocker(),
-            'vsphere': ClusterOnVsphere()
+            'vsphere': ClusterOnVsphere(),
+            'kubernetes': ClusterOnKubernetes()
         }
 
     def list(self, filter_data={}, col_name="active"):
@@ -207,6 +208,60 @@ class ClusterHandler(object):
 
         return all_ports, peer_ports, ca_ports, orderer_ports, explorer_ports
 
+    def _create_cluster(self, cluster, cid, mapped_ports, worker, config,
+                        user_id, peer_ports, ca_ports, orderer_ports,
+                        explorer_ports):
+        # start compose project, failed then clean and return
+        logger.debug("Start compose project with name={}".format(cid))
+        containers = self.cluster_agents[worker.type] \
+            .create(cid, mapped_ports, self.host_handler.schema(worker),
+                    config=config, user_id=user_id)
+        if not containers:
+            logger.warning("failed to start cluster={}, then delete"
+                           .format(cluster.name))
+            self.delete(id=cid, record=False, forced=True)
+            return None
+
+        # creation done, update the container table in db
+        for k, v in containers.items():
+            container = Container(id=v, name=k, cluster=cluster)
+            container.save()
+
+        # service urls can only be calculated after service is created
+        if worker.type == WORKER_TYPE_K8S:
+            service_urls = self.cluster_agents[worker.type]\
+                               .get_services_urls(cid)
+        else:
+            service_urls = self.gen_service_urls(cid, peer_ports, ca_ports,
+                                                 orderer_ports, explorer_ports)
+        # update the service port table in db
+        for k, v in service_urls.items():
+            service_port = ServicePort(name=k, ip=v.split(":")[0],
+                                       port=int(v.split(":")[1]),
+                                       cluster=cluster)
+            service_port.save()
+
+        # update api_url, container, user_id and status
+        self.db_update_one(
+            {"id": cid},
+            {
+                "user_id": user_id,
+                'api_url': service_urls.get('rest', ""),
+                'service_url': service_urls,
+                'status': NETWORK_STATUS_RUNNING
+            }
+        )
+
+        def check_health_work(cid):
+            time.sleep(60)
+            self.refresh_health(cid)
+        t = Thread(target=check_health_work, args=(cid,))
+        t.start()
+
+        host = HostModel.objects.get(id=worker.id)
+        host.update(add_to_set__clusters=[cid])
+        logger.info("Create cluster OK, id={}".format(cid))
+
     def create(self, name, host_id, config, start_port=0,
                user_id=""):
         """ Create a cluster based on given data
@@ -246,8 +301,8 @@ class ClusterHandler(object):
             logger.error("mapped_ports={}".format(mapped_ports))
             return None
 
-        env_mapped_ports = dict(((k + '_port').upper(),
-                                 str(v)) for (k, v) in mapped_ports.items())
+        env_mapped_ports = dict(((k + '_port').upper(), str(v))
+                                for (k, v) in mapped_ports.items())
 
         network_type = config['network_type']
         net = {  # net is a blockchain network instance
@@ -267,53 +322,14 @@ class ClusterHandler(object):
         cluster = ClusterModel(**net)
         cluster.host = worker
         cluster.save()
-
-        # start compose project, failed then clean and return
-        logger.debug("Start compose project with name={}".format(cid))
-        containers = self.cluster_agents[worker.type] \
-            .create(cid, mapped_ports, self.host_handler.schema(worker),
-                    config=config, user_id=user_id)
-        if not containers:
-            logger.warning("failed to start cluster={}, then delete"
-                           .format(name))
-            self.delete(id=cid, record=False, forced=True)
-            return None
-
-        # creation done, update the container table in db
-        for k, v in containers.items():
-            container = Container(id=v, name=k, cluster=cluster)
-            container.save()
-
-        # service urls can only be calculated after service is created
-        service_urls = self.gen_service_urls(cid, peer_ports, ca_ports,
-                                             orderer_ports, explorer_ports)
-        # update the service port table in db
-        for k, v in service_urls.items():
-            service_port = ServicePort(name=k, ip=v.split(":")[0],
-                                       port=int(v.split(":")[1]),
-                                       cluster=cluster)
-            service_port.save()
-
-        # update api_url, container, user_id and status
-        self.db_update_one(
-            {"id": cid},
-            {
-                "user_id": user_id,
-                'api_url': service_urls.get('rest', ""),
-                'service_url': service_urls,
-                'status': NETWORK_STATUS_RUNNING
-            }
-        )
-
-        def check_health_work(cid):
-            time.sleep(60)
-            self.refresh_health(cid)
-        t = Thread(target=check_health_work, args=(cid,))
+        # start cluster creation asynchronously for better user experience.
+        t = Thread(target=self._create_cluster, args=(cluster, cid,
+                                                      mapped_ports, worker,
+                                                      config, user_id,
+                                                      peer_ports, ca_ports,
+                                                      orderer_ports,
+                                                      explorer_ports))
         t.start()
-
-        host = HostModel.objects.get(id=host_id)
-        host.update(add_to_set__clusters=[cid])
-        logger.info("Create cluster OK, id={}".format(cid))
         return cid
 
     def delete(self, id, record=False, forced=False):
@@ -377,11 +393,17 @@ class ClusterHandler(object):
         config.update({
             "env": cluster.env
         })
-        if not self.cluster_agents[h.type].delete(id, worker_api,
-                                                  config):
+
+        delete_result = self.cluster_agents[h.type].delete(id, worker_api,
+                                                           config)
+        if not delete_result:
             logger.warning("Error to run compose clean work")
             cluster.update(set__user_id=user_id, upsert=True)
             return False
+
+        # remove cluster info from host
+        logger.info("remove cluster from host, cluster:{}".format(id))
+        h.update(pull__clusters=id)
 
         c.delete()
         return True
@@ -505,9 +527,19 @@ class ClusterHandler(object):
             log_server='',
             config=config,
         )
+
         if result:
-            self.db_update_one({"id": cluster_id},
-                               {'status': 'running'})
+            if h.type == WORKER_TYPE_K8S:
+                service_urls = self.cluster_agents[h.type]\
+                                   .get_services_urls(cluster_id)
+                self.db_update_one({"id": cluster_id},
+                                   {'status': 'running',
+                                    'api_url': service_urls.get('rest', ""),
+                                    'service_url': service_urls})
+            else:
+                self.db_update_one({"id": cluster_id},
+                                   {'status': 'running'})
+
             return True
         else:
             return False
@@ -550,8 +582,16 @@ class ClusterHandler(object):
             config=config,
         )
         if result:
-            self.db_update_one({"id": cluster_id},
-                               {'status': 'running'})
+            if h.type == WORKER_TYPE_K8S:
+                service_urls = self.cluster_agents[h.type]\
+                                   .get_services_urls(cluster_id)
+                self.db_update_one({"id": cluster_id},
+                                   {'status': 'running',
+                                    'api_url': service_urls.get('rest', ""),
+                                    'service_url': service_urls})
+            else:
+                self.db_update_one({"id": cluster_id},
+                                   {'status': 'running'})
             return True
         else:
             return False
@@ -583,6 +623,7 @@ class ClusterHandler(object):
                 size=c.get('size'))
         else:
             return False
+
         result = self.cluster_agents[h.type].stop(
             name=cluster_id, worker_api=h.worker_api,
             mapped_ports=c.get('mapped_ports', PEER_SERVICE_PORTS),
@@ -591,6 +632,7 @@ class ClusterHandler(object):
             log_server='',
             config=config,
         )
+
         if result:
             self.db_update_one({"id": cluster_id},
                                {'status': 'stopped', 'health': ''})

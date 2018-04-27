@@ -27,7 +27,7 @@ from common import \
     VIRTUAL_MACHINE, VCIP, VCPORT, VMDNS, NETWORK, VMUUID,\
     VC_DATACENTER, VC_DATASTORE, VC_CLUSTER, \
     WORKER_TYPE_DOCKER, WORKER_TYPE_SWARM, WORKER_TYPE_VSPHERE, \
-    HOST_STATUS, HOST_STATUS_PENDING
+    WORKER_TYPE_K8S, HOST_STATUS, HOST_STATUS_PENDING
 
 from agent import DockerHost, VsphereHost, KubernetesHost
 from modules import cluster
@@ -167,6 +167,18 @@ class HostHandler(object):
                 logger.error("Host {} cannot be setup".format(name))
                 logger.error("{}".format(e))
                 return {"msg": "{}".format(e)}
+
+        if host_type == WORKER_TYPE_K8S:
+            try:
+                if self.host_agents[host_type].create(params):
+                    logger.info("Successfully created Kubernetes \
+                                 host{}".format(name))
+            except Exception as e:
+                logger.error("Failed to setup Host {}".format(name))
+                logger.error("{}".format(e))
+                return {"msg": "{}".format(e)}
+            logger.debug("Storing K8S data")
+            host.k8s_param = params
 
         host.save()
 

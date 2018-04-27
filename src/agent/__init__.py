@@ -14,10 +14,10 @@ from .docker.docker_swarm import get_project, \
 from .docker.host import DockerHost
 from .docker.cluster import ClusterOnDocker
 
-from .k8s.cluster_operations import K8sClusterOperation
 from .k8s.host_operations import KubernetesOperation
-from .k8s.cluster import ClusterOnKubernetes
 from .k8s.host import KubernetesHost
+from .k8s.cluster_operations import K8sClusterOperation
+from .k8s.cluster import ClusterOnKubernetes
 
 from .vsphere.host_operations import VsphereOperation
 from .vsphere.host import VsphereHost
