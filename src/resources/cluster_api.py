@@ -214,24 +214,28 @@ def cluster_create():
     """
     logger.info("/cluster action=" + r.method)
     request_debug(r, logger)
-    if not r.form["name"] or not r.form["host_id"] or \
-            not r.form["network_type"]:
+    if r.content_type.startswith("application/json"):
+        body = dict(r.get_json(force=True, silent=True))
+    else:
+        body = r.form
+    if not body["name"] or not body["host_id"] or \
+            not body["network_type"]:
         error_msg = "cluster post without enough data"
         logger.warning(error_msg)
-        return make_fail_resp(error=error_msg, data=r.form)
+        return make_fail_resp(error=error_msg, data=body)
 
     name, host_id, network_type, size = \
-        r.form['name'], r.form['host_id'],\
-        r.form['network_type'], int(r.form['size'])
+        body['name'], body['host_id'],\
+        body['network_type'], int(body['size'])
 
     if network_type == NETWORK_TYPE_FABRIC_PRE_V1:  # TODO: deprecated soon
         config = FabricPreNetworkConfig(
-            consensus_plugin=r.form['consensus_plugin'],
-            consensus_mode=r.form['consensus_mode'],
+            consensus_plugin=body['consensus_plugin'],
+            consensus_mode=body['consensus_mode'],
             size=size)
     elif network_type == NETWORK_TYPE_FABRIC_V1:
         config = FabricV1NetworkConfig(
-            consensus_plugin=r.form['consensus_plugin'],
+            consensus_plugin=body['consensus_plugin'],
             size=size)
     else:
         error_msg = "Unknown network_type={}".format(network_type)
@@ -308,7 +312,8 @@ def cluster_list():
     elif r.method == 'POST':
         f.update(request_json_body(r))
     logger.info(f)
-    result = cluster_handler.list(filter_data=f)
+    col_name = f.get("state", "active")
+    result = cluster_handler.list(filter_data=f, col_name=col_name)
     logger.error(result)
     return make_ok_resp(data=result)
 

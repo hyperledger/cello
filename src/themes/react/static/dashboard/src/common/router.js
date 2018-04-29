@@ -85,7 +85,12 @@ export const getRouterData = app => {
       component: dynamicWrapper(app, ['host'], () => import('../routes/Host/CreateHost')),
     },
     '/chain': {
-      component: dynamicWrapper(app, [], () => import('../routes/Chain')),
+      component: dynamicWrapper(app, ['chain'], () => import('../routes/Chain')),
+    },
+    '/create-chain': {
+      component: dynamicWrapper(app, ['host', 'chain'], () =>
+        import('../routes/Chain/CreateChain')
+      ),
     },
     '/user-management': {
       component: dynamicWrapper(app, [], () => import('../routes/UserManagement')),
