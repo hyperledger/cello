@@ -8,6 +8,9 @@ spec:
     storage: 500Mi
   accessModes:
     - ReadWriteMany
+  claimRef:
+    namespace: {{clusterName}}
+    name: {{clusterName}}-org2-pvc
   nfs:
     path: /opt/share/{{clusterName}}/resources/crypto-config/peerOrganizations/org2
     server: {{nfsServer}}  #change to your nfs server ip here
@@ -17,7 +20,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
  namespace: {{clusterName}}
- name: {{clusterName}}-org2-pv
+ name: {{clusterName}}-org2-pvc
 spec:
  accessModes:
    - ReadWriteMany

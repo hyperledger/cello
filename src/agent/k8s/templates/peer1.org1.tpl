@@ -96,7 +96,7 @@ spec:
       volumes:
        - name: certificate
          persistentVolumeClaim:
-             claimName: {{clusterName}}-org1-pv
+             claimName: {{clusterName}}-org1-pvc
        - name: run
          hostPath:
            path: /var/run

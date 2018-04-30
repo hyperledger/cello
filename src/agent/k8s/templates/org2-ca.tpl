@@ -42,7 +42,7 @@ spec:
      volumes:
        - name: certificate
          persistentVolumeClaim:
-             claimName: {{clusterName}}-org2-pv
+             claimName: {{clusterName}}-org2-pvc
 
 ---
 apiVersion: v1
