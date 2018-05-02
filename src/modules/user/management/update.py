@@ -24,16 +24,16 @@ user_update_fields = {
 
 user_update_parser = reqparse.RequestParser()
 user_update_parser.add_argument('username', required=True,
-                                location='form',
+                                location=['form', 'json'],
                                 help='Username for create')
 user_update_parser.add_argument('role', type=int, required=True,
-                                location='form',
+                                location=['form', 'json'],
                                 help='User role for create')
 user_update_parser.add_argument('balance', type=int, default=0,
-                                location='form',
+                                location=['form', 'json'],
                                 help='User balance')
 user_update_parser.add_argument('active', required=True,
-                                location='form',
+                                location=['form', 'json'],
                                 help='Whether active user when create')
 
 

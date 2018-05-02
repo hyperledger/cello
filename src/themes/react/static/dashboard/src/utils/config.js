@@ -12,5 +12,12 @@ export default {
       crud: `${apiBase}/cluster`,
       operate: `${apiBase}/cluster_op`,
     },
+    user: {
+      list: `${apiBase}/user/list`,
+      create: `${apiBase}/user/create`,
+      delete: `${apiBase}/user/delete`,
+      search: `${apiBase}/user/search`,
+      update: `${apiBase}/user/update`,
+    },
   },
 };
