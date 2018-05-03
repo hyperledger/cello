@@ -25,8 +25,8 @@ logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
 logger.addHandler(log_handler)
 
-STATIC_FOLDER = os.getenv("STATIC_FOLDER", "themes/basic/static")
-TEMPLATE_FOLDER = os.getenv("TEMPLATE_FOLDER", "themes/basic/templates")
+STATIC_FOLDER = "static"
+TEMPLATE_FOLDER = "templates"
 app = Flask(__name__, static_folder=STATIC_FOLDER,
             template_folder=TEMPLATE_FOLDER)
 socketio = SocketIO(app)

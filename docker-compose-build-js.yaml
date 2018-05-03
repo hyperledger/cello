@@ -14,7 +14,7 @@ version: '2'
 services:
   build-admin-js:
     build:
-      context: $ROOT_PATH/src/themes/$THEME/static
+      context: $ROOT_PATH/src/static
     volumes:
-      - ./src/$STATIC_FOLDER:/var/www
-      - ./src/$TEMPLATE_FOLDER:/templates
+      - ./src/static:/var/www
+      - ./src/templates:/templates
