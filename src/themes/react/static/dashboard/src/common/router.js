@@ -93,7 +93,7 @@ export const getRouterData = app => {
       ),
     },
     '/user-management': {
-      component: dynamicWrapper(app, [], () => import('../routes/UserManagement')),
+      component: dynamicWrapper(app, ['user'], () => import('../routes/UserManagement')),
     },
   };
   // Get name from ./menu.js or just set it in the router data.

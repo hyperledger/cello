@@ -27,19 +27,19 @@ user_create_fields = {
 
 user_create_parser = reqparse.RequestParser()
 user_create_parser.add_argument('username', required=True,
-                                location='form',
+                                location=['form', 'json'],
                                 help='Username for create')
 user_create_parser.add_argument('password', required=True,
-                                location='form',
+                                location=['form', 'json'],
                                 help='Password for create')
 user_create_parser.add_argument('role', type=int, required=True,
-                                location='form',
+                                location=['form', 'json'],
                                 help='User role for create')
 user_create_parser.add_argument('balance', type=int, default=0,
-                                location='form',
+                                location=['form', 'json'],
                                 help='User balance')
 user_create_parser.add_argument('active', required=True,
-                                location='form',
+                                location=['form', 'json'],
                                 help='Whether active user when create')
 
 
