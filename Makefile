@@ -133,7 +133,7 @@ docker-operator-dashboard: build/docker/operator-dashboard/$(DUMMY)
 
 docker-clean: image-clean ##@Clean all existing images
 
-DOCKERHUB_IMAGES = baseimage engine mongo nginx operator-dashboard user-dashboard watchdog
+DOCKERHUB_IMAGES = baseimage engine mongo nginx operator-dashboard user-dashboard watchdog ansible-agent
 
 dockerhub: $(patsubst %,dockerhub-%,$(DOCKERHUB_IMAGES))  ##@Building latest images with dockerhub materials, to valid them
 
