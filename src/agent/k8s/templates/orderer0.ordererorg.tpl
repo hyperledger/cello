@@ -61,7 +61,7 @@ spec:
       volumes:
        - name: certificate
          persistentVolumeClaim:
-             claimName: {{clusterName}}-ordererorg-pv
+             claimName: {{clusterName}}-ordererorg-pvc
            #path: /opt/share
          #persistentVolumeClaim:
          #  claimName: nfs

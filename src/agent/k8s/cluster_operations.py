@@ -48,13 +48,21 @@ class K8sClusterOperation():
             "Namespace": self._delete_namespace
         }
 
-    def _upload_config_file(self, cluster_name):
+    def _upload_config_file(self, cluster_name, consensus):
         try:
             cluster_path = os.path.join('/opt/share', cluster_name)
             # Uploading the 'resources' directory with its content in the
             # '/opt/share remote directory
             current_path = os.path.dirname(__file__)
-            resources_path = os.path.join(current_path, "cluster_resources")
+
+            # Only solo and kafka supported
+            if consensus == "solo":
+                resources_path = os.path.join(current_path,
+                                              "cluster_resources")
+            else:
+                resources_path = os.path.join(current_path,
+                                              "cluster_resources_kafka")
+
             shutil.copytree(resources_path, cluster_path)
         except Exception as e:
             error_msg = (
@@ -413,7 +421,7 @@ class K8sClusterOperation():
         return cluster_ports
 
     def _deploy_cluster_resource(self, cluster_name,
-                                 cluster_ports, nfsServer_ip):
+                                 cluster_ports, nfsServer_ip, consensus):
         # create namespace in advance
         file_data = self._render_config_file("namespace.tpl", cluster_name,
                                              cluster_ports, nfsServer_ip)
@@ -437,13 +445,29 @@ class K8sClusterOperation():
             time.sleep(3)
 
             for file in file_list:
-                # Then peers and orders
-                if "peer" in file or "orderer0" in file:
+                # Then peers
+                if "peer" in file:
                     file_data = self._render_config_file(file, cluster_name,
                                                          cluster_ports,
                                                          nfsServer_ip)
                     yaml_data = yaml.load_all(file_data)
                     self._deploy_k8s_resource(yaml_data)
+
+            time.sleep(3)
+
+            if consensus == "solo":
+                file_data = self._render_config_file("orderer0.ordererorg.tpl",
+                                                     cluster_name,
+                                                     cluster_ports,
+                                                     nfsServer_ip)
+            else:
+                file_data = self._render_config_file("orderer0.ordererorg-kafka\
+                                                     .tpl",
+                                                     cluster_name,
+                                                     cluster_ports,
+                                                     nfsServer_ip)
+            yaml_data = yaml.load_all(file_data)
+            self._deploy_k8s_resource(yaml_data)
 
             time.sleep(3)
 
@@ -458,14 +482,15 @@ class K8sClusterOperation():
 
             time.sleep(3)
 
-    def deploy_cluster(self, cluster_name, ports_index, nfsServer_ip):
-        self._upload_config_file(cluster_name)
+    def deploy_cluster(self, cluster_name, ports_index,
+                       nfsServer_ip, consensus):
+        self._upload_config_file(cluster_name, consensus)
         time.sleep(1)
 
         cluster_ports = self._get_cluster_ports(ports_index)
 
         self._deploy_cluster_resource(cluster_name, cluster_ports,
-                                      nfsServer_ip)
+                                      nfsServer_ip, consensus)
 
         check_times = 0
         while check_times < 10:
@@ -497,7 +522,7 @@ class K8sClusterOperation():
         return self._get_cluster_pods(cluster_name)
 
     def _delete_cluster_resource(self, cluster_name,
-                                 cluster_ports, nfsServer_ip):
+                                 cluster_ports, nfsServer_ip, consensus):
         """ The order to delete the cluster is reverse to
             create except for namespace
         """
@@ -530,13 +555,31 @@ class K8sClusterOperation():
             time.sleep(3)
 
             for file in file_list:
-                if "peer" in file or "orderer0" in file:
+                if "peer" in file:
                     file_data = self._render_config_file(file,
                                                          cluster_name,
                                                          cluster_ports,
                                                          nfsServer_ip)
                     yaml_data = yaml.load_all(file_data)
                     self._delete_k8s_resource(yaml_data)
+
+            time.sleep(3)
+
+            if consensus == "solo":
+                file_data = self._render_config_file("orderer0.ordererorg.tpl",
+                                                     cluster_name,
+                                                     cluster_ports,
+                                                     nfsServer_ip)
+            else:
+                file_data = self._render_config_file("orderer0.ordererorg-kafka\
+                                                     .tpl", cluster_name,
+                                                     cluster_ports,
+                                                     nfsServer_ip)
+
+            time.sleep(3)
+
+            yaml_data = yaml.load_all(file_data)
+            self._delete_k8s_resource(yaml_data)
 
             for file in file_list:
                 if "pvc" in file:
@@ -547,26 +590,28 @@ class K8sClusterOperation():
                     yaml_data = yaml.load_all(file_data)
                     self._delete_k8s_resource(yaml_data)
 
-    def delete_cluster(self, cluster_name, ports_index, nfsServer_ip):
+    def delete_cluster(self, cluster_name, ports_index,
+                       nfsServer_ip, consensus):
         cluster_ports = self._get_cluster_ports(ports_index)
         self._delete_cluster_resource(cluster_name, cluster_ports,
-                                      nfsServer_ip)
+                                      nfsServer_ip, consensus)
         time.sleep(2)
         self._delete_config_file(cluster_name)
         time.sleep(5)
         return True
 
-    def stop_cluster(self, cluster_name, ports_index, nfsServer_ip):
+    def stop_cluster(self, cluster_name, ports_index, nfsServer_ip, consensus):
         cluster_ports = self._get_cluster_ports(ports_index)
         self._delete_cluster_resource(cluster_name, cluster_ports,
-                                      nfsServer_ip)
+                                      nfsServer_ip, consensus)
         time.sleep(2)
         return True
 
-    def start_cluster(self, cluster_name, ports_index, nfsServer_ip):
+    def start_cluster(self, cluster_name, ports_index, nfsServer_ip,
+                      consensus):
         cluster_ports = self._get_cluster_ports(ports_index)
         self._deploy_cluster_resource(cluster_name, cluster_ports,
-                                      nfsServer_ip)
+                                      nfsServer_ip, consensus)
         time.sleep(2)
         # fabric explorer at last
         file_data = self._render_config_file("fabric-1-0-explorer.tpl",

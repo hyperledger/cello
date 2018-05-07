@@ -7,6 +7,9 @@ spec:
        storage: 500Mi
     accessModes:
        - ReadWriteMany
+    claimRef:
+      namespace: {{clusterName}}
+      name: {{clusterName}}-org1-resources-pvc
     nfs:
       path: /opt/share/{{clusterName}}/resources
       server: {{nfsServer}} # change to your nfs server ip here.
@@ -16,7 +19,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
     namespace: {{clusterName}}
-    name: {{clusterName}}-org1-resources-pv
+    name: {{clusterName}}-org1-resources-pvc
 spec:
    accessModes:
      - ReadWriteMany
@@ -87,10 +90,10 @@ spec:
       volumes:
         - name: certificate
           persistentVolumeClaim:
-              claimName: {{clusterName}}-org1-pv
+              claimName: {{clusterName}}-org1-pvc
         - name: resources
           persistentVolumeClaim:
-              claimName: {{clusterName}}-org1-resources-pv
+              claimName: {{clusterName}}-org1-resources-pvc
         - name: run
           hostPath:
             path: /var/run
