@@ -27,6 +27,7 @@ MAINTAINER haitao yue "hightall@me.com"
 RUN npm install -g requirejs
 COPY . /tmp/cello
 COPY user-dashboard/package.json /
+COPY user-dashboard/yarn.lock /
 RUN cd / && yarn install -g --verbose
 ENV PATH ${PATH}:/node_modules/.bin
 RUN mkdir -p /usr/app
