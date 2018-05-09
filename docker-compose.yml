@@ -154,3 +154,13 @@ services:
       - NO_USED=0
     volumes:
       - /opt/cello/dashboard_mongo:/data/db
+
+  nfs:
+    image: itsthenetwork/nfs-server-alpine:9
+    restart: unless-stopped
+    environment:
+      - SHARED_DIRECTORY=/cello
+    volumes:
+      - ./src/agent/docker/_compose_files:/cello
+    privileged: true
+    network_mode: host

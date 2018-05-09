@@ -65,7 +65,7 @@ At last, run the follow test at Master node and get OK response, to make sure it
 Run the following cmd to pull the necessary images and copy required artifacts.
 
 ```bash
-$ make setup-worker
+$ MASTER_NODE_IP=xx.xx.xx.xx make setup-worker
 ```
 
 ### Firewall Setup
