@@ -51,7 +51,7 @@ else
 endif
 
 # Docker images needed to run cello services
-DOCKER_IMAGES = baseimage mongo nginx operator-dashboard ansible-agent
+DOCKER_IMAGES = baseimage mongo nginx operator-dashboard ansible-agent user-dashboard
 DUMMY = .$(IMG_TAG)
 
 ifeq ($(DOCKER_BASE), )
@@ -104,6 +104,7 @@ build/docker/nginx/$(DUMMY): build/docker/nginx/$(DUMMY)
 build/docker/mongo/$(DUMMY): build/docker/mongo/$(DUMMY)
 build/docker/operator-dashboard/$(DUMMY): build/docker/operator-dashboard/$(DUMMY)
 build/docker/ansible-agent/$(DUMMY): build/docker/ansible-agent/$(DUMMY)
+build/docker/user-dashboard/$(DUMMY): build/docker/user-dashboard/$(DUMMY)
 
 build/docker/%/$(DUMMY): ##@Build an image locally
 	$(eval TARGET = ${patsubst build/docker/%/$(DUMMY),%,${@}})
