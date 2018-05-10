@@ -51,7 +51,7 @@ else
 endif
 
 # Docker images needed to run cello services
-DOCKER_IMAGES = baseimage mongo nginx operator-dashboard ansible-agent user-dashboard
+DOCKER_IMAGES = baseimage mongo nginx engine operator-dashboard ansible-agent watchdog user-dashboard
 DUMMY = .$(IMG_TAG)
 
 ifeq ($(DOCKER_BASE), )
@@ -102,8 +102,10 @@ all: check
 build/docker/baseimage/$(DUMMY): build/docker/baseimage/$(DUMMY)
 build/docker/nginx/$(DUMMY): build/docker/nginx/$(DUMMY)
 build/docker/mongo/$(DUMMY): build/docker/mongo/$(DUMMY)
+build/docker/engine/$(DUMMY): build/docker/engine/$(DUMMY)
 build/docker/operator-dashboard/$(DUMMY): build/docker/operator-dashboard/$(DUMMY)
 build/docker/ansible-agent/$(DUMMY): build/docker/ansible-agent/$(DUMMY)
+build/docker/watchdog/$(DUMMY): build/docker/watchdog/$(DUMMY)
 build/docker/user-dashboard/$(DUMMY): build/docker/user-dashboard/$(DUMMY)
 
 build/docker/%/$(DUMMY): ##@Build an image locally
@@ -132,7 +134,7 @@ docker: $(patsubst %,build/docker/%/$(DUMMY),$(DOCKER_IMAGES)) ##@Generate docke
 
 docker-operator-dashboard: build/docker/operator-dashboard/$(DUMMY)
 
-docker-clean: image-clean ##@Clean all existing images
+docker-clean: stop image-clean ##@Clean all existing images
 
 DOCKERHUB_IMAGES = baseimage engine mongo nginx operator-dashboard user-dashboard watchdog ansible-agent
 
