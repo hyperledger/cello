@@ -11,8 +11,9 @@ ARG uid=1000
 ARG gid=1000
 
 RUN apt-get update                                          && \
-    apt-get install -y bash curl python-dev sshpass            \
-    python-pip build-essential openssh-client               && \
+    apt-get install -y bash curl python-dev sshpass 	       \
+    python-pip build-essential openssh-client libffi-dev       \
+    libssl-dev						    && \
     pip install --upgrade pip ansible boto boto3 shade         \
     pyyaml openshift                                        && \
     groupadd -g ${gid} ${user}                              && \
