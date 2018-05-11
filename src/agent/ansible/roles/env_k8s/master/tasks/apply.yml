@@ -115,3 +115,11 @@
     - kube-apiserver
     - kube-controller-manager
     - kube-scheduler
+
+- name: Generate kubeconfig
+  template:
+    src: "{{ playbook_dir }}/../env_k8s/master/templates/kubeconfig.j2"
+    dest: "~/.kube/config"
+    mode: 0600
+  become: false
+  delegate_to: cloud

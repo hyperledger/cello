@@ -43,17 +43,14 @@
     - kubelet
     - kube-proxy
 
-- name: Setup kubeconfig for each node
-  template:
-    src: "{{ playbook_dir }}/../env_k8s/worker/templates/kubeconfig.j2"
-    dest: "~/.kube/config"
+- name: Copy kubeconfig for each node
+  copy:
+    src: "~/.kube/config"
+    dest: "{{ item }}"
     mode: 0600
-
-- name: Setup kubeconfig for each node
-  template:
-    src: "{{ playbook_dir }}/../env_k8s/worker/templates/kubeconfig.j2"
-    dest: "/etc/kubernetes/kubeconfig"
-    mode: 0600
+  with_items:
+    - ~/.kube/config
+    - /etc/kubernetes/kubeconfig
 
 - name: Check kubelet version
   command: "{{ fabricroot }}/bin/kubelet --version"
