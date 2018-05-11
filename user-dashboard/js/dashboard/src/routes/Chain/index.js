@@ -90,6 +90,7 @@ class Chain extends PureComponent {
     const {loading} = this.state;
     const { queryByBlockId:{queryByBlockId } } = this.props.chain;
     const { queryByTransactionId : {queryByTransactionId}} = this.props.chain
+    const currentChainId = localStorage.getItem(`${window.apikey}-chainId`);
     const cb = () => {
       console.log('expired callback')
     }
