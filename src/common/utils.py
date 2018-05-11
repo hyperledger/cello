@@ -63,8 +63,8 @@ ORDERER_SERVICE_PORTS = {
     'orderer': 7050
 }
 
-EXPLORER_PORT = {
-    'dashboard': 7060
+EXPLORER_PORTS = {
+    'explorer': 8080
 }
 
 SERVICE_PORTS = dict(list(PEER_SERVICE_PORTS.items()) +

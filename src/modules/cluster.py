@@ -26,7 +26,7 @@ from common import CLUSTER_PORT_START, CLUSTER_PORT_STEP, \
     WORKER_TYPES, WORKER_TYPE_DOCKER, WORKER_TYPE_SWARM, WORKER_TYPE_K8S, \
     WORKER_TYPE_VSPHERE, VMIP, \
     NETWORK_SIZE_FABRIC_PRE_V1, \
-    PEER_SERVICE_PORTS, EXPLORER_PORT, \
+    PEER_SERVICE_PORTS, EXPLORER_PORTS, \
     ORDERER_SERVICE_PORTS, \
     NETWORK_STATUS_CREATING, NETWORK_STATUS_RUNNING, NETWORK_STATUS_DELETING
 
@@ -155,7 +155,7 @@ class ClusterHandler(object):
             peer_num * (len(peer_service_ports.items())) + \
             ca_num * len(ca_service_ports.items()) + \
             len(ORDERER_SERVICE_PORTS.items()) + \
-            len(EXPLORER_PORT.items())
+            len(EXPLORER_PORTS.items())
         logger.debug("request port number {}".format(request_port_num))
 
         if start_port <= 0:  # need to dynamic find available ports
@@ -197,7 +197,7 @@ class ClusterHandler(object):
             orderer_ports[k] = ports[pos]
             logger.debug("pos={}".format(pos))
             pos += 1
-        for k, v in EXPLORER_PORT.items():  # exporer ports
+        for k, v in EXPLORER_PORTS.items():  # explorer ports
             explorer_ports[k] = ports[pos]
             pos += 1
 

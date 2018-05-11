@@ -251,7 +251,7 @@ services:
       - ${COMPOSE_PROJECT_PATH}/explorer-artifacts/config.json:/blockchain-explorer/config.json
       - ${COMPOSE_PROJECT_PATH}/crypto-config:/blockchain-explorer/first-network/crypto-config
     ports:
-      - "${DASHBOARD_PORT}:8080"
+      - "${EXPLORER_PORT}:8080"
     depends_on:
       - mysql
       - orderer.example.com
