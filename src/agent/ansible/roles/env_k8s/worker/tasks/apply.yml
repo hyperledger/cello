@@ -45,7 +45,7 @@
 
 - name: Copy kubeconfig for each node
   copy:
-    src: "~/.kube/config"
+    src: "{{ playbook_dir }}/../../vars/kubeconfig"
     dest: "{{ item }}"
     mode: 0600
   with_items:

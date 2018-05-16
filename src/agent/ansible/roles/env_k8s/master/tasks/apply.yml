@@ -116,10 +116,23 @@
     - kube-controller-manager
     - kube-scheduler
 
+- set_fact:
+    k8stokens: "{{ k8stokens | default([]) + [{'token': item.split(',')[0], 'name': item.split(',')[1]}] }}"
+  with_lines: cat "{{ playbook_dir }}/../../secrets/users/token.csv"
+  tags: "kubeconfig"
+
 - name: Generate kubeconfig
   template:
     src: "{{ playbook_dir }}/../env_k8s/master/templates/kubeconfig.j2"
-    dest: "~/.kube/config"
+    dest: "/etc/kubernetes/kubeconfig"
     mode: 0600
   become: false
-  delegate_to: cloud
+  tags: "kubeconfig"
+
+- name: Get the kubeconfig to the ansible controller
+  fetch:
+    src: "/etc/kubernetes/kubeconfig"
+    dest: "{{ playbook_dir }}/../../vars/kubeconfig"
+    flat: yes
+  become: false
+  tags: "kubeconfig"
