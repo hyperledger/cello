@@ -20,6 +20,7 @@
   with_items:
     - dnscontroller
     - dashboard
+    - pv
 
 - name: Label the master node
   command: >-
@@ -31,6 +32,17 @@
     {{ fabricroot }}/bin/kubectl --server={{ private_ip }}:8080 create secret generic
     kubernetes-dashboard-certs --from-file=/etc/kubernetes/secrets/certs -n kube-system
 
+- name: Ensure NFS directory exists
+  file:
+    path: /opt/k8spv
+    state: directory
+
+- name: Launch NFS server
+  command: >-
+    docker run -d --name nfs --privileged --net=host
+    -v /opt/k8spv:/nfsshare -e SHARED_DIRECTORY=/nfsshare
+    itsthenetwork/nfs-server-alpine:latest
+
 - name: Create addon services
   command: >-
     {{ fabricroot }}/bin/kubectl --server={{ private_ip }}:8080 apply
@@ -38,11 +50,11 @@
   with_items:
     - dnscontroller
     - dashboard
+    - pv
 
 # The following code setup a native docker nginx container to
 # proxy dns lookup to k8s dns services so that containers
 # created by docker containers can also use names
-
 - name: Upload nginx configuration file
   template:
     src: "{{ playbook_dir }}/../env_k8s/post/templates/nginx.j2"

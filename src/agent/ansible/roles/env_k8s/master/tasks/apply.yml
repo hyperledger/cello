@@ -125,8 +125,6 @@
   template:
     src: "{{ playbook_dir }}/../env_k8s/master/templates/kubeconfig.j2"
     dest: "/etc/kubernetes/kubeconfig"
-    mode: 0600
-  become: false
   tags: "kubeconfig"
 
 - name: Get the kubeconfig to the ansible controller

@@ -6,6 +6,10 @@
     service_path: "/lib/systemd/system/"
     fabricroot: "/opt/fabric"
 
+- name: Install nfs-common
+  apt:
+    name: nfs-common
+
 - name: Ensure binary directory exists
   file:
     path: "{{ item }}"
