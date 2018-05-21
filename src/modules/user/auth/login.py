@@ -23,6 +23,7 @@ logger.addHandler(log_handler)
 login_fields = {
     "success": fields.Boolean,
     "id": fields.String,
+    "role": fields.Integer,
     "next": fields.String,
     "error": fields.String
 }
@@ -57,8 +58,10 @@ class Login(Resource):
                 data = {
                     "success": True,
                     "id": user_id,
+                    "role": user.user_role,
                     "next": url_for('bp_index.show')
                 }
+
                 return data, 200
             else:
                 data = {
