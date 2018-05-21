@@ -52,6 +52,7 @@ class User(UserMixin):
         """
         return self.isAdmin
 
+    @property
     def user_role(self):
         """
         Get user role
@@ -92,6 +93,7 @@ class User(UserMixin):
                 self.isAdmin = db_user.isAdmin
                 self.balance = db_user.balance
                 self.dbUser = db_user
+                self.role = db_user.role
                 return self
             else:
                 return None

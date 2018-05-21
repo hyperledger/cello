@@ -12,37 +12,8 @@
 
 version: '2'
 services:
-  build-login:
-    build:
-      context: $ROOT_PATH/user-dashboard/js
-    image: build-login
+  build-dashboard-js:
+    image: hyperledger/cello-user-dashboard
     volumes:
-      - $ROOT_PATH/user-dashboard/js:/app
-      - $ROOT_PATH/user-dashboard:/usr/app/src
-    command: bash -c "cd /app && mv /node_modules . && npm run build && rm -rf node_modules"
-
-  build-home:
-    build:
-      context: $ROOT_PATH/user-dashboard/js/home
-    image: build-home
-    volumes:
-      - $ROOT_PATH/user-dashboard/js:/app
-      - $ROOT_PATH/user-dashboard:/usr/app/src
-    command: bash -c "cd /app/home && mv /node_modules . && npm run build && rm -rf node_modules"
-
-  build-dashboard:
-    build:
-      context: $ROOT_PATH/user-dashboard/js/dashboard
-    image: build-dashboard
-    volumes:
-      - $ROOT_PATH/user-dashboard/js:/app
-      - $ROOT_PATH/user-dashboard:/usr/app/src
-    command: bash -c "cd /app/dashboard && mv /node_modules . && npm run build && rm -rf node_modules"
-
-  build-web-service:
-    build:
-      context: $ROOT_PATH/user-dashboard
-    image: cello-user-dashboard
-    volumes:
-      - $ROOT_PATH/user-dashboard:/usr/app/src
-    command: bash -c "cd /usr/app/src && mv /node_modules . && npm run build && rm -rf node_modules"
+      - $ROOT_PATH/user-dashboard/src:/var/www
+    command: bash -c "ln -sf /node_modules . && npm run build"

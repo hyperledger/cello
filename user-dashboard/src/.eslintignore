@@ -1,0 +1,4 @@
+app/assets/src/index.js
+app/assets/src/utils/notification.js
+app/assets/src/themes/carbon.js
+coverage/**

@@ -71,23 +71,21 @@ services:
     ports:
       - "8081:8080"
     environment:
-      - SV_BaseURL=http://operator-dashboard:8080/api/
-      - RESTful_Server=operator-dashboard:8080
-      - RESTful_BaseURL=/api/
+      - RESTFUL_SERVER=operator-dashboard:8080
       - DEBUG=node:*
       - DEV=$DEV
+      - LOG_LEVEL=$LOG_LEVEL
       - ENABLE_EMAIL_ACTIVE=$ENABLE_EMAIL_ACTIVE
       - SMTP_SERVER=$SMTP_SERVER
       - SMTP_PORT=$SMTP_PORT
       - SMTP_AUTH_USERNAME=$SMTP_AUTH_USERNAME
       - SMTP_AUTH_PASSWORD=$SMTP_AUTH_PASSWORD
       - FROM_EMAIL=$FROM_EMAIL
-      - WEBROOT=$WEBROOT
+      - WEBROOT=$USER_DASHBOARD_WEBROOT
       - FABRIC_CFG_PATH=/etc/hyperledger/fabric
     volumes:
-      - ./user-dashboard:/usr/app/src
+      - ./user-dashboard/src:/var/www
       - /opt/cello/baas:/opt/data
-    command: bash -c "cd /usr/app/src && [ "$DEV" = True ] && npm run dev || npm start"
 
   # cello engine service
   engine:

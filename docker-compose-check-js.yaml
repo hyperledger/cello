@@ -8,7 +8,14 @@ services:
   check-js:
     build:
       context: $ROOT_PATH/src/static
-      dockerfile: $ROOT_PATH/src/static/Dockerfile-check-js
+      dockerfile: Dockerfile-check-js
     volumes:
       - ./src/static:/var/www
     command: bash -c "ln -sf /node_modules /var/www/dashboard/node_modules && cd /var/www/dashboard && npm run lint && rm -rf node_modules"
+
+  check-user-dashboard:
+    build:
+      context: $ROOT_PATH/user-dashboard
+      dockerfile: Dockerfile-check-js
+    volumes:
+      - ./user-dashboard/src:/var/www
