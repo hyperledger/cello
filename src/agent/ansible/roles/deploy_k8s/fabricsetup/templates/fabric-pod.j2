@@ -2,7 +2,7 @@
 #
 # Example usage: kubectl create -f <this_file>
 
-{% for zookeeper in zookeepers %}
+{% for zookeeper in zookeeperls %}
 ---
 apiVersion: v1
 kind: Pod
@@ -11,11 +11,10 @@ metadata:
   labels:
     k8s-app: {{ zookeeper }}
 spec:
-  nodeName: {{ inter_name }}
   restartPolicy: Always
   containers:
     - name: {{ zookeeper }}
-      image: {{ fabric.repo.url }}fabric-zookeeper:{{ helpertag }}
+      image: {{ fabric.repo.url }}fabric-zookeeper:{{ fabric.helper_tag }}
       imagePullPolicy: IfNotPresent
       env:
         - { name: "ZOO_MY_ID", value: "{{ zoo_ids[zookeeper] }}" }
@@ -40,7 +39,7 @@ spec:
     - { name: "port3", port: 2181 }
 {% endfor %}
 
-{% for kafka in kafkas %}
+{% for kafka in kafkals %}
 ---
 apiVersion: v1
 kind: Pod
@@ -49,11 +48,10 @@ metadata:
   labels:
     k8s-app: {{ kafka }}
 spec:
-  nodeName: {{ inter_name }}
   restartPolicy: Always
   containers:
     - name: {{ kafka }}
-      image: {{ fabric.repo.url }}fabric-kafka:{{ helpertag }}
+      image: {{ fabric.repo.url }}fabric-kafka:{{ fabric.helper_tag }}
       imagePullPolicy: IfNotPresent
       env:
         - { name: "KAFKA_MESSAGE_MAX_BYTES", value: "103809024" }
@@ -79,7 +77,7 @@ spec:
     - { name: "port2", port: 9093 }
 {% endfor %}
 
-{% for ca in cas %}
+{% for ca in allcas %}
 ---
 apiVersion: v1
 kind: Pod
@@ -88,28 +86,27 @@ metadata:
   labels:
     k8s-app: {{ ca.name }}
 spec:
-  nodeName: {{ inter_name }}
   restartPolicy: Always
   volumes:
-    - name: keyfiles
-      hostPath:
-        path: {{ fabricworkdir }}/run/keyfiles/{{ ca.org }}
+    - name: task-pv-storage
+      persistentVolumeClaim:
+        claimName: fabriccerts
   containers:
     - name: {{ ca.name }}
-      image: {{ fabric.repo.url }}fabric-ca:{{ fabric.ca.image_tag | default(thetag) }}
+      image: {{ fabric.repo.url }}fabric-ca:{{ fabric.ca.image_tag }}
       imagePullPolicy: IfNotPresent
       env:
-        - { name: "FABRIC_CA_HOME", value: "/etc/hyperledger/fabric-ca-server-config/ca" }
+        - { name: "FABRIC_CA_HOME", value: "/etc/hyperledger/fabric-ca-server-config//keyfiles/{{ ca.org }}/ca" }
         - { name: "FABRIC_CA_SERVER_CA_NAME", value: "{{ ca.name}}" }
-        - { name: "FABRIC_CA_SERVER_CA_KEYFILE", value: "/etc/hyperledger/fabric-ca-server-config/ca/ca_private.key" }
-        - { name: "FABRIC_CA_SERVER_CA_CERTFILE", value: "/etc/hyperledger/fabric-ca-server-config/ca/ca.{{ ca.org }}-cert.pem" }
+        - { name: "FABRIC_CA_SERVER_CA_KEYFILE", value: "/etc/hyperledger/fabric-ca-server-config/keyfiles/{{ ca.org }}/ca/ca_private.key" }
+        - { name: "FABRIC_CA_SERVER_CA_CERTFILE", value: "/etc/hyperledger/fabric-ca-server-config/keyfiles/{{ ca.org }}/ca/ca.{{ ca.org }}-cert.pem" }
 {% if fabric.tls %}
         - { name: "FABRIC_CA_SERVER_TLS_ENABLED", value: "true" }
-        - { name: "FABRIC_CA_SERVER_TLS_KEYFILE", value: "/etc/hyperledger/fabric-ca-server-config/tlsca/tlsca_private.key" }
-        - { name: "FABRIC_CA_SERVER_TLS_CERTFILE", value: "/etc/hyperledger/fabric-ca-server-config/tlsca/tlsca.{{ ca.org }}-cert.pem" }
+        - { name: "FABRIC_CA_SERVER_TLS_KEYFILE", value: "/etc/hyperledger/fabric-ca-server-config/keyfiles/{{ ca.org }}/tlsca/tlsca_private.key" }
+        - { name: "FABRIC_CA_SERVER_TLS_CERTFILE", value: "/etc/hyperledger/fabric-ca-server-config/keyfiles/{{ ca.org }}/tlsca/tlsca.{{ ca.org }}-cert.pem" }
 {% endif %}
       volumeMounts:
-        - { mountPath: "/etc/hyperledger/fabric-ca-server-config", name: "keyfiles" }
+        - { mountPath: "/etc/hyperledger/fabric-ca-server-config", name: "task-pv-storage" }
       command: ["fabric-ca-server"]
       args:  ["start", "-b", "{{ fabric.ca.admin }}:{{ fabric.ca.adminpw }}", "-d"]
 ---
@@ -128,7 +125,7 @@ spec:
 
 {% endfor %}
 
-{% for peer in peers %}
+{% for peer in allpeers %}
 ---
 apiVersion: v1
 kind: Pod
@@ -137,33 +134,30 @@ metadata:
   labels:
     k8s-app: {{ peer.name }}
 spec:
-  nodeName: {{ inter_name }}
   restartPolicy: Always
   volumes:
     - name: varrun
       hostPath:
         path: /var/run
-    - name: keyfiles
-      hostPath:
-        path: {{ fabricworkdir }}/run/keyfiles
-    - name: peerorg
-      hostPath:
-        path: {{ fabricworkdir }}/run/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}
+    - name: task-pv-storage
+      persistentVolumeClaim:
+        claimName: fabriccerts
   containers:
 {% if fabric.peer_db == 'CouchDB' %}
     - name: couchdb-{{ peer.name }}
-      image: {{ fabric.repo.url }}fabric-couchdb:{{ helpertag }}
+      image: {{ fabric.repo.url }}fabric-couchdb:{{ fabric.helper_tag }}
       imagePullPolicy: IfNotPresent
       securityContext:
         privileged: true
 {% endif %}
     - name: {{ peer.name }}
-      image: {{ fabric.repo.url }}fabric-peer:{{ thetag }}
+      image: {{ fabric.repo.url }}fabric-peer:{{ fabric.baseimage_tag }}
       imagePullPolicy: IfNotPresent
       securityContext:
         privileged: true
       env:
         - { name: "CORE_VM_ENDPOINT", value: "unix:///host/var/run/docker.sock" }
+        - { name: "FABRIC_CFG_PATH", value: "/etc/hyperledger/fabric/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}" }
         - { name: "CORE_LOGGING_LEVEL", value: "DEBUG" }
         - { name: "CORE_PEER_ENDORSER_ENABLED", value: "true" }
         - { name: "CORE_PEER_GOSSIP_USELEADERELECTION",
@@ -172,9 +166,9 @@ spec:
         - { name: "CORE_PEER_PROFILE_ENABLED", value: "true" }
         - { name: "CORE_PEER_TLS_ENABLED", value: "{{ fabric.tls | lower }}" }
 {% if fabric.tls %}
-        - { name: "CORE_PEER_TLS_CERT_FILE", value: "/etc/hyperledger/fabric/tls/server.crt" }
-        - { name: "CORE_PEER_TLS_KEY_FILE", value: "/etc/hyperledger/fabric/tls/server.key" }
-        - { name: "CORE_PEER_TLS_ROOTCERT_FILE", value: "/etc/hyperledger/fabric/tls/ca.crt" }
+        - { name: "CORE_PEER_TLS_CERT_FILE", value: "/etc/hyperledger/fabric/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}/tls/server.crt" }
+        - { name: "CORE_PEER_TLS_KEY_FILE", value: "/etc/hyperledger/fabric/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}/tls/server.key" }
+        - { name: "CORE_PEER_TLS_ROOTCERT_FILE", value: "/etc/hyperledger/fabric/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}/tls/ca.crt" }
 {% endif %}
         - { name: "CORE_PEER_ID", value: "{{ peer.name }}" }
         - { name: "CORE_PEER_GOSSIP_EXTERNALENDPOINT", value: "{{ peer.name }}:7051" }
@@ -182,15 +176,14 @@ spec:
         - { name: "CORE_PEER_LISTENADDRESS", value: "{{ peer.name }}:7051" }
         - { name: "CORE_PEER_CHAINCODELISTENADDRESS", value: "{{ peer.name }}:7052" }
         - { name: "CORE_PEER_LOCALMSPID", value: "{{ peer.org }}" }
-        - { name: "CORE_PEER_MSPCONFIGPATH", value: "/etc/hyperledger/fabric/msp" }
+        - { name: "CORE_PEER_MSPCONFIGPATH", value: "/etc/hyperledger/fabric/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}/msp" }
 {% if fabric.peer_db == 'CouchDB' %}
         - { name: "CORE_LEDGER_STATE_STATEDATABASE", value: "CouchDB" }
         - { name: "CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS", value: "localhost:5984" }
 {% endif %}
       volumeMounts:
         - { mountPath: "/host/var/run", name: "varrun" }
-        - { mountPath: "/etc/hyperledger/fabric", name: "peerorg" }
-        - { mountPath: "/etc/hyperledger/allorgs", name: "keyfiles" }
+        - { mountPath: "/etc/hyperledger/fabric", name: "task-pv-storage" }
       command: ["peer"]
       args: ["node", "start"]
 ---
@@ -210,7 +203,7 @@ spec:
     port: 7052
 {% endfor %}
 
-{% for orderer in orderers %}
+{% for orderer in allorderers %}
 ---
 apiVersion: v1
 kind: Pod
@@ -219,39 +212,34 @@ metadata:
   labels:
     k8s-app: {{ orderer.name }}
 spec:
-  nodeName: {{ inter_name }}
   restartPolicy: Always
   volumes:
-    - name: keyfiles
-      hostPath:
-        path: {{ fabricworkdir }}/run/keyfiles
-    - name: ordererorg
-      hostPath:
-        path: {{ fabricworkdir }}/run/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}
+    - name: task-pv-storage
+      persistentVolumeClaim:
+        claimName: fabriccerts
   containers:
     - name: {{ orderer.name }}
-      image: {{ fabric.repo.url }}fabric-orderer:{{ thetag }}
+      image: {{ fabric.repo.url }}fabric-orderer:{{ fabric.baseimage_tag }}
       imagePullPolicy: IfNotPresent
       env:
         - { name: "ORDERER_GENERAL_LOGLEVEL", value: "debug" }
         - { name: "ORDERER_GENERAL_LISTENADDRESS", value: "0.0.0.0" }
         - { name: "ORDERER_GENERAL_GENESISMETHOD", value: "file" }
-        - { name: "ORDERER_GENERAL_GENESISFILE", value: "/var/hyperledger/allorgs/genesis.block" }
+        - { name: "ORDERER_GENERAL_GENESISFILE", value: "/var/hyperledger/orderer/keyfiles/genesis.block" }
         - { name: "ORDERER_GENERAL_LOCALMSPID", value: "{{ orderer.org }}" }
-        - { name: "ORDERER_GENERAL_LOCALMSPDIR", value: "/var/hyperledger/orderer/msp" }
+        - { name: "ORDERER_GENERAL_LOCALMSPDIR", value: "/var/hyperledger/orderer/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}/msp" }
         - { name: "ORDERER_GENERAL_TLS_CLIENTAUTHENABLED", value: "false" }
         - { name: "ORDERER_GENERAL_TLS_ENABLED", value: "{{ fabric.tls | lower }}" }
 {% if fabric.tls %}
-        - { name: "ORDERER_GENERAL_TLS_PRIVATEKEY", value: "/var/hyperledger/orderer/tls/server.key" }
-        - { name: "ORDERER_GENERAL_TLS_CERTIFICATE", value: "/var/hyperledger/orderer/tls/server.crt" }
-        - { name: "ORDERER_GENERAL_TLS_ROOTCAS", value: "[/var/hyperledger/orderer/tls/ca.crt]" }
+        - { name: "ORDERER_GENERAL_TLS_PRIVATEKEY", value: "/var/hyperledger/orderer/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}/tls/server.key" }
+        - { name: "ORDERER_GENERAL_TLS_CERTIFICATE", value: "/var/hyperledger/orderer/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}/tls/server.crt" }
+        - { name: "ORDERER_GENERAL_TLS_ROOTCAS", value: "[/var/hyperledger/orderer/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}/tls/ca.crt]" }
 {% endif %}
         - { name: "ORDERER_KAFKA_RETRY_SHORTINTERVAL", value: "1s" }
         - { name: "ORDERER_KAFKA_RETRY_SHORTTOTAL", value: "30s" }
         - { name: "ORDERER_KAFKA_VERBOSE", value: "true" }
       volumeMounts:
-        - { mountPath: "/var/hyperledger/allorgs", name: "keyfiles" }
-        - { mountPath: "/var/hyperledger/orderer", name: "ordererorg" }
+        - { mountPath: "/var/hyperledger/orderer", name: "task-pv-storage" }
       command: ["orderer"]
 ---
 kind: Service

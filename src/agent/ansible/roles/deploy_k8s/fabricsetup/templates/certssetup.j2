@@ -1,0 +1,19 @@
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  name: fabriccertspod
+spec:
+  volumes:
+    - name: task-pv-storage
+      persistentVolumeClaim:
+       claimName: fabriccerts
+  containers:
+    - name: task-pv-container
+      image: busybox
+      args:
+        - sleep
+        - "3000"
+      volumeMounts:
+        - mountPath: "/fabriccerts"
+          name: task-pv-storage

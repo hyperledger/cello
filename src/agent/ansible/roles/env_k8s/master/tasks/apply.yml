@@ -132,5 +132,4 @@
     src: "/etc/kubernetes/kubeconfig"
     dest: "{{ playbook_dir }}/../../vars/kubeconfig"
     flat: yes
-  become: false
   tags: "kubeconfig"

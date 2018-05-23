@@ -1,4 +1,5 @@
 ---
+{% set project_version = fabric.baseimage_tag %}
 {% if allorgs | length > 0 %}
 Organizations:
 {% for org in allorgs %}

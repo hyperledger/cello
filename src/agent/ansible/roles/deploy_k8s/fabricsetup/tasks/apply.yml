@@ -1,8 +1,8 @@
 ---
 - name: Setup and initialize variables
   set_fact:
-    current_host: "{{ hostvars[inventory_hostname].inter_name }}"
     fabricworkdir: "/opt/gopath/{{ env }}/fabric"
+    fabricpath: "/opt/gopath/{{ env }}/src/github.com/hyperledger/fabric"
     gopath: "/opt/gopath/{{ env }}"
     peers: "{{ [] }}"
     orderers: "{{ [] }}"
@@ -23,7 +23,6 @@
     allpeers: "{{ [] }}"
     clihost: ""
     filterstr: ""
-    k8s_server: "{{ hostvars[groups['allnodes'][0]].private_ip }}"
 
 - name: Make sure that working directory exists and clean
   file:
@@ -88,171 +87,127 @@
         'name':item | replace('.', '-') }] }}
   with_items: "{{ ordererls }}"
 
-- name: Get peer container list
-  set_fact:
-    peers: |
-      {{ peers + [{'org':item.split('@')[1].split('.')[-1],
-        'name':item.split('@')[1] | replace('.', '-'),
-        'role':item.split('@')[0]}] }}
-  with_items: "{{ fabric.network[current_host].peers | default([]) }}"
-
-- name: Get ca container list
-  set_fact:
-    cas: |
-      {{ cas + [{'org':item.split('.')[-1],
-        'name':item | replace('.', '-') }] }}
-  with_items: "{{ fabric.network[current_host].cas | default([]) }}"
-
-- name: Get orderer container list
-  set_fact:
-    orderers: |
-      {{ orderers + [{'org':item.split('.')[-1],
-        'name':item | replace('.', '-') }] }}
-  with_items: "{{ fabric.network[current_host].orderers | default([]) }}"
-
-- name: Set zookeeper and kafka container list
-  set_fact:
-    zookeepers: "{{ fabric.network[current_host].zookeepers | default([]) }}"
-    kafkas: "{{ fabric.network[current_host].kafkas | default([]) }}"
-
-- name: Pull certificates from the builder machine
+- name: Query k8s storage class
   command: >-
-    scp -i "/opt/gopath/id_rsa" -r -o "StrictHostKeyChecking no" "{{ fabric.
-    ssh_user }}@{{ hostvars[groups['builders'][0]].private_ip }}:{{ fabricworkdir }}/certs.tgz"
-    "{{ fabricworkdir }}/allcerts.tgz"
+    ./kubectl --kubeconfig kubeconfig get storageclass
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+  register: classes
 
-- name: Pull container images from the builder machine
-  command: >-
-    scp -i "/opt/gopath/id_rsa" -r -o "StrictHostKeyChecking no" "{{ fabric.
-    ssh_user }}@{{ hostvars[groups['builders'][0]].private_ip }}:{{ fabricworkdir }}/images/fabricimages.tar"
-    "{{ fabricworkdir }}/fabricimages.tar"
-  when: fabric.baseimage_tag == '' and inventory_hostname not in groups['builders']
-
-- name: Pull container version file from the build machine
-  command: >-
-    scp -i "/opt/gopath/id_rsa" -r -o "StrictHostKeyChecking no" "{{ fabric.
-    ssh_user }}@{{ hostvars[groups['builders'][0]].private_ip }}:{{ fabricworkdir }}/images/VERSION"
-    "{{ fabricworkdir }}/VERSION"
-
-- stat:
-    path: "{{ fabricworkdir }}/fabricimages.tar"
-  register: imagepack
-
-- name: Load all the docker images created by build machine
-  shell: >-
-    docker load -i {{ fabricworkdir }}/fabricimages.tar
-  when: imagepack.stat.exists == true and inventory_hostname not in groups['builders']
-
-- name: Find out the image tags
-  slurp:
-    src: "{{ fabricworkdir }}/VERSION"
-  register: imagetag
-
-- name: Set image tag from the file
+- name: Set storage class
   set_fact:
-    thetag: "{{ imagetag['content'] | b64decode }}"
-    helpertag: "{{ fabric.helper_tag }}"
+    storageclass: "{{ (classes.stderr.find('No resources found') >= 0) | ternary('', 'default') }}"
 
-- name: Unpack the certificates
-  unarchive:
-    src: "{{ fabricworkdir }}/allcerts.tgz"
-    dest: "{{ fabricworkdir }}/run"
-    remote_src: true
-
-- name: Process private key files
+- name: Create deployment files for certssetup and pvc
   template:
-    src: "{{ playbook_dir }}/../deploy_k8s/fabricsetup/templates/fabric-ca-server-config.j2"
-    dest: "{{ fabricworkdir }}/run/keyfiles/{{ item.org }}/ca/fabric-ca-server-config.yaml"
-  with_items: "{{ cas }}"
+    src: "{{ playbook_dir }}/../deploy_k8s/fabricsetup/templates/{{ item }}.j2"
+    dest: "{{ playbook_dir }}/../../run/{{ item }}.yaml"
+  with_items:
+    - pvc
+    - certssetup
 
-- name: Get the peer org list
+- name: Create persistent volume
+  command: >-
+    ./kubectl --kubeconfig kubeconfig apply -f ../run/pvc.yaml
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+  tags: "createpvc"
+
+- name: Query PVC status
+  command: >-
+    ./kubectl --kubeconfig kubeconfig get -o=custom-columns=STATUS:.status.phase
+    pvc fabriccerts
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+  register: pvcstatus
+  until: pvcstatus.stdout.find("Bound") >= 0
+  retries: 5
+  delay: 10
+  tags: "querypvc"
+
+- name: Create certs volume initialization pod
+  command: >-
+    ./kubectl --kubeconfig kubeconfig apply -f ../run/certssetup.yaml
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+  tags: "createcertspod"
+
+- name: Query initialization container status
+  command: >-
+    ./kubectl --kubeconfig kubeconfig get -o=custom-columns=STATUS:.status.phase
+    pod fabriccertspod
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+  register: pvcstatus
+  until: pvcstatus.stdout.find("Running") >= 0
+  retries: 5
+  delay: 10
+  tags: "querypvc"
+
+- name: Set peer and orderer to run peer channel create command
   set_fact:
-    peerorgs: "{{ peers | map(attribute='org') | list  | unique | sort }}"
+    clipeer: "{{ allpeers | random }}"
+    cliorderer: "{{ allorderers | random }}"
+  when: peerls | length > 0
 
 - name: Get all peer orgs
   set_fact:
-    orgmembers: "{{ peers | map(attribute='org') | list  | unique | sort | join(\".member' '\") | trim | replace(' ', ',') }}"
-
-- name: Create k8s deployment files
-  template:
-    src: "{{ playbook_dir }}/../deploy_k8s/fabricsetup/templates/fabric-pod.j2"
-    dest: "{{ fabricworkdir }}/run/fabric-pod.yml"
-
-- name: Get pod filter string from peers and orderes
-  set_fact:
-    filterstr : "{{ filterstr + ' -e k8s_' + item.name }}"
-  with_items:
-    - "{{ peers }}"
-    - "{{ orderers }}"
-
-- name: Get pod filter string from zookeepers and kafkas
-  set_fact:
-    filterstr : "{{ filterstr + ' -e k8s_' + item }}"
-  with_items:
-    - "{{ zookeepers }}"
-    - "{{ kafkas }}"
-    - "fabriccli"
-
-- name: Pull necessary container images from the docker hub
-  command: "docker pull {{ fabric.repo.url }}{{ item.name }}"
-  when: item.flag | length > 0 and fabric.baseimage_tag | length > 0
-  with_items:
-    - { name: "fabric-ca:{{ fabric.ca.image_tag | default(thetag) }}", flag: "{{ cas }}" }
-    - { name: "fabric-zookeeper:{{ helpertag }}", flag: "{{ zookeepers }}" }
-    - { name: "fabric-kafka:{{ helpertag }}", flag: "{{ kafkas }}" }
-    - { name: "fabric-couchdb:{{ helpertag }}", flag: "{{ peers }}" }
-    - { name: "fabric-orderer:{{ thetag }}", flag: "{{ orderers }}" }
-    - { name: "fabric-peer:{{ thetag }}", flag: "{{ peers }}" }
-    - { name: "fabric-ccenv:{{ thetag }}", flag: "{{ peers }}" }
-    - { name: "fabric-tools:{{ thetag }}", flag: "tools" }
-  tags: "pullimages"
-
-- name: Start fabric pods
-  command: "/opt/fabric/bin/kubectl --server {{ k8s_server }}:8080 create -f {{ fabricworkdir }}/run/fabric-pod.yml"
-  tags: "fabricup"
-
-- name: Locate a host to run peer channel create command
-  set_fact:
-    clihost: "{{ item }}"
-    clipeer: "{{ allpeers | random }}"
-    cliorderer: "{{ allorderers | random }}"
-  when: peers | length > 0 and clihost == ""
-  with_items: "{{ groups['allnodes'] }}"
-
-- name: Make sure that working directory exists and clean
-  file:
-    path: "{{ fabricworkdir }}/run/keyfiles/chaincode"
-    state: "directory"
-    mode: 0775
-  when: clihost == inventory_hostname
-
-- name: Move chaincode to the server
-  copy:
-    src: "{{ playbook_dir }}/../deploy_k8s/fabricsetup/templates/firstcode.go"
-    dest: "{{ fabricworkdir }}/run/keyfiles/chaincode/firstcode.go"
-    mode: "u=rw,g=rw"
-  when: clihost == inventory_hostname
+    orgmembers: "{{ allpeers | map(attribute='org') | list  | unique | sort | join(\".member' '\") | trim | replace(' ', ',') }}"
 
 - name: Create peer channel command script
   template:
     src: "{{ playbook_dir }}/../deploy_k8s/fabricsetup/templates/dochannel.j2"
-    dest: "{{ fabricworkdir }}/run/keyfiles/dochannel.sh"
+    dest: "{{ fabricworkdir }}/keyfiles/dochannel.sh"
     mode: "u=rx,g=rx"
-  when: clihost == inventory_hostname
+
+- name: Copy certs onto the persistent volume
+  command: >-
+    ./kubectl --kubeconfig kubeconfig cp {{ item }} fabriccertspod:/fabriccerts
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+  with_items:
+    - "{{ fabricworkdir }}/certs.tgz"
+    - "{{ fabricworkdir }}/keyfiles/dochannel.sh"
+    - "{{ playbook_dir }}/../deploy_k8s/fabricsetup/templates/firstcode.go"
+  tags: "placecerts"
+
+- name: Untar certs.tgz in the Persistent volume
+  command: >-
+    ./kubectl --kubeconfig kubeconfig exec fabriccertspod -c task-pv-container
+    -- tar -C /fabriccerts -xzvf /fabriccerts/certs.tgz
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+  tags: "untarcerts"
+
+- name: Removing the certs pod
+  command: >-
+    ./kubectl --kubeconfig kubeconfig delete -f ../run/certssetup.yaml
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+  tags: "deletecertspod"
+
+- name: Create k8s deployment files
+  template:
+    src: "{{ playbook_dir }}/../deploy_k8s/fabricsetup/templates/fabric-pod.j2"
+    dest: "{{ playbook_dir }}/../../vars/fabric-pod.yml"
+
+- name: Start fabric pods
+  command: "./kubectl --kubeconfig='kubeconfig' apply -f fabric-pod.yml"
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+  tags: "fabricup"
 
 - name: Create peer channel command k8s deployment file
   template:
     src: "{{ playbook_dir }}/../deploy_k8s/fabricsetup/templates/cli-k8s.j2"
-    dest: "{{ fabricworkdir }}/run/cli-k8s.yml"
-  when: clihost == inventory_hostname
+    dest: "{{ playbook_dir }}/../../vars/cli-k8s.yml"
 
 - name: Wait for containers to be ready
   pause:
     seconds: 30
 
 - name: Start fabriccli pod
-  command: >-
-    /opt/fabric/bin/kubectl --server {{ k8s_server }}:8080 create
-    -f {{ fabricworkdir }}/run/cli-k8s.yml
-  when: clihost == inventory_hostname
+  command: "./kubectl --kubeconfig='kubeconfig' apply -f cli-k8s.yml"
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
   tags: "cliup"

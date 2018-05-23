@@ -6,21 +6,17 @@ metadata:
   labels:
     k8s-app: fabriccli
 spec:
-  nodeName: {{ inter_name }}
   restartPolicy: OnFailure
   volumes:
     - name: varrun
       hostPath:
         path: /var/run
-    - name: keyfiles
-      hostPath:
-        path: {{ fabricworkdir }}/run/keyfiles
-    - name: chaincode
-      hostPath:
-        path: {{ fabricworkdir }}/run/keyfiles/chaincode
+    - name: task-pv-storage
+      persistentVolumeClaim:
+        claimName: fabriccerts
   containers:
     - name: fabriccli
-      image: {{ fabric.repo.url }}fabric-tools:{{ thetag }}
+      image: {{ fabric.repo.url }}fabric-tools:{{ fabric.baseimage_tag }}
       imagePullPolicy: IfNotPresent
       securityContext:
         privileged: true
@@ -32,8 +28,6 @@ spec:
       volumeMounts:
         - mountPath: /host/var/run
           name: varrun
-        - mountPath: /opt/gopath/src/chaincode
-          name: chaincode
         - mountPath: /etc/hyperledger/allorgs
-          name: keyfiles
+          name: task-pv-storage
       command: ["/etc/hyperledger/allorgs/dochannel.sh"]
