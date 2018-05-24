@@ -6,7 +6,7 @@
     gopath: "/opt/gopath/{{ env }}"
     localhome: "/home/{{ fabric.ssh_user }}/.composer"
     alladmin: ""
-    networkname: "empty-business-network"
+    networkname: "{{ lookup('env', 'NETWORKNAME') | default('') }}"
 
 - name: Process networkname
   set_fact:

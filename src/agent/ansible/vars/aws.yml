@@ -3,10 +3,10 @@
 auth: {
   auth_url: "",
   # This should be your AWS Access Key ID
-  username: "AKIAJFT6SYHKGRUDMUQA",
+  username: "AKIAJY32VWHYOFOR4J7Q",
   # This should be your AWS Secret Access Key
   # can be passed as part of cmd line when running the playbook
-  password: "1BthJays0nLzbCwGPDn4rl+W0U1C1tTRAmYnrZU4"
+  password: "{{ password | default(lookup('env', 'AWS_SECRET_KEY')) }}"
 }
 
 # These variable defines AWS cloud provision attributes
