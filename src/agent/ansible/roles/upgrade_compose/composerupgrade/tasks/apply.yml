@@ -29,6 +29,22 @@
   with_items: "{{ peerorgs }}"
   tags: "generatealladmin"
 
+- name: Upload bna file
+  copy:
+    src: "{{ item }}"
+    dest: "{{ fabricworkdir }}/run/keyfiles/"
+  with_fileglob:
+      - "{{ playbook_dir }}/../../secrets/networks/*.bna"
+  tags: "uploadbna"
+
+- name: Upload bna file again
+  copy:
+    src: "{{ item }}"
+    dest: "{{ fabricworkdir }}/keyfiles/"
+  with_fileglob:
+      - "{{ playbook_dir }}/../../secrets/networks/*.bna"
+  tags: "uploadbna2"
+
 - name: Install new bna on network
   command: >-
     docker run -v {{ localhome }}:/home/composer/.composer
