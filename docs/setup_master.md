@@ -117,8 +117,9 @@ Please keep it safe by backups or using more high-available solutions.
 
 In MacOS, Docker cannot mount local path from host by default. Hence for mongo container data volume, users need to:
 
-* Make sure the `/opt/cello` path exists locally, and it is writable for the current user account. Simply just run `make setup-master`.
-* Add the path to `File Sharing` list in the preference of [Docker for MacOS](https://docs.docker.com/docker-for-mac/install/), to make it mountable by container.
+* Make sure `/opt/cello` exists locally and is writable for the current user: `sudo mkdir -p /opt/cello && sudo chown -R <your-user> /opt/cello`
+* Add the path `/opt/cello` to `File Sharing` list in the preference of [Docker for MacOS](https://docs.docker.com/docker-for-mac/install/), to make it mountable by container.
+* Make sure the command `envsubst` is available (it's part of the `gettext` package). If it's missing, it can be installed using `brew install gettext && brew link --force gettext`
 
 ## More Commands using make
 
