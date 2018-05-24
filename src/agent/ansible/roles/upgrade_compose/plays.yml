@@ -8,3 +8,4 @@
   tasks:
     - include_tasks: "composerupgrade/tasks/apply.yml"
   tags: "deploybna"
+  
