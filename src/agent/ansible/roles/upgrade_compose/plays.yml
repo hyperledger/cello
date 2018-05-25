@@ -1,0 +1,11 @@
+---
+- name: update bna and deploy
+  hosts: builders
+  gather_facts: true
+  user: "{{ fabric.ssh_user }}"
+  vars_files:
+    - "./../../vars/{{ env }}.yml"
+  tasks:
+    - include_tasks: "composerupgrade/tasks/apply.yml"
+  tags: "deploybna"
+  

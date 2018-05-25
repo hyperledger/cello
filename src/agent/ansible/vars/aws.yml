@@ -23,8 +23,8 @@ cluster: {
   validate_certs: True,
   private_net_name: "demonet",
 
-  public_key_file: "/home/ubuntu/.ssh/fd.pub",
-  private_key_file: "/home/ubuntu/.ssh/fd",
+  public_key_file: "/opt/agent/vars/fd.pub",
+  private_key_file: "/opt/agent/vars/fd",
   ssh_key_name: "fabric",
   # This variable indicate what IP should be used, only valid values are
   # private_ip or public_ip
