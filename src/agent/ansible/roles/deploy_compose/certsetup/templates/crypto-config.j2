@@ -1,4 +1,5 @@
 ---
+{% set project_version = fabric.baseimage_tag %}
 {% if orderers | length > 0 %}
 OrdererOrgs:
 {% for org in ordererorgs %}
@@ -19,6 +20,9 @@ PeerOrgs:
 {% for org in peerorgs %}
   - Name: {{ org }}
     Domain: {{ org }}
+{% if project_version | version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+    EnableNodeOUs: true
+{% endif %}
     Specs:
 {%   for item in peers %}
 {%     if item.org == org %}

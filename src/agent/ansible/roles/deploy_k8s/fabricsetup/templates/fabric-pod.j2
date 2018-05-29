@@ -2,6 +2,11 @@
 #
 # Example usage: kubectl create -f <this_file>
 
+{% if fabric.repo.username | length > 0 and fabric.repo.password | length > 0 %}
+{% set creds = True %}
+{% else %}
+{% set creds = False %}
+{% endif %}
 {% for zookeeper in zookeeperls %}
 ---
 apiVersion: v1
@@ -11,18 +16,25 @@ metadata:
   labels:
     k8s-app: {{ zookeeper }}
 spec:
-  restartPolicy: Always
+{% if creds %}
+  imagePullSecrets:
+  - name: regcred
+{% endif %}
+  restartPolicy: OnFailure
   containers:
     - name: {{ zookeeper }}
       image: {{ fabric.repo.url }}fabric-zookeeper:{{ fabric.helper_tag }}
+{% if fabric.baseimage_tag == "latest" %}
+      imagePullPolicy: Always
+{% else %}
       imagePullPolicy: IfNotPresent
+{% endif %}
       env:
         - { name: "ZOO_MY_ID", value: "{{ zoo_ids[zookeeper] }}" }
         - { name: "ZOO_SERVERS", value: "{{ znodes | trim }}" }
         - { name: "ZOO_TICK_TIME", value: "2000" }
         - { name: "ZOO_INIT_LIMIT", value: "10" }
         - { name: "ZOO_SYNC_LIMIT", value: "2" }
-
 ---
 kind: Service
 apiVersion: v1
@@ -48,11 +60,19 @@ metadata:
   labels:
     k8s-app: {{ kafka }}
 spec:
-  restartPolicy: Always
+{% if creds %}
+  imagePullSecrets:
+  - name: regcred
+{% endif %}
+  restartPolicy: OnFailure
   containers:
     - name: {{ kafka }}
       image: {{ fabric.repo.url }}fabric-kafka:{{ fabric.helper_tag }}
+{% if fabric.baseimage_tag == "latest" %}
+      imagePullPolicy: Always
+{% else %}
       imagePullPolicy: IfNotPresent
+{% endif %}
       env:
         - { name: "KAFKA_MESSAGE_MAX_BYTES", value: "103809024" }
         - { name: "KAFKA_MAX_REQUEST_SIZE", value: "104857600" }
@@ -86,7 +106,11 @@ metadata:
   labels:
     k8s-app: {{ ca.name }}
 spec:
-  restartPolicy: Always
+{% if creds %}
+  imagePullSecrets:
+  - name: regcred
+{% endif %}
+  restartPolicy: OnFailure
   volumes:
     - name: task-pv-storage
       persistentVolumeClaim:
@@ -94,7 +118,11 @@ spec:
   containers:
     - name: {{ ca.name }}
       image: {{ fabric.repo.url }}fabric-ca:{{ fabric.ca.image_tag }}
+{% if fabric.ca.image_tag == "latest" %}
+      imagePullPolicy: Always
+{% else %}
       imagePullPolicy: IfNotPresent
+{% endif %}
       env:
         - { name: "FABRIC_CA_HOME", value: "/etc/hyperledger/fabric-ca-server-config//keyfiles/{{ ca.org }}/ca" }
         - { name: "FABRIC_CA_SERVER_CA_NAME", value: "{{ ca.name}}" }
@@ -134,7 +162,11 @@ metadata:
   labels:
     k8s-app: {{ peer.name }}
 spec:
-  restartPolicy: Always
+{% if creds %}
+  imagePullSecrets:
+  - name: regcred
+{% endif %}
+  restartPolicy: OnFailure
   volumes:
     - name: varrun
       hostPath:
@@ -146,17 +178,25 @@ spec:
 {% if fabric.peer_db == 'CouchDB' %}
     - name: couchdb-{{ peer.name }}
       image: {{ fabric.repo.url }}fabric-couchdb:{{ fabric.helper_tag }}
+{% if fabric.helper_tag == "latest" %}
+      imagePullPolicy: Always
+{% else %}
       imagePullPolicy: IfNotPresent
+{% endif %}
       securityContext:
         privileged: true
 {% endif %}
     - name: {{ peer.name }}
       image: {{ fabric.repo.url }}fabric-peer:{{ fabric.baseimage_tag }}
+{% if fabric.baseimage_tag == "latest" %}
+      imagePullPolicy: Always
+{% else %}
       imagePullPolicy: IfNotPresent
+{% endif %}
       securityContext:
         privileged: true
       env:
-        - { name: "CORE_VM_ENDPOINT", value: "unix:///host/var/run/docker.sock" }
+        - { name: "CORE_VM_ENDPOINT", value: "dockerendpoint:2375" }
         - { name: "FABRIC_CFG_PATH", value: "/etc/hyperledger/fabric/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}" }
         - { name: "CORE_LOGGING_LEVEL", value: "DEBUG" }
         - { name: "CORE_PEER_ENDORSER_ENABLED", value: "true" }
@@ -174,7 +214,8 @@ spec:
         - { name: "CORE_PEER_GOSSIP_EXTERNALENDPOINT", value: "{{ peer.name }}:7051" }
         - { name: "CORE_PEER_ADDRESS", value: "{{ peer.name }}:7051" }
         - { name: "CORE_PEER_LISTENADDRESS", value: "{{ peer.name }}:7051" }
-        - { name: "CORE_PEER_CHAINCODELISTENADDRESS", value: "{{ peer.name }}:7052" }
+        - { name: "CORE_PEER_CHAINCODEADDRESS", value: "{{ peer.name }}:7052" }
+        - { name: "CORE_PEER_CHAINCODELISTENADDRESS", value: "0.0.0.0:7052" }
         - { name: "CORE_PEER_LOCALMSPID", value: "{{ peer.org }}" }
         - { name: "CORE_PEER_MSPCONFIGPATH", value: "/etc/hyperledger/fabric/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}/msp" }
 {% if fabric.peer_db == 'CouchDB' %}
@@ -201,6 +242,8 @@ spec:
     port: 7051
   - name: port2
     port: 7052
+  - name: port3
+    port: 7053
 {% endfor %}
 
 {% for orderer in allorderers %}
@@ -212,7 +255,11 @@ metadata:
   labels:
     k8s-app: {{ orderer.name }}
 spec:
-  restartPolicy: Always
+{% if creds %}
+  imagePullSecrets:
+  - name: regcred
+{% endif %}
+  restartPolicy: OnFailure
   volumes:
     - name: task-pv-storage
       persistentVolumeClaim:
@@ -220,7 +267,11 @@ spec:
   containers:
     - name: {{ orderer.name }}
       image: {{ fabric.repo.url }}fabric-orderer:{{ fabric.baseimage_tag }}
+{% if fabric.baseimage_tag == "latest" %}
+      imagePullPolicy: Always
+{% else %}
       imagePullPolicy: IfNotPresent
+{% endif %}
       env:
         - { name: "ORDERER_GENERAL_LOGLEVEL", value: "debug" }
         - { name: "ORDERER_GENERAL_LISTENADDRESS", value: "0.0.0.0" }
@@ -256,3 +307,32 @@ spec:
       port: 7050
 
 {% endfor %}
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dockerendpoint
+  labels:
+    k8s-app: dockerendpoint
+spec:
+  containers:
+    - name: dockerendpoint
+      image: docker:17.12.1-ce-rc2-dind
+      imagePullPolicy: IfNotPresent
+      securityContext:
+        privileged: true
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    k8s-app: dockerendpoint
+  name: dockerendpoint
+spec:
+  selector:
+    k8s-app: dockerendpoint
+  ports:
+    - name: port1
+      port: 2375
+      targetPort: 2375

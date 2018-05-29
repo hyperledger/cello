@@ -6,6 +6,10 @@ metadata:
   labels:
     k8s-app: fabriccli
 spec:
+{% if fabric.repo.username | length > 0 and fabric.repo.password | length > 0 %}
+  imagePullSecrets:
+  - name: regcred
+{% endif %}
   restartPolicy: OnFailure
   volumes:
     - name: varrun

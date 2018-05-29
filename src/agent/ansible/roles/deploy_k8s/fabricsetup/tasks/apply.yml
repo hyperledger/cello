@@ -144,6 +144,33 @@
   delay: 10
   tags: "querypvc"
 
+- name: Check the status of secret for pulling images
+  command: >-
+    ./kubectl --kubeconfig='kubeconfig' get secrets -o=custom-columns=NAME:.metadata.name
+    regcred
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+  ignore_errors: yes
+  no_log: True
+  register: "secretstatus"
+  when: >
+    fabric.baseimage_tag | length > 0 and
+    fabric.repo.username | default("") | length > 0 and
+    fabric.repo.password | default("") | length > 0
+
+- name: Create secret for image
+  command: >-
+    ./kubectl --kubeconfig kubeconfig create secret docker-registry regcred --docker-server={{ fabric.repo.url }}
+    --docker-username={{ fabric.repo.username }} --docker-password={{ fabric.repo.password }} --docker-email=email@email.com
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+  register: "secretcreate"
+  when: >
+    fabric.baseimage_tag | length > 0 and
+    fabric.repo.username | default("") | length > 0 and
+    fabric.repo.password | default("") | length > 0 and
+    secretstatus.rc != 0
+
 - name: Set peer and orderer to run peer channel create command
   set_fact:
     clipeer: "{{ allpeers | random }}"
@@ -204,10 +231,18 @@
 
 - name: Wait for containers to be ready
   pause:
-    seconds: 30
+    seconds: 60
 
 - name: Start fabriccli pod
   command: "./kubectl --kubeconfig='kubeconfig' apply -f cli-k8s.yml"
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
   tags: "cliup"
+
+- name: Pull ccenv image to docker endpoint
+  command: >-
+    ./kubectl --kubeconfig kubeconfig exec dockerendpoint
+    -- sh -c "docker pull {{ fabric.repo.url }}fabric-ccenv:{{ fabric.baseimage_tag }}"
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+  tags: "pullccenv"

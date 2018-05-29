@@ -1,7 +1,7 @@
 ---
 logging:
 {% set project_version = fabric.baseimage_tag %}
-{% if project_version | version_compare('1.1.0','>=') %}
+{% if project_version | version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
     level:      info
 {% else %}
     peer:       info
@@ -12,7 +12,7 @@ logging:
     msp:        warning
     policies:   warning
     grpc:       error
-{% if project_version | version_compare('1.1.0','>=') %}
+{% if project_version | version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
     peer:
         gossip: warning
 {% endif %}
@@ -20,7 +20,7 @@ logging:
     format: '%{color}%{time:2006-01-02 15:04:05.000 MST} [%{module}] %{shortfunc} -> %{level:.4s} %{id:03x}%{color:reset} %{message}'
 
 peer:
-{% if project_version | version_compare('1.1.0','>=') %}
+{% if project_version | version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
     id: jdoe
     address: 0.0.0.0:7051
 {% endif %}
@@ -28,7 +28,7 @@ peer:
     listenAddress: 0.0.0.0:7051
     addressAutoDetect: false
     gomaxprocs: -1
-{% if project_version | version_compare('1.1.0','>=') %}
+{% if project_version | version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
     keepalive:
         minInterval: 60s
         client:
@@ -57,13 +57,13 @@ peer:
         dialTimeout: 3s
         connTimeout: 2s
         recvBuffSize: 20
-{% if project_version | version_compare('1.1.0','>=') %}
+{% if project_version | version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
         sendBuffSize: 200
 {% else %}
         sendBuffSize: 20
 {% endif %}
         digestWaitTime: 1s
-        requestWaitTime: 1s
+        requestWaitTime: 1500ms
         responseWaitTime: 2s
         aliveTimeInterval: 5s
         aliveExpirationTimeout: 25s
@@ -75,7 +75,7 @@ peer:
             leaderAliveThreshold: 10s
             leaderElectionDuration: 5s
 
-{% if project_version | version_compare('1.1.0','>=') %}
+{% if project_version | version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
         pvtData:
             pullRetryThreshold: 60s
             transientstoreMaxBlockRetention: 1000
@@ -86,7 +86,7 @@ peer:
         address: 0.0.0.0:7053
         buffersize: 100
         timeout: 10ms
-{% if project_version | version_compare('1.1.0','>=') %}
+{% if project_version | version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
         timewindow: 15m
         keepalive:
             minInterval: 60s
@@ -100,7 +100,7 @@ peer:
             file: tls/server.key
         rootcert:
             file: tls/ca.crt
-{% if project_version | version_compare('1.1.0','>=') %}
+{% if project_version | version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
         clientAuthRequired: false
         clientRootCAs:
             files:
@@ -124,20 +124,32 @@ peer:
 
     mspConfigPath: msp
 
-{% if project_version | version_compare('1.1.0','>=') %}
+{% if project_version | version_compare('1.1.0','>=') and project_version | version_compare('1.2.0','<') %}
     localMspId: DEFAULT
+{% if project_version | version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+    localMspId: {{ item.org }}
+    client:
+        connTimeout: 3s
+{% endif %}
 
     deliveryclient:
+{% if project_version | version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+        connTimeout: 3s
+        reConnectBackoffThreshold: 3600s
+{% endif %}
         reconnectTotalTimeThreshold: 3600s
 
     localMspType: bccsp
 {% endif %}
-
+{% if project_version | version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+    adminService:
+        #listenAddress: 0.0.0.0:7055
+{% endif %}
     profile:
         enabled:     false
         listenAddress: 0.0.0.0:6060
 
-{% if project_version | version_compare('1.1.0','>=') %}
+{% if project_version | version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
     handlers:
         authFilters:
           -
@@ -147,7 +159,22 @@ peer:
         decorators:
           -
             name: DefaultDecorator
-
+{% if project_version | version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+        endorsers:
+          escc:
+            name: DefaultEndorsement
+            library:
+        validators:
+          vscc:
+            name: DefaultValidation
+            library:
+    discovery:
+        enabled: true
+        authCacheEnabled: true
+        authCacheMaxSize: 1000
+        authCachePurgeRetentionRatio: 0.75
+        orgMembersAllowedAccess: false
+{% endif %}
     validatorPoolSize:
 {% endif %}
 
@@ -166,7 +193,7 @@ vm:
         attachStdout: false
 
         hostConfig:
-{% if project_version | version_compare('1.1.0','>=') %}
+{% if project_version | version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
             NetworkMode: host
 {% else %}
             NetworkMode: bridge
@@ -188,13 +215,13 @@ chaincode:
         path:
         name:
 
-    builder: $(DOCKER_NS)/fabric-ccenv:$(ARCH)-$(PROJECT_VERSION)
-{% if project_version | version_compare('1.1.0','>=') %}
+    builder: {{ fabric.repo.url }}fabric-ccenv:{{ fabric.baseimage_tag }}
+{% if project_version | version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
     pull: false
 {% endif %}
     golang:
         runtime: $(BASE_DOCKER_NS)/fabric-baseos:$(ARCH)-$(BASE_VERSION)
-{% if project_version | version_compare('1.1.0','>=') %}
+{% if project_version | version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
         dynamicLink: false
     node:
         runtime: $(BASE_DOCKER_NS)/fabric-baseimage:$(ARCH)-$(BASE_VERSION)
@@ -216,7 +243,7 @@ chaincode:
         vscc: enable
         qscc: enable
 
-{% if project_version | version_compare('1.1.0','>=') %}
+{% if project_version | version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
     systemPlugins:
 {% endif %}
     logging:
@@ -238,14 +265,14 @@ ledger:
        maxRetriesOnStartup: 10
        requestTimeout: 35s
        queryLimit: 10000
-{% if project_version | version_compare('1.1.0','>=') %}
+{% if project_version | version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
        maxBatchUpdateSize: 1000
 {% endif %}
 
   history:
     enableHistoryDatabase: true
 
-{% if project_version | version_compare('1.1.0','>=') %}
+{% if project_version | version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
 metrics:
         enabled: false
         reporter: statsd
