@@ -45,7 +45,10 @@
     "react-particles-js": "^2.1.3",
     "react-intl": "^2.4.0",
     "fabric-client": "1.0.5",
-    "fabric-ca-client": "1.0.5"
+    "fabric-ca-client": "1.0.5",
+    "string-format": "^2.0.0",
+    "js-cookie": "^2.2.0",
+    "jsonfile": "^4.0.0"
   },
   "devDependencies": {
     "autod": "^3.0.1",
@@ -105,8 +108,9 @@
     "lint:ui-fix": "eslint app/assets -c .ui-eslintrc --fix",
     "ci": "npm run lint && npm run cov",
     "autod": "autod",
-    "build:dev": "cross-env ESLINT=none COMPRESS=none roadhog build",
-    "build": "cross-env ESLINT=none roadhog build"
+    "build": "if-env DEV=True && npm run build:dev || npm run build:prod",
+    "build:dev": "cross-env ESLINT=none COMPRESS=none roadhog build && cp -r app/assets/src/assets/* app/assets/public/",
+    "build:prod": "cross-env ESLINT=none roadhog build && cp -r app/assets/src/assets/* app/assets/public/"
   },
   "ci": {
     "version": "8"

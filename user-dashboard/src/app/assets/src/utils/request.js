@@ -8,6 +8,8 @@ import { IntlProvider, defineMessages } from 'react-intl';
 import store from '../index';
 import { getLocale } from '../utils/utils';
 
+const Cookies = require('js-cookie');
+
 const currentLocale = getLocale();
 const intlProvider = new IntlProvider(
   { locale: currentLocale.locale, messages: currentLocale.messages },
@@ -132,6 +134,7 @@ export default function request(url, options) {
     credentials: 'include',
   };
   const newOptions = { ...defaultOptions, ...options };
+  const csrftoken = Cookies.get('csrfToken');
   if (newOptions.method === 'POST' || newOptions.method === 'PUT') {
     if (!(newOptions.body instanceof FormData)) {
       newOptions.headers = {
@@ -140,22 +143,23 @@ export default function request(url, options) {
         ...newOptions.headers,
       };
       newOptions.body = JSON.stringify(newOptions.body);
-      newOptions.headers = {
-        'x-csrf-token': window.csrf,
-        ...newOptions.headers,
-      };
-    } else if (newOptions.method === 'DELETE') {
-      newOptions.headers = {
-        'x-csrf-token': window.csrf,
-        ...newOptions.headers,
-      };
     } else {
       // newOptions.body is FormData
       newOptions.headers = {
         Accept: 'application/json',
+        'Content-Type': 'multipart/form-data',
         ...newOptions.headers,
       };
     }
+    newOptions.headers = {
+      'x-csrf-token': csrftoken,
+      ...newOptions.headers,
+    };
+  } else if (newOptions.method === 'DELETE') {
+    newOptions.headers = {
+      'x-csrf-token': csrftoken,
+      ...newOptions.headers,
+    };
   }
 
   return fetch(url, newOptions)

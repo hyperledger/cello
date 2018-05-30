@@ -16,4 +16,6 @@ services:
     image: hyperledger/cello-user-dashboard
     volumes:
       - $ROOT_PATH/user-dashboard/src:/var/www
+    environment:
+      - DEV=True
     command: bash -c "ln -sf /node_modules . && npm run build"
