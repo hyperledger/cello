@@ -5,7 +5,8 @@
 FROM node:8.9
 MAINTAINER haitao yue "hightall@me.com"
 COPY user-dashboard/src/package.json /
-RUN cd / && yarn install -g
+COPY user-dashboard/src/yarn.lock /
+RUN cd / && yarn install -g --verbose
 ENV PATH ${PATH}:/node_modules/.bin
 COPY user-dashboard/src /var/www
 RUN cd /var/www && ln -sf /node_modules . && npm run build

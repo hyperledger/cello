@@ -5,9 +5,15 @@ import { isUrl } from '../utils/utils';
 
 const menuData = [
   {
-    name: 'dashboard',
-    icon: 'dashboard',
-    path: 'dashboard',
+    name: 'Chain',
+    icon: 'link',
+    path: 'chain',
+  },
+    {
+    name: 'Apply Chain',
+    path: 'apply-chain',
+    hideInMenu: true,
+    hideInBreadcrumb: false,
   },
 ];
 

@@ -10,16 +10,24 @@ class UserService extends Service {
   async login(user) {
     const { config, ctx } = this;
     const loginUrl = config.operator.url.login;
-    ctx.logger.debug('login url ', loginUrl);
+    const username = user.username;
+    const password = user.password;
     const response = await ctx.curl(loginUrl, {
       method: 'POST',
       data: {
-        username: user.username,
-        password: user.password,
+        username,
+        password,
       },
       dataType: 'json',
     });
     if (response.status === 200) {
+      const userModel = await ctx.model.User.findOne({ username });
+      if (!userModel) {
+        await ctx.model.User.create({
+          _id: response.data.id,
+          username,
+        });
+      }
       return {
         username: user.username,
         id: response.data.id,

@@ -18,10 +18,20 @@ module.exports = appInfo => {
         '.tpl': 'nunjucks',
       },
     },
+    mongoose: {
+      client: {
+        url: 'mongodb://dashboard_mongo/user_dashboard',
+        options: {},
+      },
+    },
     operator: {
       url: {
         base: apiBaseUrl,
         login: `${apiBaseUrl}/auth/login`,
+        cluster: {
+          list: `${apiBaseUrl}/clusters`,
+          operate: `${apiBaseUrl}/cluster_op`,
+        },
       },
     },
   };
