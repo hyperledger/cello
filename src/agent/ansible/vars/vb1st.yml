@@ -19,6 +19,7 @@ fabric: {
   peer_db: "goleveldb",
   tls: false,
   logging_level: "ERROR",
+  k8s_storageclass: "standard",
 
   # The following section defines how the fabric network is going to be made up
   # cas indicates certificate authority containers

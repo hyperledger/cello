@@ -87,17 +87,6 @@
         'name':item | replace('.', '-') }] }}
   with_items: "{{ ordererls }}"
 
-- name: Query k8s storage class
-  command: >-
-    ./kubectl --kubeconfig kubeconfig get storageclass
-  args:
-    chdir: "{{ playbook_dir }}/../../vars/"
-  register: classes
-
-- name: Set storage class
-  set_fact:
-    storageclass: "{{ (classes.stderr.find('No resources found') >= 0) | ternary('', 'default') }}"
-
 - name: Create deployment files for certssetup and pvc
   template:
     src: "{{ playbook_dir }}/../deploy_k8s/fabricsetup/templates/{{ item }}.j2"

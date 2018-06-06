@@ -4,7 +4,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: fabriccerts
 spec:
-  storageClassName: {{ storageclass }}
+  storageClassName: {{ fabric.k8s_storageclass }}
   accessModes:
     - ReadWriteOnce
   resources:

@@ -2,7 +2,13 @@
 #
 # Example usage: kubectl create -f <this_file>
 
-{% if fabric.repo.username | length > 0 and fabric.repo.password | length > 0 %}
+{% if fabric.baseimage_tag == 'stable' or fabric.baseimage_tag == 'latest' %}
+{% set project_version = fabric.baseimage_tag %}
+{% else %}
+{% set tag = fabric.baseimage_tag.split('-') %}
+{% set project_version = tag[1] %}
+{% endif %}
+{% if fabric.repo.username | default('') | length > 0 and fabric.repo.password | default('') | length > 0 %}
 {% set creds = True %}
 {% else %}
 {% set creds = False %}
@@ -24,7 +30,7 @@ spec:
   containers:
     - name: {{ zookeeper }}
       image: {{ fabric.repo.url }}fabric-zookeeper:{{ fabric.helper_tag }}
-{% if fabric.baseimage_tag == "latest" %}
+{% if fabric.helper_tag == 'latest' or 'stable' in fabric.helper_tag %}
       imagePullPolicy: Always
 {% else %}
       imagePullPolicy: IfNotPresent
@@ -68,7 +74,7 @@ spec:
   containers:
     - name: {{ kafka }}
       image: {{ fabric.repo.url }}fabric-kafka:{{ fabric.helper_tag }}
-{% if fabric.baseimage_tag == "latest" %}
+{% if fabric.helper_tag == 'latest' or 'stable' in fabric.helper_tag %}
       imagePullPolicy: Always
 {% else %}
       imagePullPolicy: IfNotPresent
@@ -118,7 +124,7 @@ spec:
   containers:
     - name: {{ ca.name }}
       image: {{ fabric.repo.url }}fabric-ca:{{ fabric.ca.image_tag }}
-{% if fabric.ca.image_tag == "latest" %}
+{% if fabric.ca.image_tag == 'latest' or 'stable' in fabric.ca.image_tag %}
       imagePullPolicy: Always
 {% else %}
       imagePullPolicy: IfNotPresent
@@ -178,7 +184,7 @@ spec:
 {% if fabric.peer_db == 'CouchDB' %}
     - name: couchdb-{{ peer.name }}
       image: {{ fabric.repo.url }}fabric-couchdb:{{ fabric.helper_tag }}
-{% if fabric.helper_tag == "latest" %}
+{% if fabric.helper_tag == 'latest' or 'stable' in fabric.helper_tag %}
       imagePullPolicy: Always
 {% else %}
       imagePullPolicy: IfNotPresent
@@ -188,7 +194,7 @@ spec:
 {% endif %}
     - name: {{ peer.name }}
       image: {{ fabric.repo.url }}fabric-peer:{{ fabric.baseimage_tag }}
-{% if fabric.baseimage_tag == "latest" %}
+{% if project_version == 'latest' or 'stable' in project_version %}
       imagePullPolicy: Always
 {% else %}
       imagePullPolicy: IfNotPresent
@@ -198,7 +204,7 @@ spec:
       env:
         - { name: "CORE_VM_ENDPOINT", value: "dockerendpoint:2375" }
         - { name: "FABRIC_CFG_PATH", value: "/etc/hyperledger/fabric/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}" }
-        - { name: "CORE_LOGGING_LEVEL", value: "DEBUG" }
+        - { name: "CORE_LOGGING_LEVEL", value: "{{ fabric.logging_level | default('ERROR') }}" }
         - { name: "CORE_PEER_ENDORSER_ENABLED", value: "true" }
         - { name: "CORE_PEER_GOSSIP_USELEADERELECTION",
             value: "{{ allpeers|selectattr('org','equalto',peer.org)|list|selectattr('role','equalto','leader')|list|length|int==0 }}" }
@@ -214,8 +220,12 @@ spec:
         - { name: "CORE_PEER_GOSSIP_EXTERNALENDPOINT", value: "{{ peer.name }}:7051" }
         - { name: "CORE_PEER_ADDRESS", value: "{{ peer.name }}:7051" }
         - { name: "CORE_PEER_LISTENADDRESS", value: "{{ peer.name }}:7051" }
+{% if project_version | version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
         - { name: "CORE_PEER_CHAINCODEADDRESS", value: "{{ peer.name }}:7052" }
         - { name: "CORE_PEER_CHAINCODELISTENADDRESS", value: "0.0.0.0:7052" }
+{% else %}
+        - { name: "CORE_PEER_CHAINCODELISTENADDRESS", value: "{{ peer.name }}:7052" }
+{% endif %}
         - { name: "CORE_PEER_LOCALMSPID", value: "{{ peer.org }}" }
         - { name: "CORE_PEER_MSPCONFIGPATH", value: "/etc/hyperledger/fabric/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}/msp" }
 {% if fabric.peer_db == 'CouchDB' %}
@@ -267,13 +277,13 @@ spec:
   containers:
     - name: {{ orderer.name }}
       image: {{ fabric.repo.url }}fabric-orderer:{{ fabric.baseimage_tag }}
-{% if fabric.baseimage_tag == "latest" %}
+{% if project_version == 'latest' or 'stable' in project_version %}
       imagePullPolicy: Always
 {% else %}
       imagePullPolicy: IfNotPresent
 {% endif %}
       env:
-        - { name: "ORDERER_GENERAL_LOGLEVEL", value: "debug" }
+        - { name: "ORDERER_GENERAL_LOGLEVEL", value: "{{ fabric.logging_level | default('ERROR') | lower }}" }
         - { name: "ORDERER_GENERAL_LISTENADDRESS", value: "0.0.0.0" }
         - { name: "ORDERER_GENERAL_GENESISMETHOD", value: "file" }
         - { name: "ORDERER_GENERAL_GENESISFILE", value: "/var/hyperledger/orderer/keyfiles/genesis.block" }

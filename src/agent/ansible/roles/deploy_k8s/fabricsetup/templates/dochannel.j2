@@ -1,7 +1,12 @@
 #! /bin/bash
 
 # Set up environment varilables first
-
+{% if fabric.baseimage_tag == 'stable' or fabric.baseimage_tag == 'latest' %}
+{% set project_version = fabric.baseimage_tag %}
+{% else %}
+{% set tag = fabric.baseimage_tag.split('-') %}
+{% set project_version = tag[1] %}
+{% endif %}
 {% if fabric.tls %}
 export CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/allorgs/keyfiles/{{ clipeer.org }}/peers/{{ clipeer.name }}.{{ clipeer.org }}/tls/server.key
 export CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/allorgs/keyfiles/{{ clipeer.org }}/peers/{{ clipeer.name }}.{{ clipeer.org }}/tls/ca.crt
@@ -14,8 +19,14 @@ export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/allorgs/keyfiles/{{ clipeer.org 
 
 # Run the peer channel create command
 cd /etc/hyperledger/allorgs/keyfiles
+{% if project_version | version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+TIMEOUT=240s
+{% else %}
+TIMEOUT=240
+{% endif %}
+
 peer channel create -o {{ cliorderer.name }}:7050 -c firstchannel \
-  -f /etc/hyperledger/allorgs/keyfiles/firstchannel.tx --tls true --timeout 240s \
+  -f /etc/hyperledger/allorgs/keyfiles/firstchannel.tx --tls true --timeout $TIMEOUT \
   --cafile /etc/hyperledger/allorgs/keyfiles/{{ cliorderer.org }}/orderers/{{ cliorderer.name }}.{{ cliorderer.org }}/msp/tlscacerts/tlsca.{{ cliorderer.org }}-cert.pem
 
 export CORE_PEER_TLS_ENABLED=true
@@ -72,8 +83,14 @@ export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/allorgs/keyfiles/{{ clipeer.org 
 
 # Run the peer channel create command
 cd /etc/hyperledger/allorgs/keyfiles
+{% if project_version | version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+TIMEOUT=240s
+{% else %}
+TIMEOUT=240
+{% endif %}
+
 peer channel create -o {{ cliorderer.name }}:7050 -c firstchannel \
-  -f /etc/hyperledger/allorgs/keyfiles/firstchannel.tx --timeout 240s
+  -f /etc/hyperledger/allorgs/keyfiles/firstchannel.tx --timeout $TIMEOUT
 
 export CORE_PEER_TLS_ENABLED=false
 export GOPATH=/opt/gopath

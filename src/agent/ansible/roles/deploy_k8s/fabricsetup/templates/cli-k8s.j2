@@ -6,7 +6,7 @@ metadata:
   labels:
     k8s-app: fabriccli
 spec:
-{% if fabric.repo.username | length > 0 and fabric.repo.password | length > 0 %}
+{% if fabric.repo.username | default('') | length > 0 and fabric.repo.password | default('')| length > 0 %}
   imagePullSecrets:
   - name: regcred
 {% endif %}
@@ -21,7 +21,11 @@ spec:
   containers:
     - name: fabriccli
       image: {{ fabric.repo.url }}fabric-tools:{{ fabric.baseimage_tag }}
+{% if fabric.baseimage_tag == 'latest' or 'stable' in fabric.baseimage_tag %}
+      imagePullPolicy: Always
+{% else %}
       imagePullPolicy: IfNotPresent
+{% endif %}
       securityContext:
         privileged: true
       env:

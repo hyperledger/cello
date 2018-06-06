@@ -1,5 +1,10 @@
 ---
+{% if fabric.baseimage_tag == 'stable' or fabric.baseimage_tag == 'latest' %}
 {% set project_version = fabric.baseimage_tag %}
+{% else %}
+{% set tag = fabric.baseimage_tag.split('-') %}
+{% set project_version = tag[1] %}
+{% endif %}
 {% if allorgs | length > 0 %}
 Organizations:
 {% for org in allorgs %}
@@ -8,6 +13,7 @@ Organizations:
     ID: {{ org }}
     MSPDir: {{ fabricworkdir }}/keyfiles/{{ org }}/msp
 {% if org_anchor[org] is defined %}
+{% if project_version | version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
     Policies:
         Readers:
             Type: Signature
@@ -18,10 +24,12 @@ Organizations:
         Admins:
             Type: Signature
             Rule: "OR('{{ org }}.admin')"
+{% endif %}
     AnchorPeers:
       - Host: {{ org_anchor[org].name }}
         Port: 7051
 {% else %}
+{% if project_version | version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
     Policies:
         Readers:
             Type: Signature
@@ -32,6 +40,7 @@ Organizations:
         Admins:
             Type: Signature
             Rule: "OR('{{ org }}.admin')"
+{% endif %}
 {% endif %}
 
 {% endfor %}
@@ -44,13 +53,13 @@ Capabilities:
 
   Orderer: &OrdererCapabilities
     V1_1: true
-{% endif %}
 
-{% if project_version | version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
   Application: &ApplicationCapabilities
+{% if project_version | version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
     V1_2: true
 {% elif project_version | version_compare('1.1.0','>=') and project_version | version_compare('1.2.0','<') %}
     V1_1: true
+{% endif %}
 {% endif %}
 
 Orderer: &OrdererDefaults
@@ -125,10 +134,6 @@ Channel: &ChannelDefaults
         Admins:
             Type: ImplicitMeta
             Rule: "MAJORITY Admins"
-{% endif %}
-{% if project_version | version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
-    Capabilities:
-      <<: *ChannelCapabilities
 {% endif %}
 
 Profiles:
