@@ -115,6 +115,12 @@ NETWORK_STATUS_RUNNING = 'running'  # running now, waiting for health check
 NETWORK_STATUS_DELETING = 'deleting'  # network is in deleting
 NETWORK_STATUS_STOPPED = 'stopped'  # network is stopped
 
+K8S_CRED_TYPE = {
+    'account': '0',
+    'cert': '1',
+    'config': '2'
+}
+
 # Vcenter and VirtualMachine Confs
 VIRTUAL_MACHINE = 'vm'
 VCENTER = 'vc'
