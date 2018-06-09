@@ -21,12 +21,25 @@ metadata:
   name: {{ zookeeper }}
   labels:
     k8s-app: {{ zookeeper }}
+    type: zookeeper
 spec:
 {% if creds %}
   imagePullSecrets:
   - name: regcred
 {% endif %}
   restartPolicy: OnFailure
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 1
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: type
+              operator: In
+              values:
+                - zookeeper
+          topologyKey: kubernetes.io/hostname
   containers:
     - name: {{ zookeeper }}
       image: {{ fabric.repo.url }}fabric-zookeeper:{{ fabric.helper_tag }}
@@ -65,12 +78,25 @@ metadata:
   name: {{ kafka }}
   labels:
     k8s-app: {{ kafka }}
+    type: kafka
 spec:
 {% if creds %}
   imagePullSecrets:
   - name: regcred
 {% endif %}
   restartPolicy: OnFailure
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 1
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: type
+              operator: In
+              values:
+                - kafka
+          topologyKey: kubernetes.io/hostname
   containers:
     - name: {{ kafka }}
       image: {{ fabric.repo.url }}fabric-kafka:{{ fabric.helper_tag }}
@@ -111,6 +137,7 @@ metadata:
   name: {{ ca.name }}
   labels:
     k8s-app: {{ ca.name }}
+    type: ca
 spec:
 {% if creds %}
   imagePullSecrets:
@@ -121,6 +148,18 @@ spec:
     - name: task-pv-storage
       persistentVolumeClaim:
         claimName: fabriccerts
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 1
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: type
+              operator: In
+              values:
+                - ca
+          topologyKey: kubernetes.io/hostname
   containers:
     - name: {{ ca.name }}
       image: {{ fabric.repo.url }}fabric-ca:{{ fabric.ca.image_tag }}
@@ -167,12 +206,25 @@ metadata:
   name: {{ peer.name }}
   labels:
     k8s-app: {{ peer.name }}
+    type: peer
 spec:
 {% if creds %}
   imagePullSecrets:
   - name: regcred
 {% endif %}
   restartPolicy: OnFailure
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 1
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: type
+              operator: In
+              values:
+                - peer
+          topologyKey: kubernetes.io/hostname
   volumes:
     - name: varrun
       hostPath:
@@ -264,6 +316,7 @@ metadata:
   name: {{ orderer.name }}
   labels:
     k8s-app: {{ orderer.name }}
+    type: orderer
 spec:
 {% if creds %}
   imagePullSecrets:
@@ -274,6 +327,18 @@ spec:
     - name: task-pv-storage
       persistentVolumeClaim:
         claimName: fabriccerts
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 1
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: type
+              operator: In
+              values:
+                - orderer
+          topologyKey: kubernetes.io/hostname
   containers:
     - name: {{ orderer.name }}
       image: {{ fabric.repo.url }}fabric-orderer:{{ fabric.baseimage_tag }}
