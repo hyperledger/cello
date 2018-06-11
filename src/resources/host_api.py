@@ -18,6 +18,8 @@ from common import log_handler, LOG_LEVEL, \
     CODE_CREATED, \
     request_debug
 
+from common.utils import K8S_CRED_TYPE
+
 from modules import host_handler
 from modules.models import Cluster as ClusterModel
 from modules.models import Host as HostModel
@@ -141,6 +143,28 @@ def host_create():
                                      log_server=log_server,
                                      host_type=host_type,
                                      params=vsphere_param)
+
+    elif host_type == 'kubernetes':
+        worker_api = r.form['k8s_master_address']
+        k8s_param = create_k8s_host(name, capacity, log_type, r)
+        if len(k8s_param) == 0:
+            return make_fail_resp(error=error_msg, data=r.form)
+
+        logger.debug("name={}, capacity={},"
+                     "fillup={}, schedulable={}, log={}/{}, k8s_param={}".
+                     format(name, capacity, autofill, schedulable,
+                            log_type, log_server, k8s_param))
+
+        result = host_handler.create(name=name, worker_api=worker_api,
+                                     capacity=int(capacity),
+                                     autofill=autofill,
+                                     schedulable=schedulable,
+                                     log_level=log_level,
+                                     log_type=log_type,
+                                     log_server=log_server,
+                                     host_type=host_type,
+                                     params=k8s_param)
+
     else:
         logger.debug("name={}, worker_api={}, capacity={}"
                      "fillup={}, schedulable={}, log={}/{}".
@@ -276,3 +300,49 @@ def host_actions():
     error_msg = "unknown host action={}".format(action)
     logger.warning(error_msg)
     return make_fail_resp(error=error_msg, data=body)
+
+
+def create_k8s_host(name, capacity, log_type, request):
+    k8s_param = {
+        'address': request.form['k8s_master_address'],
+        'credType': request.form['k8s_cred_type'],
+        'username': request.form['k8s_username'],
+        'password': request.form['k8s_password'],
+        'cert': request.form['k8s_cert'],
+        'key': request.form['k8s_key'],
+        'config': request.form['k8s_config'],
+        'nfsServer': request.form['k8s_nfs_server'],
+        'extra_params': request.form['k8s_extra_params']
+    }
+    if "k8s_ssl" in request.form and request.form["k8s_ssl"] == "on":
+        k8s_ssl = "true"
+    else:
+        k8s_ssl = "false"
+    k8s_param['use_ssl'] = k8s_ssl
+
+    k8s_must_have_params = {
+        'Name': name,
+        'Capacity': capacity,
+        'LoggingType': log_type,
+        'K8SAddress': request.form['k8s_master_address'],
+        'K8SCredType': request.form['k8s_cred_type'],
+        'K8SNfsServer': request.form['k8s_nfs_server'],
+        'K8SUseSsl': k8s_param['use_ssl']
+    }
+
+    if k8s_must_have_params['K8SCredType'] == K8S_CRED_TYPE['account']:
+        k8s_must_have_params['K8SUsername'] = request.form['k8s_username']
+        k8s_must_have_params['K8SPassword'] = request.form['k8s_password']
+    elif k8s_must_have_params['K8SCredType'] == K8S_CRED_TYPE['cert']:
+        k8s_must_have_params['K8SCert'] = request.form['k8s_cert']
+        k8s_must_have_params['K8SKey'] = request.form['k8s_key']
+    elif k8s_must_have_params['K8SCredType'] == K8S_CRED_TYPE['config']:
+        k8s_must_have_params['K8SConfig'] = request.form['k8s_config']
+
+    for key in k8s_must_have_params:
+        if k8s_must_have_params[key] == '':
+            error_msg = "host POST without {} data".format(key)
+            logger.warning(error_msg)
+            return []
+
+    return k8s_param
