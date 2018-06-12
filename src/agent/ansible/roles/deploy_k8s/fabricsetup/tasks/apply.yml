@@ -110,7 +110,7 @@
     chdir: "{{ playbook_dir }}/../../vars/"
   register: pvcstatus
   until: pvcstatus.stdout.find("Bound") >= 0
-  retries: 5
+  retries: 50
   delay: 10
   tags: "querypvc"
 

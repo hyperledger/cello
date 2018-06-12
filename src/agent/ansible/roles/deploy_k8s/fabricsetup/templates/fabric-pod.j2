@@ -54,6 +54,7 @@ spec:
         - { name: "ZOO_TICK_TIME", value: "2000" }
         - { name: "ZOO_INIT_LIMIT", value: "10" }
         - { name: "ZOO_SYNC_LIMIT", value: "2" }
+{% include './resource.j2' %}
 ---
 kind: Service
 apiVersion: v1
@@ -114,6 +115,7 @@ spec:
         - { name: "KAFKA_MIN_INSYNC_REPLICAS", value: "1" }
         - { name: "KAFKA_DEFAULT_REPLICATION_FACTOR", value: "{{ kafka_ids | length }}" }
         - { name: "KAFKA_ZOOKEEPER_CONNECT", value: "{{ zkparam | trim | replace(' ', ',') }}" }
+{% include './resource.j2' %}
 ---
 kind: Service
 apiVersion: v1
@@ -178,6 +180,7 @@ spec:
         - { name: "FABRIC_CA_SERVER_TLS_KEYFILE", value: "/etc/hyperledger/fabric-ca-server-config/keyfiles/{{ ca.org }}/tlsca/tlsca_private.key" }
         - { name: "FABRIC_CA_SERVER_TLS_CERTFILE", value: "/etc/hyperledger/fabric-ca-server-config/keyfiles/{{ ca.org }}/tlsca/tlsca.{{ ca.org }}-cert.pem" }
 {% endif %}
+{% include './resource.j2' %}
       volumeMounts:
         - { mountPath: "/etc/hyperledger/fabric-ca-server-config", name: "task-pv-storage" }
       command: ["fabric-ca-server"]
@@ -284,6 +287,7 @@ spec:
         - { name: "CORE_LEDGER_STATE_STATEDATABASE", value: "CouchDB" }
         - { name: "CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS", value: "localhost:5984" }
 {% endif %}
+{% include './resource.j2' %}
       volumeMounts:
         - { mountPath: "/host/var/run", name: "varrun" }
         - { mountPath: "/etc/hyperledger/fabric", name: "task-pv-storage" }
@@ -364,6 +368,7 @@ spec:
         - { name: "ORDERER_KAFKA_RETRY_SHORTINTERVAL", value: "1s" }
         - { name: "ORDERER_KAFKA_RETRY_SHORTTOTAL", value: "30s" }
         - { name: "ORDERER_KAFKA_VERBOSE", value: "true" }
+{% include './resource.j2' %}
       volumeMounts:
         - { mountPath: "/var/hyperledger/orderer", name: "task-pv-storage" }
       command: ["orderer"]
@@ -395,6 +400,7 @@ spec:
     - name: dockerendpoint
       image: docker:17.12.1-ce-rc2-dind
       imagePullPolicy: IfNotPresent
+{% include './resource.j2' %}
       securityContext:
         privileged: true
 ---

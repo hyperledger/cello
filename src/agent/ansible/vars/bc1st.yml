@@ -19,8 +19,15 @@ fabric: {
   peer_db: "CouchDB",
   tls: false,
   logging_level: "ERROR",
-  k8s_storageclass: "standard",
-
+  k8s: {
+    storageclass: "default",
+    storagecapacity: "2Gi",
+    shared_storage: false,
+    mem_req: "512Mi",
+    mem_limit: "1024Mi",
+    cpu_req: "0.1",
+    cpu_limit: "0.2"
+  },
 
   # The following section defines how the fabric network is going to be made up
   # cas indicates certificate authority containers

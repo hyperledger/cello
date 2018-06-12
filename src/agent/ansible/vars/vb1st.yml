@@ -19,7 +19,15 @@ fabric: {
   peer_db: "goleveldb",
   tls: false,
   logging_level: "ERROR",
-  k8s_storageclass: "standard",
+  k8s: {
+    storageclass: "default",
+    storagecapacity: "2Gi",
+    shared_storage: false,
+    mem_req: "512Mi",
+    mem_limit: "1024Mi",
+    cpu_req: "0.1",
+    cpu_limit: "0.2"
+  },
 
   # The following section defines how the fabric network is going to be made up
   # cas indicates certificate authority containers
@@ -56,13 +64,13 @@ fabric: {
   #     s390x-0.4.2                                # release 0.4.2 for s390x
   #     048c91eb47812582f36665fbea3d7e0e68e396bf   # commit build
   #     x86_64-1.0.0-snapshot-8d3275f              # snapshot build
-  baseimage_tag: "x86_64-1.1.0",
+  baseimage_tag: "amd64-1.1.0",
 
   # The container tag for accessory fabric components such as ca, kafka,
   # zookeeper and couchdb. It has to be the full tag just like the
   # baseimage_tag
-  helper_tag: "x86_64-0.4.6",
-  ca: { admin: "admin", adminpw: "adminpw", image_tag: "x86_64-1.1.0" },
+  helper_tag: "amd64-0.4.8",
+  ca: { admin: "admin", adminpw: "adminpw", image_tag: "amd64-1.1.0" },
 
   # Only use this field when you have a docker repository.
   repo: {
