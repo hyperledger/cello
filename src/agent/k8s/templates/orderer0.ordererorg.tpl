@@ -62,7 +62,7 @@ spec:
        - name: certificate
          persistentVolumeClaim:
              claimName: {{clusterName}}-ordererorg-pvc
-           #path: /opt/share
+           #path: /cello
          #persistentVolumeClaim:
          #  claimName: nfs
 

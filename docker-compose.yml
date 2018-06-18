@@ -55,8 +55,9 @@ services:
       - ENABLE_EMAIL_ACTIVE=$ENABLE_EMAIL_ACTIVE
     ports:
       - "8080:8080"
-    #volumes:
+    volumes:
     #  - ./src:/app
+      - ./src/agent/docker/_compose_files:/cello
 
  #TODO: need to follow other images to put at dockerhub
   user-dashboard:

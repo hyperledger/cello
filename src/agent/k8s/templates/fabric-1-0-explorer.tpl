@@ -12,7 +12,7 @@ spec:
       namespace: {{clusterName}}
       name: {{clusterName}}-explorer-pvc
     nfs:
-      path: /opt/share/{{clusterName}}/resources/
+      path: /cello/{{clusterName}}/resources/
       server: {{nfsServer}} # change to your nfs server ip here.
 ---
 

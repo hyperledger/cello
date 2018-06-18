@@ -6,7 +6,7 @@ import os
 import sys
 
 from agent import K8sClusterOperation
-from agent import KubernetesHost
+from agent import KubernetesOperation
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from common import log_handler, LOG_LEVEL
@@ -38,15 +38,15 @@ class ClusterOnKubernetes(ClusterBase):
         cluster = ClusterModel.objects.get(id=cid)
 
         cluster_name = cluster.name
-        kube_config = KubernetesHost().get_kubernets_config(cluster
-                                                            .host
-                                                            .k8s_param)
+        kube_config = KubernetesOperation()._get_config_from_params(cluster
+                                                                    .host
+                                                                    .k8s_param)
 
         clusters_exists = ClusterModel.objects(host=cluster.host)
         ports_index = [service.port for service in ServicePort
                        .objects(cluster__in=clusters_exists)]
 
-        nfsServer_ip = cluster.host.k8s_param.get('nfsServer')
+        nfsServer_ip = cluster.host.k8s_param.get('K8SNfsServer')
         consensus = config['consensus_plugin']
 
         return cluster, cluster_name, kube_config, ports_index, \
@@ -98,9 +98,9 @@ class ClusterOnKubernetes(ClusterBase):
             cluster = ClusterModel.objects.get(id=cid)
 
             cluster_name = cluster.name
-            kube_config = KubernetesHost().get_kubernets_config(cluster
-                                                                .host
-                                                                .k8s_param)
+            kube_config = KubernetesOperation()._get_from_params(cluster
+                                                                 .host
+                                                                 .k8s_param)
 
             operation = K8sClusterOperation(kube_config)
             services_urls = operation.get_services_urls(cluster_name)

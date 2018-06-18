@@ -12,7 +12,7 @@ spec:
     namespace: {{clusterName}}
     name: {{clusterName}}-org1-pvc
   nfs:
-    path: /opt/share/{{clusterName}}/resources/crypto-config/peerOrganizations/org1
+    path: /cello/{{clusterName}}/resources/crypto-config/peerOrganizations/org1
     server: {{nfsServer}}  #change to your nfs server ip here
 
 ---

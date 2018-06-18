@@ -6,6 +6,7 @@
 import base64
 import logging
 
+from common.utils import K8S_CRED_TYPE
 from kubernetes import client, config
 from common import log_handler, LOG_LEVEL, db, utils
 
@@ -27,36 +28,40 @@ class KubernetesOperation():
         :return: python kubernetes config
         """
         k8s_config = client.Configuration()
-        k8s_config.host = k8s_params.get('address')
+        k8s_config.host = k8s_params.get('K8SAddress')
         if not k8s_config.host.startswith("https://"):
             k8s_config.host = "https://" + k8s_config.host
 
-        k8s_config.username = k8s_params.get('username')
-        k8s_config.password = k8s_params.get('password')
+        if k8s_params.get('K8SCredType') == K8S_CRED_TYPE['account']:
+            k8s_config.username = k8s_params.get('K8SUsername')
+            k8s_config.password = k8s_params.get('K8SPassword')
 
-        cert_content = base64.decodestring(str.encode(k8s_params.get('cert')))
-        key_content = base64.decodestring(str.encode(k8s_params.get('key')))
+        elif k8s_params.get('K8SCredType') == K8S_CRED_TYPE['cert']:
+            cert_content = \
+                base64.decodestring(str.encode(k8s_params.get('K8SCert')))
+            key_content = \
+                base64.decodestring(str.encode(k8s_params.get('K8SKey')))
+            k8s_config.cert_file = \
+                config.kube_config._create_temp_file_with_content(cert_content)
+            k8s_config.key_file = \
+                config.kube_config._create_temp_file_with_content(key_content)
 
-        k8s_config.cert_file = \
-            config.kube_config._create_temp_file_with_content(cert_content)
-
-        k8s_config.key_file = \
-            config.kube_config._create_temp_file_with_content(key_content)
-
-        config_content = k8s_params.get('config')
         # Use config file content to set k8s_config if it exist.
-        if config_content.strip():
-            config_file = \
-                config.kube_config. \
-                _create_temp_file_with_content(config_content)
+        elif k8s_params.get('K8SCredType') == K8S_CRED_TYPE['config']:
+            config_content = k8s_params.get('K8SConfig')
 
-            loader = \
-                config.kube_config. \
-                _get_kube_config_loader_for_yaml_file(config_file)
+            if config_content.strip():
+                config_file = \
+                    config.kube_config. \
+                    _create_temp_file_with_content(config_content)
 
-            loader.load_and_set(k8s_config)
+                loader = \
+                    config.kube_config. \
+                    _get_kube_config_loader_for_yaml_file(config_file)
 
-        if k8s_params.get('use_ssl') == "false":
+                loader.load_and_set(k8s_config)
+
+        if k8s_params.get('K8SUseSsl') == "false":
             k8s_config.verify_ssl = False
         else:
             k8s_config.verify_ssl = True
