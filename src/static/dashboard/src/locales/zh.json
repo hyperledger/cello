@@ -54,6 +54,7 @@
   "Host.Create.Validate.Required.LogType": "请选择一个日志类型。",
   "Host.Create.Validate.Required.CredentialType": "请选择一个凭证类型。",
   "Host.Create.Validate.Required.CertificateContent": "请输入证书内容。",
+  "Host.Create.Validate.Required.CertificateKey": "请输入密钥内容。",
   "Host.Create.Validate.Required.ConfigurationContent": "请输入配置内容。",
   "Host.Create.Validate.Required.Username": "请输入用户名。",
   "Host.Create.Validate.Required.Password": "请输入密码。",

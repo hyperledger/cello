@@ -70,6 +70,10 @@ const messages = defineMessages({
       id: 'Host.Create.Validate.Label.CertificateContent',
       defaultMessage: 'Certificate Content',
     },
+    certificateKey: {
+      id: 'Host.Create.Validate.Label.CertificateKey',
+      defaultMessage: 'Certificate Key',
+    },
     configurationContent: {
       id: 'Host.Create.Validate.Label.ConfigurationContent',
       defaultMessage: 'Configuration Content',
@@ -149,6 +153,10 @@ const messages = defineMessages({
         id: 'Host.Create.Validate.Required.CertificateContent',
         defaultMessage: 'Please input certificate content.',
       },
+      certificateKey: {
+        id: 'Host.Create.Validate.Required.CertificateKey',
+        defaultMessage: 'Please input certificate key.',
+      },
       configurationContent: {
         id: 'Host.Create.Validate.Required.ConfigurationContent',
         defaultMessage: 'Please input configuration content.',
@@ -193,16 +201,16 @@ class CreateHost extends PureComponent {
     const hostTypeValues = ['docker', 'swarm', 'kubernetes', 'vsphere'];
     const k8sCredTypes = [
       {
-        id: 'cert_key',
-        name: 'cert/key',
+        id: '1',
+        name: 'cert_key',
       },
       {
-        id: 'config',
+        id: '2',
         name: 'config',
       },
       {
-        id: 'username_password',
-        name: 'username/password',
+        id: '0',
+        name: 'username_password',
       },
     ];
     this.state = {
@@ -372,16 +380,16 @@ class CreateHost extends PureComponent {
     ));
     const k8sCredTypes = [
       {
-        id: 'cert_key',
-        name: 'cert/key',
+        id: '1',
+        name: 'cert_key',
       },
       {
-        id: 'config',
+        id: '2',
         name: 'config',
       },
       {
-        id: 'username_password',
-        name: 'username/password',
+        id: '0',
+        name: 'username_password',
       },
     ];
     const k8sCredTypeOptions = k8sCredTypes.map(item => (
@@ -488,7 +496,8 @@ class CreateHost extends PureComponent {
                     </Select>
                   )}
                 </FormItem>
-                {k8sCredType === 'cert_key' && (
+                {k8sCredType === '1' && (
+                 <div>
                   <FormItem
                     {...formItemLayout}
                     label={intl.formatMessage(messages.label.certificateContent)}
@@ -502,10 +511,26 @@ class CreateHost extends PureComponent {
                           ),
                         },
                       ],
-                    })(<TextArea rows={4} />)}
+                    })(<TextArea rows={4} placeholder={intl.formatMessage(messages.label.certificateContent)} />)}
                   </FormItem>
+                  <FormItem
+                   {...formItemLayout}
+                   label={intl.formatMessage(messages.label.certificateKey)}
+                  >
+                   {getFieldDecorator('k8s_key', {
+                     rules: [
+                       {
+                         required: true,
+                         message: intl.formatMessage(
+                           messages.validate.required.certificateKey
+                         ),
+                       },
+                     ],
+                   })(<TextArea rows={4} placeholder={intl.formatMessage(messages.label.certificateKey)} />)}
+                  </FormItem>
+                 </div>
                 )}
-                {k8sCredType === 'config' && (
+                {k8sCredType === '2' && (
                   <FormItem
                     {...formItemLayout}
                     label={intl.formatMessage(messages.label.configurationContent)}
@@ -522,7 +547,7 @@ class CreateHost extends PureComponent {
                     })(<TextArea rows={4} />)}
                   </FormItem>
                 )}
-                {k8sCredType === 'username_password' && (
+                {k8sCredType === '0' && (
                   <div>
                     <FormItem
                       {...formItemLayout}

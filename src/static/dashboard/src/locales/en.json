@@ -54,6 +54,7 @@
   "Host.Create.Validate.Required.LogType": "Please select a log type.",
   "Host.Create.Validate.Required.CredentialType": "Please select a credential type.",
   "Host.Create.Validate.Required.CertificateContent": "Please input certificate content.",
+  "Host.Create.Validate.Required.CertificateKey": "Please input certificate key.",
   "Host.Create.Validate.Required.ConfigurationContent": "Please input configuration content.",
   "Host.Create.Validate.Required.Username": "Please input username.",
   "Host.Create.Validate.Required.Password": "Please input password.",
