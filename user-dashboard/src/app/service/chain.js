@@ -5,6 +5,9 @@
 
 const Service = require('egg').Service;
 const qs = require('qs');
+const shell = require('shelljs');
+const fs = require('fs-extra');
+const rimraf = require('rimraf');
 
 class ChainService extends Service {
   async list() {
@@ -52,6 +55,11 @@ class ChainService extends Service {
     networkConfig.remove();
     chain.remove();
   }
+  async cleanStore(chainId) {
+    const { config, ctx } = this;
+    const chainRootDir = `${config.dataDir}/${ctx.user.id}/chains/${chainId}`;
+    rimraf(chainRootDir, function() { ctx.logger.info(`delete directory ${chainRootDir}`); });
+  }
   async release() {
     const { ctx, config } = this;
     const operateUrl = config.operator.url.cluster.operate;
@@ -67,6 +75,7 @@ class ChainService extends Service {
     });
     if (response.status === 200) {
       await this.cleanDB(clusterId);
+      await this.cleanStore(clusterId);
     }
   }
   async findRegex(regex, value) {
@@ -113,6 +122,62 @@ class ChainService extends Service {
       });
     }
   }
+  async generateNetwork(chainId) {
+    const { ctx } = this;
+    const chain = await ctx.model.Chain.findOne({ _id: chainId });
+    const networkConfig = await ctx.model.NetworkConfig.findOne({ chain });
+    const orgConfigs = await ctx.model.OrgConfig.find({ networkConfig }).sort('sequence');
+    const ordererConfig = await ctx.model.OrdererConfig.findOne({ networkConfig });
+    const network = {
+      orderer: {
+        url: `grpcs://${ordererConfig.url}`,
+        'server-hostname': ordererConfig.serverHostName,
+        tls_cacerts: '/var/www/app/lib/fabric/fixtures/channel/crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/tls/ca.crt',
+      },
+    };
+    for (const index in orgConfigs) {
+      const orgConfig = orgConfigs[index];
+      const caConfig = await ctx.model.CaConfig.findOne({ networkConfig, sequence: orgConfig.sequence });
+      const peerConfigs = await ctx.model.PeerConfig.find({ networkConfig, orgConfig }).sort('sequence');
+      const peers = {};
+      for (const peerIndex in peerConfigs) {
+        const peerConfig = peerConfigs[peerIndex];
+        peers[`peer${peerConfig.sequence + 1}`] = {
+          requests: `grpcs://${peerConfig.grpc}`,
+          events: `grpcs://${peerConfig.event}`,
+          'server-hostname': `peer${peerConfig.sequence}.org${orgConfig.sequence}.example.com`,
+          tls_cacerts: `/var/www/app/lib/fabric/fixtures/channel/crypto-config/peerOrganizations/org${orgConfig.sequence}.example.com/peers/peer${peerConfig.sequence}.org${orgConfig.sequence}.example.com/tls/ca.crt`,
+        };
+      }
+      network[`org${orgConfig.sequence}`] = {
+        name: orgConfig.name,
+        mspid: orgConfig.mspid,
+        ca: `https://${caConfig.address}`,
+        peers,
+        admin: {
+          key: `/var/www/app/lib/fabric/fixtures/channel/crypto-config/peerOrganizations/org${orgConfig.sequence}.example.com/users/Admin@org${orgConfig.sequence}.example.com/msp/keystore`,
+          cert: `/var/www/app/lib/fabric/fixtures/channel/crypto-config/peerOrganizations/org${orgConfig.sequence}.example.com/users/Admin@org${orgConfig.sequence}.example.com/msp/signcerts`,
+        },
+      };
+    }
+
+    return network;
+  }
+  async initialFabric(chain) {
+    const { ctx, config } = this;
+    const chainRootDir = `${config.dataDir}/${ctx.user.id}/chains/${chain.chainId}`;
+    const channelConfigPath = `${chainRootDir}/tx`;
+    const keyValueStorePath = `${chainRootDir}/client-kvs`;
+    fs.ensureDirSync(channelConfigPath);
+    fs.ensureDirSync(keyValueStorePath);
+    if (shell.exec(`configtxgen -profile TwoOrgsChannel -channelID ${config.default.channelName} -outputCreateChannelTx ${channelConfigPath}/${config.default.channelName}.tx`).code !== 0) {
+      ctx.logger.error('run failed');
+    }
+    const network = await this.generateNetwork(chain._id.toString());
+    await ctx.createChannel(network, keyValueStorePath, config.default.channelName, channelConfigPath);
+    await ctx.sleep(1000);
+    await ctx.joinChannel(network, keyValueStorePath, config.default.channelName, ['peer1', 'peer2'], 'org1');
+  }
   async apply() {
     const { ctx, config } = this;
     const operateUrl = config.operator.url.cluster.operate;
@@ -144,6 +209,7 @@ class ChainService extends Service {
       for (const key in service_url) {
         await this.handle_url(chain._id.toString(), networkConfig._id.toString(), key, service_url[key]);
       }
+      this.initialFabric(chain);
     }
     return response.status === 200;
   }

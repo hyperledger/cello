@@ -49,6 +49,18 @@ class ChainController extends Controller {
       }
     }
   }
+  async downloadNetworkConfig() {
+    const { ctx } = this;
+    const chainId = ctx.params.id;
+    const network = await ctx.service.chain.generateNetwork(chainId);
+    ctx.response.set({
+      'Content-Type': 'application/octet-stream',
+      'Content-Disposition': `attachment; filename=${chainId}.json`,
+    });
+    ctx.body = {
+      'network-config': network,
+    };
+  }
 }
 
 module.exports = ChainController;

@@ -34,6 +34,10 @@ module.exports = appInfo => {
         },
       },
     },
+    default: {
+      channelName: 'mychannel',
+    },
+    dataDir: '/opt/data',
   };
 
   // use for cookie sign key, should change to your own and keep security

@@ -12,6 +12,7 @@ export default {
       list: `${urlBase}api/chain`,
       release: `${urlBase}api/chain/{id}`,
       apply: `${urlBase}api/chain`,
+      downloadNetworkConfig: `${urlBase}api/chain/network-config/{id}`,
     },
   },
 };
