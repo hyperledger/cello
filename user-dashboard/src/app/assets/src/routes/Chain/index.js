@@ -5,9 +5,11 @@ import React, { PureComponent } from 'react';
 import { routerRedux } from 'dva/router';
 import { connect } from 'dva';
 import { Card, Button, Icon, List, Avatar, Modal } from 'antd';
+import QueueAnim from 'rc-queue-anim';
 
 import Ellipsis from 'components/Ellipsis';
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
+import config from '../../utils/config';
 
 import styles from './index.less';
 
@@ -36,15 +38,14 @@ export default class CardList extends PureComponent {
       onCancel() {
       },
     });
-  }
-
+  };
   applyChain = () => {
     this.props.dispatch(
       routerRedux.push({
         pathname: '/apply-chain',
       })
     );
-  }
+  };
 
   render() {
     const { chain: { chains }, loading } = this.props;
@@ -59,10 +60,13 @@ export default class CardList extends PureComponent {
 
     const extraContent = (
       <div className={styles.extraImg}>
-        <img
-          alt="chain"
-          src={imageSrc}
-        />
+        <QueueAnim>
+          <img
+            key="image-logo"
+            alt="chain"
+            src={imageSrc}
+          />
+        </QueueAnim>
       </div>
     );
 
@@ -77,7 +81,7 @@ export default class CardList extends PureComponent {
             renderItem={item =>
               item ? (
                 <List.Item key={item._id}>
-                  <Card hoverable className={styles.card} actions={[<a>Info</a>, <a onClick={() => this.releaseChain(item)}>Release</a>]}>
+                  <Card hoverable className={styles.card} actions={[<a>Info</a>, <a onClick={() => this.releaseChain(item)}>Release</a>, <a href={config.url.chain.downloadNetworkConfig.format({ id: item._id })}><Icon type="download" /></a>]}>
                     <Card.Meta
                       avatar={
                         <Avatar size="large" style={{ backgroundColor: '#08c' }} icon="link" />
