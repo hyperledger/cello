@@ -12,7 +12,6 @@ Organizations:
     Name: {{ org }}
     ID: {{ org }}
     MSPDir: {{ fabricworkdir }}/keyfiles/{{ org }}/msp
-{% if org_anchor[org] is defined %}
 {% if project_version | version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
     Policies:
         Readers:
@@ -25,9 +24,11 @@ Organizations:
             Type: Signature
             Rule: "OR('{{ org }}.admin')"
 {% endif %}
+{% if org_anchor is defined and org_anchor[org] is defined %}
     AnchorPeers:
       - Host: {{ org_anchor[org].name }}
         Port: 7051
+{% endif %}
 {% else %}
 {% if project_version | version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
     Policies:
@@ -40,7 +41,6 @@ Organizations:
         Admins:
             Type: Signature
             Rule: "OR('{{ org }}.admin')"
-{% endif %}
 {% endif %}
 
 {% endfor %}
@@ -61,11 +61,11 @@ Capabilities:
     V1_1: true
 {% endif %}
 {% endif %}
-
+{% if allorderers is defined and ( allorderers|length > 0) %}
 Orderer: &OrdererDefaults
   OrdererType: kafka
   Addresses:
-{%   for orderer in orderers %}
+{%   for orderer in allorderers %}
     - {{ orderer.name }}:7050
 {%   endfor %}
   BatchTimeout: 2s
@@ -73,10 +73,10 @@ Orderer: &OrdererDefaults
     MaxMessageCount: 10
     AbsoluteMaxBytes: 98 MB
     PreferredMaxBytes: 512 KB
-{% if kafkas | length > 0 %}
+{% if kafkals | length > 0 %}
   Kafka:
     Brokers:
-{%   for item in kafkas %}
+{%   for item in kafkals %}
       - {{ item }}:9092
 {%   endfor %}
 {% endif %}
@@ -103,7 +103,7 @@ Orderer: &OrdererDefaults
   Capabilities:
     <<: *OrdererCapabilities
 {% endif %}
-
+{% endif %}
 Application: &ApplicationDefaults
   Organizations:
 {%   for org in peerorgs %}
@@ -153,8 +153,10 @@ Profiles:
     Capabilities:
       <<: *ChannelCapabilities
 {% endif %}
+{% if allorderers is defined and ( allorderers|length > 0) %}
     Orderer:
       <<: *OrdererDefaults
+{% endif %}
     Consortiums:
       FabricConsortium:
         Organizations:

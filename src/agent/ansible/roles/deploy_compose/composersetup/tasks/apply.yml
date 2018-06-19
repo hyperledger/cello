@@ -32,7 +32,7 @@
 - name: Create the cards
   command: >-
     docker run -v {{ localhome }}:/home/composer/.composer
-    -v {{ fabricworkdir }}:{{ fabricworkdir }}
+    -v {{ fabricworkdir }}:{{ fabricworkdir }} --rm
     hyperledger/composer-cli:next card create
     -p {{ fabricworkdir }}/run/keyfiles/{{ item }}/connection.json
     -c {{ fabricworkdir }}/run/keyfiles/{{ item }}/users/Admin@{{ item }}/msp/admincerts/Admin@{{ item }}-cert.pem
@@ -47,7 +47,7 @@
 - name: Import the cards
   command: >-
     docker run -v {{ localhome }}:/home/composer/.composer
-    -v {{ fabricworkdir }}:{{ fabricworkdir }}
+    -v {{ fabricworkdir }}:{{ fabricworkdir }} --rm
     hyperledger/composer-cli:next card import
     -f {{ fabricworkdir }}/run/keyfiles/{{ item }}/{{ item }}-PeerAdmin.card
     --name PeerAdmin@{{ item }}
@@ -58,7 +58,7 @@
 - name: Runtime install
   command: >-
     docker run -v {{ localhome }}:/home/composer/.composer
-    -v {{ fabricworkdir }}:{{ fabricworkdir }}
+    -v {{ fabricworkdir }}:{{ fabricworkdir }} --rm
     hyperledger/composer-cli:next runtime install
     -c PeerAdmin@{{ item }} -n {{ networkname }}
   with_items: "{{ peerorgs }}"
@@ -67,7 +67,7 @@
 - name: Request identity
   command: >-
     docker run -v {{ localhome }}:/home/composer/.composer
-    -v {{ fabricworkdir }}:{{ fabricworkdir }}
+    -v {{ fabricworkdir }}:{{ fabricworkdir }} --rm
     hyperledger/composer-cli:next identity request
     -c PeerAdmin@{{ item }}
     -u {{ fabric.ca.admin }} -s {{ fabric.ca.adminpw }}
@@ -85,7 +85,7 @@
 - name: Start network
   command: >-
     docker run -v {{ localhome }}:/home/composer/.composer
-    -v {{ fabricworkdir }}:{{ fabricworkdir }}
+    -v {{ fabricworkdir }}:{{ fabricworkdir }} --rm
     hyperledger/composer-cli:next network start
     -c PeerAdmin@{{ peerorgs[0] }}
     -a {{ fabricworkdir }}/run/keyfiles/{{ networkname }}.bna
@@ -95,7 +95,7 @@
 - name: Create admin business cards
   command: >-
     docker run -v {{ localhome }}:/home/composer/.composer
-    -v {{ fabricworkdir }}:{{ fabricworkdir }}
+    -v {{ fabricworkdir }}:{{ fabricworkdir }} --rm
     hyperledger/composer-cli:next card create
     -p {{ fabricworkdir }}/run/keyfiles/{{ item }}/connection.json
     -u {{ item }}Admin -n {{ networkname }}
@@ -108,7 +108,7 @@
 - name: Import the admin cards
   command: >-
     docker run -v {{ localhome }}:/home/composer/.composer
-    -v {{ fabricworkdir }}:{{ fabricworkdir }}
+    -v {{ fabricworkdir }}:{{ fabricworkdir }} --rm
     hyperledger/composer-cli:next card import
     -f /home/composer/.composer/{{ item }}Admin/{{ item }}-{{ networkname }}-Admin.card
   with_items: "{{ peerorgs }}"
@@ -117,7 +117,7 @@
 - name: Ping the network
   command: >-
     docker run -v {{ localhome }}:/home/composer/.composer
-    -v {{ fabricworkdir }}:{{ fabricworkdir }}
+    -v {{ fabricworkdir }}:{{ fabricworkdir }} --rm
     hyperledger/composer-cli:next network ping
     -c {{ item }}Admin@{{ networkname }}
   with_items: "{{ peerorgs }}"

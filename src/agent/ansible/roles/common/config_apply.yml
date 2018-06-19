@@ -1,0 +1,120 @@
+---
+- name: Setup and initialize variables
+  set_fact:
+    fabricworkdir: "/opt/gopath/{{ env }}/fabric"
+    fabricpath: "/opt/gopath/{{ env }}/src/github.com/hyperledger/fabric"
+    gopath: "/opt/gopath/{{ env }}"
+    peers: "{{ [] }}"
+    orderers: "{{ [] }}"
+    cas: "{{ [] }}"
+    kafkas: "{{ [] }}"
+    zookeepers: "{{ [] }}"
+    znodes: ""
+    zkparam: ""
+    index: 1
+    zoo_ids: "{{ {} }}"
+    kafka_ids: "{{ {} }}"
+    zookeeperls: "{{ [] }}"
+    kafkals: "{{ [] }}"
+    peerls: "{{ [] }}"
+    ordererls: "{{ [] }}"
+    cals: "{{ [] }}"
+    allpeers: "{{ [] }}"
+    allcas: "{{ [] }}"
+    allorderers: "{{ [] }}"
+    clipeer: "{}"
+    cliorderer: "{}"
+
+- name: Make sure that working directory exists and clean
+  file:
+    path: "{{ fabricworkdir }}/run"
+    state: "{{ item }}"
+    mode: 0775
+  with_items:
+    - "absent"
+    - "directory"
+
+- name: Create component list
+  set_fact:
+    cals: "{{ cals | default([]) + item.value.cas | default([]) }}"
+    ordererls: "{{ ordererls | default([]) + item.value.orderers | default([]) }}"
+    peerls: "{{ peerls | default([]) + item.value.peers | default([]) }}"
+    zookeeperls: "{{ zookeeperls | default([]) + item.value.zookeepers | default([]) }}"
+    kafkals: "{{ kafkals | default([]) + item.value.kafkas | default([]) }}"
+  with_dict: "{{ fabric.network }}"
+
+- name: Sort component list
+  set_fact:
+    zookeeperls: "{{ zookeeperls | sort }}"
+    kafkals: "{{ kafkals | sort }}"
+
+- name: Generate zookeeper node list
+  set_fact:
+    znodes: "{{ znodes }} server.{{ index }}={{ item }}:2888:3888"
+    zkparam: "{{ zkparam + item }}:2181 "
+    zoo_ids: "{{ zoo_ids | combine({item: index}) }}"
+    index: "{{ index | int + 1 }}"
+  with_items: "{{ zookeeperls | default([]) }}"
+
+- name: Reset the index
+  set_fact:
+    index: 1
+
+- name: Generate kafka broker ids
+  set_fact:
+    kafka_ids: "{{ kafka_ids | combine({item: index}) }}"
+    index: "{{ index | int + 1 }}"
+  with_items: "{{ kafkals | default([]) }}"
+
+- name: Get all ca object list
+  set_fact:
+    allcas: |
+      {{ allcas | default([]) + [{ 'org':item.split('.')[-1],
+        'name':item | replace('.', '-') }] }}
+  with_items: "{{ cals }}"
+
+- name: Get all peer object list
+  set_fact:
+    allpeers: |
+      {{ allpeers | default([]) + [{'org':item.split('@')[1].split('.')[-1],
+        'name':item.split('@')[1] | replace('.', '-'),
+        'role':item.split('@')[0]}] }}
+  with_items: "{{ peerls }}"
+
+- name: Get all orderer object list
+  set_fact:
+    allorderers: |
+      {{ allorderers | default([]) + [{ 'org':item.split('.')[-1],
+        'name':item | replace('.', '-') }] }}
+  with_items: "{{ ordererls }}"
+
+- name: Find all anchor peers
+  set_fact:
+    anchor_peers: "{{ allpeers | selectattr('role', 'equalto', 'anchor') | list }}"
+  when: allpeers is defined and (allpeers | length > 0)
+
+- name: Create org anchor peer hash
+  set_fact:
+    org_anchor: "{{ org_anchor | default({}) | combine( { item.org: item } ) }}"
+  with_items: "{{ anchor_peers }}"
+  when: anchor_peers is defined and (anchor_peers | length > 0)
+
+- name: Select a peer to run channel and chaincode command
+  set_fact:
+    clipeer: "{{ allpeers | random }}"
+  when: allpeers | default([]) | length > 0
+
+- name: Select an orderer to run channel and chaincode command
+  set_fact:
+    cliorderer: "{{ allorderers | random }}"
+  when: allorderers | default([]) | length > 0
+
+- name: Get ca, peer and orderer orgs
+  set_fact:
+    caorgs: "{{ allcas | default([]) | map(attribute='org') | list  | unique | sort }}"
+    peerorgs: "{{ allpeers | default([]) | map(attribute='org') | list  | unique | sort }}"
+    ordererorgs: "{{ allorderers | default([]) | map(attribute='org') | list  | unique | sort }}"
+
+- name: Create all orgs list
+  set_fact:
+    allorgs: "{{ (caorgs + peerorgs + ordererorgs) | sort | unique }}"

@@ -131,6 +131,7 @@ spec:
     - { name: "port2", port: 9093 }
 {% endfor %}
 
+{% if allcas is defined and (allcas | length > 0) %}
 {% for ca in allcas %}
 ---
 apiVersion: v1
@@ -200,7 +201,9 @@ spec:
       port: 7054
 
 {% endfor %}
+{% endif %}
 
+{% if allpeers is defined and (allpeers | length > 0) %}
 {% for peer in allpeers %}
 ---
 apiVersion: v1
@@ -235,6 +238,9 @@ spec:
     - name: task-pv-storage
       persistentVolumeClaim:
         claimName: fabriccerts
+    - name: rundind
+      hostPath:
+        path: /var/run/dind/
   containers:
 {% if fabric.peer_db == 'CouchDB' %}
     - name: couchdb-{{ peer.name }}
@@ -257,7 +263,7 @@ spec:
       securityContext:
         privileged: true
       env:
-        - { name: "CORE_VM_ENDPOINT", value: "dockerendpoint:2375" }
+        - { name: "CORE_VM_ENDPOINT", value: "unix:///var/run/dind/docker.sock" }
         - { name: "FABRIC_CFG_PATH", value: "/etc/hyperledger/fabric/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}" }
         - { name: "CORE_LOGGING_LEVEL", value: "{{ fabric.logging_level | default('ERROR') }}" }
         - { name: "CORE_PEER_ENDORSER_ENABLED", value: "true" }
@@ -291,6 +297,7 @@ spec:
       volumeMounts:
         - { mountPath: "/host/var/run", name: "varrun" }
         - { mountPath: "/etc/hyperledger/fabric", name: "task-pv-storage" }
+        - { mountPath: "/var/run/dind", name: "rundind" }
       command: ["peer"]
       args: ["node", "start"]
 ---
@@ -311,7 +318,9 @@ spec:
   - name: port3
     port: 7053
 {% endfor %}
+{% endif %}
 
+{% if allorderers is defined and (allorderers | length > 0) %}
 {% for orderer in allorderers %}
 ---
 apiVersion: v1
@@ -387,33 +396,4 @@ spec:
       port: 7050
 
 {% endfor %}
-
----
-apiVersion: v1
-kind: Pod
-metadata:
-  name: dockerendpoint
-  labels:
-    k8s-app: dockerendpoint
-spec:
-  containers:
-    - name: dockerendpoint
-      image: docker:17.12.1-ce-rc2-dind
-      imagePullPolicy: IfNotPresent
-{% include './resource.j2' %}
-      securityContext:
-        privileged: true
----
-kind: Service
-apiVersion: v1
-metadata:
-  labels:
-    k8s-app: dockerendpoint
-  name: dockerendpoint
-spec:
-  selector:
-    k8s-app: dockerendpoint
-  ports:
-    - name: port1
-      port: 2375
-      targetPort: 2375
+{% endif %}

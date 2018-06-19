@@ -66,7 +66,7 @@ export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/allorgs/keyfiles/{{ chainpeer.or
 
 peer chaincode instantiate -o {{ cliorderer.name }}:7050 --tls true \
   --cafile /etc/hyperledger/allorgs/keyfiles/{{ cliorderer.org }}/orderers/{{ cliorderer.name }}.{{ cliorderer.org }}/msp/tlscacerts/tlsca.{{ cliorderer.org }}-cert.pem \
-  -C firstchannel -n firstchaincode -v 1.0 -c '{"Args":["init","a", "100", "b","200"]}' -P "AND ('{{ orgmembers }}.member')"
+  -C firstchannel -n firstchaincode -v 1.0 -c '{"Args":["init","a", "100", "b","200"]}' -P "AND ({{ orgmembers }})"
 
 # Query the chaincode
 echo '-------------- Query chaincode'
@@ -125,6 +125,6 @@ export CORE_PEER_LOCALMSPID={{ chainpeer.org }}
 export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/allorgs/keyfiles/{{ chainpeer.org }}/users/Admin@{{ chainpeer.org }}/msp
 
 peer chaincode instantiate -o {{ cliorderer.name }}:7050 \
-  -C firstchannel -n firstchaincode -v 1.0 -c '{"Args":["init","a", "100", "b","200"]}' -P "OR ('{{ orgmembers }}.member')"
+  -C firstchannel -n firstchaincode -v 1.0 -c '{"Args":["init","a", "100", "b","200"]}' -P "OR ({{ orgmembers }})"
 
 {% endif %}

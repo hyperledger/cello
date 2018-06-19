@@ -10,7 +10,7 @@ spec:
   imagePullSecrets:
   - name: regcred
 {% endif %}
-  restartPolicy: OnFailure
+  restartPolicy: Never
   volumes:
     - name: varrun
       hostPath:

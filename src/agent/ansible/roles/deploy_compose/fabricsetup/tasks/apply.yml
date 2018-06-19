@@ -1,94 +1,11 @@
 ---
+- name: Reuse common code
+  include_tasks: "{{ playbook_dir }}/../common/config_apply.yml"
+
 - name: Setup and initialize variables
   set_fact:
     current_host: "{{ hostvars[inventory_hostname].inter_name }}"
-    fabricworkdir: "/opt/gopath/{{ env }}/fabric"
-    gopath: "/opt/gopath/{{ env }}"
-    peers: "{{ [] }}"
-    orderers: "{{ [] }}"
-    cas: "{{ [] }}"
-    kafkas: "{{ [] }}"
-    kafkanodes: ""
-    zookeepers: "{{ [] }}"
-    znodes: ""
-    zkparam: ""
-    index: 1
-    zoo_ids: "{{ {} }}"
-    kafka_ids: "{{ {} }}"
-    zookeeperls: "{{ [] }}"
-    kafkals: "{{ [] }}"
-    peerls: "{{ [] }}"
-    ordererls: "{{ [] }}"
-    cals: "{{ [] }}"
-    allpeers: "{{ [] }}"
     clihost: ""
-    filterstr: ""
-
-- name: Make sure that working directory is clean
-  become: true
-  become_user: root
-  file:
-    path: "{{ fabricworkdir }}/run"
-    state: "absent"
-
-- name: Make sure that working directory is clean
-  file:
-    path: "{{ fabricworkdir }}/run"
-    state: "directory"
-
-- name: Create component list
-  set_fact:
-    cals: "{{ cals | default([]) + item.value.cas | default([]) }}"
-    ordererls: "{{ ordererls | default([]) + item.value.orderers | default([]) }}"
-    peerls: "{{ peerls | default([]) + item.value.peers | default([]) }}"
-    zookeeperls: "{{ zookeeperls | default([]) + item.value.zookeepers | default([]) }}"
-    kafkals: "{{ kafkals | default([]) + item.value.kafkas | default([]) }}"
-  with_dict: "{{ fabric.network }}"
-
-- name: Sort component list
-  set_fact:
-    zookeeperls: "{{ zookeeperls | sort }}"
-    kafkals: "{{ kafkals | sort }}"
-
-- name: Generate zookeeper node list
-  set_fact:
-    znodes: "{{ znodes }} server.{{ index }}={{ item }}:2888:3888"
-    zkparam: "{{ zkparam + item }}:2181 "
-    zoo_ids: "{{ zoo_ids | combine({item: index}) }}"
-    index: "{{ index | int + 1 }}"
-  with_items: "{{ zookeeperls | default([]) }}"
-
-- name: Reset the index
-  set_fact:
-    index: 1
-
-- name: Generate kafka broker ids
-  set_fact:
-    kafka_ids: "{{ kafka_ids | combine({item: index}) }}"
-    index: "{{ index | int + 1 }}"
-  with_items: "{{ kafkals | default([]) }}"
-
-- name: Get all peer object list
-  set_fact:
-    allpeers: |
-      {{ allpeers | default([]) + [{'org':item.split('@')[1].split('.')[-1],
-        'name':item.split('@')[1] | replace('.', '-'),
-        'role':item.split('@')[0]}] }}
-  with_items: "{{ peerls }}"
-
-- name: Get all ca object list
-  set_fact:
-    allcas: |
-      {{ allcas | default([]) + [{ 'org':item.split('.')[-1],
-        'name':item | replace('.', '-') }] }}
-  with_items: "{{ cals }}"
-
-- name: Get all orderer object list
-  set_fact:
-    allorderers: |
-      {{ allorderers | default([]) + [{ 'org':item.split('.')[-1],
-        'name':item | replace('.', '-') }] }}
-  with_items: "{{ ordererls }}"
 
 - name: Get peer container list
   set_fact:
@@ -171,9 +88,10 @@
   set_fact:
     peerorgs: "{{ peers | map(attribute='org') | list  | unique | sort }}"
 
-- name: Get all peer orgs
+- name: Create peer org member string
   set_fact:
-    orgmembers: "{{ peers | map(attribute='org') | list  | unique | sort | join(\".member' '\") | trim | replace(' ', ',') }}"
+    orgmembers: >-
+      {{ peerorgs|map('regex_replace','(.*)',"'\g<1>.member'")|list|join(',') }}
 
 - name: Login to docker repo
   command: "docker login {{ fabric.repo.url }} -u {{ fabric.repo.username }} -p {{ fabric.repo.password }}"
@@ -254,11 +172,27 @@
     dest: "{{ fabricworkdir }}/run/cli-compose.yml"
   when: clihost == inventory_hostname
 
-- name: Wait for containers to be ready
-  pause:
-    seconds: 30
-
 - name: Start fabriccli components
   command: "docker-compose -p {{ env }}.cli -f {{ fabricworkdir }}/run/cli-compose.yml up -d"
+  when: clihost == inventory_hostname
+  tags: "dochaincode"
+
+- name: Wait for fabriccli to start
+  command: >-
+    docker ps -a -q -f 'name=fabriccli'
+  register: clistatus
+  until: clistatus.stdout | length > 0
+  retries: 50
+  delay: 10
+  when: clihost == inventory_hostname
+  tags: "dochaincode"
+
+- name: Wait fabriccli to exit
+  command: >-
+    docker ps -a -q -f 'name=fabriccli' -f 'status=exited'
+  register: clistatus
+  until: clistatus.stdout | length > 0
+  retries: 50
+  delay: 10
   when: clihost == inventory_hostname
   tags: "dochaincode"

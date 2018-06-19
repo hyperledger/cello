@@ -5,13 +5,13 @@
 {% set tag = fabric.baseimage_tag.split('-') %}
 {% set project_version = tag[1] %}
 {% endif %}
-{% if orderers | length > 0 %}
+{% if allorderers is defined and (allorderers | length > 0 ) %}
 OrdererOrgs:
 {% for org in ordererorgs %}
   - Name: {{ org }}
     Domain: {{ org }}
     Specs:
-{%   for item in orderers %}
+{%   for item in allorderers %}
 {%     if item.org == org %}
       - Hostname: {{ item.name }}
 {%     endif %}
@@ -19,7 +19,7 @@ OrdererOrgs:
 {% endfor %}
 {% endif %}
 
-{% if peers | length > 0 %}
+{% if allpeers is defined and (allpeers | length > 0) %}
 
 PeerOrgs:
 {% for org in peerorgs %}
@@ -29,7 +29,7 @@ PeerOrgs:
     EnableNodeOUs: true
 {% endif %}
     Specs:
-{%   for item in peers %}
+{%   for item in allpeers %}
 {%     if item.org == org %}
       - Hostname: {{ item.name }}
 {%     endif %}

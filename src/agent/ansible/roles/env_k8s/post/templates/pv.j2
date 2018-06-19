@@ -6,8 +6,9 @@ metadata:
 spec:
   capacity:
     storage: 5Gi
+  storageClassName: "default"
   accessModes:
-  - ReadWriteOnce
+  - ReadWriteMany
   nfs:
     path: /
     server: {{ private_ip }}
