@@ -50,9 +50,9 @@ class K8sClusterOperation():
 
     def _upload_config_file(self, cluster_name, consensus):
         try:
-            cluster_path = os.path.join('/opt/share', cluster_name)
+            cluster_path = os.path.join('/cello', cluster_name)
             # Uploading the 'resources' directory with its content in the
-            # '/opt/share remote directory
+            # '/cello remote directory
             current_path = os.path.dirname(__file__)
 
             # Only solo and kafka supported
@@ -74,7 +74,7 @@ class K8sClusterOperation():
 
     def _delete_config_file(self, cluster_name):
         try:
-            cluster_path = os.path.join('/opt/share', cluster_name)
+            cluster_path = os.path.join('/cello', cluster_name)
             shutil.rmtree(cluster_path)
         except Exception as e:
             error_msg = (

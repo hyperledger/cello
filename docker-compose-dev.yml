@@ -57,6 +57,7 @@ services:
     expose:
       - "8080"
     volumes:  # This should be removed in product env
+      - ./src/agent/docker/_compose_files:/cello
       - ./src:/app
 
  #TODO: need to follow other images to put at dockerhub
