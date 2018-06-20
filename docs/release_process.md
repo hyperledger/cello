@@ -25,7 +25,7 @@ As part of the release process, CI automatically triggers the following release 
 - **Publish Fabric Docker images**:
 
 CI triggers release jobs on two platforms (**s390x and ppc64le**) and for **x86_64** configured to be
-auto published from dockerhub auto-build, upon successful run, publishes Docker images (*cello-mongo, cello-nginx, cello-baseimage*) to the
+auto published from dockerhub auto-build, upon successful run, publishes Docker images (*cello-mongo, cello-baseimage*) to the
 [(https://hub.docker.com/u/hyperledger/)](https://hub.docker.com/u/hyperledger/ "Hyperledger Docker Hub") account.
 
 - cello-release-ppc64le

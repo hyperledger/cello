@@ -93,9 +93,3 @@ cd /tmp
 wget https://bootstrap.pypa.io/get-pip.py
 python get-pip.py
 rm get-pip.py
-
-# ----------------------------------------------------------------
-# Install nginx
-# ----------------------------------------------------------------
-groupadd -r nginx && useradd -r -g nginx nginx
-apt-get install nginx apache2-utils -y
