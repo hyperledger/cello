@@ -14,7 +14,7 @@ export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/allorgs/{{ clipeer.org }}/users/
 # Run the peer channel create command
 cd /etc/hyperledger/allorgs
 peer channel create -o {{ cliorderer.name }}:7050 -c firstchannel \
-  -f /etc/hyperledger/allorgs/firstchannel.tx --tls true --timeout 120 \
+  -f /etc/hyperledger/allorgs/firstchannel.tx --tls true --timeout 240 \
   --cafile /etc/hyperledger/allorgs/{{ cliorderer.org }}/orderers/{{ cliorderer.name }}.{{ cliorderer.org }}/msp/tlscacerts/tlsca.{{ cliorderer.org }}-cert.pem
 
 export CORE_PEER_TLS_ENABLED=true
@@ -49,7 +49,7 @@ export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/allorgs/{{ chainpeer.org }}/user
 
 peer chaincode instantiate -o {{ cliorderer.name }}:7050 --tls true \
   --cafile /etc/hyperledger/allorgs/{{ cliorderer.org }}/orderers/{{ cliorderer.name }}.{{ cliorderer.org }}/msp/tlscacerts/tlsca.{{ cliorderer.org }}-cert.pem \
-  -C firstchannel -n firstchaincode -v 1.0 -c '{"Args":["init","a", "100", "b","200"]}' -P "OR ('{{ orgmembers }}.member')"
+  -C firstchannel -n firstchaincode -v 1.0 -c '{"Args":["init","a", "100", "b","200"]}' -P "OR ({{ orgmembers }})"
 
 {% else %}
 
@@ -63,7 +63,7 @@ export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/allorgs/{{ clipeer.org }}/users/
 # Run the peer channel create command
 cd /etc/hyperledger/allorgs
 peer channel create -o {{ cliorderer.name }}:7050 -c firstchannel \
-  -f /etc/hyperledger/allorgs/firstchannel.tx --timeout 120
+  -f /etc/hyperledger/allorgs/firstchannel.tx --timeout 240
 
 export CORE_PEER_TLS_ENABLED=false
 export GOPATH=/opt/gopath
@@ -92,7 +92,7 @@ export CORE_PEER_LOCALMSPID={{ chainpeer.org }}
 export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/allorgs/{{ chainpeer.org }}/users/Admin@{{ chainpeer.org }}/msp
 
 peer chaincode instantiate -o {{ cliorderer.name }}:7050 \
-  -C firstchannel -n firstchaincode -v 1.0 -c '{"Args":["init","a", "100", "b","200"]}' -P "OR ('{{ orgmembers }}.member')"
+  -C firstchannel -n firstchaincode -v 1.0 -c '{"Args":["init","a", "100", "b","200"]}' -P "OR ({{ orgmembers }})"
 {% endif %}
 
 # Query the chaincode

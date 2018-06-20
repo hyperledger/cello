@@ -1,0 +1,36 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: dind
+spec:
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      name:  dind
+  template:
+    metadata:
+      labels:
+        name: dind
+    spec:
+      containers:
+      - name: dind
+        image: docker:dind
+        args:
+          - dockerd
+          - -H unix:///var/run/dind/docker.sock
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: varlibdocker
+          mountPath: /var/lib/docker
+        - name: rundind
+          mountPath: /var/run/dind
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: varlibdocker
+        emptyDir: {}
+      - name: rundind
+        hostPath:
+          path: /var/run/dind/
+

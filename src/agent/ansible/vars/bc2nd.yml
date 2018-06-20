@@ -25,10 +25,11 @@ fabric: {
 
   network: {
     fabric001: {
-      peers: ["leader@peer1st.mad","anchor@peer2nd.mad"],
-      orderers: ["orderer1st.sin"],
-      zookeepers: ["zookeeper1st"],
-      kafkas: ["kafka1st"]
+      cas: ["ca1st.sin"],
+      peers: ["anchor@peer1st.sin", "worker@peer2nd.sin"],
+      orderers: [],
+      zookeepers: [],
+      kafkas: []
     }
   },
 
@@ -48,7 +49,7 @@ fabric: {
   # The container tag for accessory fabric components such as ca, kafka,
   # zookeeper and couchdb. It has to be the full tag just like the
   # baseimage_tag
-  helper_tag: "amd-0.4.8",
+  helper_tag: "amd64-0.4.8",
   ca: { admin: "admin", adminpw: "adminpw", image_tag: "amd64-1.1.0" },
 
   # Only use this field when you have a docker repository.
@@ -61,6 +62,6 @@ fabric: {
     # locations to download fabric binaries. This url should point to a
     # compressed such as tar or zip file which contains necessary binaries
     # such as configtxgen, configtxlator, cryptogen etc.
-    bin: "https://nexus.hyperledger.org/content/repositories/releases/org/hyperledger/fabric/hyperledger-fabric-build/linux-amd64-ff6f6dbffed57efb9f7d8886b4a47949ce2d4396/hyperledger-fabric-build-linux-amd64-ff6f6dbffed57efb9f7d8886b4a47949ce2d4396.tar.gz"
+    bin: "https://nexus.hyperledger.org/content/repositories/releases/org/hyperledger/fabric/hyperledger-fabric/linux-amd64-1.1.0/hyperledger-fabric-linux-amd64-1.1.0.tar.gz"
   }
 }

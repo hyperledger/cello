@@ -1,99 +1,28 @@
 ---
-- name: Setup and initialize variables
-  set_fact:
-    fabricworkdir: "/opt/gopath/{{ env }}/fabric"
-    fabricpath: "/opt/gopath/{{ env }}/src/github.com/hyperledger/fabric"
-    gopath: "/opt/gopath/{{ env }}"
-    peers: "{{ [] }}"
-    orderers: "{{ [] }}"
-    cas: "{{ [] }}"
-    kafkas: "{{ [] }}"
-    kafkanodes: ""
-    zookeepers: "{{ [] }}"
-    znodes: ""
-    zkparam: ""
-    index: 1
-    zoo_ids: "{{ {} }}"
-    kafka_ids: "{{ {} }}"
-    zookeeperls: "{{ [] }}"
-    kafkals: "{{ [] }}"
-    peerls: "{{ [] }}"
-    ordererls: "{{ [] }}"
-    cals: "{{ [] }}"
-    allpeers: "{{ [] }}"
-    clihost: ""
-    filterstr: ""
-
-- name: Make sure that working directory exists and clean
-  file:
-    path: "{{ fabricworkdir }}/run"
-    state: "{{ item }}"
-    mode: 0775
-  with_items:
-    - "absent"
-    - "directory"
-
-- name: Create component list
-  set_fact:
-    cals: "{{ cals | default([]) + item.value.cas | default([]) }}"
-    ordererls: "{{ ordererls | default([]) + item.value.orderers | default([]) }}"
-    peerls: "{{ peerls | default([]) + item.value.peers | default([]) }}"
-    zookeeperls: "{{ zookeeperls | default([]) + item.value.zookeepers | default([]) }}"
-    kafkals: "{{ kafkals | default([]) + item.value.kafkas | default([]) }}"
-  with_dict: "{{ fabric.network }}"
-
-- name: Sort component list
-  set_fact:
-    zookeeperls: "{{ zookeeperls | sort }}"
-    kafkals: "{{ kafkals | sort }}"
-
-- name: Generate zookeeper node list
-  set_fact:
-    znodes: "{{ znodes }} server.{{ index }}={{ item }}:2888:3888"
-    zkparam: "{{ zkparam + item }}:2181 "
-    zoo_ids: "{{ zoo_ids | combine({item: index}) }}"
-    index: "{{ index | int + 1 }}"
-  with_items: "{{ zookeeperls | default([]) }}"
-
-- name: Reset the index
-  set_fact:
-    index: 1
-
-- name: Generate kafka broker ids
-  set_fact:
-    kafka_ids: "{{ kafka_ids | combine({item: index}) }}"
-    index: "{{ index | int + 1 }}"
-  with_items: "{{ kafkals | default([]) }}"
-
-- name: Get all peer object list
-  set_fact:
-    allpeers: |
-      {{ allpeers | default([]) + [{'org':item.split('@')[1].split('.')[-1],
-        'name':item.split('@')[1] | replace('.', '-'),
-        'role':item.split('@')[0]}] }}
-  with_items: "{{ peerls }}"
-
-- name: Get all ca object list
-  set_fact:
-    allcas: |
-      {{ allcas | default([]) + [{ 'org':item.split('.')[-1],
-        'name':item | replace('.', '-') }] }}
-  with_items: "{{ cals }}"
-
-- name: Get all orderer object list
-  set_fact:
-    allorderers: |
-      {{ allorderers | default([]) + [{ 'org':item.split('.')[-1],
-        'name':item | replace('.', '-') }] }}
-  with_items: "{{ ordererls }}"
+- name: Reuse common code
+  include_tasks: "{{ playbook_dir }}/../common/config_apply.yml"
 
 - name: Create deployment files for certssetup and pvc
   template:
-    src: "{{ playbook_dir }}/../deploy_k8s/fabricsetup/templates/{{ item }}.j2"
+    src: "{{ playbook_dir }}/fabricsetup/templates/{{ item }}.j2"
     dest: "{{ playbook_dir }}/../../run/{{ item }}.yaml"
   with_items:
     - pvc
     - certssetup
+    - cli-k8s
+    - chainep
+
+- name: Create peer org member string
+  set_fact:
+    orgmembers: >-
+      {{ peerorgs|map('regex_replace','(.*)',"'\g<1>.member'")|list|join(',') }}
+
+- name: Create peer channel command script
+  template:
+    src: "{{ playbook_dir }}/../deploy_k8s/fabricsetup/templates/dochannel.j2"
+    dest: "{{ fabricworkdir }}/keyfiles/dochannel.sh"
+    mode: "u=rx,g=rx"
+  when: allorderers | length > 0
 
 - name: Create persistent volume
   command: >-
@@ -160,21 +89,13 @@
     fabric.repo.password | default("") | length > 0 and
     secretstatus.rc != 0
 
-- name: Set peer and orderer to run peer channel create command
-  set_fact:
-    clipeer: "{{ allpeers | random }}"
-    cliorderer: "{{ allorderers | random }}"
-  when: peerls | length > 0
-
-- name: Get all peer orgs
-  set_fact:
-    orgmembers: "{{ allpeers | map(attribute='org') | list  | unique | sort | join(\".member' '\") | trim | replace(' ', ',') }}"
-
-- name: Create peer channel command script
-  template:
-    src: "{{ playbook_dir }}/../deploy_k8s/fabricsetup/templates/dochannel.j2"
-    dest: "{{ fabricworkdir }}/keyfiles/dochannel.sh"
-    mode: "u=rx,g=rx"
+- name: Clean up the Persistent volume
+  command: >-
+    ./kubectl --kubeconfig kubeconfig exec fabriccertspod -c task-pv-container
+    -- rm -rf /fabriccerts/*
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+  tags: "cleancerts"
 
 - name: Copy certs onto the persistent volume
   command: >-
@@ -183,8 +104,17 @@
     chdir: "{{ playbook_dir }}/../../vars/"
   with_items:
     - "{{ fabricworkdir }}/certs.tgz"
-    - "{{ fabricworkdir }}/keyfiles/dochannel.sh"
     - "{{ playbook_dir }}/../deploy_k8s/fabricsetup/templates/firstcode.go"
+  tags: "placecerts"
+
+- name: Copy certs onto the persistent volume
+  command: >-
+    ./kubectl --kubeconfig kubeconfig cp {{ item }} fabriccertspod:/fabriccerts
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+  with_items:
+    - "{{ fabricworkdir }}/keyfiles/dochannel.sh"
+  when: allorderers | length > 0
   tags: "placecerts"
 
 - name: Untar certs.tgz in the Persistent volume
@@ -202,36 +132,38 @@
     chdir: "{{ playbook_dir }}/../../vars/"
   tags: "deletecertspod"
 
+- name: Deploy chaincode container endpoint daemon set
+  command: >-
+    ./kubectl --kubeconfig kubeconfig apply -f ../run/chainep.yaml
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+  tags: "doendpointdaemonset"
+
 - name: Create k8s deployment files
   template:
     src: "{{ playbook_dir }}/../deploy_k8s/fabricsetup/templates/fabric-pod.j2"
     dest: "{{ playbook_dir }}/../../vars/fabric-pod.yml"
 
 - name: Start fabric pods
-  command: "./kubectl --kubeconfig='kubeconfig' apply -f fabric-pod.yml"
+  command: "./kubectl --kubeconfig kubeconfig apply -f fabric-pod.yml"
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
   tags: "fabricup"
 
-- name: Create peer channel command k8s deployment file
-  template:
-    src: "{{ playbook_dir }}/../deploy_k8s/fabricsetup/templates/cli-k8s.j2"
-    dest: "{{ playbook_dir }}/../../vars/cli-k8s.yml"
-
-- name: Wait for containers to be ready
-  pause:
-    seconds: 60
-
-- name: Start fabriccli pod
-  command: "./kubectl --kubeconfig='kubeconfig' apply -f cli-k8s.yml"
-  args:
-    chdir: "{{ playbook_dir }}/../../vars/"
-  tags: "cliup"
-
-- name: Pull ccenv image to docker endpoint
+- name: Wait for all peer pods to be ready
   command: >-
-    ./kubectl --kubeconfig kubeconfig exec dockerendpoint
-    -- sh -c "docker pull {{ fabric.repo.url }}fabric-ccenv:{{ fabric.baseimage_tag }}"
+    ./kubectl --kubeconfig kubeconfig -o=custom-columns=STATUS:.status.phase
+    get pods -l type=peer --no-headers --field-selector=status.phase=Running
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
-  tags: "pullccenv"
+  register: podstatus
+  until: podstatus.stdout_lines | length == allpeers | length
+  retries: 50
+  delay: 5
+
+- name: Start channel operations
+  command: "./kubectl --kubeconfig kubeconfig apply -f ../run/cli-k8s.yaml"
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+  tags: "channeloperation"
+  when: allorderers | length > 0
