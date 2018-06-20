@@ -10,4 +10,8 @@ module.exports = app => {
   app.router.get('/api/chain/:id', app.controller.chain.query);
   app.router.get('/api/chain/network-config/:id', app.controller.chain.downloadNetworkConfig);
   app.router.delete('/api/chain/:id', app.controller.chain.release);
+  app.router.get('/api/smart-contract', app.controller.smartContract.list);
+  app.router.delete('/api/smart-contract/code/:id', app.controller.smartContract.removeSmartContractCode);
+  app.router.put('/api/smart-contract/code/:id', app.controller.smartContract.updateSmartContractCode);
+  app.router.delete('/api/smart-contract/:id', app.controller.smartContract.deleteSmartContract);
 };

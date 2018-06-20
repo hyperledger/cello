@@ -9,9 +9,20 @@ const menuData = [
     icon: 'link',
     path: 'chain',
   },
-    {
+  {
     name: 'Apply Chain',
     path: 'apply-chain',
+    hideInMenu: true,
+    hideInBreadcrumb: false,
+  },
+  {
+    name: 'Smart Contract',
+    path: 'smart-contract',
+    icon: 'code-o',
+  },
+  {
+    name: 'Create New Smart Contract',
+    path: 'new-smart-contract',
     hideInMenu: true,
     hideInBreadcrumb: false,
   },
