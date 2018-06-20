@@ -23,6 +23,7 @@ class UserService extends Service {
     if (response.status === 200) {
       const userModel = await ctx.model.User.findOne({ username });
       if (!userModel) {
+        await ctx.service.smartContract.copySystemSmartContract(response.data.id);
         await ctx.model.User.create({
           _id: response.data.id,
           username,

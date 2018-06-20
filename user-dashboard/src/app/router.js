@@ -33,6 +33,7 @@ module.exports = app => {
   });
 
   router.get('home', '/', controller.home.index);
+  router.post('upload-smart-contract', '/upload-smart-contract', controller.smartContract.upload);
   router.post('/login', passport.authenticate('local', { successRedirect: process.env.WEBROOT }));
   router.get('/logout', controller.home.logout);
   require('./router/api')(app);

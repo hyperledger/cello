@@ -4,34 +4,48 @@
 import React, { PureComponent } from 'react';
 import { routerRedux } from 'dva/router';
 import { connect } from 'dva';
-import { Card, Button, Icon, List, Avatar, Modal } from 'antd';
+import { Card, Button, Icon, List, Avatar, Modal, message } from 'antd';
 import QueueAnim from 'rc-queue-anim';
 
 import Ellipsis from 'components/Ellipsis';
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
-import config from '../../utils/config';
 
 import styles from './index.less';
 
-@connect(({ chain, loading }) => ({
-  chain,
-  loading: loading.effects['chain/fetch'],
+@connect(({ smartContract, loading }) => ({
+  smartContract,
+  loadingSmartContracts: loading.effects['smartContract/fetch'],
 }))
-export default class CardList extends PureComponent {
+export default class SmartContract extends PureComponent {
   componentDidMount() {
     this.props.dispatch({
-      type: 'chain/fetch',
-    })
+      type: 'smartContract/fetch',
+    });
   }
-  releaseChain = (chain) => {
+  newSmartContract = () => {
+    this.props.dispatch(
+      routerRedux.push({
+        pathname: '/new-smart-contract',
+      })
+    );
+  };
+  deleteCallback = ( payload ) => {
+    message.success(`Delete smart contract ${payload.name} successfully.`);
+    this.props.dispatch({
+      type: 'smartContract/fetch',
+    });
+  };
+  deleteSmartContract = (smartContract) => {
     const { dispatch } = this.props;
+    const { deleteCallback } = this;
     Modal.confirm({
-      title: `Do you want to release chain ${chain.name}?`,
+      title: `Do you want to delete smart contract ${smartContract.name}?`,
       onOk() {
         dispatch({
-          type: 'chain/release',
+          type: 'smartContract/deleteSmartContract',
           payload: {
-            id: chain.chainId,
+            id: smartContract._id,
+            callback: deleteCallback,
           },
         })
       },
@@ -39,20 +53,12 @@ export default class CardList extends PureComponent {
       },
     });
   };
-  applyChain = () => {
-    this.props.dispatch(
-      routerRedux.push({
-        pathname: '/apply-chain',
-      })
-    );
-  };
-
   render() {
-    const { chain: { chains }, loading } = this.props;
+    const { smartContract: { smartContracts }, loadingSmartContracts } = this.props;
     const content = (
       <div className={styles.pageHeaderContent}>
         <p>
-          You can create,list,manage chains here.
+          You can upload,install,instantiate smart contract into chains applied.
         </p>
       </div>
     );
@@ -60,23 +66,23 @@ export default class CardList extends PureComponent {
     const extraContent = (
       <div className={styles.extraImg}>
         <QueueAnim>
-          <Icon key="smart-contract" type="link" style={{fontSize: 80}} />
+          <Icon key="smart-contract" type="code-o" style={{fontSize: 80}} />
         </QueueAnim>
       </div>
     );
 
     return (
-      <PageHeaderLayout title="Chain List" content={content} extraContent={extraContent}>
+      <PageHeaderLayout title="Smart Contract Management" content={content} extraContent={extraContent}>
         <div className={styles.cardList}>
           <List
             rowKey="id"
-            loading={loading}
+            loading={loadingSmartContracts}
             grid={{ gutter: 24, lg: 3, md: 2, sm: 1, xs: 1 }}
-            dataSource={['', ...chains]}
+            dataSource={['', ...smartContracts]}
             renderItem={item =>
               item ? (
                 <List.Item key={item._id}>
-                  <Card hoverable className={styles.card} actions={[<a>Info</a>, <a onClick={() => this.releaseChain(item)}>Release</a>, <a href={config.url.chain.downloadNetworkConfig.format({ id: item._id })}><Icon type="download" /></a>]}>
+                  <Card hoverable className={styles.card} actions={[<a>Info</a>, <a style={{color: 'red'}} onClick={() => this.deleteSmartContract(item)}>Delete</a>]}>
                     <Card.Meta
                       avatar={
                         <Avatar size="large" style={{ backgroundColor: '#08c' }} icon="link" />
@@ -84,7 +90,7 @@ export default class CardList extends PureComponent {
                       title={<a href="#">{item.name}</a>}
                       description={
                         <Ellipsis className={styles.item} lines={3}>
-                          {item.type}
+                          {item.description}
                         </Ellipsis>
                       }
                     />
@@ -92,8 +98,8 @@ export default class CardList extends PureComponent {
                 </List.Item>
               ) : (
                 <List.Item>
-                  <Button type="dashed" className={styles.newButton} onClick={this.applyChain}>
-                    <Icon type="plus" /> New Chain
+                  <Button type="dashed" className={styles.newButton} onClick={this.newSmartContract}>
+                    <Icon type="plus" /> New Smart Contract
                   </Button>
                 </List.Item>
               )

@@ -36,6 +36,16 @@ module.exports = appInfo => {
     },
     default: {
       channelName: 'mychannel',
+      smartContracts: {
+        fabric: [
+          {
+            name: 'chaincode_example02',
+            path: '/var/www/resource/smart_contract/fabric/chaincode_example02',
+            version: 'v1.0',
+            description: 'This is a demo smart contract example02.',
+          },
+        ],
+      },
     },
     dataDir: '/opt/data',
   };
