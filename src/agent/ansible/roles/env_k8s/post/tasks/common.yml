@@ -1,4 +1,0 @@
----
-- name: Get nameservers
-  shell: cat '/etc/resolv.conf'|grep nameserver|awk '{print $2 ":53"}'
-  register: nameserverraw

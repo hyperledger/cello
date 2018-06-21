@@ -161,6 +161,24 @@
   retries: 50
   delay: 5
 
+- name: Get all the endpoint pods
+  command: >-
+    ./kubectl --kubeconfig kubeconfig -o=custom-columns=NAME:.metadata.name
+    get pods -l name=dind --no-headers
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+  register: dindpods
+  tags: "downloadccenv"
+
+- name: Download chaincode container image
+  command: >-
+    ./kubectl --kubeconfig kubeconfig exec {{ item }} --
+    docker pull {{ fabric.repo.url }}fabric-ccenv:{{ fabric.baseimage_tag }}
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+  with_items: "{{ dindpods.stdout_lines }}"
+  tags: "downloadccenv"
+
 - name: Start channel operations
   command: "./kubectl --kubeconfig kubeconfig apply -f ../run/cli-k8s.yaml"
   args:

@@ -1,3 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kube-dns
+  namespace: kube-system
+data:
+  upstreamNameservers: |
+    ["8.8.8.8", "8.8.4.4"]
+---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -37,7 +46,7 @@ spec:
         dashboardId: master
       containers:
       - name: kubedns
-        image: gcr.io/google_containers/k8s-dns-kube-dns-amd64:1.14.4
+        image: gcr.io/google_containers/k8s-dns-kube-dns-amd64:1.14.8
         resources:
           limits:
             memory: 170Mi
@@ -64,8 +73,8 @@ spec:
         - --domain=fabricnet.
         - --dns-port=10053
         - --kubecfg-file=/kube-config
+        - --config-dir=/kube-dns-config
         - --kube-master-url=http://{{ private_ip }}:8080
-        - --nameservers={{ nameservers }}
         - --v=2
         env:
         - name: PROMETHEUS_PORT
@@ -83,8 +92,10 @@ spec:
         volumeMounts:
         - name: kube-config
           mountPath: /kube-config
+        - name: kube-dns-config
+          mountPath: /kube-dns-config
       - name: dnsmasq
-        image: gcr.io/google_containers/k8s-dns-dnsmasq-nanny-amd64:1.14.4
+        image: gcr.io/google_containers/k8s-dns-dnsmasq-nanny-amd64:1.14.8
         livenessProbe:
           httpGet:
             path: /healthcheck/dnsmasq
@@ -121,7 +132,7 @@ spec:
         - name: kube-dns-config
           mountPath: /etc/k8s/dns/dnsmasq-nanny
       - name: sidecar
-        image: gcr.io/google_containers/k8s-dns-sidecar-amd64:1.14.4
+        image: gcr.io/google_containers/k8s-dns-sidecar-amd64:1.14.8
         livenessProbe:
           httpGet:
             path: /metrics

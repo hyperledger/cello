@@ -18,14 +18,14 @@ spec:
         image: docker:dind
         args:
           - dockerd
-          - -H unix:///var/run/dind/docker.sock
+          - -H unix:///var/run/docker.sock
         securityContext:
           privileged: true
         volumeMounts:
         - name: varlibdocker
           mountPath: /var/lib/docker
         - name: rundind
-          mountPath: /var/run/dind
+          mountPath: /var/run
       terminationGracePeriodSeconds: 30
       volumes:
       - name: varlibdocker

@@ -196,6 +196,9 @@ metadata:
 spec:
   selector:
     k8s-app: {{ ca.name }}
+{% if fabric.k8s.exposeserviceport %}
+  type: NodePort
+{% endif %}
   ports:
     - name: port1
       port: 7054
@@ -232,9 +235,6 @@ spec:
                 - peer
           topologyKey: kubernetes.io/hostname
   volumes:
-    - name: varrun
-      hostPath:
-        path: /var/run
     - name: task-pv-storage
       persistentVolumeClaim:
         claimName: fabriccerts
@@ -263,7 +263,7 @@ spec:
       securityContext:
         privileged: true
       env:
-        - { name: "CORE_VM_ENDPOINT", value: "unix:///var/run/dind/docker.sock" }
+        - { name: "CORE_VM_ENDPOINT", value: "unix:///var/run/docker.sock" }
         - { name: "FABRIC_CFG_PATH", value: "/etc/hyperledger/fabric/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}" }
         - { name: "CORE_LOGGING_LEVEL", value: "{{ fabric.logging_level | default('ERROR') }}" }
         - { name: "CORE_PEER_ENDORSER_ENABLED", value: "true" }
@@ -295,9 +295,8 @@ spec:
 {% endif %}
 {% include './resource.j2' %}
       volumeMounts:
-        - { mountPath: "/host/var/run", name: "varrun" }
         - { mountPath: "/etc/hyperledger/fabric", name: "task-pv-storage" }
-        - { mountPath: "/var/run/dind", name: "rundind" }
+        - { mountPath: "/var/run", name: "rundind" }
       command: ["peer"]
       args: ["node", "start"]
 ---
@@ -310,6 +309,9 @@ metadata:
 spec:
   selector:
     k8s-app: {{ peer.name }}
+{% if fabric.k8s.exposeserviceport %}
+  type: NodePort
+{% endif %}
   ports:
   - name: port1
     port: 7051
@@ -391,6 +393,9 @@ metadata:
 spec:
   selector:
     k8s-app: {{ orderer.name }}
+{% if fabric.k8s.exposeserviceport %}
+  type: NodePort
+{% endif %}
   ports:
     - name: port1
       port: 7050

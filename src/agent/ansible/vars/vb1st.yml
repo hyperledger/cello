@@ -20,6 +20,7 @@ fabric: {
   tls: false,
   logging_level: "ERROR",
   k8s: {
+    exposeserviceport: True,
     storageclass: "default",
     storagecapacity: "2Gi",
     shared_storage: false,

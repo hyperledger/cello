@@ -6,12 +6,6 @@
     node_name: "{{ hostvars[ansible_host].inter_name }}"
     fabricroot: "/opt/fabric"
 
-- include: common.yml
-
-- name: Combine all possible name servers
-  set_fact:
-    nameservers: "{{ nameserverraw.stdout_lines | join(',') }}"
-
 - name: Upload addon service configuration files
   template:
     src: "{{ playbook_dir }}/../env_k8s/post/templates/{{ item }}.j2"
