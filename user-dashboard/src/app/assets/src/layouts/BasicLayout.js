@@ -1,23 +1,23 @@
 /*
  SPDX-License-Identifier: Apache-2.0
 */
-import React, { Fragment } from 'react';
-import PropTypes from 'prop-types';
-import { Layout, Icon } from 'antd';
-import DocumentTitle from 'react-document-title';
-import { connect } from 'dva';
-import { Route, Redirect, Switch } from 'dva/router';
-import { ContainerQuery } from 'react-container-query';
-import classNames from 'classnames';
-import { enquireScreen } from 'enquire-js';
-import GlobalHeader from '../components/GlobalHeader';
-import GlobalFooter from '../components/GlobalFooter';
-import SiderMenu from '../components/SiderMenu';
-import NotFound from '../routes/Exception/404';
-import { getRoutes } from '../utils/utils';
-import Authorized from '../utils/Authorized';
-import { getMenuData } from '../common/menu';
-import logo from '../assets/logo.svg';
+import React, { Fragment } from "react";
+import PropTypes from "prop-types";
+import { Layout, Icon } from "antd";
+import DocumentTitle from "react-document-title";
+import { connect } from "dva";
+import { Route, Redirect, Switch } from "dva/router";
+import { ContainerQuery } from "react-container-query";
+import classNames from "classnames";
+import { enquireScreen } from "enquire-js";
+import GlobalHeader from "../components/GlobalHeader";
+import GlobalFooter from "../components/GlobalFooter";
+import SiderMenu from "../components/SiderMenu";
+import NotFound from "../routes/Exception/404";
+import { getRoutes } from "../utils/utils";
+import Authorized from "../utils/Authorized";
+import { getMenuData } from "../common/menu";
+import logo from "../assets/logo.svg";
 
 const { Content, Header, Footer } = Layout;
 const { check } = Authorized;
@@ -53,22 +53,22 @@ const getBreadcrumbNameMap = (menuData, routerData) => {
 };
 
 const query = {
-  'screen-xs': {
+  "screen-xs": {
     maxWidth: 575,
   },
-  'screen-sm': {
+  "screen-sm": {
     minWidth: 576,
     maxWidth: 767,
   },
-  'screen-md': {
+  "screen-md": {
     minWidth: 768,
     maxWidth: 991,
   },
-  'screen-lg': {
+  "screen-lg": {
     minWidth: 992,
     maxWidth: 1199,
   },
-  'screen-xl': {
+  "screen-xl": {
     minWidth: 1200,
   },
 };
@@ -103,7 +103,7 @@ class BasicLayout extends React.PureComponent {
   getPageTitle() {
     const { routerData, location } = this.props;
     const { pathname } = location;
-    let title = 'Cello Operator Dashboard';
+    let title = "Cello Operator Dashboard";
     if (routerData[pathname] && routerData[pathname].name) {
       title = `${routerData[pathname].name} - Cello Operator Dashboard`;
     }
@@ -113,16 +113,16 @@ class BasicLayout extends React.PureComponent {
     // According to the url parameter to redirect
     const urlParams = new URL(window.location.href);
 
-    const redirect = urlParams.searchParams.get('redirect');
+    const redirect = urlParams.searchParams.get("redirect");
     // Remove the parameters in the url
     if (redirect) {
-      urlParams.searchParams.delete('redirect');
-      window.history.replaceState(null, 'redirect', urlParams.href);
+      urlParams.searchParams.delete("redirect");
+      window.history.replaceState(null, "redirect", urlParams.href);
     } else {
       const { routerData } = this.props;
       // get the first authorized route path in routerData
       const authorizedPath = Object.keys(routerData).find(
-        item => check(routerData[item].authority, item) && item !== '/'
+        item => check(routerData[item].authority, item) && item !== "/"
       );
       return authorizedPath;
     }
@@ -130,13 +130,13 @@ class BasicLayout extends React.PureComponent {
   };
   handleMenuCollapse = collapsed => {
     this.props.dispatch({
-      type: 'global/changeLayoutCollapsed',
+      type: "global/changeLayoutCollapsed",
       payload: collapsed,
     });
   };
   handleMenuClick = ({ key }) => {
-    if (key === 'logout') {
-      window.location.href = '/logout';
+    if (key === "logout") {
+      window.location.href = "/logout";
     }
   };
   render() {
@@ -165,7 +165,7 @@ class BasicLayout extends React.PureComponent {
               onMenuClick={this.handleMenuClick}
             />
           </Header>
-          <Content style={{ margin: '24px 24px 0', height: '100%' }}>
+          <Content style={{ margin: "24px 24px 0", height: "100%" }}>
             <Switch>
               {redirectData.map(item => (
                 <Redirect key={item.from} exact from={item.from} to={item.to} />
@@ -209,6 +209,6 @@ class BasicLayout extends React.PureComponent {
 export default connect(({ user, global, loading }) => ({
   currentUser: user.currentUser,
   collapsed: global.collapsed,
-  fetchingNotices: loading.effects['global/fetchNotices'],
+  fetchingNotices: loading.effects["global/fetchNotices"],
   notices: global.notices,
 }))(BasicLayout);

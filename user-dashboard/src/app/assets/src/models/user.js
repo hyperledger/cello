@@ -1,10 +1,10 @@
 /*
  SPDX-License-Identifier: Apache-2.0
 */
-import { query as queryUsers, queryCurrent } from '../services/user';
+import { query as queryUsers, queryCurrent } from "../services/user";
 
 export default {
-  namespace: 'user',
+  namespace: "user",
 
   state: {
     list: [],
@@ -15,14 +15,14 @@ export default {
     *fetch(_, { call, put }) {
       const response = yield call(queryUsers);
       yield put({
-        type: 'save',
+        type: "save",
         payload: response,
       });
     },
     *fetchCurrent(_, { call, put }) {
       const response = yield call(queryCurrent);
       yield put({
-        type: 'saveCurrentUser',
+        type: "saveCurrentUser",
         payload: response,
       });
     },

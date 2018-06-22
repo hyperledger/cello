@@ -2,7 +2,7 @@
  SPDX-License-Identifier: Apache-2.0
 */
 export default {
-  namespace: 'global',
+  namespace: "global",
 
   state: {
     collapsed: false,
@@ -12,12 +12,12 @@ export default {
   effects: {
     *clearNotices({ payload }, { put, select }) {
       yield put({
-        type: 'saveClearedNotices',
+        type: "saveClearedNotices",
         payload,
       });
       const count = yield select(state => state.global.notices.length);
       yield put({
-        type: 'user/changeNotifyCount',
+        type: "user/changeNotifyCount",
         payload: count,
       });
     },
@@ -48,8 +48,8 @@ export default {
     setup({ history }) {
       // Subscribe history(url) change, trigger `load` action if pathname is `/`
       return history.listen(({ pathname, search }) => {
-        if (typeof window.ga !== 'undefined') {
-          window.ga('send', 'pageview', pathname + search);
+        if (typeof window.ga !== "undefined") {
+          window.ga("send", "pageview", pathname + search);
         }
       });
     },

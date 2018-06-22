@@ -22,6 +22,12 @@ module.exports = {
   get joinChannel() {
     return this.app.joinChannel;
   },
+  get installSmartContract() {
+    return this.app.installSmartContract;
+  },
+  get instantiateSmartContract() {
+    return this.app.instantiateSmartContract;
+  },
   get sleep() {
     return this.app.sleep;
   },

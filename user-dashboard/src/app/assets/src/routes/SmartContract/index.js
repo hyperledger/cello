@@ -25,7 +25,7 @@ export default class SmartContract extends PureComponent {
   newSmartContract = () => {
     this.props.dispatch(
       routerRedux.push({
-        pathname: '/new-smart-contract',
+        pathname: '/smart-contract/new',
       })
     );
   };
@@ -52,6 +52,11 @@ export default class SmartContract extends PureComponent {
       onCancel() {
       },
     });
+  };
+  smartContractInfo = (smartContract) => {
+    this.props.dispatch(routerRedux.push({
+      pathname: `/smart-contract/info/${smartContract._id}`,
+    }));
   };
   render() {
     const { smartContract: { smartContracts }, loadingSmartContracts } = this.props;
@@ -82,7 +87,7 @@ export default class SmartContract extends PureComponent {
             renderItem={item =>
               item ? (
                 <List.Item key={item._id}>
-                  <Card hoverable className={styles.card} actions={[<a>Info</a>, <a style={{color: 'red'}} onClick={() => this.deleteSmartContract(item)}>Delete</a>]}>
+                  <Card hoverable className={styles.card} actions={[<a onClick={() => this.smartContractInfo(item)}>Info</a>, <a style={{color: 'red'}} onClick={() => this.deleteSmartContract(item)}>Delete</a>]}>
                     <Card.Meta
                       avatar={
                         <Avatar size="large" style={{ backgroundColor: '#08c' }} icon="link" />

@@ -118,6 +118,7 @@
     "autod": "autod",
     "build": "if-env DEV=True && npm run build:dev || npm run build:prod",
     "build:dev": "cross-env ESLINT=none COMPRESS=none roadhog build && cp -r app/assets/src/assets/* app/assets/public/",
+    "prettier": "prettier --write ./app/**/**/**/*.{js,jsx,less}",
     "build:prod": "cross-env ESLINT=none roadhog build && cp -r app/assets/src/assets/* app/assets/public/"
   },
   "ci": {

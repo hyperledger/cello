@@ -1,11 +1,11 @@
 /*
  SPDX-License-Identifier: Apache-2.0
 */
-import { login } from '../services/user';
-import { setAuthority } from '../utils/authority';
+import { login } from "../services/user";
+import { setAuthority } from "../utils/authority";
 
 export default {
-  namespace: 'login',
+  namespace: "login",
 
   state: {
     status: undefined,

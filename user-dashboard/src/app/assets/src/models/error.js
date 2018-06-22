@@ -1,14 +1,14 @@
 /*
  SPDX-License-Identifier: Apache-2.0
 */
-import { routerRedux } from 'dva/router';
-import { query } from '../services/error';
+import { routerRedux } from "dva/router";
+import { query } from "../services/error";
 
 export default {
-  namespace: 'error',
+  namespace: "error",
 
   state: {
-    error: '',
+    error: "",
     isloading: false,
   },
 
@@ -18,7 +18,7 @@ export default {
       // redirect on client when network broken
       yield put(routerRedux.push(`/exception/${payload.code}`));
       yield put({
-        type: 'trigger',
+        type: "trigger",
         payload: payload.code,
       });
     },

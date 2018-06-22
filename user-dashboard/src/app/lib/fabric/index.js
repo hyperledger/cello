@@ -231,6 +231,171 @@ module.exports = app => {
     return {
       success: false,
     };
+  }
+  async function installSmartContract(network, keyValueStorePath, peers, userId, smartContractCodeId, chainId, org) {
+    const ctx = app.createAnonymousContext();
+    const smartContractCode = await ctx.model.SmartContractCode.findOne({ _id: smartContractCodeId });
+    const chain = await ctx.model.Chain.findOne({ _id: chainId });
+    const chainCodeName = `${chain.chainId}-${smartContractCodeId}`;
+    const smartContractSourcePath = `github.com/${smartContractCodeId}`;
+    const chainRootPath = `/opt/data/${userId}/chains/${chainId}`;
+    process.env.GOPATH = chainRootPath;
+    fs.ensureDirSync(`${chainRootPath}/src/github.com`);
+    fs.copySync(smartContractCode.path, `${chainRootPath}/src/${smartContractSourcePath}`);
+
+    const helper = await fabricHelper(network, keyValueStorePath);
+    const client = await getClientForOrg('org1', helper.clients);
+
+    await getOrgAdmin('org1', helper);
+
+    const request = {
+      targets: await newPeers(network, peers, org, helper.clients),
+      chaincodePath: smartContractSourcePath,
+      chaincodeId: chainCodeName,
+      chaincodeVersion: smartContractCode.version,
+    };
+    const results = await client.installChaincode(request);
+    const proposalResponses = results[0];
+    // const proposal = results[1];
+    let all_good = true;
+    for (const i in proposalResponses) {
+      let one_good = false;
+      if (proposalResponses && proposalResponses[i].response &&
+        proposalResponses[i].response.status === 200) {
+        one_good = true;
+        ctx.logger.info('install proposal was good');
+      } else {
+        ctx.logger.error('install proposal was bad');
+      }
+      all_good = all_good & one_good;
+    }
+    if (all_good) {
+      ctx.logger.info(util.format(
+        'Successfully sent install Proposal and received ProposalResponse: Status - %s',
+        proposalResponses[0].response.status));
+      ctx.logger.debug('\nSuccessfully Installed chaincode on organization ' + org +
+        '\n');
+      const deploy = await ctx.model.SmartContractDeploy.findOneAndUpdate({
+        smartContractCode,
+        smartContract: smartContractCode.smartContract,
+        name: chainCodeName,
+        chain: chainId,
+      }, {
+        status: 'installed',
+      }, { upsert: true, new: true });
+      return {
+        success: true,
+        deployId: deploy._id.toString(),
+        message: 'Successfully Installed chaincode on organization ' + org,
+      };
+    }
+    ctx.logger.error(
+      'Failed to send install Proposal or receive valid response. Response null or status is not 200. exiting...'
+    );
+    return {
+      success: false,
+      message: 'Failed to send install Proposal or receive valid response. Response null or status is not 200. exiting...',
+    };
+
+  }
+  async function instantiateSmartContract(network, keyValueStorePath, channelName, deployId, functionName, args, org) {
+    const ctx = app.createAnonymousContext();
+    const deploy = await ctx.model.SmartContractDeploy.findOne({ _id: deployId }).populate('smartContractCode');
+    deploy.status = 'instantiating';
+    deploy.save();
+    const helper = await fabricHelper(network, keyValueStorePath);
+    const client = await getClientForOrg('org1', helper.clients);
+    const channel = await getChannelForOrg('org1', helper.channels);
+
+    await getOrgAdmin('org1', helper);
+    await channel.initialize();
+    const txId = client.newTransactionID();
+    // send proposal to endorser
+    const request = {
+      chaincodeId: deploy.name,
+      chaincodeVersion: deploy.smartContractCode.version,
+      args,
+      txId,
+    };
+
+    if (functionName) { request.fcn = functionName; }
+
+    const results = await channel.sendInstantiateProposal(request);
+
+    const proposalResponses = results[0];
+    const proposal = results[1];
+    let all_good = true;
+    for (const i in proposalResponses) {
+      let one_good = false;
+      if (proposalResponses && proposalResponses[i].response &&
+        proposalResponses[i].response.status === 200) {
+        one_good = true;
+        ctx.logger.debug('instantiate proposal was good');
+      } else {
+        ctx.logger.error('instantiate proposal was bad');
+      }
+      all_good = all_good & one_good;
+    }
+    if (all_good) {
+      deploy.status = 'instantiated';
+      deploy.deployTime = Date.now();
+      deploy.save();
+      ctx.logger.info(util.format(
+        'Successfully sent Proposal and received ProposalResponse: Status - %s, message - "%s", metadata - "%s", endorsement signature: %s',
+        proposalResponses[0].response.status, proposalResponses[0].response.message,
+        proposalResponses[0].response.payload, proposalResponses[0].endorsement
+          .signature));
+      const promiseRequest = {
+        proposalResponses,
+        proposal,
+      };
+      // set the transaction listener and set a timeout of 30sec
+      // if the transaction did not get committed within the timeout period,
+      // fail the test
+      const deployId = await txId.getTransactionID();
+
+      const eh = await client.newEventHub();
+      const data = fs.readFileSync(path.join(__dirname, network[org].peers.peer1.tls_cacerts));
+      await eh.setPeerAddr(network[org].peers.peer1.events, {
+        pem: Buffer.from(data).toString(),
+        'ssl-target-name-override': network[org].peers.peer1['server-hostname'],
+      });
+      await eh.connect();
+
+      const txPromise = new Promise((resolve, reject) => {
+        const handle = setTimeout(() => {
+          eh.disconnect();
+          reject();
+        }, 30000);
+
+        eh.registerTxEvent(deployId, (tx, code) => {
+          ctx.logger.info(
+            'The chaincode instantiate transaction has been committed on peer ' +
+            eh._ep._endpoint.addr);
+          clearTimeout(handle);
+          eh.unregisterTxEvent(deployId);
+          eh.disconnect();
+
+          if (code !== 'VALID') {
+            ctx.logger.error('The chaincode instantiate transaction was invalid, code = ' + code);
+            reject();
+          } else {
+            ctx.logger.info('The chaincode instantiate transaction was valid.');
+            resolve();
+          }
+        });
+      });
+
+      const sendPromise = await channel.sendTransaction(promiseRequest);
+      const promiseResults = await Promise.all([sendPromise].concat([txPromise]));
+      return promiseResults[0];
+    }
+    deploy.status = 'error';
+    deploy.save();
+    ctx.logger.error(
+      'Failed to send instantiate Proposal or receive valid response. Response null or status is not 200. exiting...'
+    );
+    return 'Failed to send instantiate Proposal or receive valid response. Response null or status is not 200. exiting...';
 
   }
   async function fabricHelper(network, keyValueStore) {
@@ -274,6 +439,8 @@ module.exports = app => {
   app.getChannelForOrg = getChannelForOrg;
   app.createChannel = createChannel;
   app.joinChannel = joinChannel;
+  app.installSmartContract = installSmartContract;
+  app.instantiateSmartContract = instantiateSmartContract;
   app.sleep = sleep;
   hfc.setLogger(app.logger);
 };

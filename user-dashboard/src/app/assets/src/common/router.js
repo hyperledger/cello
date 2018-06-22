@@ -1,24 +1,24 @@
 /*
  SPDX-License-Identifier: Apache-2.0
 */
-import { createElement } from 'react';
-import dynamic from 'dva/dynamic';
-import pathToRegexp from 'path-to-regexp';
-import { getMenuData } from './menu';
+import { createElement } from "react";
+import dynamic from "dva/dynamic";
+import pathToRegexp from "path-to-regexp";
+import { getMenuData } from "./menu";
 
 let routerDataCache;
 
 const modelNotExisted = (app, model) =>
   // eslint-disable-next-line
   !app._models.some(({ namespace }) => {
-    return namespace === model.substring(model.lastIndexOf('/') + 1);
+    return namespace === model.substring(model.lastIndexOf("/") + 1);
   });
 
 // wrapper of dynamic
 const dynamicWrapper = (app, models, component) => {
   // () => require('module')
   // transformed by babel-plugin-dynamic-import-node-sync
-  if (component.toString().indexOf('.then(') < 0) {
+  if (component.toString().indexOf(".then(") < 0) {
     models.forEach(model => {
       if (modelNotExisted(app, model)) {
         // eslint-disable-next-line
@@ -39,7 +39,9 @@ const dynamicWrapper = (app, models, component) => {
   return dynamic({
     app,
     models: () =>
-      models.filter(model => modelNotExisted(app, model)).map(m => import(`../models/${m}.js`)),
+      models
+        .filter(model => modelNotExisted(app, model))
+        .map(m => import(`../models/${m}.js`)),
     // add routerData prop
     component: () => {
       if (!routerDataCache) {
@@ -72,35 +74,61 @@ function getFlatMenuData(menus) {
 
 export const getRouterData = app => {
   const routerConfig = {
-    '/': {
-      component: dynamicWrapper(app, ['user', 'login'], () => import('../layouts/BasicLayout')),
+    "/": {
+      component: dynamicWrapper(app, ["user", "login"], () =>
+        import("../layouts/BasicLayout")
+      ),
     },
-    '/chain': {
-      component: dynamicWrapper(app, ['chain'], () => import('../routes/Chain')),
+    "/chain": {
+      component: dynamicWrapper(app, ["chain"], () => import("../routes/Chain")),
     },
-    '/apply-chain': {
-      component: dynamicWrapper(app, ['chain'], () => import('../routes/Chain/Apply')),
+    "/apply-chain": {
+      component: dynamicWrapper(app, ["chain"], () =>
+        import("../routes/Chain/Apply")
+      ),
     },
-    '/exception/403': {
-      component: dynamicWrapper(app, [], () => import('../routes/Exception/403')),
+    "/exception/403": {
+      component: dynamicWrapper(app, [], () =>
+        import("../routes/Exception/403")
+      ),
     },
-    '/exception/404': {
-      component: dynamicWrapper(app, [], () => import('../routes/Exception/404')),
+    "/exception/404": {
+      component: dynamicWrapper(app, [], () =>
+        import("../routes/Exception/404")
+      ),
     },
-    '/exception/500': {
-      component: dynamicWrapper(app, [], () => import('../routes/Exception/500')),
+    "/exception/500": {
+      component: dynamicWrapper(app, [], () =>
+        import("../routes/Exception/500")
+      ),
     },
-    '/user': {
-      component: dynamicWrapper(app, [], () => import('../layouts/UserLayout')),
+    "/user": {
+      component: dynamicWrapper(app, [], () => import("../layouts/UserLayout")),
     },
-    '/user/login': {
-      component: dynamicWrapper(app, ['login'], () => import('../routes/User/Login')),
+    "/user/login": {
+      component: dynamicWrapper(app, ["login"], () =>
+        import("../routes/User/Login")
+      ),
     },
-    '/smart-contract': {
-      component: dynamicWrapper(app, ['smartContract'], () => import('../routes/SmartContract')),
+    "/smart-contract/index": {
+      component: dynamicWrapper(app, ["smartContract"], () =>
+        import("../routes/SmartContract")
+      ),
     },
-    '/new-smart-contract': {
-      component: dynamicWrapper(app, ['smartContract'], () => import('../routes/SmartContract/New')),
+    "/smart-contract/info/:id": {
+      component: dynamicWrapper(app, ["smartContract", "chain"], () =>
+        import("../routes/SmartContract/Info")
+      ),
+    },
+    "/smart-contract/new": {
+      component: dynamicWrapper(app, ["smartContract"], () =>
+        import("../routes/SmartContract/New")
+      ),
+    },
+    "/smart-contract/new-code/:id": {
+      component: dynamicWrapper(app, ["smartContract"], () =>
+        import("../routes/SmartContract/New/code")
+      ),
     },
   };
   // Get name from ./menu.js or just set it in the router data.
@@ -114,7 +142,9 @@ export const getRouterData = app => {
     // Regular match item name
     // eg.  router /user/:id === /user/chen
     const pathRegexp = pathToRegexp(path);
-    const menuKey = Object.keys(menuData).find(key => pathRegexp.test(`${key}`));
+    const menuKey = Object.keys(menuData).find(key =>
+      pathRegexp.test(`${key}`)
+    );
     let menuItem = {};
     // If menuKey is not empty
     if (menuKey) {
