@@ -12,6 +12,7 @@ Organizations:
     Name: {{ org }}
     ID: {{ org }}
     MSPDir: {{ fabricworkdir }}/keyfiles/{{ org }}/msp
+{% if org in peerorgs %}
 {% if project_version | version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
     Policies:
         Readers:
@@ -29,7 +30,7 @@ Organizations:
       - Host: {{ org_anchor[org].name }}
         Port: 7051
 {% endif %}
-{% else %}
+{% elif org in ordererorgs %}
 {% if project_version | version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
     Policies:
         Readers:
@@ -41,6 +42,7 @@ Organizations:
         Admins:
             Type: Signature
             Rule: "OR('{{ org }}.admin')"
+{% endif %}
 {% endif %}
 
 {% endfor %}
