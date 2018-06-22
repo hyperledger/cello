@@ -8,12 +8,6 @@ import LoginSubmit from './LoginSubmit';
 import styles from './index.less';
 
 class Login extends Component {
-  static defaultProps = {
-    className: '',
-    defaultActiveKey: '',
-    onTabChange: () => {},
-    onSubmit: () => {},
-  };
   static propTypes = {
     className: PropTypes.string,
     defaultActiveKey: PropTypes.string,
@@ -24,6 +18,12 @@ class Login extends Component {
     tabUtil: PropTypes.object,
     form: PropTypes.object,
     updateActive: PropTypes.func,
+  };
+  static defaultProps = {
+    className: '',
+    defaultActiveKey: '',
+    onTabChange: () => {},
+    onSubmit: () => {},
   };
   state = {
     type: this.props.defaultActiveKey,

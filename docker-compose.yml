@@ -124,7 +124,7 @@ services:
 
   # mongo database, may use others in future
   mongo:
-    image: hyperledger/cello-mongo
+    image: mongo:3.4.10
     hostname: cello-mongo
     container_name: cello-mongo
     restart: unless-stopped
@@ -147,7 +147,7 @@ services:
 
   # TODO: we may use one mongo instance, that should be enough
   dashboard_mongo:
-    image: hyperledger/cello-mongo
+    image: mongo:3.4.10
     hostname: cello-dashboard_mongo
     container_name: cello-dashboard_mongo
     restart: unless-stopped

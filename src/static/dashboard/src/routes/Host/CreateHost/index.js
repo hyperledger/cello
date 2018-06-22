@@ -497,7 +497,7 @@ class CreateHost extends PureComponent {
                   )}
                 </FormItem>
                 {k8sCredType === '1' && (
-                 <div>
+                <div>
                   <FormItem
                     {...formItemLayout}
                     label={intl.formatMessage(messages.label.certificateContent)}
@@ -514,10 +514,10 @@ class CreateHost extends PureComponent {
                     })(<TextArea rows={4} placeholder={intl.formatMessage(messages.label.certificateContent)} />)}
                   </FormItem>
                   <FormItem
-                   {...formItemLayout}
-                   label={intl.formatMessage(messages.label.certificateKey)}
+                    {...formItemLayout}
+                    label={intl.formatMessage(messages.label.certificateKey)}
                   >
-                   {getFieldDecorator('k8s_key', {
+                    {getFieldDecorator('k8s_key', {
                      rules: [
                        {
                          required: true,
@@ -528,7 +528,7 @@ class CreateHost extends PureComponent {
                      ],
                    })(<TextArea rows={4} placeholder={intl.formatMessage(messages.label.certificateKey)} />)}
                   </FormItem>
-                 </div>
+                </div>
                 )}
                 {k8sCredType === '2' && (
                   <FormItem
