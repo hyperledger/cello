@@ -1,14 +1,14 @@
 /*
  SPDX-License-Identifier: Apache-2.0
 */
-import fetch from 'dva/fetch';
-import { notification } from 'antd';
-import { routerRedux } from 'dva/router';
-import { IntlProvider, defineMessages } from 'react-intl';
-import store from '../index';
-import { getLocale } from '../utils/utils';
+import fetch from "dva/fetch";
+import { notification } from "antd";
+import { routerRedux } from "dva/router";
+import { IntlProvider, defineMessages } from "react-intl";
+import store from "../index";
+import { getLocale } from "../utils/utils";
 
-const Cookies = require('js-cookie');
+const Cookies = require("js-cookie");
 
 const currentLocale = getLocale();
 const intlProvider = new IntlProvider(
@@ -109,7 +109,9 @@ function checkStatus(response) {
   }
   const errortext = codeMessage[response.status] || response.statusText;
   notification.error({
-    message: `${intl.formatMessage(messages.requestError)} ${response.status}: ${response.url}`,
+    message: `${intl.formatMessage(messages.requestError)} ${
+      response.status
+    }: ${response.url}`,
     description: errortext,
   });
   if ([400, 500].indexOf(response.status) < 0) {
@@ -131,33 +133,33 @@ function checkStatus(response) {
  */
 export default function request(url, options) {
   const defaultOptions = {
-    credentials: 'include',
+    credentials: "include",
   };
   const newOptions = { ...defaultOptions, ...options };
-  const csrftoken = Cookies.get('csrfToken');
-  if (newOptions.method === 'POST' || newOptions.method === 'PUT') {
+  const csrftoken = Cookies.get("csrfToken");
+  if (newOptions.method === "POST" || newOptions.method === "PUT") {
     if (!(newOptions.body instanceof FormData)) {
       newOptions.headers = {
-        Accept: 'application/json',
-        'Content-Type': 'application/json; charset=utf-8',
+        Accept: "application/json",
+        "Content-Type": "application/json; charset=utf-8",
         ...newOptions.headers,
       };
       newOptions.body = JSON.stringify(newOptions.body);
     } else {
       // newOptions.body is FormData
       newOptions.headers = {
-        Accept: 'application/json',
-        'Content-Type': 'multipart/form-data',
+        Accept: "application/json",
+        "Content-Type": "multipart/form-data",
         ...newOptions.headers,
       };
     }
     newOptions.headers = {
-      'x-csrf-token': csrftoken,
+      "x-csrf-token": csrftoken,
       ...newOptions.headers,
     };
-  } else if (newOptions.method === 'DELETE') {
+  } else if (newOptions.method === "DELETE") {
     newOptions.headers = {
-      'x-csrf-token': csrftoken,
+      "x-csrf-token": csrftoken,
       ...newOptions.headers,
     };
   }
@@ -165,7 +167,7 @@ export default function request(url, options) {
   return fetch(url, newOptions)
     .then(checkStatus)
     .then(response => {
-      if (newOptions.method === 'DELETE' || response.status === 204) {
+      if (newOptions.method === "DELETE" || response.status === 204) {
         return response.text();
       }
       return response.json();
@@ -175,22 +177,22 @@ export default function request(url, options) {
       const status = e.name;
       if (status === 401) {
         dispatch({
-          type: 'login/logout',
+          type: "login/logout",
         });
         return {
           status,
         };
       }
       if (status === 403) {
-        dispatch(routerRedux.push('/exception/403'));
+        dispatch(routerRedux.push("/exception/403"));
         return;
       }
       if (status <= 504 && status >= 500) {
-        dispatch(routerRedux.push('/exception/500'));
+        dispatch(routerRedux.push("/exception/500"));
         return;
       }
       if (status >= 404 && status < 422) {
-        dispatch(routerRedux.push('/exception/404'));
+        dispatch(routerRedux.push("/exception/404"));
       }
     });
 }

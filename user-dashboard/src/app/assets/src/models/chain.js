@@ -1,12 +1,12 @@
 /*
  SPDX-License-Identifier: Apache-2.0
 */
-import { routerRedux } from 'dva/router';
-import { message } from 'antd';
-import { queryChains, release, apply } from '../services/chain';
+import { routerRedux } from "dva/router";
+import { message } from "antd";
+import { queryChains, release, apply } from "../services/chain";
 
 export default {
-  namespace: 'chain',
+  namespace: "chain",
 
   state: {
     chains: [],
@@ -16,26 +16,26 @@ export default {
     *fetch(_, { call, put }) {
       const response = yield call(queryChains);
       yield put({
-        type: 'setChains',
+        type: "setChains",
         payload: response.data,
-      })
+      });
     },
     *release({ payload }, { call, put }) {
       const response = yield call(release, payload.id);
       if (JSON.parse(response).success) {
-        message.success('Release Chain successfully');
+        message.success("Release Chain successfully");
         yield put({
-          type: 'fetch',
-        })
+          type: "fetch",
+        });
       }
     },
     *apply({ payload }, { call, put }) {
-    	const response = yield call(apply, payload);
-    	if (response.success) {
-        message.success('Apply Chain successfully');
+      const response = yield call(apply, payload);
+      if (response.success) {
+        message.success("Apply Chain successfully");
         yield put(
           routerRedux.push({
-            pathname: '/chain',
+            pathname: "/chain",
           })
         );
       }

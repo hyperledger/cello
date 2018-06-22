@@ -1,27 +1,37 @@
 /*
  SPDX-License-Identifier: Apache-2.0
 */
-import { querySmartContracts, deleteSmartContractCode, updateSmartContractCode, deleteSmartContract } from '../services/smart_contract';
+import {
+  querySmartContracts,
+  deleteSmartContractCode,
+  updateSmartContractCode,
+  deleteSmartContract,
+  querySmartContract,
+  deploySmartContract,
+} from "../services/smart_contract";
 
 export default {
-  namespace: 'smartContract',
+  namespace: "smartContract",
 
   state: {
     smartContracts: [],
+    currentSmartContract: {},
+    codes: [],
+    newOperations: [],
   },
 
   effects: {
     *fetch(_, { call, put }) {
       const response = yield call(querySmartContracts);
       yield put({
-        type: 'setSmartContracts',
+        type: "setSmartContracts",
         payload: response.data,
-      })
+      });
     },
     *deleteSmartContractCode({ payload }, { call }) {
       yield call(deleteSmartContractCode, payload.id);
       if (payload.callback) {
-        yield call(payload.callback)
+        yield call(payload.callback);
       }
     },
     *updateSmartContractCode({ payload }, { call }) {
@@ -31,6 +41,25 @@ export default {
           payload,
           success: response.success,
         });
+      }
+    },
+    *querySmartContract({ payload }, { call, put }) {
+      const response = yield call(querySmartContract, payload.id);
+      if (response.success) {
+        yield put({
+          type: "setCurrentSmartContract",
+          payload: {
+            currentSmartContract: response.info,
+            codes: response.codes,
+            newOperations: response.newOperations,
+          },
+        });
+      }
+    },
+    *deploySmartContract({ payload }, { call }) {
+      const response = yield call(deploySmartContract, payload);
+      if (payload.callback) {
+        yield call(payload.callback, response);
       }
     },
     *deleteSmartContract({ payload }, { call }) {
@@ -46,6 +75,15 @@ export default {
       return {
         ...state,
         smartContracts: action.payload,
+      };
+    },
+    setCurrentSmartContract(state, action) {
+      const { currentSmartContract, codes, newOperations } = action.payload;
+      return {
+        ...state,
+        currentSmartContract,
+        codes,
+        newOperations,
       };
     },
   },

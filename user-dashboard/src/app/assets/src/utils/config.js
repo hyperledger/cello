@@ -1,7 +1,7 @@
 /*
  SPDX-License-Identifier: Apache-2.0
 */
-const format = require('string-format');
+const format = require("string-format");
 
 const urlBase = window.webRoot;
 format.extend(String.prototype);
@@ -19,6 +19,7 @@ export default {
       upload: `${urlBase}upload-smart-contract`,
       codeOperate: `${urlBase}api/smart-contract/code/{id}`,
       operate: `${urlBase}api/smart-contract/{id}`,
+      codeDeploy: `${urlBase}api/smart-contract/deploy-code/{id}`,
     },
   },
 };
