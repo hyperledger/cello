@@ -19,12 +19,13 @@ ARG uid=1000
 ARG gid=1000
 
 RUN apt-get update                                                 && \
-    apt-get install -y bash sshpass python-pip openssh-client      && \
+    apt-get install -y bash sshpass python-pip openssh-client sudo && \
     pip install --upgrade pip ansible boto boto3 shade                \
-    pyyaml openshift                                               && \
+    pyyaml                                                         && \
     groupadd -g ${gid} ${user}                                     && \
     useradd -d /opt/agent -u ${uid} -g ${user} ${user}             && \
     usermod -a -G root ${user}                                     && \
+    echo "${user} ALL=(ALL) NOPASSWD: ALL"|tee /etc/sudoers.d/${user} && \
     mkdir -p /opt/agent/.ssh                                       && \
     cd /opt/agent/.ssh                                             && \
     echo "host *" > config                                         && \
