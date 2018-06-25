@@ -151,9 +151,9 @@ class SmartContractService extends Service {
         success: false,
       };
     }
-    const codes = await ctx.model.SmartContractCode.find({ smartContract }, '_id version createTime');
-    const newOperations = await ctx.model.SmartContractOperateHistory.find({ smartContract }, '_id operateTime status').populate('smartContractCode', 'version');
-    const deploys = await ctx.model.SmartContractDeploy.find({ smartContract }, '_id status deployTime');
+    const codes = await ctx.model.SmartContractCode.find({ smartContract }, '_id version createTime').sort('-createTime');
+    const newOperations = await ctx.model.SmartContractOperateHistory.find({ smartContract }, '_id operateTime status').populate('smartContractCode', 'version').sort('-operateTime');
+    const deploys = await ctx.model.SmartContractDeploy.find({ smartContract }, '_id name status deployTime').populate('smartContractCode chain', '_id version name chainId type size').sort('-deployTime');
     return {
       success: true,
       info: smartContract,

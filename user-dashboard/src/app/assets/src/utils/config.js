@@ -21,5 +21,10 @@ export default {
       operate: `${urlBase}api/smart-contract/{id}`,
       codeDeploy: `${urlBase}api/smart-contract/deploy-code/{id}`,
     },
+    deploy: {
+      list: `${urlBase}api/deploy`,
+      query: `${urlBase}api/deploy/{id}`,
+      operate: `${urlBase}api/deploy/operate/{id}`,
+    },
   },
 };

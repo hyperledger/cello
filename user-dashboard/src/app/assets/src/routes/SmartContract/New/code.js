@@ -79,7 +79,7 @@ class NewSmartContractCode extends PureComponent {
     }
   };
   clickCancel = () => {
-    const { smartContractCodeId } = this.state;
+    const { smartContractCodeId, smartContractId } = this.state;
     if (smartContractCodeId !== '') {
       this.props.dispatch({
         type: 'smartContract/deleteSmartContractCode',
@@ -90,7 +90,7 @@ class NewSmartContractCode extends PureComponent {
     }
     this.props.dispatch(
       routerRedux.push({
-        pathname: '/smart-contract',
+        pathname: `/smart-contract/info/${smartContractId}`,
       })
     );
   };

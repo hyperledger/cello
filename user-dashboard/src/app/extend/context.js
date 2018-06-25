@@ -25,6 +25,12 @@ module.exports = {
   get installSmartContract() {
     return this.app.installSmartContract;
   },
+  get invokeChainCode() {
+    return this.app.invokeChainCode;
+  },
+  get queryChainCode() {
+    return this.app.queryChainCode;
+  },
   get instantiateSmartContract() {
     return this.app.instantiateSmartContract;
   },

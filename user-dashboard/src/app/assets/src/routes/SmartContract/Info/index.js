@@ -126,6 +126,12 @@ export default class AdvancedProfile extends Component {
     this.onOperationTabChange('detail');
   };
 
+  onInvokeQuery = (item) => {
+    this.props.dispatch(routerRedux.push({
+      pathname: `/smart-contract/invoke-query/${item._id}`,
+    }));
+  };
+
   @Bind()
   @Debounce(200)
   setStepDirection() {
@@ -143,16 +149,18 @@ export default class AdvancedProfile extends Component {
   }
   render() {
     const { smartContract, chain: { chains }, loadingInfo } = this.props;
-    const { currentSmartContract, codes, newOperations } = smartContract;
+    const { currentSmartContract, codes, deploys, newOperations } = smartContract;
     const { deployStep, selectedVersion, selectedVersionId } = this.state;
     const versions = codes.map(code => code.version);
     const versionTags = versions.map(version => <Tag>{version}</Tag>);
 
     const detailProps = {
       codes,
+      deploys,
       loadingInfo,
       onAddNewCode: this.onAddNewCode,
       onDeploy: this.onClickDeploy,
+      onInvokeQuery: this.onInvokeQuery,
     };
     const deployProps = {
       version: selectedVersion,

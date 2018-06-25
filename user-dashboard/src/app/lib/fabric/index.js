@@ -1,6 +1,7 @@
 'use strict';
 
 const hfc = require('fabric-client');
+const User = require('fabric-client/lib/User.js');
 const copService = require('fabric-ca-client');
 const fs = require('fs-extra');
 const path = require('path');
@@ -18,6 +19,16 @@ module.exports = app => {
       pem: caroots,
       'ssl-target-name-override': network.orderer['server-hostname'],
     });
+  }
+  async function buildTarget(helper, peer, org) {
+    let target = null;
+    const { network } = helper;
+    if (typeof peer !== 'undefined') {
+      const targets = await newPeers(network, [peer], org, helper.clients);
+      if (targets && targets.length > 0) target = targets[0];
+    }
+
+    return target;
   }
   function setupPeers(network, channel, org, client) {
     for (const key in network[org].peers) {
@@ -112,7 +123,6 @@ module.exports = app => {
     const store = await hfc.newDefaultKeyValueStore({
       path: getKeyStoreForOrg(keyValueStore, getOrgName(userOrg, network)),
     });
-    app.logger.debug('store ', store);
     client.setStateStore(store);
     const user = client.createUser({
       username: 'peer' + userOrg + 'Admin',
@@ -123,6 +133,42 @@ module.exports = app => {
       },
     });
     return user;
+  }
+  async function getAdminUser(helper, org) {
+    const { keyValueStore, network } = helper;
+    const users = [
+      {
+        username: 'admin',
+        secret: 'adminpw',
+      },
+    ];
+    const username = users[0].username;
+    const password = users[0].secret;
+    const client = await getClientForOrg(org, helper.clients);
+
+    const store = await hfc.newDefaultKeyValueStore({
+      path: getKeyStoreForOrg(keyValueStore, getOrgName(org, network)),
+    });
+    client.setStateStore(store);
+    // clearing the user context before switching
+    client._userContext = null;
+    const user = await client.getUserContext(username, true);
+    if (user && user.isEnrolled()) {
+      app.logger.debug('Successfully loaded member from persistence');
+      return user;
+    }
+    const caClient = helper.caClients[org];
+    const enrollment = await caClient.enroll({
+      enrollmentID: username,
+      enrollmentSecret: password,
+    });
+    app.logger.info('Successfully enrolled user \'' + username + '\'');
+    const member = new User(username);
+    member.setCryptoSuite(client.getCryptoSuite());
+    await member.setEnrollment(enrollment.key, enrollment.certificate, getMspID(org, network));
+    await client.setUserContext(member);
+    return member;
+
   }
   async function createChannel(network, keyValueStorePath, channelName, channelConfigPath) {
     const helper = await fabricHelper(network, keyValueStorePath);
@@ -280,6 +326,7 @@ module.exports = app => {
         smartContract: smartContractCode.smartContract,
         name: chainCodeName,
         chain: chainId,
+        user: userId,
       }, {
         status: 'installed',
       }, { upsert: true, new: true });
@@ -355,7 +402,7 @@ module.exports = app => {
       const deployId = await txId.getTransactionID();
 
       const eh = await client.newEventHub();
-      const data = fs.readFileSync(path.join(__dirname, network[org].peers.peer1.tls_cacerts));
+      const data = fs.readFileSync(network[org].peers.peer1.tls_cacerts);
       await eh.setPeerAddr(network[org].peers.peer1.events, {
         pem: Buffer.from(data).toString(),
         'ssl-target-name-override': network[org].peers.peer1['server-hostname'],
@@ -398,6 +445,209 @@ module.exports = app => {
     return 'Failed to send instantiate Proposal or receive valid response. Response null or status is not 200. exiting...';
 
   }
+  async function getRegisteredUsers(helper, username, org) {
+    // const helper = await fabricHelper(network, keyValueStorePath);
+    const { keyValueStore, network } = helper;
+    const client = await getClientForOrg(org, helper.clients);
+    let member;
+    let enrollmentSecret = null;
+
+    const store = await hfc.newDefaultKeyValueStore({
+      path: getKeyStoreForOrg(keyValueStore, getOrgName(org, network)),
+    });
+    client.setStateStore(store);
+    client._userContext = null;
+    const user = await client.getUserContext(username, true);
+    if (user && user.isEnrolled()) {
+      app.logger.debug('Successfully loaded member from persistence');
+      return user;
+    }
+    const caClient = helper.caClients[org];
+    member = await getAdminUser(helper, org);
+    enrollmentSecret = await caClient.register({
+      enrollmentID: username,
+      affiliation: org + '.department1',
+    }, member);
+    app.logger.debug(username + ' registered successfully');
+    const message = await caClient.enroll({
+      enrollmentID: username,
+      enrollmentSecret,
+    });
+    if (message && typeof message === 'string' && message.includes(
+      'Error:')) {
+      app.logger.error(username + ' enrollment failed');
+      return message;
+    }
+    app.logger.debug(username + ' enrolled successfully');
+
+    member = new User(username);
+    member._enrollmentSecret = enrollmentSecret;
+    await member.setEnrollment(message.key, message.certificate, getMspID(org, network));
+    await client.setUserContext(member);
+    return member;
+
+  }
+  async function invokeChainCode(network, keyValueStorePath, peerNames, channelName, chainCodeName, fcn, args, username, org) {
+    const helper = await fabricHelper(network, keyValueStorePath);
+    const client = await getClientForOrg(org, helper.clients);
+    const channel = await getChannelForOrg(org, helper.channels);
+    const targets = (peerNames) ? await newPeers(network, peerNames, org, helper.clients) : undefined;
+    await getRegisteredUsers(helper, username, org);
+    const txId = client.newTransactionID();
+    app.logger.debug(util.format('Sending transaction "%j"', txId));
+    // send proposal to endorser
+    const request = {
+      chaincodeId: chainCodeName,
+      fcn,
+      args,
+      chainId: channelName,
+      txId,
+    };
+
+    if (targets) { request.targets = targets; }
+    const results = await channel.sendTransactionProposal(request);
+    const proposalResponses = results[0];
+    const proposal = results[1];
+    let all_good = true;
+    for (const i in proposalResponses) {
+      let one_good = false;
+      if (proposalResponses && proposalResponses[i].response &&
+        proposalResponses[i].response.status === 200) {
+        one_good = true;
+        app.logger.debug('transaction proposal was good');
+      } else {
+        app.logger.error('transaction proposal was bad');
+      }
+      all_good = all_good & one_good;
+    }
+    if (all_good) {
+      app.logger.debug(util.format(
+        'Successfully sent Proposal and received ProposalResponse: Status - %s, message - "%s", metadata - "%s", endorsement signature: %s',
+        proposalResponses[0].response.status, proposalResponses[0].response.message,
+        proposalResponses[0].response.payload, proposalResponses[0].endorsement
+          .signature));
+      const transactionRequest = {
+        proposalResponses,
+        proposal,
+      };
+      // set the transaction listener and set a timeout of 30sec
+      // if the transaction did not get committed within the timeout period,
+      // fail the test
+      const transactionID = txId.getTransactionID();
+      const eventPromises = [];
+
+      if (!peerNames) {
+        peerNames = channel.getPeers().map(function(peer) {
+          return peer.getName();
+        });
+      }
+
+      const eventhubs = await newEventHubs(network, peerNames, org, helper.clients);
+      for (const key in eventhubs) {
+        const eh = eventhubs[key];
+        eh.connect();
+
+        const txPromise = new Promise((resolve, reject) => {
+          const handle = setTimeout(() => {
+            eh.disconnect();
+            reject();
+          }, 30000);
+
+          eh.registerTxEvent(transactionID, (tx, code) => {
+            clearTimeout(handle);
+            eh.unregisterTxEvent(transactionID);
+            eh.disconnect();
+
+            if (code !== 'VALID') {
+              app.logger.error(
+                'The balance transfer transaction was invalid, code = ' + code);
+              reject();
+            } else {
+              app.logger.info(
+                'The balance transfer transaction has been committed on peer ' +
+                eh._ep._endpoint.addr);
+              resolve();
+            }
+          });
+        });
+        eventPromises.push(txPromise);
+      }
+      const sendPromise = channel.sendTransaction(transactionRequest);
+      try {
+        const promiseResults = await Promise.all([sendPromise].concat(eventPromises));
+        const response = promiseResults[0];
+        if (response.status === 'SUCCESS') {
+          app.logger.info('Successfully sent transaction to the orderer.');
+          return {
+            transactionID: txId.getTransactionID(),
+            success: true,
+          };
+        }
+        app.logger.error('Failed to order the transaction. Error code: ' + response.status);
+        return {
+          success: false,
+          message: 'Failed to order the transaction. Error code: ' + response.status,
+        };
+
+      } catch (err) {
+        app.logger.error(
+          'Failed to send transaction and get notifications within the timeout period.'
+        );
+        return {
+          success: false,
+          message: 'Failed to send transaction and get notifications within the timeout period.',
+        };
+      }
+    } else {
+      app.logger.error(
+        'Failed to send Proposal or receive valid response. Response null or status is not 200. exiting...'
+      );
+      return {
+        success: false,
+        message: 'Failed to send Proposal or receive valid response. Response null or status is not 200. exiting...',
+      };
+    }
+  }
+  async function queryChainCode(network, keyValueStorePath, peer, channelName, chainCodeName, fcn, args, username, org) {
+    const helper = await fabricHelper(network, keyValueStorePath);
+    const client = await getClientForOrg(org, helper.clients);
+    const channel = await getChannelForOrg(org, helper.channels);
+    const target = await buildTarget(helper, peer, org);
+    await getRegisteredUsers(helper, username, org);
+    const txId = client.newTransactionID();
+    // send query
+    const request = {
+      chaincodeId: chainCodeName,
+      txId,
+      fcn,
+      args,
+    };
+    try {
+      const responsePayloads = await channel.queryByChaincode(request, target);
+      if (responsePayloads) {
+        for (let i = 0; i < responsePayloads.length; i++) {
+          app.logger.debug('response payloads ', i, responsePayloads[i].toString('utf8'));
+        }
+        for (let i = 0; i < responsePayloads.length; i++) {
+          return {
+            success: true,
+            result: responsePayloads[i].toString('utf8'),
+          };
+        }
+      } else {
+        app.logger.error('response_payloads is null');
+        return {
+          success: false,
+          message: 'response_payloads is null',
+        };
+      }
+    } catch (err) {
+      return {
+        success: false,
+        message: 'Failed to send query due to error: ' + err.stack ? err.stack : err,
+      };
+    }
+  }
   async function fabricHelper(network, keyValueStore) {
     const helper = {
       network,
@@ -422,7 +672,7 @@ module.exports = app => {
         setupPeers(network, channel, key, client);
 
         const caUrl = network[key].ca;
-        caClients[key] = new copService(caUrl, null, cryptoSuite);
+        caClients[key] = new copService(caUrl, null, '', cryptoSuite);
       }
     }
     helper.clients = clients;
@@ -441,6 +691,8 @@ module.exports = app => {
   app.joinChannel = joinChannel;
   app.installSmartContract = installSmartContract;
   app.instantiateSmartContract = instantiateSmartContract;
+  app.invokeChainCode = invokeChainCode;
+  app.queryChainCode = queryChainCode;
   app.sleep = sleep;
   hfc.setLogger(app.logger);
 };

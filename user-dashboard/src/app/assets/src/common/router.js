@@ -130,6 +130,16 @@ export const getRouterData = app => {
         import("../routes/SmartContract/New/code")
       ),
     },
+    "/smart-contract/running": {
+      component: dynamicWrapper(app, ["deploy"], () =>
+        import("../routes/SmartContract/Running")
+      ),
+    },
+    "/smart-contract/invoke-query/:id": {
+      component: dynamicWrapper(app, ["deploy"], () =>
+        import("../routes/SmartContract/InvokeQuery")
+      ),
+    },
   };
   // Get name from ./menu.js or just set it in the router data.
   const menuData = getFlatMenuData(getMenuData());

@@ -17,6 +17,7 @@ export default {
     smartContracts: [],
     currentSmartContract: {},
     codes: [],
+    deploys: [],
     newOperations: [],
   },
 
@@ -51,6 +52,7 @@ export default {
           payload: {
             currentSmartContract: response.info,
             codes: response.codes,
+            deploys: response.deploys,
             newOperations: response.newOperations,
           },
         });
@@ -78,11 +80,17 @@ export default {
       };
     },
     setCurrentSmartContract(state, action) {
-      const { currentSmartContract, codes, newOperations } = action.payload;
+      const {
+        currentSmartContract,
+        codes,
+        newOperations,
+        deploys,
+      } = action.payload;
       return {
         ...state,
         currentSmartContract,
         codes,
+        deploys,
         newOperations,
       };
     },

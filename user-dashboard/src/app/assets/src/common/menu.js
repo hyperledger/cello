@@ -21,8 +21,18 @@ const menuData = [
     icon: "code-o",
     children: [
       {
-        name: "List",
+        name: "Templates",
         path: "index",
+      },
+      {
+        name: "Running",
+        path: "running",
+      },
+      {
+        name: "Invoke/Query",
+        path: "invoke-query/:id",
+        hideInMenu: true,
+        hideInBreadcrumb: false,
       },
       {
         name: "Info",

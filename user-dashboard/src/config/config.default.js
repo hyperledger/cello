@@ -46,6 +46,12 @@ module.exports = appInfo => {
           },
         ],
       },
+      admins: [
+        {
+          username: 'admin',
+          secret: 'adminpw',
+        },
+      ],
     },
     dataDir: '/opt/data',
   };

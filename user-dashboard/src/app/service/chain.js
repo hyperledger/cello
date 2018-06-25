@@ -37,6 +37,10 @@ class ChainService extends Service {
     const networkConfig = await ctx.model.NetworkConfig.findOne({ chain: chain._id.toString() });
     const networkConfigId = networkConfig._id.toString();
     const orderers = await ctx.model.OrdererConfig.find({ networkConfig: networkConfigId });
+    const deploys = await ctx.model.SmartContractDeploy.find({ chain });
+    deploys.map(deploy => {
+      return deploy.remove();
+    });
     orderers.map(ordererItem => {
       return ordererItem.remove();
     });
@@ -64,6 +68,7 @@ class ChainService extends Service {
     const { ctx, config } = this;
     const operateUrl = config.operator.url.cluster.operate;
     const clusterId = ctx.params.id;
+    const chain = await ctx.model.Chain.findOne({ chainId: clusterId });
     const response = await ctx.curl(operateUrl, {
       method: 'POST',
       data: {
@@ -75,7 +80,7 @@ class ChainService extends Service {
     });
     if (response.status === 200) {
       await this.cleanDB(clusterId);
-      await this.cleanStore(clusterId);
+      await this.cleanStore(chain._id.toString());
     }
   }
   async findRegex(regex, value) {
@@ -165,7 +170,7 @@ class ChainService extends Service {
   }
   async initialFabric(chain) {
     const { ctx, config } = this;
-    const chainRootDir = `${config.dataDir}/${ctx.user.id}/chains/${chain.chainId}`;
+    const chainRootDir = `${config.dataDir}/${ctx.user.id}/chains/${chain._id.toString()}`;
     const channelConfigPath = `${chainRootDir}/tx`;
     const keyValueStorePath = `${chainRootDir}/client-kvs`;
     fs.ensureDirSync(channelConfigPath);
