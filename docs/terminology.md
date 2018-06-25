@@ -2,29 +2,29 @@
 
 ## Overview
 
-The Cello system is suggested to be deployed on multiple servers, at least 1 Master Node + 1 Worker Node.
+The Cello system is suggested to be deployed on multiple servers, at least 1 Master + 1 Worker.
 
-* `Master` Node: Running Cello services, which will manage the worker nodes.
-* `Worker` Node: The servers to have blockchains running inside. The worker nodes will be managed by the master node.
-* `Host`: Host is a resource pool managed by a unique control point, which consists of several compute nodes. Typically it can be a naive Docker host, a Swarm cluster or other bare-metal/virtual/container clusters.
+* `Master`: Running Cello services, which will manage the workers.
+* `Worker`: The platform (e.g., Docker, Swarm, Kubernetes, vSphere Cloud) to host blockchains. The worker will be managed by the master.
+* `Host`: Host is a worker that the resource will be managed by a unique platform. Typically it can be a naive Docker host, a Swarm cluster or other bare-metal/virtual/container clusters.
 * `Chain` (`Cluster`): A blockchain network including numbers of peer nodes. E.g., a Hyperledger Fabric network, a Sawthooth Lake or Iroha chain.
 
 
 ## Master
 
-The `Master` Node will hold the main Cello [services](service_management.md).
+The `Master` will hold the main Cello [services](service_management.md).
 
-This node is the control point of the whole Cello cluster, and most of the management work should be taken here.
+This is the control point of the whole Cello cluster, and most of the management work should be taken here.
 
 `Master` node will manage the blockchain networks running inside the `Worker` nodes.
 
 ## Worker
 
-`Worker` nodes will be managed by the `Host`'s control service, and hold the blockchains.
+`Worker` will be managed by the `Master` service, and help host the blockchains.
 
 ## Hosts
 
-A host is a group of worker nodes managed by the same resource controller, which can be a native Docker Host or a Swarm Cluster currently.
+A host is a group of resources managed by the same resource controller, which can be a native Docker Host, a Swarm Cluster, a Kubernetes Cluster, or some Cloud currently.
 
 Usually a host has several properties:
 
