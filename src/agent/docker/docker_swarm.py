@@ -30,7 +30,7 @@ from common import \
     CONSENSUS_PLUGINS_FABRIC_V1, CONSENSUS_MODES, \
     CLUSTER_LOG_TYPES, CLUSTER_LOG_LEVEL, \
     NETWORK_SIZE_FABRIC_PRE_V1, NETWORK_SIZE_FABRIC_V1, \
-    SERVICE_PORTS, \
+    SERVICE_PORTS, NETWORK_TYPE_FABRIC_V1_1, \
     NETWORK_TYPE_FABRIC_PRE_V1, NETWORK_TYPE_FABRIC_V1, HLF_VERSION
 
 COMPOSE_FILE_PATH = os.getenv("COMPOSE_FILE_PATH",
@@ -373,12 +373,14 @@ def _compose_set_env(name, worker_api, mapped_ports=SERVICE_PORTS,
             CLUSTER_NETWORK + "_{}".format(config['consensus_plugin']),
         'HLF_VERSION': HLF_VERSION,
     }
-    if config['network_type'] == NETWORK_TYPE_FABRIC_V1:
+    if config['network_type'] == NETWORK_TYPE_FABRIC_V1 or \
+       config['network_type'] == NETWORK_TYPE_FABRIC_V1_1:
         envs.update({
             'COMPOSE_FILE': "fabric-{}-{}.yaml".format(
                 config['consensus_plugin'],
                 config['size']),
-            'COMPOSE_PROJECT_PATH': '/opt/cello/fabric-1.0',
+            'COMPOSE_PROJECT_PATH': "/opt/cello/{}".format(
+                config['network_type']),
         })
     elif config['network_type'] == NETWORK_TYPE_FABRIC_PRE_V1:
         envs.update({

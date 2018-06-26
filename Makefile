@@ -51,7 +51,7 @@ else
 endif
 
 # Docker images needed to run cello services
-DOCKER_IMAGES = baseimage mongo nginx engine operator-dashboard ansible-agent watchdog user-dashboard
+DOCKER_IMAGES = baseimage mongo engine operator-dashboard ansible-agent watchdog user-dashboard
 DUMMY = .$(IMG_TAG)
 
 ifeq ($(DOCKER_BASE), )
