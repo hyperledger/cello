@@ -8,6 +8,7 @@ const qs = require('qs');
 const shell = require('shelljs');
 const fs = require('fs-extra');
 const rimraf = require('rimraf');
+const moment = require('moment');
 
 class ChainService extends Service {
   async list() {
@@ -211,12 +212,85 @@ class ChainService extends Service {
         user: ctx.user.id,
         chain: chain._id.toString(),
       });
+      await ctx.model.Operation.create({
+        user: ctx.user.id,
+        chain: chain._id.toString(),
+        operate: config.operations.ApplyChain.key,
+      });
       for (const key in service_url) {
         await this.handle_url(chain._id.toString(), networkConfig._id.toString(), key, service_url[key]);
       }
       this.initialFabric(chain);
     }
     return response.status === 200;
+  }
+  async getChannelHeight(chainId) {
+    const { ctx, config } = this;
+    const chainRootDir = `${config.dataDir}/${ctx.user.id}/chains/${chainId}`;
+    const keyValueStorePath = `${chainRootDir}/client-kvs`;
+    const network = await this.generateNetwork(chainId);
+
+    return await ctx.getChannelHeight(network, keyValueStorePath, 'peer1', ctx.user.username, 'org1');
+  }
+  async getChannels(chainId) {
+    const { ctx, config } = this;
+    const chainRootDir = `${config.dataDir}/${ctx.user.id}/chains/${chainId}`;
+    const keyValueStorePath = `${chainRootDir}/client-kvs`;
+    const network = await this.generateNetwork(chainId);
+
+    return await ctx.getChannels(network, keyValueStorePath, 'peer1', ctx.user.username, 'org1');
+  }
+  async getChainCodes(chainId, type) {
+    const { ctx, config } = this;
+    const chainRootDir = `${config.dataDir}/${ctx.user.id}/chains/${chainId}`;
+    const keyValueStorePath = `${chainRootDir}/client-kvs`;
+    const network = await this.generateNetwork(chainId);
+
+    return await ctx.getChainCodes(network, keyValueStorePath, 'peer1', type, ctx.user.username, 'org1');
+  }
+  async getBlockByNumber(chainId, blockNumber) {
+    const { ctx, config } = this;
+    const chainRootDir = `${config.dataDir}/${ctx.user.id}/chains/${chainId}`;
+    const keyValueStorePath = `${chainRootDir}/client-kvs`;
+    const network = await this.generateNetwork(chainId);
+
+    const block = await ctx.getBlockByNumber(network, keyValueStorePath, 'peer1', blockNumber, ctx.user.username, 'org1');
+    if (block && typeof block === 'string' && block.includes('Error:')) {
+      return {
+        success: false,
+        block,
+      };
+    }
+    const txList = [];
+    block.data.data.map(item => {
+      const { payload: { header: { channel_header: { tx_id, timestamp, channel_id } } } } = item;
+      const txTime = moment(timestamp, 'ddd MMM DD YYYY HH:mm:ss GMT+0000 (UTC)');
+      return txList.push({
+        id: tx_id,
+        timestamp: txTime.unix(),
+        channelId: channel_id,
+      });
+    });
+    return {
+      success: true,
+      txList,
+    };
+  }
+  async getRecentBlock(chainId, count) {
+    const { ctx, config } = this;
+    const chainRootDir = `${config.dataDir}/${ctx.user.id}/chains/${chainId}`;
+    const keyValueStorePath = `${chainRootDir}/client-kvs`;
+    const network = await this.generateNetwork(chainId);
+
+    return await ctx.getRecentBlock(network, keyValueStorePath, 'peer1', ctx.user.username, 'org1', count);
+  }
+  async getRecentTransactions(chainId, count) {
+    const { ctx, config } = this;
+    const chainRootDir = `${config.dataDir}/${ctx.user.id}/chains/${chainId}`;
+    const keyValueStorePath = `${chainRootDir}/client-kvs`;
+    const network = await this.generateNetwork(chainId);
+
+    return await ctx.getRecentTransactions(network, keyValueStorePath, 'peer1', ctx.user.username, 'org1', count);
   }
 }
 

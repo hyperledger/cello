@@ -10,6 +10,7 @@ export default {
   url: {
     chain: {
       list: `${urlBase}api/chain`,
+      query: `${urlBase}api/chain/{id}`,
       release: `${urlBase}api/chain/{id}`,
       apply: `${urlBase}api/chain`,
       downloadNetworkConfig: `${urlBase}api/chain/network-config/{id}`,

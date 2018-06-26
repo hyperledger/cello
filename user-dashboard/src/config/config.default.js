@@ -1,5 +1,6 @@
 'use strict';
 const path = require('path');
+const Enum = require('enum');
 
 const apiBaseUrl = `http://${process.env.RESTFUL_SERVER}/api`;
 module.exports = appInfo => {
@@ -34,6 +35,7 @@ module.exports = appInfo => {
         },
       },
     },
+    operations: new Enum(['ApplyChain', 'ReleaseChain', 'NewCode', 'InstallCode', 'InstantiateCode', 'Invoke', 'Query']),
     default: {
       channelName: 'mychannel',
       smartContracts: {

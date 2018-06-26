@@ -115,7 +115,11 @@ export default class SiderMenu extends PureComponent {
    * get SubMenu or Item
    */
   getSubMenuOrItem = item => {
-    if (item.children && item.children.some(child => child.name)) {
+    let shownChildrenLen = 1;
+    if (item.children) {
+      shownChildrenLen = item.children.filter(subItem => typeof subItem.hideInMenu === 'undefined').length;
+    }
+    if (item.children && item.children.some(child => child.name) && shownChildrenLen > 1) {
       const childrenItems = this.getNavMenuItems(item.children);
       // 当无子菜单时就不展示菜单
       if (childrenItems && childrenItems.length > 0) {
