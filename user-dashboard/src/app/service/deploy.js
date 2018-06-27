@@ -48,9 +48,35 @@ class DeployService extends Service {
     const chainRootDir = `${config.dataDir}/${ctx.user.id}/chains/${chainId}`;
     const keyValueStorePath = `${chainRootDir}/client-kvs`;
     const network = await ctx.service.chain.generateNetwork(chainId);
-    return await ctx.invokeChainCode(network, keyValueStorePath, ['peer1'], config.default.channelName, deploy.name, functionName, args, ctx.user.username, 'org1');
+    const result = await ctx.invokeChainCode(network, keyValueStorePath, ['peer1'], config.default.channelName, deploy.name, functionName, args, ctx.user.username, 'org1');
+    if (result.success) {
+      await ctx.model.Operation.create({
+        chain: chainId,
+        deploy,
+        smartContract: deploy.smartContract,
+        smartContractCode: deploy.smartContractCode,
+        operate: config.operations.Invoke.key,
+        fcn: functionName,
+        arguments: args,
+        user: ctx.user.id,
+      });
+    } else {
+      await ctx.model.Operation.create({
+        chain: chainId,
+        deploy,
+        smartContract: deploy.smartContract,
+        smartContractCode: deploy.smartContractCode,
+        operate: config.operations.Invoke.key,
+        success: false,
+        error: result.message,
+        fcn: functionName,
+        arguments: args,
+        user: ctx.user.id,
+      });
+    }
+    return result;
   }
-  // async function queryChainCode(network, keyValueStorePath, peer,  channelName, chainCodeName, fcn, args, username, org) {
+
   async queryChainCode(functionName, args, deployId) {
     const { ctx, config } = this;
     const deploy = await ctx.model.SmartContractDeploy.findOne({ _id: deployId }).populate('smartContractCode smartContract chain');
@@ -58,7 +84,34 @@ class DeployService extends Service {
     const chainRootDir = `${config.dataDir}/${ctx.user.id}/chains/${chainId}`;
     const keyValueStorePath = `${chainRootDir}/client-kvs`;
     const network = await ctx.service.chain.generateNetwork(chainId);
-    return await ctx.queryChainCode(network, keyValueStorePath, 'peer1', config.default.channelName, deploy.name, functionName, args, ctx.user.username, 'org1');
+    const result = await ctx.queryChainCode(network, keyValueStorePath, 'peer1', config.default.channelName, deploy.name, functionName, args, ctx.user.username, 'org1');
+    if (result.success) {
+      await ctx.model.Operation.create({
+        chain: chainId,
+        deploy,
+        smartContract: deploy.smartContract,
+        smartContractCode: deploy.smartContractCode,
+        operate: config.operations.Query.key,
+        fcn: functionName,
+        arguments: args,
+        result: result.result,
+        user: ctx.user.id,
+      });
+    } else {
+      await ctx.model.Operation.create({
+        chain: chainId,
+        deploy,
+        smartContract: deploy.smartContract,
+        smartContractCode: deploy.smartContractCode,
+        operate: config.operations.Query.key,
+        success: false,
+        error: result.message,
+        fcn: functionName,
+        arguments: args,
+        user: ctx.user.id,
+      });
+    }
+    return result;
   }
 }
 

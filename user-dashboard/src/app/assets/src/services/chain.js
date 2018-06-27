@@ -1,6 +1,7 @@
 /*
  SPDX-License-Identifier: Apache-2.0
 */
+import { stringify } from "qs";
 import request from "../utils/request";
 import config from "../utils/config";
 
@@ -19,4 +20,10 @@ export async function apply(params) {
     method: "POST",
     body: params,
   });
+}
+
+export async function queryChain(params) {
+  return request(
+    `${config.url.chain.query.format({ id: params.id })}?${stringify(params)}`
+  );
 }

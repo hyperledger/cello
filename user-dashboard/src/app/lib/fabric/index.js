@@ -6,6 +6,7 @@ const copService = require('fabric-ca-client');
 const fs = require('fs-extra');
 const path = require('path');
 const util = require('util');
+const moment = require('moment');
 
 module.exports = app => {
   function getKeyStoreForOrg(keyValueStore, org) {
@@ -330,6 +331,13 @@ module.exports = app => {
       }, {
         status: 'installed',
       }, { upsert: true, new: true });
+      await ctx.model.Operation.create({
+        smartContractCode,
+        smartContract: smartContractCode.smartContract,
+        chain: chainId,
+        user: userId,
+        operate: app.config.operations.InstallCode.key,
+      });
       return {
         success: true,
         deployId: deploy._id.toString(),
@@ -339,6 +347,15 @@ module.exports = app => {
     ctx.logger.error(
       'Failed to send install Proposal or receive valid response. Response null or status is not 200. exiting...'
     );
+    await ctx.model.Operation.create({
+      smartContractCode,
+      smartContract: smartContractCode.smartContract,
+      chain: chainId,
+      user: userId,
+      operate: app.config.operations.InstallCode.key,
+      success: false,
+      error: 'Failed to send install Proposal or receive valid response. Response null or status is not 200. exiting...',
+    });
     return {
       success: false,
       message: 'Failed to send install Proposal or receive valid response. Response null or status is not 200. exiting...',
@@ -347,7 +364,7 @@ module.exports = app => {
   }
   async function instantiateSmartContract(network, keyValueStorePath, channelName, deployId, functionName, args, org) {
     const ctx = app.createAnonymousContext();
-    const deploy = await ctx.model.SmartContractDeploy.findOne({ _id: deployId }).populate('smartContractCode');
+    const deploy = await ctx.model.SmartContractDeploy.findOne({ _id: deployId }).populate('smartContractCode smartContract chain');
     deploy.status = 'instantiating';
     deploy.save();
     const helper = await fabricHelper(network, keyValueStorePath);
@@ -425,16 +442,41 @@ module.exports = app => {
 
           if (code !== 'VALID') {
             ctx.logger.error('The chaincode instantiate transaction was invalid, code = ' + code);
-            reject();
+            reject({
+              success: false,
+              error: 'The chaincode instantiate transaction was invalid, code = ' + code,
+            });
           } else {
-            ctx.logger.info('The chaincode instantiate transaction was valid.');
-            resolve();
+            ctx.logger.debug('The chaincode instantiate transaction was valid.');
+            resolve({
+              success: true,
+            });
           }
         });
       });
 
       const sendPromise = await channel.sendTransaction(promiseRequest);
       const promiseResults = await Promise.all([sendPromise].concat([txPromise]));
+      const validateResult = promiseResults[1];
+      if (validateResult && validateResult.success) {
+        await ctx.model.Operation.create({
+          smartContractCode: deploy.smartContractCode,
+          smartContract: deploy.smartContract,
+          chain: deploy.chain,
+          user: deploy.user,
+          operate: app.config.operations.InstantiateCode.key,
+        });
+      } else {
+        await ctx.model.Operation.create({
+          smartContractCode: deploy.smartContractCode,
+          smartContract: deploy.smartContract,
+          chain: deploy.chain,
+          user: deploy.user,
+          success: false,
+          error: validateResult && validateResult.error,
+          operate: app.config.operations.InstantiateCode.key,
+        });
+      }
       return promiseResults[0];
     }
     deploy.status = 'error';
@@ -629,10 +671,18 @@ module.exports = app => {
           app.logger.debug('response payloads ', i, responsePayloads[i].toString('utf8'));
         }
         for (let i = 0; i < responsePayloads.length; i++) {
-          return {
-            success: true,
-            result: responsePayloads[i].toString('utf8'),
-          };
+          const responseStr = responsePayloads[i].toString('utf8');
+          if (responseStr.includes('Error:')) {
+            return {
+              success: false,
+              message: responsePayloads[i].toString('utf8'),
+            };
+          } else {
+            return {
+              success: true,
+              result: responsePayloads[i].toString('utf8'),
+            };
+          }
         }
       } else {
         app.logger.error('response_payloads is null');
@@ -647,6 +697,171 @@ module.exports = app => {
         message: 'Failed to send query due to error: ' + err.stack ? err.stack : err,
       };
     }
+  }
+  async function getChainInfo(network, keyValueStorePath, peer, username, org) {
+    const helper = await fabricHelper(network, keyValueStorePath);
+    const channel = await getChannelForOrg(org, helper.channels);
+    const target = await buildTarget(helper, peer, org);
+    await getRegisteredUsers(helper, username, org);
+    try {
+
+      const blockChainInfo = await channel.queryInfo(target);
+      if (blockChainInfo) {
+        app.logger.debug(blockChainInfo.currentBlockHash);
+        return blockChainInfo;
+      }
+      app.logger.error('response_payloads is null');
+      return 'response_payloads is null';
+
+    } catch (err) {
+      app.logger.error('Failed to query with error:' + err.stack ? err.stack : err);
+      return 'Failed to query with error:' + err.stack ? err.stack : err;
+    }
+  }
+  async function getChannelHeight(network, keyValueStorePath, peer, username, org) {
+    const response = await getChainInfo(network, keyValueStorePath, peer, username, org);
+    if (response && response.height) {
+      app.logger.debug(response.height.low);
+      return response.height.low.toString();
+    }
+    return '0';
+
+  }
+  async function getBlockByNumber(network, keyValueStorePath, peer, blockNumber, username, org) {
+    const helper = await fabricHelper(network, keyValueStorePath);
+    const channel = await getChannelForOrg(org, helper.channels);
+    const target = await buildTarget(helper, peer, org);
+    await getRegisteredUsers(helper, username, org);
+    try {
+      const responsePayloads = await channel.queryBlock(parseInt(blockNumber), target);
+      if (responsePayloads) {
+        // logger.debug(response_payloads);
+        app.logger.debug(responsePayloads);
+        return responsePayloads; // response_payloads.data.data[0].buffer;
+      }
+      app.logger.error('response_payloads is null');
+      return 'response_payloads is null';
+
+    } catch (err) {
+      app.logger.error('Failed to query with error:' + err.stack ? err.stack : err);
+      return 'Failed to query with error:' + err.stack ? err.stack : err;
+    }
+  }
+  async function getBlockInfo(network, keyValueStorePath, peer, blockId, username, org) {
+    const message = await getBlockByNumber(network, keyValueStorePath, peer, blockId, username, org);
+    const { header: { data_hash } } = message;
+    let txTimestamps = [];
+    message.data.data.map(item => {
+      const { payload: { header: { channel_header: { timestamp } } } } = item;
+      const txTime = moment(timestamp, 'ddd MMM DD YYYY HH:mm:ss GMT+0000 (UTC)');
+      return txTimestamps.push(txTime.utc());
+    });
+    txTimestamps = txTimestamps.sort(function(a, b) { return a - b; });
+    return {
+      id: blockId,
+      hash: data_hash,
+      transactions: message.data.data.length,
+      timestamp: txTimestamps.slice(-1).pop(),
+    };
+  }
+  async function getTransactions(network, keyValueStorePath, peer, blockId, username, org) {
+    const message = await getBlockByNumber(network, keyValueStorePath, peer, blockId, username, org);
+    // let transaction = null;
+    const transaction = message.data.data.map(item => {
+      const { payload: { header: { channel_header: { tx_id, timestamp, channel_id } } } } = item;
+      const txTime = moment(timestamp, 'ddd MMM DD YYYY HH:mm:ss GMT+0000 (UTC)');
+      if (tx_id) {
+        return {
+          id: tx_id,
+          timestamp: txTime.utc(),
+          channelId: channel_id,
+        };
+      }
+      return null;
+
+    });
+    return transaction.length > 0 ? transaction[0] : {};
+  }
+  async function getRecentBlock(network, keyValueStorePath, peer, username, org, count) {
+    let height = await getChannelHeight(network, keyValueStorePath, peer, username, org);
+    height = parseInt(height);
+    const number = count > height ? height : count;
+    const blockIds = [];
+    for (let index = height - 1; index >= height - number; index--) {
+      blockIds.push(index);
+    }
+    const promises = [];
+    for (const index in blockIds) {
+      const blockId = blockIds[index];
+      promises.push(getBlockInfo(network, keyValueStorePath, peer, blockId, username, org));
+    }
+    return await Promise.all(promises);
+  }
+  async function getRecentTransactions(network, keyValueStorePath, peer, username, org, count) {
+    let height = await getChannelHeight(network, keyValueStorePath, peer, username, org);
+    height = parseInt(height);
+    const number = count > height ? height : count;
+    const blockIds = [];
+    for (let index = height - 1; index >= height - number; index--) {
+      blockIds.push(index);
+    }
+    const promises = [];
+    for (const index in blockIds) {
+      const blockId = blockIds[index];
+      promises.push(getTransactions(network, keyValueStorePath, peer, blockId, username, org));
+    }
+    return await Promise.all(promises);
+  }
+  async function getChannels(network, keyValueStorePath, peer, username, org) {
+    const helper = await fabricHelper(network, keyValueStorePath);
+    const client = await getClientForOrg(org, helper.clients);
+    const target = await buildTarget(helper, peer, org);
+    await getRegisteredUsers(helper, username, org);
+    try {
+      const response = await client.queryChannels(target);
+      const channelNames = [];
+      for (let i = 0; i < response.channels.length; i++) {
+        channelNames.push(response.channels[i].channel_id);
+      }
+      return channelNames;
+    } catch (err) {
+      app.logger.error('Failed to query with error:' + err.stack ? err.stack : err);
+      return [];
+    }
+  }
+  async function getChainCodes(network, keyValueStorePath, peer, type, username, org) {
+    const helper = await fabricHelper(network, keyValueStorePath);
+    const client = await getClientForOrg(org, helper.clients);
+    const target = await buildTarget(helper, peer, org);
+    const channel = await getChannelForOrg(org, helper.channels);
+    await getOrgAdmin(org, helper);
+    const chainCodes = [];
+    try {
+      let response = {};
+      switch (type) {
+        case 'installed':
+          response = await client.queryInstalledChaincodes(target);
+          break;
+        default:
+          response = await channel.queryInstantiatedChaincodes(target);
+          break;
+      }
+      for (let i = 0; i < response.chaincodes.length; i++) {
+        app.logger.debug('name: ' + response.chaincodes[i].name + ', version: ' +
+          response.chaincodes[i].version + ', path: ' + response.chaincodes[i].path
+        );
+        chainCodes.push(
+          {
+            name: response.chaincodes[i].name,
+            version: response.chaincodes[i].version,
+            path: response.chaincodes[i].path,
+          }
+        );
+      }
+    } catch (err) {
+      app.logger.error('Failed to query with error:' + err.stack ? err.stack : err);
+    }
+    return chainCodes;
   }
   async function fabricHelper(network, keyValueStore) {
     const helper = {
@@ -693,6 +908,13 @@ module.exports = app => {
   app.instantiateSmartContract = instantiateSmartContract;
   app.invokeChainCode = invokeChainCode;
   app.queryChainCode = queryChainCode;
+  app.getChainInfo = getChainInfo;
+  app.getChannelHeight = getChannelHeight;
+  app.getBlockByNumber = getBlockByNumber;
+  app.getRecentBlock = getRecentBlock;
+  app.getRecentTransactions = getRecentTransactions;
+  app.getChannels = getChannels;
+  app.getChainCodes = getChainCodes;
   app.sleep = sleep;
-  hfc.setLogger(app.logger);
+  // hfc.setLogger(app.logger);
 };

@@ -34,6 +34,27 @@ module.exports = {
   get instantiateSmartContract() {
     return this.app.instantiateSmartContract;
   },
+  get getChainInfo() {
+    return this.app.getChainInfo;
+  },
+  get getChannelHeight() {
+    return this.app.getChannelHeight;
+  },
+  get getBlockByNumber() {
+    return this.app.getBlockByNumber;
+  },
+  get getRecentBlock() {
+    return this.app.getRecentBlock;
+  },
+  get getRecentTransactions() {
+    return this.app.getRecentTransactions;
+  },
+  get getChainCodes() {
+    return this.app.getChainCodes;
+  },
+  get getChannels() {
+    return this.app.getChannels;
+  },
   get sleep() {
     return this.app.sleep;
   },

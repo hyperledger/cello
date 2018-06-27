@@ -56,7 +56,8 @@
     "shelljs": "^0.8.2",
     "adm-zip": "^0.4.11",
     "await-stream-ready": "^1.0.1",
-    "stream-wormhole": "^1.0.3"
+    "stream-wormhole": "^1.0.3",
+    "enum": "^2.5.0"
   },
   "devDependencies": {
     "autod": "^3.0.1",

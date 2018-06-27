@@ -79,8 +79,13 @@ export const getRouterData = app => {
         import("../layouts/BasicLayout")
       ),
     },
-    "/chain": {
+    "/chain/index": {
       component: dynamicWrapper(app, ["chain"], () => import("../routes/Chain")),
+    },
+    "/chain/info/:id": {
+      component: dynamicWrapper(app, ["chain"], () =>
+        import("../routes/Chain/Info")
+      ),
     },
     "/apply-chain": {
       component: dynamicWrapper(app, ["chain"], () =>

@@ -3,13 +3,22 @@
 */
 import { routerRedux } from "dva/router";
 import { message } from "antd";
-import { queryChains, release, apply } from "../services/chain";
+import { queryChains, release, apply, queryChain } from "../services/chain";
 
 export default {
   namespace: "chain",
 
   state: {
     chains: [],
+    currentChain: {},
+    deploys: [],
+    height: 0,
+    recentBlock: [],
+    recentTransaction: [],
+    channels: [],
+    installedChainCodes: [],
+    instantiatedChainCodes: [],
+    operations: [],
   },
 
   effects: {
@@ -41,6 +50,23 @@ export default {
       }
       yield call(payload.callback);
     },
+    *queryChain({ payload }, { call, put }) {
+      const response = yield call(queryChain, payload);
+      yield put({
+        type: "setCurrentChain",
+        payload: {
+          currentChain: response.chain,
+          height: response.height,
+          recentBlock: response.recentBlock,
+          recentTransaction: response.recentTransaction,
+          deploys: response.deploys,
+          channels: response.channels,
+          installedChainCodes: response.installedChainCodes,
+          instantiatedChainCodes: response.instantiatedChainCodes,
+          operations: response.operations,
+        },
+      });
+    },
   },
 
   reducers: {
@@ -48,6 +74,45 @@ export default {
       return {
         ...state,
         chains: action.payload,
+      };
+    },
+    setCurrentChain(state, action) {
+      const {
+        currentChain,
+        height,
+        recentBlock,
+        recentTransaction,
+        deploys,
+        channels,
+        installedChainCodes,
+        instantiatedChainCodes,
+        operations,
+      } = action.payload;
+      return {
+        ...state,
+        currentChain,
+        height,
+        recentTransaction,
+        recentBlock,
+        deploys,
+        channels,
+        instantiatedChainCodes,
+        installedChainCodes,
+        operations,
+      };
+    },
+    clearCurrentChain(state) {
+      return {
+        ...state,
+        currentChain: {},
+        height: 0,
+        recentTransaction: [],
+        recentBlock: [],
+        deploys: [],
+        channels: [],
+        instantiatedChainCodes: [],
+        installedChainCodes: [],
+        operations: [],
       };
     },
   },

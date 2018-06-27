@@ -101,22 +101,29 @@ export default class AdvancedProfile extends Component {
   operateCallback = (data) => {
     const { request, response } = data;
     const { operation } = request;
-    let messageStatus = 'success';
-    let successText = 'successfully';
-    if (!response.success) {
-      messageStatus = 'error';
-      successText = 'failed';
-    }
     switch (operation) {
-      case 'invoke':
-        message[messageStatus](`${operation} operation ${successText}, transaction ID ${response.transactionID}`);
+      case 'invoke': {
+        if (response.success) {
+          message.success(`${operation} operation successfully, transaction ID ${response.transactionID}`);
+        } else {
+          message.error(`${operation} operation failed, error message ${response.message}`);
+        }
         break;
-      case 'query':
-        message[messageStatus](`${operation} operation ${successText}, result ${response.result}`);
-        this.setState({
-          queryResult: response.result,
-        });
+      }
+      case 'query': {
+        if (response.success) {
+          message.success(`${operation} operation successfully, result ${response.result}`);
+          this.setState({
+            queryResult: response.result,
+          });
+        } else {
+          message.error(`${operation} operation failed, error message ${response.message}`);
+          this.setState({
+            queryResult: response.message,
+          });
+        }
         break;
+      }
       default:
         break;
     }

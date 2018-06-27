@@ -8,6 +8,18 @@ const menuData = [
     name: "Chain",
     icon: "link",
     path: "chain",
+    children: [
+      {
+        name: "List",
+        path: "index",
+      },
+      {
+        name: "Info",
+        path: "info/:id",
+        hideInMenu: true,
+        hideInBreadcrumb: false,
+      },
+    ],
   },
   {
     name: "Apply Chain",
