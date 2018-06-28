@@ -42,12 +42,18 @@ const menuData = [
     name: intl.formatMessage(messages.menus.host),
     icon: 'laptop',
     path: 'host',
-  },
-  {
-    name: 'Create Host',
-    path: 'host-create',
-    hideInMenu: true,
-    hideInBreadcrumb: false,
+    children: [
+      {
+        name: intl.formatMessage(messages.menus.host),
+        path: 'index',
+      },
+      {
+        name: 'Create Host',
+        path: 'create',
+        hideInMenu: true,
+        hideInBreadcrumb: false,
+      }
+    ],
   },
   {
     name: intl.formatMessage(messages.menus.chain),

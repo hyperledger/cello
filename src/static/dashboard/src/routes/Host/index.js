@@ -88,7 +88,7 @@ class Host extends PureComponent {
   onClickAddHost = () => {
     this.props.dispatch(
       routerRedux.push({
-        pathname: '/create-host',
+        pathname: '/host/create',
       })
     );
   };
@@ -129,7 +129,7 @@ class Host extends PureComponent {
   editHost = host => {
     this.props.dispatch(
       routerRedux.push({
-        pathname: '/create-host',
+        pathname: '/host/create',
         search: stringify({
           id: host.id,
           action: 'update',

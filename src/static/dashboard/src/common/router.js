@@ -78,10 +78,10 @@ export const getRouterData = app => {
     '/overview': {
       component: dynamicWrapper(app, ['overview'], () => import('../routes/Overview')),
     },
-    '/host': {
+    '/host/index': {
       component: dynamicWrapper(app, ['host'], () => import('../routes/Host')),
     },
-    '/create-host': {
+    '/host/create': {
       component: dynamicWrapper(app, ['host'], () => import('../routes/Host/CreateHost')),
     },
     '/chain': {
