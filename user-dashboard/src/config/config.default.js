@@ -56,6 +56,15 @@ module.exports = appInfo => {
       ],
     },
     dataDir: '/opt/data',
+    io: {
+      init: { },
+      namespace: {
+        '/': {
+          connectionMiddleware: [],
+          packetMiddleware: [],
+        },
+      },
+    },
   };
 
   // use for cookie sign key, should change to your own and keep security

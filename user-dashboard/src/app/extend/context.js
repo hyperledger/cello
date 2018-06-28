@@ -4,7 +4,7 @@
 'use strict';
 
 module.exports = {
-  get helper() {
+  get fabricHelper() {
     return this.app.fabricHelper;
   },
   get getClientForOrg() {

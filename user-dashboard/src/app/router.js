@@ -8,7 +8,7 @@ const LocalStrategy = require('passport-local').Strategy;
  * @param {Egg.Application} app - egg application
  */
 module.exports = app => {
-  const { router, controller, passport } = app;
+  const { router, controller, passport, io } = app;
   passport.use(new LocalStrategy({
     passReqToCallback: true,
   }, (req, username, password, done) => {
@@ -37,6 +37,7 @@ module.exports = app => {
   router.post('/login', passport.authenticate('local', { successRedirect: process.env.WEBROOT }));
   router.get('/logout', controller.home.logout);
   require('./router/api')(app);
+  io.of('/').route('join', io.controller.home.join);
 
   router.prefix(process.env.WEBROOT);
 };

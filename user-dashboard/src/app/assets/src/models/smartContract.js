@@ -94,5 +94,20 @@ export default {
         newOperations,
       };
     },
+    updateDeployStatus(state, action) {
+      const { deploys } = state;
+      const { deployId, status } = action.payload;
+      deploys.forEach((deploy, index) => {
+        if (deploy._id === deployId) {
+          deploy.status = status;
+          deploys[index] = deploy;
+          return false;
+        }
+      });
+      return {
+        ...state,
+        deploys,
+      };
+    },
   },
 };

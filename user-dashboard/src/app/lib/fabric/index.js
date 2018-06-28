@@ -477,7 +477,9 @@ module.exports = app => {
           operate: app.config.operations.InstantiateCode.key,
         });
       }
-      return promiseResults[0];
+      return {
+        success: promiseResults[0].status === 'SUCCESS',
+      };
     }
     deploy.status = 'error';
     deploy.save();
@@ -677,12 +679,12 @@ module.exports = app => {
               success: false,
               message: responsePayloads[i].toString('utf8'),
             };
-          } else {
-            return {
-              success: true,
-              result: responsePayloads[i].toString('utf8'),
-            };
           }
+          return {
+            success: true,
+            result: responsePayloads[i].toString('utf8'),
+          };
+
         }
       } else {
         app.logger.error('response_payloads is null');

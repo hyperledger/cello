@@ -163,7 +163,7 @@ class SmartContractService extends Service {
     };
   }
   async deploySmartContractCode(id, chainId, operation) {
-    const { ctx, config } = this;
+    const { ctx, config, app } = this;
 
     const { functionName, args, deployId } = ctx.request.body;
     const chainRootDir = `${config.dataDir}/${ctx.user.id}/chains/${chainId}`;
@@ -172,11 +172,20 @@ class SmartContractService extends Service {
     switch (operation) {
       case 'install':
         return await ctx.installSmartContract(network, keyValueStorePath, ['peer1', 'peer2'], ctx.user.id, id, chainId, 'org1');
-      case 'instantiate':
-        ctx.instantiateSmartContract(network, keyValueStorePath, config.default.channelName, deployId, functionName, args, 'org1');
-        return {
-          success: true,
-        };
+      case 'instantiate': {
+        const deploy = await ctx.model.SmartContractDeploy.findOne({ _id: deployId }).populate('chain smartContract smartContractCode');
+        const result = await ctx.instantiateSmartContract(network, keyValueStorePath, config.default.channelName, deployId, functionName, args, 'org1');
+        const nsp = app.io.of('/');
+        const msg = ctx.helper.parseMsg('instantiate-done', result, {
+          chainName: deploy.chain.name,
+          codeName: deploy.smartContract.name,
+          codeVersion: deploy.smartContractCode.version,
+          chainId,
+          deployId,
+        });
+        nsp.to(ctx.user.id).emit('instantiate-done', msg);
+        break;
+      }
       default:
         return {
           success: false,
