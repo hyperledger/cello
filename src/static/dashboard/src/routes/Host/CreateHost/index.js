@@ -287,29 +287,26 @@ class CreateHost extends PureComponent {
         this.setState({
           submitting: true,
         });
+        let data = {
+          ...values,
+          schedulable: schedulable ? 'on' : 'off',
+          autofill: autofill ? 'on' : 'off',
+          callback: this.submitCallback,
+        };
+        if (values.host_type === 'kubernetes') {
+          data.k8s_ssl = k8sUseSSL ? 'on' : 'off';
+        }
         if (action === 'create') {
           this.props.dispatch({
             type: 'host/createHost',
-            payload: {
-              ...values,
-              schedulable: schedulable ? 'on' : 'off',
-              autofill: autofill ? 'on' : 'off',
-              k8s_ssl: k8sUseSSL ? 'on' : 'off',
-              callback: this.submitCallback,
-            },
+            payload: data,
           });
         } else {
-          delete values.host_type;
+          data.id = hostId;
+          delete data.host_type;
           this.props.dispatch({
             type: 'host/updateHost',
-            payload: {
-              ...values,
-              schedulable: schedulable ? 'true' : 'false',
-              autofill: autofill ? 'true' : 'false',
-              k8s_ssl: k8sUseSSL ? 'on' : 'off',
-              id: hostId,
-              callback: this.submitCallback,
-            },
+            payload: data,
           });
         }
       }

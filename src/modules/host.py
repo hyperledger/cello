@@ -232,9 +232,9 @@ class HostHandler(object):
         if "log_type" in d and d["log_type"] == CLUSTER_LOG_TYPES[0]:
             d["log_server"] = ""
         if "autofill" in d:
-            d["autofill"] = d["autofill"] == "true"
+            d["autofill"] = d["autofill"] == "on"
         if "schedulable" in d:
-            d["schedulable"] = d["schedulable"] == "true"
+            d["schedulable"] = d["schedulable"] == "on"
         self.db_set_by_id(id, **d)
         h_new = self.get_by_id(id)
         return self._schema(h_new)
