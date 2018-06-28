@@ -15,30 +15,30 @@
 version: '3.2'
 services:
   # nginx as front end for the operator dashboard
-  nginx:
-    image: hyperledger/cello-nginx
-    hostname: cello-nginx
-    container_name: cello-nginx
-    restart: always
-    deploy:
-      resources:
-        limits:
-          cpus: '0.50'
-          memory: 2048M
-        reservations:
-          cpus: '0.10'
-          memory: 256M
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.default.conf
-      #- /opt/cello/nginx/log/:/var/log/nginx/
-    ports:
-      - "80:80"
-      - "8080:8080"
-    environment:
-      - BACKEND=cello-operator-dashboard
-      - PORT=8080
-      - USERNAME=admin
-      - PASSWORD=pass
+#  nginx:
+#    image: hyperledger/cello-nginx
+#    hostname: cello-nginx
+#    container_name: cello-nginx
+#    restart: always
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '0.50'
+#          memory: 2048M
+#        reservations:
+#          cpus: '0.10'
+#          memory: 256M
+#    volumes:
+#      - ./nginx/nginx.conf:/etc/nginx/nginx.default.conf
+#      #- /opt/cello/nginx/log/:/var/log/nginx/
+#    ports:
+#      - "80:80"
+#      - "8080:8080"
+#    environment:
+#      - BACKEND=cello-operator-dashboard
+#      - PORT=8080
+#      - USERNAME=admin
+#      - PASSWORD=pass
 
   # cello dashboard service for network operator
   operator-dashboard:
@@ -54,8 +54,8 @@ services:
       - STATIC_FOLDER=$STATIC_FOLDER
       - TEMPLATE_FOLDER=$TEMPLATE_FOLDER
       - ENABLE_EMAIL_ACTIVE=$ENABLE_EMAIL_ACTIVE
-    expose:
-      - "8080"
+    ports:
+      - "8080:8080"
     volumes:  # This should be removed in product env
       - ./src/agent/docker/_compose_files:/cello
       - ./src:/app
