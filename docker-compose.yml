@@ -69,7 +69,7 @@ services:
       - dashboard_mongo
       - operator-dashboard
     ports:
-      - "8081:8080"
+      - "8081:8081"
     environment:
       - NODE_ENV=production
       - RESTFUL_SERVER=operator-dashboard:8080
@@ -82,7 +82,6 @@ services:
       - SMTP_AUTH_USERNAME=$SMTP_AUTH_USERNAME
       - SMTP_AUTH_PASSWORD=$SMTP_AUTH_PASSWORD
       - MONGO_HOST=dashboard_mongo
-      - MONGO_PORT=27017
       - MONGO_DB=user_dashboard
       - FROM_EMAIL=$FROM_EMAIL
       - WEBROOT=$USER_DASHBOARD_WEBROOT
