@@ -81,6 +81,9 @@ services:
       - SMTP_PORT=$SMTP_PORT
       - SMTP_AUTH_USERNAME=$SMTP_AUTH_USERNAME
       - SMTP_AUTH_PASSWORD=$SMTP_AUTH_PASSWORD
+      - MONGO_HOST=dashboard_mongo
+      - MONGO_PORT=27017
+      - MONGO_DB=user_dashboard
       - FROM_EMAIL=$FROM_EMAIL
       - WEBROOT=$USER_DASHBOARD_WEBROOT
       - FABRIC_CFG_PATH=/etc/hyperledger/fabric
