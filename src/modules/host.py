@@ -19,7 +19,7 @@ from common import \
     log_handler, \
     FabricV1NetworkConfig, utils, \
     LOG_LEVEL, CLUSTER_LOG_TYPES, CLUSTER_LOG_LEVEL, \
-    NETWORK_SIZE_FABRIC_V1, \
+    NETWORK_SIZE_FABRIC_V1, NETWORK_TYPE_FABRIC_V1_1, \
     CLUSTER_PORT_START, CLUSTER_PORT_STEP, \
     CONSENSUS_PLUGINS_FABRIC_V1, CONSENSUS_PLUGIN_SOLO, \
     WORKER_TYPES, VCENTER, VCUSERNAME, VCPWD, \
@@ -321,6 +321,7 @@ class HostHandler(object):
             config = FabricV1NetworkConfig(
                 consensus_plugin=CONSENSUS_PLUGIN_SOLO,
                 size=cluster_size)
+            config.network_type = NETWORK_TYPE_FABRIC_V1_1
             cid = cluster.cluster_handler.create(name=cluster_name,
                                                  host_id=id, config=config,
                                                  start_port=start_port)

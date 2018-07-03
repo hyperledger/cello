@@ -14,7 +14,8 @@ from common import log_handler, LOG_LEVEL, \
     request_get, make_ok_resp, make_fail_resp, \
     request_debug, request_json_body, \
     CODE_CREATED, CODE_NOT_FOUND, \
-    NETWORK_TYPES, NETWORK_TYPE_FABRIC_PRE_V1, NETWORK_TYPE_FABRIC_V1, \
+    NETWORK_TYPES, NETWORK_TYPE_FABRIC_PRE_V1, \
+    NETWORK_TYPE_FABRIC_V1, NETWORK_TYPE_FABRIC_V1_1, \
     CONSENSUS_PLUGINS_FABRIC_V1, CONSENSUS_MODES, NETWORK_SIZE_FABRIC_PRE_V1, \
     FabricPreNetworkConfig, FabricV1NetworkConfig
 
@@ -237,6 +238,11 @@ def cluster_create():
         config = FabricV1NetworkConfig(
             consensus_plugin=body['consensus_plugin'],
             size=size)
+    elif network_type == NETWORK_TYPE_FABRIC_V1_1:
+        config = FabricV1NetworkConfig(
+            consensus_plugin=body['consensus_plugin'],
+            size=size)
+        config.network_type = NETWORK_TYPE_FABRIC_V1_1
     else:
         error_msg = "Unknown network_type={}".format(network_type)
         logger.warning(error_msg)

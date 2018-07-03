@@ -16,6 +16,7 @@ CLUSTER_PORT_START = int(os.getenv("CLUSTER_PORT_START", 7050))
 # Fabric image related varible
 # should be the same with scripts/worker_node/download_images.sh
 HLF_VERSION = '1.0.5'
+HLF_VERSION_1_1 = '1.1.0'
 
 # vSphere requires this
 ARCH = 'x86_64'
@@ -72,7 +73,9 @@ SERVICE_PORTS = dict(list(PEER_SERVICE_PORTS.items()) +
 
 NETWORK_TYPE_FABRIC_PRE_V1 = 'fabric-0.6'  # TODO: deprecate 0.6 support soon
 NETWORK_TYPE_FABRIC_V1 = 'fabric-1.0'
-NETWORK_TYPES = [NETWORK_TYPE_FABRIC_V1]  # only support fabric v1.x now
+NETWORK_TYPE_FABRIC_V1_1 = 'fabric-1.1'
+NETWORK_TYPES = [NETWORK_TYPE_FABRIC_V1, NETWORK_TYPE_FABRIC_V1_1]
+# only support fabric v1.x now
 
 CONSENSUS_PLUGIN_NOOPS = 'noops'
 CONSENSUS_PLUGIN_PBFT = 'pbft'
