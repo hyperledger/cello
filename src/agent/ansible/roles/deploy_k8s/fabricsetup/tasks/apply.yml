@@ -22,7 +22,7 @@
     src: "{{ playbook_dir }}/../deploy_k8s/fabricsetup/templates/dochannel.j2"
     dest: "{{ fabricworkdir }}/keyfiles/dochannel.sh"
     mode: "u=rx,g=rx"
-  when: allorderers | length > 0
+  when: (allorderers | length > 0) and (allpeers | length > 0)
 
 - name: Create persistent volume
   command: >-
@@ -107,14 +107,14 @@
     - "{{ playbook_dir }}/../deploy_k8s/fabricsetup/templates/firstcode.go"
   tags: "placecerts"
 
-- name: Copy certs onto the persistent volume
+- name: Copy channel operation script onto the persistent volume
   command: >-
     ./kubectl --kubeconfig kubeconfig cp {{ item }} fabriccertspod:/fabriccerts
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
   with_items:
     - "{{ fabricworkdir }}/keyfiles/dochannel.sh"
-  when: allorderers | length > 0
+  when: (allorderers | length > 0) and (allpeers | length > 0)
   tags: "placecerts"
 
 - name: Untar certs.tgz in the Persistent volume
@@ -177,6 +177,7 @@
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
   with_items: "{{ dindpods.stdout_lines }}"
+  when: allpeers | length > 0
   tags: "downloadccenv"
 
 - name: Start channel operations
@@ -184,4 +185,4 @@
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
   tags: "channeloperation"
-  when: allorderers | length > 0
+  when: (allorderers | length > 0) and (allpeers | length > 0)

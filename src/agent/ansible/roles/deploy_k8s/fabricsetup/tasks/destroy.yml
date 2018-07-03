@@ -7,7 +7,7 @@
     ./kubectl --kubeconfig='kubeconfig' delete -f ../run/cli-k8s.yaml
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
-  when: allorderers | length > 0
+  when: (allorderers | length > 0) and (allpeers | length > 0)
   tags: "clientdown"
 
 - name: Stop fabric pod and chaincode endpoint daemon set
