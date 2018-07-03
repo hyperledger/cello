@@ -1,0 +1,4 @@
+dependencies:
+  - name: minio
+    repository: "https://kubernetes-charts.storage.googleapis.com"
+    version: 1.3.4

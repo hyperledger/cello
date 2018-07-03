@@ -1,0 +1,94 @@
+# Default values for cello-master.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+replicaCount: 1
+operatorDashboardImage:
+  repository: hyperledger/cello-operator-dashboard
+  tag: latest
+userDashboardImage:
+  repository: hyperledger/cello-user-dashboard
+  tag: latest
+engineImage:
+  repository: hyperledger/cello-engine
+  tag: latest
+watchDogImage:
+  repository: hyperledger/cello-watchdog
+  tag: latest
+mongoImage:
+  repository: mongo
+  tag: 3.4.10
+nfsImage:
+  repository: quay.io/kubernetes_incubator/nfs-provisioner
+  tag: v1.0.9
+
+image:
+  pullPolicy: IfNotPresent
+
+nfs:
+  storePath: "/opt/cello/config"
+  size: 10Gi
+  nfsPort: 2049
+  mountdPort: 20048
+  rpcbindPort: 51413
+  # nfsNodePort:
+  # mountdNodePort:
+  # rpcbindNodePort:
+  mountdPort: 20048
+  rpcbindPort: 51413
+  storageClass: "-"
+
+service:
+  type: NodePort
+
+ingress:
+  enabled: false
+  # Used to create an Ingress record.
+  hosts:
+    - chart-example.local
+  annotations:
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  tls:
+    # Secrets must be manually created in the namespace.
+    # - secretName: chart-example-tls
+    #   hosts:
+    #     - chart-example.local
+
+mongo:
+  storeEnabled: false
+  size: 10Gi
+  storePath: "/opt/cello/mongo"
+  storageClass: "-"
+
+operator:
+  debug: "False"
+
+userDashboard:
+  enableEmailActive: "False"
+  webRoot: "/"
+  storePath: "/opt/cello/baas"
+  storageClass: "-"
+  size: 10Gi
+  mongo:
+    host: 127.0.0.1
+    port: 27017
+    database: user_dashboard
+
+autoStorageClass: true
+
+minio:
+  persistence:
+    storePath: "/opt/cello/minio"
+    storageClass: "cello-minio"
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #  cpu: 100m
+  #  memory: 128Mi
+  # requests:
+  #  cpu: 100m
+  #  memory: 128Mi

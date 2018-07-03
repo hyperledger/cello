@@ -1,0 +1,15 @@
+1. Get the application URL by running these commands:
+{{- if contains "NodePort" .Values.service.type }}
+export OPERATOR_PORT=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ template "cello-master.fullname" . }} -o jsonpath="{.spec.ports[1].nodePort}")
+export USER_DASHBOARD_PORT=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ template "cello-master.fullname" . }} -o jsonpath="{.spec.ports[2].nodePort}")
+{{- end }}
+
+2. Local storage paths:
+mongo: {{ .Values.mongo.storePath }}
+nfs: {{ .Values.nfs.storePath }}
+minio: {{ .Values.minio.persistence.storePath }}
+
+3. Ingress Path:
+{{- if .Values.minio.ingress.enabled }}
+path: {{ .Values.minio.ingress.path }}
+{{- end }}

@@ -1,0 +1,19 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: "{{ template "cello-master.fullname" . }}-nfs"
+spec:
+  {{- if .Values.autoStorageClass }}
+  storageClassName: "{{ template "cello-master.fullname" . }}-nfs"
+  {{- else }}
+  {{- if (eq "-" .Values.nfs.storageClass) }}
+  storageClassName: ""
+  {{- else }}
+  storageClassName: "{{ .Values.nfs.storageClass }}"
+  {{- end }}
+  {{- end }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.nfs.size }}

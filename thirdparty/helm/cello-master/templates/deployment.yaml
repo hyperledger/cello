@@ -1,0 +1,125 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "cello-master.fullname" . }}
+  labels:
+    app: {{ template "cello-master.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "cello-master.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      initContainers:
+      - name: init-nfs-files
+        image: "{{ .Values.operatorDashboardImage.repository }}:{{ .Values.operatorDashboardImage.tag }}"
+        volumeMounts:
+        - name: operator-nfs
+          mountPath: "/opt/data"
+        command: ["rsync"]
+        args: ["-av", "--delete", "/app/agent/docker/_compose_files/", "/opt/data/"]
+      containers:
+#        - name: "{{ .Chart.Name }}-nfs"
+#          image: "{{ .Values.nfsImage.repository }}:{{ .Values.nfsImage.tag }}"
+#          imagePullPolicy: {{ .Values.image.pullPolicy }}
+#          ports:
+#            - name: nfs
+#              containerPort: 2049
+#              protocol: TCP
+#            - name: mountd
+#              containerPort: 20048
+#              protocol: TCP
+#            - name: rpcbind-tcp
+#              containerPort: 111
+#              protocol: TCP
+#            - name: rpcbind-udp
+#              containerPort: 111
+#              protocol: UDP
+#          args:
+#            - "-provisioner={{ template "nfs-provisioner.provisionerName" . }}"
+#          volumeMounts:
+#          - name: operator-nfs
+#            mountPath: "/export"
+        - name: "{{ .Chart.Name }}-mongo"
+          image: "{{ .Values.mongoImage.repository }}:{{ .Values.mongoImage.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+          - name: operator-mongo
+            mountPath: "/data/db"
+        - name: "{{ .Chart.Name }}-engine"
+          image: "{{ .Values.engineImage.repository }}:{{ .Values.engineImage.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: MONGO_URL
+              value: "mongodb://127.0.0.1:27017"
+            - name: MONGO_HOST
+              value: "127.0.0.1"
+            - name: MONGO_DB
+              value: "dev"
+            - name: MONGODB_PORT
+              value: "27017"
+            - name: DEBUG
+              value: "False"
+        - name: "{{ .Chart.Name }}-operator"
+          image: "{{ .Values.operatorDashboardImage.repository }}:{{ .Values.operatorDashboardImage.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: MONGO_URL
+              value: "mongodb://127.0.0.1:27017"
+            - name: MONGODB_HOST
+              value: "127.0.0.1"
+            - name: MONGODB_DB
+              value: "dashboard"
+            - name: MONGODB_PORT
+              value: "27017"
+            - name: DEBUG
+              value: "{{ .Values.operator.debug }}"
+            - name: STATIC_FOLDER
+              value: "static"
+            - name: TEMPLATE_FOLDER
+              value: "templates"
+            - name: ENABLE_EMAIL_ACTIVE
+              value: "True"
+        - name: "{{ .Chart.Name }}-user-dashboard"
+          image: "{{ .Values.userDashboardImage.repository }}:{{ .Values.userDashboardImage.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: RESTFUL_SERVER
+              value: "127.0.0.1:8080"
+            - name: ENABLE_EMAIL_ACTIVE
+              value: "{{ .Values.userDashboard.enableEmailActive }}"
+            - name: MONGO_HOST
+              value: "{{ .Values.userDashboard.mongo.host }}"
+            - name: MONGO_PORT
+              value: "{{ .Values.userDashboard.mongo.port }}"
+            - name: MONGO_DB
+              value: "{{ .Values.userDashboard.mongo.database }}"
+            - name: WEBROOT
+              value: "{{ .Values.userDashboard.webRoot }}"
+            - name: FABRIC_CFG_PATH
+              value: "/etc/hyperledger/fabric"
+          volumeMounts:
+          - name: user-dashboard
+            mountPath: "/opt/data"
+          - name: minio
+            mountPath: "/opt/minio"
+      volumes:
+      - name: operator-nfs
+        persistentVolumeClaim:
+          claimName: "{{ template "cello-master.fullname" . }}-nfs"
+      - name: operator-mongo
+        persistentVolumeClaim:
+          claimName: "{{ template "cello-master.fullname" . }}-mongo"
+      - name: user-dashboard
+        persistentVolumeClaim:
+          claimName: "{{ template "cello-master.fullname" . }}-user-dashboard"
+      - name: minio
+        persistentVolumeClaim:
+          claimName: "{{ .Release.Name }}-minio"

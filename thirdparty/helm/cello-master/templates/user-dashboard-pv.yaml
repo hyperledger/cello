@@ -1,0 +1,22 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: "{{ template "cello-master.fullname" . }}-user-dashboard"
+  labels:
+    type: local
+spec:
+  {{- if .Values.autoStorageClass }}
+  storageClassName: "{{ template "cello-master.fullname" . }}-user-dashboard"
+  {{- else }}
+  {{- if (eq "-" .Values.userDashboard.storageClass) }}
+  storageClassName: ""
+  {{- else }}
+  storageClassName: "{{ .Values.userDashboard.storageClass }}"
+  {{- end }}
+  {{- end }}
+  capacity:
+    storage: {{ .Values.userDashboard.size }}
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: {{ .Values.userDashboard.storePath }}
