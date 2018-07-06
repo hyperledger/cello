@@ -19,6 +19,7 @@ Currently we support Docker Host or Swarm Cluster as Worker Node. More types wil
 * `Docker Swarm `: [Create a Docker Swarm](https://docs.docker.com/engine/swarm/swarm-tutorial/create-swarm/).
 * `Kubernetes`: [Kubernetes Setup](https://kubernetes.io/docs/setup/).
 * `vSphere`: [Setup vSphere as a Worker Node](setup_worker_vsphere.md).
+* `Kubernetes Worker`: [Setup Kubernetes as a Worker Node](setup_worker_kubernetes.md.md).
 * `Ansible`: [Setup Ansible as a Worker Node](setup_worker_ansible.md).
 
 ## Special Configuration for Production
