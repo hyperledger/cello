@@ -31,3 +31,14 @@
   tasks:
     - include: "fabricsetup/tasks/{{ mode }}.yml"
   tags: "fabricsetup"
+
+- name: setup composer
+  hosts: cloud
+  connection: local
+  become: true
+  become_user: root
+  vars_files:
+    - "./../../vars/{{ env }}.yml"
+  tasks:
+    - include: "composersetup/tasks/{{ mode }}.yml"
+  tags: "composersetup"

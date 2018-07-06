@@ -125,6 +125,14 @@
     chdir: "{{ playbook_dir }}/../../vars/"
   tags: "untarcerts"
 
+- name: Change certs permissions
+  command: >-
+    ./kubectl --kubeconfig kubeconfig exec fabriccertspod -c task-pv-container
+    -- chmod -R o+rw /fabriccerts
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+  tags: "changecertspermission"
+
 - name: Removing the certs pod
   command: >-
     ./kubectl --kubeconfig kubeconfig delete -f ../run/certssetup.yaml
