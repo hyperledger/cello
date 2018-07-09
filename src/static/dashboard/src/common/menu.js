@@ -52,7 +52,7 @@ const menuData = [
         path: 'create',
         hideInMenu: true,
         hideInBreadcrumb: false,
-      }
+      },
     ],
   },
   {
