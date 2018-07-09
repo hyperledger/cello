@@ -38,6 +38,8 @@ After successful adding, you can find the `docker_host` shown in the Host page, 
 
 If you are going to create vSphere type host, you can take the steps at the [vSphere type host creation guide](./setup_worker_vsphere.md).
 
+If you are going to create Kubernetes type host, you can take the steps at the [Kubernetes type host creation guide](./setup_worker_kubernetes.md).
+
 ## Create a Chain
 
 Now we have the free host in the pool, new chains can be create.
