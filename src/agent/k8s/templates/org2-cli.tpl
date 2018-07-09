@@ -11,7 +11,7 @@ spec:
       namespace: {{clusterName}}
       name: {{clusterName}}-org2-resources-pvc
     nfs:
-      path: /cello/{{clusterName}}/resources
+      path: /{{clusterName}}/resources
       server: {{nfsServer}} # change to your nfs server ip here.
 ---
 

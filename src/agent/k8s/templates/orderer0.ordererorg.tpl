@@ -62,7 +62,6 @@ spec:
        - name: certificate
          persistentVolumeClaim:
              claimName: {{clusterName}}-ordererorg-pvc
-           #path: /cello
          #persistentVolumeClaim:
          #  claimName: nfs
 

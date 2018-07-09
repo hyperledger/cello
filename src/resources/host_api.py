@@ -303,11 +303,15 @@ def host_actions():
 
 
 def create_k8s_host(name, capacity, log_type, request):
-    if "k8s_ssl" in request and request["k8s_ssl"] == "on":
+    if request.get("k8s_ssl") == "on" and request.get("ssl_ca") is not None:
         k8s_ssl = "true"
+        k8s_ssl_ca = request["ssl_ca"]
     else:
         k8s_ssl = "false"
+        k8s_ssl_ca = None
+
     request['use_ssl'] = k8s_ssl
+    request['use_ssl_ca'] = k8s_ssl_ca
 
     k8s_must_have_params = {
         'Name': name,
@@ -316,7 +320,8 @@ def create_k8s_host(name, capacity, log_type, request):
         'K8SAddress': request['worker_api'],
         'K8SCredType': request['k8s_cred_type'],
         'K8SNfsServer': request['k8s_nfs_server'],
-        'K8SUseSsl': request['use_ssl']
+        'K8SUseSsl': request['use_ssl'],
+        'K8SSslCert': request['use_ssl_ca']
     }
 
     if k8s_must_have_params['K8SCredType'] == K8S_CRED_TYPE['account']:

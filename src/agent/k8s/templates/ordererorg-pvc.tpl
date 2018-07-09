@@ -12,7 +12,7 @@ spec:
     namespace: {{clusterName}}
     name: {{clusterName}}-ordererorg-pvc
   nfs:
-    path: /cello/{{clusterName}}/resources/crypto-config/ordererOrganizations/ordererorg
+    path: /{{clusterName}}/resources/crypto-config/ordererOrganizations/ordererorg
     server: {{nfsServer}}  #change to your nfs server ip here
 
 ---

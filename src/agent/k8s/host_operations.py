@@ -37,10 +37,8 @@ class KubernetesOperation():
             k8s_config.password = k8s_params.get('K8SPassword')
 
         elif k8s_params.get('K8SCredType') == K8S_CRED_TYPE['cert']:
-            cert_content = \
-                base64.decodestring(str.encode(k8s_params.get('K8SCert')))
-            key_content = \
-                base64.decodestring(str.encode(k8s_params.get('K8SKey')))
+            cert_content = k8s_params.get('K8SCert')
+            key_content = k8s_params.get('K8SKey')
             k8s_config.cert_file = \
                 config.kube_config._create_temp_file_with_content(cert_content)
             k8s_config.key_file = \
@@ -65,6 +63,7 @@ class KubernetesOperation():
             k8s_config.verify_ssl = False
         else:
             k8s_config.verify_ssl = True
+            k8s_config.ssl_ca_cert = k8s_params.get('K8SSslCert')
 
         client.Configuration.set_default(k8s_config)
 
