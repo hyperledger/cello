@@ -98,6 +98,10 @@ const messages = defineMessages({
       id: 'Host.Create.Validate.Label.UseSSL',
       defaultMessage: 'Use SSL Verification',
     },
+    sslCa: {
+      id: 'Host.Create.Validate.Label.SSLCa',
+      defaultMessage: 'SSL CA',
+    },
   },
   button: {
     submit: {
@@ -156,6 +160,10 @@ const messages = defineMessages({
       certificateKey: {
         id: 'Host.Create.Validate.Required.CertificateKey',
         defaultMessage: 'Please input certificate key.',
+      },
+      sslCa: {
+        id: 'Host.Create.Validate.Required.SSLCa',
+        defaultMessage: 'Please input ssl ca cert.',
       },
       configurationContent: {
         id: 'Host.Create.Validate.Required.ConfigurationContent',
@@ -287,7 +295,7 @@ class CreateHost extends PureComponent {
         this.setState({
           submitting: true,
         });
-        let data = {
+        const data = {
           ...values,
           schedulable: schedulable ? 'on' : 'off',
           autofill: autofill ? 'on' : 'off',
@@ -598,6 +606,21 @@ class CreateHost extends PureComponent {
                     <Switch checked={k8sUseSSL} onChange={this.k8sUseSSLChange} />
                   )}
                 </FormItem>
+                {k8sUseSSL && (
+                <FormItem
+                  {...formItemLayout}
+                  label={intl.formatMessage(messages.label.sslCa)}
+                >
+                  {getFieldDecorator('ssl_ca', {
+                    rules: [
+                      {
+                        required: true,
+                        message: intl.formatMessage(messages.validate.required.sslCa),
+                      },
+                    ],
+                  })(<TextArea rows={4} placeholder={intl.formatMessage(messages.label.sslCa)} />)}
+                </FormItem>
+)}
               </div>
             )}
             <FormItem {...formItemLayout} label={intl.formatMessage(messages.label.logLevel)}>
