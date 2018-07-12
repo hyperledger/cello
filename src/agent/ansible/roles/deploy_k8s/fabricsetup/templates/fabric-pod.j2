@@ -281,7 +281,7 @@ spec:
         - { name: "CORE_PEER_GOSSIP_EXTERNALENDPOINT", value: "{{ peer.name }}:7051" }
         - { name: "CORE_PEER_ADDRESS", value: "{{ peer.name }}:7051" }
         - { name: "CORE_PEER_LISTENADDRESS", value: "{{ peer.name }}:7051" }
-{% if project_version | version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+{% if project_version is version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
         - { name: "CORE_PEER_CHAINCODEADDRESS", value: "{{ peer.name }}:7052" }
         - { name: "CORE_PEER_CHAINCODELISTENADDRESS", value: "0.0.0.0:7052" }
 {% else %}

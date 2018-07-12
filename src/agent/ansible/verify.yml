@@ -7,7 +7,7 @@
         starttime: "{{ ansible_date_time }}"
 
 - name: Run the plays
-  include: "roles/verify/main.yml"
+  import_playbook: "roles/verify/main.yml"
 
 - name: inform the installer
   hosts: cloud

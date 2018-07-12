@@ -10,19 +10,19 @@
   vars:
     env: "os"
     cloud_type: "os"
-  include: "roles/cloud_os/plays.yml"
+  import_playbook: "roles/cloud_os/plays.yml"
 
 - name: Run the plays
   vars:
     env: "os"
     env_type: "flanneld"
-  include: "roles/env_flanneld/{{ mode }}.yml"
+  import_playbook: "roles/env_flanneld/{{ mode }}.yml"
 
 - name: Run the plays
   vars:
     env: "bc1st"
     deploy_type: "compose"
-  include: "roles/deploy_compose/plays.yml"
+  import_playbook: "roles/deploy_compose/plays.yml"
 
 - name: Inform the installer
   hosts: cloud

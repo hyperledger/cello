@@ -194,3 +194,15 @@
     chdir: "{{ playbook_dir }}/../../vars/"
   tags: "channeloperation"
   when: (allorderers | length > 0) and (allpeers | length > 0)
+
+- name: Wait for channel operation pod to complete
+  command: >-
+    ./kubectl --kubeconfig kubeconfig -o=custom-columns=STATUS:.status.phase
+    get pods -l k8s-app=fabriccli --no-headers --field-selector=status.phase=Succeeded
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+  register: podstatus
+  until: podstatus.stdout_lines | length == 1
+  when: (allorderers | length > 0) and (allpeers | length > 0)
+  retries: 50
+  delay: 5

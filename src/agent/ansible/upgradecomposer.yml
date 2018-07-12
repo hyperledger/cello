@@ -7,7 +7,7 @@
         starttime: "{{ ansible_date_time }}"
 
 - name: Run the plays
-  include: "roles/upgrade_compose/plays.yml"
+  import_playbook: "roles/upgrade_compose/plays.yml"
 
 - name: inform the installer
   hosts: cloud

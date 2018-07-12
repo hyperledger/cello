@@ -10,19 +10,19 @@
   vars:
     env: "azure"
     cloud_type: "azure"
-  include: "roles/cloud_azure/plays.yml"
+  import_playbook: "roles/cloud_azure/plays.yml"
 
 - name: Run the plays
   vars:
     env: "azure"
     env_type: "k8s"
-  include: "roles/env_k8s/plays.yml"
+  import_playbook: "roles/env_k8s/plays.yml"
 
 - name: Run the plays
   vars:
     env: "bc1st"
     deploy_type: "k8s"
-  include: "roles/deploy_k8s/plays.yml"
+  import_playbook: "roles/deploy_k8s/plays.yml"
 
 - name: Inform the installer
   hosts: cloud

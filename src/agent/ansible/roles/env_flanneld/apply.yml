@@ -9,7 +9,7 @@
   vars_files:
     - "./../../vars/{{ env }}.yml"
   tasks:
-    - include: "fastinitnode/tasks/{{ mode }}.yml"
+    - include_tasks: "fastinitnode/tasks/{{ mode }}.yml"
   tags: "fastinitnode"
 
 - name: Setting up etcd services
@@ -20,7 +20,7 @@
   vars_files:
     - "./../../vars/{{ env }}.yml"
   tasks:
-    - include: "etcdsetup/tasks/{{ mode }}.yml"
+    - include_tasks: "etcdsetup/tasks/{{ mode }}.yml"
   tags: "etcdsetup"
 
 - name: setup flanned on all nodes
@@ -31,7 +31,7 @@
   vars_files:
     - "./../../vars/{{ env }}.yml"
   tasks:
-    - include: "networksetup/tasks/{{ mode }}.yml"
+    - include_tasks: "networksetup/tasks/{{ mode }}.yml"
   tags: "networksetup"
 
 - name: setup dns attribute for docker service
@@ -42,7 +42,7 @@
   vars_files:
     - "./../../vars/{{ env }}.yml"
   tasks:
-    - include: "dnsdocker/tasks/{{ mode }}.yml"
+    - include_tasks: "dnsdocker/tasks/{{ mode }}.yml"
   tags: "dnsdocker"
 
 - name: setup dns services and registrator
@@ -53,7 +53,7 @@
   vars_files:
     - "./../../vars/{{ env }}.yml"
   tasks:
-    - include: "dnssetup/tasks/{{ mode }}.yml"
+    - include_tasks: "dnssetup/tasks/{{ mode }}.yml"
   tags: "dnssetup"
 
 - name: Reset connections
@@ -62,5 +62,5 @@
   vars_files:
     - "./../../vars/{{ env }}.yml"
   tasks:
-    - include: "resetconn/tasks/{{ mode }}.yml"
+    - include_tasks: "resetconn/tasks/{{ mode }}.yml"
   tags: "resetconn"

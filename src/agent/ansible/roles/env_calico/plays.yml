@@ -9,7 +9,7 @@
   vars_files:
     - "./../../vars/{{ env }}.yml"
   tasks:
-    - include: "../env_flanneld/fastinitnode/tasks/{{ mode }}.yml"
+    - include_tasks: "../env_flanneld/fastinitnode/tasks/{{ mode }}.yml"
   tags: "fastinitnode"
 
 - name: Setting up etcd services
@@ -20,7 +20,7 @@
   vars_files:
     - "./../../vars/{{ env }}.yml"
   tasks:
-    - include: "../env_flanneld/etcdsetup/tasks/{{ mode }}.yml"
+    - include_tasks: "../env_flanneld/etcdsetup/tasks/{{ mode }}.yml"
   tags: "etcdsetup"
 
 - name: setup flanned on all nodes
@@ -31,7 +31,7 @@
   vars_files:
     - "./../../vars/{{ env }}.yml"
   tasks:
-    - include: "networksetup/tasks/{{ mode }}.yml"
+    - include_tasks: "networksetup/tasks/{{ mode }}.yml"
   tags: "networksetup"
 
 - name: setup dns services
@@ -42,5 +42,5 @@
   vars_files:
     - "./../../vars/{{ env }}.yml"
   tasks:
-    - include: "../env_flanneld/dnssetup/tasks/{{ mode }}.yml"
+    - include_tasks: "../env_flanneld/dnssetup/tasks/{{ mode }}.yml"
   tags: "dnssetup"

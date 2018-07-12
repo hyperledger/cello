@@ -7,7 +7,7 @@
   vars_files:
     - "./../../vars/{{ env }}.yml"
   tasks:
-    - include: "post/tasks/{{ mode }}.yml"
+    - include_tasks: "post/tasks/{{ mode }}.yml"
   tags: "dashboard"
 
 - name: setup k8s worker nodes
@@ -18,7 +18,7 @@
   vars_files:
     - "./../../vars/{{ env }}.yml"
   tasks:
-    - include: "worker/tasks/{{ mode }}.yml"
+    - include_tasks: "worker/tasks/{{ mode }}.yml"
   tags: "worker"
 
 - name: setup k8s master node
@@ -29,7 +29,7 @@
   vars_files:
     - "./../../vars/{{ env }}.yml"
   tasks:
-    - include: "master/tasks/{{ mode }}.yml"
+    - include_tasks: "master/tasks/{{ mode }}.yml"
   tags: "master"
 
 - name: setup dns attribute for docker service
@@ -40,7 +40,7 @@
   vars_files:
     - "./../../vars/{{ env }}.yml"
   tasks:
-    - include: "../env_flanneld/dnsdocker/tasks/{{ mode }}.yml"
+    - include_tasks: "../env_flanneld/dnsdocker/tasks/{{ mode }}.yml"
   tags: "dnsdocker"
 
 - name: setup flanned on all nodes
@@ -51,7 +51,7 @@
   vars_files:
     - "./../../vars/{{ env }}.yml"
   tasks:
-    - include: "../env_flanneld/networksetup/tasks/{{ mode }}.yml"
+    - include_tasks: "../env_flanneld/networksetup/tasks/{{ mode }}.yml"
   tags: "networksetup"
 
 - name: Setting up etcd services
@@ -62,7 +62,7 @@
   vars_files:
     - "./../../vars/{{ env }}.yml"
   tasks:
-    - include: "../env_flanneld/etcdsetup/tasks/{{ mode }}.yml"
+    - include_tasks: "../env_flanneld/etcdsetup/tasks/{{ mode }}.yml"
   tags: "etcdsetup"
 
 - name: fast initialize all the servers
@@ -75,5 +75,5 @@
   vars_files:
     - "./../../vars/{{ env }}.yml"
   tasks:
-    - include: "../env_flanneld/fastinitnode/tasks/{{ mode }}.yml"
+    - include_tasks: "../env_flanneld/fastinitnode/tasks/{{ mode }}.yml"
   tags: "fastinitnode"

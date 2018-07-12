@@ -7,7 +7,7 @@
         starttime: "{{ ansible_date_time }}"
 
 - name: Run the plays
-  include: "roles/cloud_{{ cloud_type | default('os') }}/plays.yml"
+  import_playbook: "roles/cloud_{{ cloud_type | default('os') }}/plays.yml"
 
 - name: Inform the installer
   hosts: cloud

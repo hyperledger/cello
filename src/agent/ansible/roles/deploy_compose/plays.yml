@@ -16,7 +16,7 @@
   vars_files:
     - "./../../vars/{{ env }}.yml"
   tasks:
-    - include: "certsetup/tasks/{{ mode }}.yml"
+    - include_tasks: "certsetup/tasks/{{ mode }}.yml"
   tags: "certsetup"
 
 - name: setup fabric network
@@ -26,7 +26,7 @@
   vars_files:
     - "./../../vars/{{ env }}.yml"
   tasks:
-    - include: "fabricsetup/tasks/{{ mode }}.yml"
+    - include_tasks: "fabricsetup/tasks/{{ mode }}.yml"
   tags: "fabricsetup"
 
 - name: setup composer
@@ -36,5 +36,5 @@
   vars_files:
     - "./../../vars/{{ env }}.yml"
   tasks:
-    - include: "composersetup/tasks/{{ mode }}.yml"
+    - include_tasks: "composersetup/tasks/{{ mode }}.yml"
   tags: "composersetup"

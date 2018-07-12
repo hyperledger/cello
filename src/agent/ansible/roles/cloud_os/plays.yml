@@ -5,7 +5,7 @@
   vars_files:
     - "./../../vars/{{ env }}.yml"
   tasks:
-    - include: "prepare/tasks/{{ mode }}.yml"
+    - include_tasks: "prepare/tasks/{{ mode }}.yml"
   tags: "prepare"
 
 - name: provision servers
@@ -15,7 +15,7 @@
   vars_files:
     - "{{ playbook_dir }}/../../vars/{{ env }}.yml"
   tasks:
-    - include: "provision/tasks/{{ mode }}.yml"
+    - include_tasks: "provision/tasks/{{ mode }}.yml"
   tags: "provision"
 
 - name: Post provision process
@@ -24,7 +24,7 @@
   vars_files:
     - "{{ playbook_dir }}/../../vars/{{ env }}.yml"
   tasks:
-    - include: "postprovision/tasks/{{ mode }}.yml"
+    - include_tasks: "postprovision/tasks/{{ mode }}.yml"
   tags: "postprovision"
 
 - name: change /etc/hosts files so that each node knows other nodes
@@ -36,5 +36,5 @@
   vars_files:
     - "{{ playbook_dir }}/../../vars/{{ env }}.yml"
   tasks:
-    - include: "namenode/tasks/{{ mode }}.yml"
+    - include_tasks: "namenode/tasks/{{ mode }}.yml"
   tags: "namenode"

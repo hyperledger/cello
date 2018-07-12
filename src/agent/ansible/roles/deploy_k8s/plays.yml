@@ -7,7 +7,7 @@
   vars_files:
     - "./../../vars/{{ env }}.yml"
   tasks:
-    - include: "getbin/tasks/{{ mode }}.yml"
+    - include_tasks: "getbin/tasks/{{ mode }}.yml"
   tags: "getbin"
 
 - name: generate certificates
@@ -18,7 +18,7 @@
   vars_files:
     - "./../../vars/{{ env }}.yml"
   tasks:
-    - include: "../deploy_compose/certsetup/tasks/{{ mode }}.yml"
+    - include_tasks: "../deploy_compose/certsetup/tasks/{{ mode }}.yml"
   tags: "certsetup"
 
 - name: setup fabric network
@@ -29,7 +29,7 @@
   vars_files:
     - "./../../vars/{{ env }}.yml"
   tasks:
-    - include: "fabricsetup/tasks/{{ mode }}.yml"
+    - include_tasks: "fabricsetup/tasks/{{ mode }}.yml"
   tags: "fabricsetup"
 
 - name: setup composer
@@ -40,5 +40,5 @@
   vars_files:
     - "./../../vars/{{ env }}.yml"
   tasks:
-    - include: "composersetup/tasks/{{ mode }}.yml"
+    - include_tasks: "composersetup/tasks/{{ mode }}.yml"
   tags: "composersetup"

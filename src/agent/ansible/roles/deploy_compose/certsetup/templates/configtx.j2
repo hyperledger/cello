@@ -13,7 +13,7 @@ Organizations:
     ID: {{ org }}
     MSPDir: {{ fabricworkdir }}/keyfiles/{{ org }}/msp
 {% if org in peerorgs %}
-{% if project_version | version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+{% if project_version is version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
     Policies:
         Readers:
             Type: Signature
@@ -31,7 +31,7 @@ Organizations:
         Port: 7051
 {% endif %}
 {% elif org in ordererorgs %}
-{% if project_version | version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+{% if project_version is version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
     Policies:
         Readers:
             Type: Signature
@@ -48,7 +48,7 @@ Organizations:
 {% endfor %}
 {% endif %}
 
-{% if project_version | version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+{% if project_version is version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
 Capabilities:
   Global: &ChannelCapabilities
     V1_1: true
@@ -57,9 +57,9 @@ Capabilities:
     V1_1: true
 
   Application: &ApplicationCapabilities
-{% if project_version | version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+{% if project_version is version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
     V1_2: true
-{% elif project_version | version_compare('1.1.0','>=') and project_version | version_compare('1.2.0','<') %}
+{% elif project_version is version_compare('1.1.0','>=') and project_version is version_compare('1.2.0','<') %}
     V1_1: true
 {% endif %}
 {% endif %}
@@ -86,7 +86,7 @@ Orderer: &OrdererDefaults
 {% for org in ordererorgs %}
     - *{{ org }}
 {% endfor %}
-{% if project_version | version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+{% if project_version is version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
   Policies:
       Readers:
           Type: ImplicitMeta
@@ -101,7 +101,7 @@ Orderer: &OrdererDefaults
           Type: ImplicitMeta
           Rule: "ANY Writers"
 {% endif %}
-{% if project_version | version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+{% if project_version is version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
   Capabilities:
     <<: *OrdererCapabilities
 {% endif %}
@@ -111,7 +111,7 @@ Application: &ApplicationDefaults
 {%   for org in peerorgs %}
     - *{{ org }}
 {%   endfor %}
-{% if project_version | version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+{% if project_version is version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
   Policies:
       Readers:
           Type: ImplicitMeta
@@ -124,7 +124,7 @@ Application: &ApplicationDefaults
           Rule: "MAJORITY Admins"
 {% endif %}
 
-{% if project_version | version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+{% if project_version is version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
 Channel: &ChannelDefaults
     Policies:
         Readers:
@@ -143,15 +143,15 @@ Profiles:
     Consortium: FabricConsortium
     Application:
       <<: *ApplicationDefaults
-{% if project_version | version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+{% if project_version is version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
     Capabilities:
       <<: *ApplicationCapabilities
 {% endif %}
   OrdererGenesis:
-{% if project_version | version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+{% if project_version is version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
     <<: *ChannelDefaults
 {% endif %}
-{% if project_version | version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+{% if project_version is version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
     Capabilities:
       <<: *ChannelCapabilities
 {% endif %}
