@@ -129,7 +129,7 @@ class CreateChain extends PureComponent {
     const hostOptions = availableHosts.map(hostItem => (
       <Option value={hostItem.id}>{hostItem.name}</Option>
     ));
-    const networkTypes = ['fabric-1.0','fabric-1.1'];
+    const networkTypes = ['fabric-1.0','fabric-1.1','fabric-1.2'];
     const networkTypeOptions = networkTypes.map(networkType => (
       <Option value={networkType}>{networkType}</Option>
     ));

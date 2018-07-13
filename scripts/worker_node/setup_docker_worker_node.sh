@@ -27,7 +27,7 @@ fi
 # pull fabric images
 bash ./download_images.sh
 
-echo_b "Copy required fabric 1.0 and 1.1 artifacts"
+echo_b "Copy required fabric 1.0, 1.1 and 1.2 artifacts"
 ARTIFACTS_DIR=/opt/cello
 USER=`whoami`
 USERGROUP=`id -gn`

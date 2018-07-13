@@ -22,7 +22,8 @@ from agent import get_swarm_node_ip, KubernetesHost
 from common import db, log_handler, LOG_LEVEL, utils
 from common import CLUSTER_PORT_START, CLUSTER_PORT_STEP, \
     NETWORK_TYPE_FABRIC_PRE_V1, NETWORK_TYPE_FABRIC_V1, \
-    CONSENSUS_PLUGINS_FABRIC_V1, NETWORK_TYPE_FABRIC_V1_1, \
+    CONSENSUS_PLUGINS_FABRIC_V1, \
+    NETWORK_TYPE_FABRIC_V1_1, NETWORK_TYPE_FABRIC_V1_2, \
     WORKER_TYPES, WORKER_TYPE_DOCKER, WORKER_TYPE_SWARM, WORKER_TYPE_K8S, \
     WORKER_TYPE_VSPHERE, VMIP, \
     NETWORK_SIZE_FABRIC_PRE_V1, \
@@ -387,6 +388,10 @@ class ClusterHandler(object):
             config = FabricV1NetworkConfig(consensus_plugin=consensus_plugin,
                                            size=cluster_size)
             config.network_type = NETWORK_TYPE_FABRIC_V1_1
+        elif network_type == NETWORK_TYPE_FABRIC_V1_2:
+            config = FabricV1NetworkConfig(consensus_plugin=consensus_plugin,
+                                           size=cluster_size)
+            config.network_type = NETWORK_TYPE_FABRIC_V1_2
         elif network_type == NETWORK_TYPE_FABRIC_PRE_V1:
             config = FabricPreNetworkConfig(consensus_plugin=consensus_plugin,
                                             consensus_mode='',
@@ -525,6 +530,11 @@ class ClusterHandler(object):
                 consensus_plugin=c.get('consensus_plugin'),
                 size=c.get('size'))
             config.network_type = NETWORK_TYPE_FABRIC_V1_1
+        elif network_type == NETWORK_TYPE_FABRIC_V1_2:
+            config = FabricV1NetworkConfig(
+                consensus_plugin=c.get('consensus_plugin'),
+                size=c.get('size'))
+            config.network_type = NETWORK_TYPE_FABRIC_V1_2
         else:
             return False
 
@@ -584,7 +594,11 @@ class ClusterHandler(object):
                 consensus_plugin=c.get('consensus_plugin'),
                 size=c.get('size'))
             config.network_type = NETWORK_TYPE_FABRIC_V1_1
-
+        elif network_type == NETWORK_TYPE_FABRIC_V1_2:
+            config = FabricV1NetworkConfig(
+                consensus_plugin=c.get('consensus_plugin'),
+                size=c.get('size'))
+            config.network_type = NETWORK_TYPE_FABRIC_V1_2
         else:
             return False
 
@@ -641,6 +655,11 @@ class ClusterHandler(object):
                 consensus_plugin=c.get('consensus_plugin'),
                 size=c.get('size'))
             config.network_type = NETWORK_TYPE_FABRIC_V1_1
+        elif network_type == NETWORK_TYPE_FABRIC_V1_2:
+            config = FabricV1NetworkConfig(
+                consensus_plugin=c.get('consensus_plugin'),
+                size=c.get('size'))
+            config.network_type = NETWORK_TYPE_FABRIC_V1_2
         else:
             return False
 
@@ -687,6 +706,11 @@ class ClusterHandler(object):
                 consensus_plugin=c.get('consensus_plugin'),
                 size=c.get('size'))
             config.network_type = NETWORK_TYPE_FABRIC_V1_1
+        elif network_type == NETWORK_TYPE_FABRIC_V1_2:
+            config = FabricV1NetworkConfig(
+                consensus_plugin=c.get('consensus_plugin'),
+                size=c.get('size'))
+            config.network_type = NETWORK_TYPE_FABRIC_V1_2
         else:
             return False
         if not self.create(name=cluster_name, host_id=host_id, config=config):
