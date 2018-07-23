@@ -4,8 +4,9 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-# This script will try setup a valid environment for the master node.
-# It should be triggered by the makefile, and safe to repeat.
+# This script will try setup as Cello  master node.
+# It should be triggered by the `make setup-master`, and safe to repeat.
+
 
 # Detecting whether can import the header file to render colorful cli output
 # Need add choice option
@@ -25,6 +26,7 @@ else
 	}
 fi
 
+
 # collect ID from /etc/os-release as distribution name
 # tested on debian,ubuntu,mint , centos,fedora  ,opensuse
 get_distribution() {
@@ -40,24 +42,35 @@ get_distribution() {
 	echo "${distribution//\"}"
 }
 
+USER=`whoami`
+DISTRO=$(get_distribution)
+DB_DIR=/opt/${PROJECT}/mongo
+
+echo_b "user: ${USER}, distro: ${DISTRO}, db_dir: ${DB_DIR}"
+
 # Install necessary software including curl, python-pip, tox, docker
 install_software() {
+	if [ $# -eq 0 ]; then
+		echo "Should pass me the software name to install"
+	fi
+	install_list=$1
+	echo "Install software: $install_list"
 	case $DISTRO in
 		ubuntu)
-			sudo apt-get update && sudo apt-get install -y curl python-pip tox nfs-common;
+			command -v curl >/dev/null 2>&1 || { echo_r >&2 "No curl found, try installing";sudo apt-get install -y curl; }
+			command -v pip >/dev/null 2>&1 || { echo_r >&2 "No pip found, try installing";sudo apt-get install -y python-pip; }
 			command -v docker >/dev/null 2>&1 || { echo_r >&2 "No docker-engine found, try installing"; curl -sSL https://get.docker.com/ | sh; sudo service docker restart; }
 			command -v docker-compose >/dev/null 2>&1 || { echo_r >&2 "No docker-compose found, try installing"; sudo pip install 'docker-compose>=1.17.0'; }
+			sudo apt-get install -y tox nfs-common;
 			;;
 		linuxmint)
 			sudo apt-get install apt-transport-https ca-certificates -y
 			sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
 			sudo echo deb https://apt.dockerproject.org/repo ubuntu-xenial main >> /etc/apt/sources.list.d/docker.list
 			sudo apt-get update
-			sudo apt-get purge lxc-docker
 			sudo apt-get install python-pip
 			sudo apt-get install linux-image-extra-$(uname -r) -y
-			sudo apt-get install docker-engine cgroup-lite apparmor -y
-			sudo service docker start
+			command -v docker >/dev/null 2>&1 || { sudo apt-get purge lxc-docker; sudo apt-get install docker-engine cgroup-lite apparmor -y; sudo service docker start; }
 			;;
 		debian)
 			sudo apt-get install apt-transport-https ca-certificates -y
@@ -91,22 +104,20 @@ install_software() {
 			echo "Linux distribution not identified !!! skipping docker & pip installation"
 			;;
 	esac
+	echo_b "Add existing user ${USER} to docker group"
+	sudo usermod -aG docker ${USER}
 }
 
-USER=`whoami`
-DISTRO=$(get_distribution)
-DB_DIR=/opt/${PROJECT}/mongo
 
-echo_b "Check python-pip, tox, curl and docker-engine for $DISTRO"
-NEED_INSTALL="false"
+echo_b "Make sure have installed: python-pip, tox, curl and docker-engine"
+install_list=()
 for software in pip tox curl docker docker-compose; do
-	command -v ${software} >/dev/null 2>&1 || { NEED_INSTALL="true"; break; }
+	command -v ${software} >/dev/null 2>&1 || { install_list+=($software); break; }
 done
-[ $NEED_INSTALL = "true" ] && install_software
+[ -z "$install_list" ] || install_software $install_list
 
-echo_b "Add existing user ${USER} to docker group"
-sudo usermod -aG docker ${USER}
 
+echo_b "Checking existing containers"
 if [ `sudo docker ps -qa|wc -l` -gt 0 ]; then
 	echo_r "Warn: existing containers may cause unpredictable failure, suggest to clean them (docker rm)"
 	docker ps -a

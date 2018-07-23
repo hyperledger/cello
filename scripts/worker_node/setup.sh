@@ -28,4 +28,23 @@ fi
 
 # TODO: detect env to choose which script to run
 
-bash setup_docker_worker_node.sh
+if [ $# -ne 1 ]; then
+	echo "Should pass me the worker node type to setup: docker, swarm or k8s|kubernetes"
+fi
+
+worker_type=$1
+
+echo_b "Set up worker node as type $worker_type"
+
+if [[ $worker_type = *"docker"* ]]; then
+	bash setup_worker_node_docker.sh
+elif [[ $worker_type = *"swarm"* ]]; then
+	bash setup_worker_node_swarm.sh
+elif [[ $worker_type = *"kubernetes"* || $worker_type = *"k8s"* ]]; then
+	bash setup_worker_node_k8s.sh
+else
+	echo_r "Unsupported worker node type=$worker_type"
+fi
+
+# pull fabric images
+bash ./download_images.sh

@@ -1,5 +1,7 @@
 # Kubernetes type host creation guide
 
+TLDR: setup a miniKube env: `WORKDER_TYPE=k8s make setup-worker`.
+
 ## Prepare Kubernetes environment
 
 1. Get started with Kubernetes: [Kubernetes Guide](https://kubernetes.io/docs/user-journeys/users/application-developer/foundational/)

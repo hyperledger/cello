@@ -1,5 +1,7 @@
 ## Setup Docker Host as a Worker Node
 
+TLDR: `WORKDER_TYPE=docker MASTER_NODE=x.x.x.x make setup-worker`
+
 For the Worker Node with meeting the [system requirements](#system-requirements), three steps are required:
 
 * [Docker daemon setup](#docker-daemon-setup)
@@ -7,27 +9,13 @@ For the Worker Node with meeting the [system requirements](#system-requirements)
 * [Firewall Setup](#firewall-setup)
 
 ### System Requirements
-* Hardware: 8c16g100g
+* Hardware: 4c8g50g
 * Docker engine:
-    - 1.10.0~1.13.0
-* aufs-tools (optional): Only required on ubuntu 14.04.
+    - 1.10.0~1.17.0
 
 ### Docker Daemon Setup
 
 Let Docker daemon listen on port 2375, and make sure Master can reach Worker Node through this port.
-
-#### Ubuntu 14.04
-Simple add this line into your Docker config file `/etc/default/docker`.
-
-```sh
-DOCKER_OPTS="$DOCKER_OPTS -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock --api-cors-header='*' --default-ulimit=nofile=8192:16384 --default-ulimit=nproc=8192:16384"
-```
-
-Then restart the docker daemon with:
-
-```sh
-$ sudo service docker restart
-```
 
 #### Ubuntu 16.04
 Update `/lib/systemd/system/docker.service` like
@@ -65,7 +53,7 @@ At last, run the follow test at Master node and get OK response, to make sure it
 Run the following cmd to pull the necessary images and copy required artifacts.
 
 ```bash
-$ MASTER_NODE_IP=xx.xx.xx.xx make setup-worker
+$ MASTER_NODE=xx.xx.xx.xx make setup-worker
 ```
 
 ### Firewall Setup

@@ -98,6 +98,9 @@ else
 	START_OPTIONS = initial-env $(BUILD_JS)
 endif
 
+# Specify what type the worker node is setup as
+WORKER_TYPE ?= docker
+
 all: check
 
 build/docker/baseimage/$(DUMMY): build/docker/baseimage/$(DUMMY)
@@ -217,7 +220,7 @@ setup-master: ##@Environment Setup dependency for master node
 	cd scripts/master_node && bash setup.sh
 
 setup-worker: ##@Environment Setup dependency for worker node
-	cd scripts/worker_node && bash setup.sh
+	cd scripts/worker_node && bash setup.sh $(WORKER_TYPE)
 
 build-admin-js: ##@Nodejs Build admin dashboard js files
 	@$(MAKE) initial-env
