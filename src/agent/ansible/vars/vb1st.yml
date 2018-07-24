@@ -18,6 +18,8 @@ fabric: {
   # options are "goleveldb", "CouchDB", default is goleveldb
   peer_db: "goleveldb",
   tls: false,
+  generate_certs: true,
+  composer: false,
   logging_level: "ERROR",
   k8s: {
     exposeserviceport: True,

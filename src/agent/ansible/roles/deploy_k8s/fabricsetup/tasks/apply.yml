@@ -49,6 +49,7 @@
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
   tags: "createcertspod"
+  when: fabric.generate_certs == true
 
 - name: Query initialization container status
   command: >-
@@ -61,6 +62,7 @@
   retries: 5
   delay: 10
   tags: "querypvc"
+  when: fabric.generate_certs == true
 
 - name: Check the status of secret for pulling images
   command: >-
@@ -96,6 +98,7 @@
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
   tags: "cleancerts"
+  when: fabric.generate_certs == true
 
 - name: Copy certs onto the persistent volume
   command: >-
@@ -106,6 +109,7 @@
     - "{{ fabricworkdir }}/certs.tgz"
     - "{{ playbook_dir }}/../deploy_k8s/fabricsetup/templates/firstcode.go"
   tags: "placecerts"
+  when: fabric.generate_certs == true
 
 - name: Copy channel operation script onto the persistent volume
   command: >-
@@ -114,7 +118,7 @@
     chdir: "{{ playbook_dir }}/../../vars/"
   with_items:
     - "{{ fabricworkdir }}/keyfiles/dochannel.sh"
-  when: (allorderers | length > 0) and (allpeers | length > 0)
+  when: (allorderers | length > 0) and (allpeers | length > 0) and fabric.generate_certs == true
   tags: "placecerts"
 
 - name: Untar certs.tgz in the Persistent volume
@@ -124,6 +128,7 @@
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
   tags: "untarcerts"
+  when: fabric.generate_certs == true
 
 - name: Change certs permissions
   command: >-
@@ -132,6 +137,7 @@
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
   tags: "changecertspermission"
+  when: fabric.generate_certs == true
 
 - name: Removing the certs pod
   command: >-
@@ -139,6 +145,7 @@
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
   tags: "deletecertspod"
+  when: fabric.generate_certs == true
 
 - name: Deploy chaincode container endpoint daemon set
   command: >-

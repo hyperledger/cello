@@ -19,6 +19,7 @@
     - "./../../vars/{{ env }}.yml"
   tasks:
     - include_tasks: "../deploy_compose/certsetup/tasks/{{ mode }}.yml"
+      when: fabric.generate_certs == true
   tags: "certsetup"
 
 - name: setup fabric network
@@ -41,4 +42,5 @@
     - "./../../vars/{{ env }}.yml"
   tasks:
     - include_tasks: "composersetup/tasks/{{ mode }}.yml"
+      when: fabric.composer == true
   tags: "composersetup"
