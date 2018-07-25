@@ -35,12 +35,14 @@
     dest: "{{ fabricworkdir }}/keyfiles/{{ item }}/connection.json"
   with_items: "{{ allorgs }}"
   tags: "composer"
+  when: fabric.composer == true
 
 - name: Create endorsement policy file
   template:
     src: "{{ playbook_dir }}/../deploy_compose/certsetup/templates/policy.j2"
     dest: "{{ fabricworkdir }}/keyfiles/policy.json"
   tags: "composer"
+  when: fabric.composer == true
 
 - name: Rename admin private key
   shell: >-
@@ -49,6 +51,7 @@
     chdir: "{{ fabricworkdir }}/keyfiles/{{ item }}/users/Admin@{{ item }}/msp/keystore"
   with_items: "{{ allorgs }}"
   tags: "composer"
+  when: fabric.composer == true
 
 - name: Rename ca private key
   shell: >-
@@ -57,6 +60,7 @@
     chdir: "{{ fabricworkdir }}/keyfiles/{{ item }}/ca"
   with_items: "{{ allorgs }}"
   tags: "composer"
+  when: fabric.composer == true
 
 - name: Rename ca tls private key
   shell: >-
@@ -65,6 +69,7 @@
     chdir: "{{ fabricworkdir }}/keyfiles/{{ item }}/tlsca"
   with_items: "{{ allorgs }}"
   tags: "composer"
+  when: fabric.composer == true
 
 - name: Upload bna file
   copy:
@@ -73,6 +78,7 @@
   with_fileglob:
       - "{{ playbook_dir }}/../../secrets/networks/*.bna"
   tags: "composer"
+  when: fabric.composer == true
 
 - name: Create core.yml file for every peer
   template:
@@ -96,26 +102,11 @@
     chdir: "{{ fabricworkdir }}"
   when: allorderers | length > 0
 
-- name: Define the anchor peer for organizations
-  shell: >-
-    export FABRIC_CFG_PATH={{ fabricworkdir }} &&
-    {{ fabricpath }}/build/bin/configtxgen -profile OrgChannel
-    -outputAnchorPeersUpdate keyfiles/{{ item }}.anchor.tx
-    -channelID firstchannel -asOrg {{ item }}
-  args:
-    chdir: "{{ fabricworkdir }}"
-  with_items: "{{ peerorgs }}"
-
-- name: Duplicate genesis and transaction block to each peer
-  shell: >-
-    cp {{ fabricworkdir }}/keyfiles/genesis.block
-    {{ fabricworkdir }}/keyfiles/{{ item.org }}/peers/{{ item.name }}.{{ item.org }} &&
-    cp {{ fabricworkdir }}/keyfiles/firstchannel.tx
-    {{ fabricworkdir }}/keyfiles/{{ item.org }}/peers/{{ item.name }}.{{ item.org }}
-  args:
-    chdir: "{{ fabricworkdir }}"
-  when: allorderers | length > 0
-  with_items: "{{ allpeers }}"
+- name: Create ca config file
+  template:
+    src: "{{ playbook_dir }}/../deploy_compose/certsetup/templates/fabric-ca-server-config.j2"
+    dest: "{{ fabricworkdir }}/run/keyfiles/{{ item.org }}/ca/fabric-ca-server-config.yaml"
+  with_items: "{{ cas }}"
 
 - name: Create a zip file of all certificates
   archive:
