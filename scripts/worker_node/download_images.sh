@@ -96,3 +96,6 @@ function downloadImages() {
 downloadImages $ARCH_1_0 $IMG_TAG_1_0 $BASEIMAGE_RELEASE_1_0 $HLF_VERSION_1_0 $IMG_TAG_1_0            #kafka and zookeeper have the same IMG_TAG as peer in 1.0
 downloadImages $ARCH_1_1 $IMG_TAG_1_1 $BASEIMAGE_RELEASE_1_1 $HLF_VERSION_1_1 $BASEIMAGE_RELEASE_1_1  #kafka and zookeeper have the same IMG_TAG as baseimage in 1.1
 downloadImages $ARCH_1_2 $IMG_TAG_1_2 $BASEIMAGE_RELEASE_1_2 $HLF_VERSION_1_2 $BASEIMAGE_RELEASE_1_2  #kafka and zookeeper have the same IMG_TAG as baseimage in 1.2
+
+# Used by explorer
+docker pull mysql:5.7

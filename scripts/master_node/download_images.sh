@@ -45,4 +45,10 @@ for IMG in baseimage engine mongo operator-dashboard user-dashboard watchdog ; d
 	#fi
 done
 
+# We now use official images instead of customized one
+docker pull mongo:3.4.10
+
+# NFS service
+docker pull itsthenetwork/nfs-server-alpine:9
+
 echo_g "All Image downloaded "

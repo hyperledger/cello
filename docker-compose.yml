@@ -56,7 +56,6 @@ services:
     ports:
       - "8080:8080"
     volumes:
-    #  - ./src:/app
       - ./src/agent/docker/_compose_files:/cello
 
  #TODO: need to follow other images to put at dockerhub
@@ -105,8 +104,6 @@ services:
       - LOG_LEVEL=$LOG_LEVEL  # what level log will be output
     ports:
       - "80:80"
-    #volumes:
-    #  - ./src:/app
 
   # cello watchdog service
   watchdog:
@@ -121,8 +118,6 @@ services:
       - MONGODB_PORT=27017
       - DEBUG=$DEV    # in debug mode, service will auto-restart
       - LOG_LEVEL=$LOG_LEVEL  # what level log will be output
-    #volumes:
-    #  - ./src:/app
 
   # mongo database, may use others in future
   mongo:

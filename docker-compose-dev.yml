@@ -14,31 +14,28 @@
 
 version: '3.2'
 services:
-  # nginx as front end for the operator dashboard
-#  nginx:
-#    image: hyperledger/cello-nginx
-#    hostname: cello-nginx
-#    container_name: cello-nginx
-#    restart: always
-#    deploy:
-#      resources:
-#        limits:
-#          cpus: '0.50'
-#          memory: 2048M
-#        reservations:
-#          cpus: '0.10'
-#          memory: 256M
-#    volumes:
-#      - ./nginx/nginx.conf:/etc/nginx/nginx.default.conf
-#      #- /opt/cello/nginx/log/:/var/log/nginx/
-#    ports:
-#      - "80:80"
-#      - "8080:8080"
-#    environment:
-#      - BACKEND=cello-operator-dashboard
-#      - PORT=8080
-#      - USERNAME=admin
-#      - PASSWORD=pass
+  # nginx as front end for the services, disable now
+  #nginx:
+  #  image: hyperledger/cello-nginx
+  #  hostname: cello-nginx
+  #  container_name: cello-nginx
+  #  restart: always
+  #  deploy:
+  #    resources:
+  #      limits:
+  #        cpus: '0.50'
+  #        memory: 2048M
+  #      reservations:
+  #        cpus: '0.10'
+  #        memory: 256M
+  #  ports:
+  #    - "80:80"
+  #    - "8080:8080"
+  #  environment:
+  #    - BACKEND=cello-operator-dashboard
+  #    - PORT=8080
+  #    - USERNAME=admin
+  #    - PASSWORD=pass
 
   # cello dashboard service for network operator
   operator-dashboard:
@@ -47,8 +44,10 @@ services:
     hostname: cello-operator-dashboard
     restart: unless-stopped
     environment:
-      - MONGO_URL=mongodb://cello-mongo:27017
+      - MONGO_URL=mongodb://cello-mongo:27017  # used by pymongo, deprecate soon
+      - MONGO_HOST=mongo
       - MONGO_DB=dev
+      - MONGODB_PORT=27017
       - DEBUG=$DEV    # in debug mode, service will auto-restart
       - LOG_LEVEL=$LOG_LEVEL  # what level log will be output
       - STATIC_FOLDER=$STATIC_FOLDER
@@ -72,6 +71,7 @@ services:
     ports:
       - "8081:8081"
     environment:
+      - NODE_ENV=dev
       - RESTFUL_SERVER=operator-dashboard:8080
       - DEBUG=node:*
       - DEV=$DEV
@@ -89,6 +89,7 @@ services:
     volumes:
       - ./user-dashboard/src:/var/www
       - /opt/cello/baas:/opt/data
+    command: bash -c "cd /usr/app/src && [ "$DEV" = True ] && npm run dev || npm start"
 
   # cello engine service
   engine:
@@ -97,13 +98,15 @@ services:
     hostname: cello-engine
     restart: unless-stopped
     environment:
-      - MONGO_URL=mongodb://cello-mongo:27017
+      - MONGO_URL=mongodb://cello-mongo:27017  # used by pymongo, deprecate soon
+      - MONGO_HOST=mongo
       - MONGO_DB=dev
+      - MONGODB_PORT=27017
       - DEBUG=$DEV    # in debug mode, service will auto-restart
       - LOG_LEVEL=$LOG_LEVEL  # what level log will be output
-    expose:
-      - "80"
-    volumes:  # This should be removed in product env
+    ports:
+      - "80:80"
+    volumes:
       - ./src:/app
 
   # cello watchdog service
@@ -113,8 +116,10 @@ services:
     hostname: cello-watchdog
     restart: unless-stopped
     environment:
-      - MONGO_URL=mongodb://cello-mongo:27017
+      - MONGO_URL=mongodb://mongo:27017  # used by pymongo, deprecate soon
+      - MONGO_HOST=mongo
       - MONGO_DB=dev
+      - MONGODB_PORT=27017
       - DEBUG=$DEV    # in debug mode, service will auto-restart
       - LOG_LEVEL=$LOG_LEVEL  # what level log will be output
     volumes:  # This should be removed in product env
@@ -146,6 +151,8 @@ services:
   # TODO: we may use one mongo instance, that should be enough
   dashboard_mongo:
     image: mongo:3.4.10
+    hostname: cello-dashboard_mongo
+    container_name: cello-dashboard_mongo
     restart: unless-stopped
     environment:
       - NO_USED=0

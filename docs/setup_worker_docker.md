@@ -24,7 +24,6 @@ Update `/lib/systemd/system/docker.service` like
 [Service]
 DOCKER_OPTS="$DOCKER_OPTS -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock --api-cors-header='*' --default-ulimit=nofile=8192:16384 --default-ulimit=nproc=8192:16384"
 EnvironmentFile=-/etc/default/docker
-ExecStart=
 ExecStart=/usr/bin/dockerd -H fd:// $DOCKER_OPTS
 ```
 

@@ -1,6 +1,6 @@
 # Kubernetes type host creation guide
 
-TLDR: setup a miniKube env: `WORKDER_TYPE=k8s make setup-worker`.
+TLDR: setup a miniKube env: `WORKDER_TYPE=k8s  MASTER_NODE=x.x.x.x make setup-worker`.
 
 ## Prepare Kubernetes environment
 

@@ -101,6 +101,15 @@ endif
 # Specify what type the worker node is setup as
 WORKER_TYPE ?= docker
 
+# Specify the running mode, prod or dev
+MODE ?= prod
+ifeq ($(MODE),prod)
+	COMPOSE_FILE=docker-compose.yml
+else
+	COMPOSE_FILE=docker-compose-dev.yml
+endif
+
+
 all: check
 
 build/docker/baseimage/$(DUMMY): build/docker/baseimage/$(DUMMY)
@@ -191,10 +200,10 @@ doc: ##@Create local online documentation and start serve
 
 # Use like "make log service=dashboard"
 log: ##@Log tail special service log, Use like "make log service=dashboard"
-	docker-compose logs --tail=200 -f ${service}
+	docker-compose -f ${COMPOSE_FILE} logs --tail=200 -f ${service}
 
 logs: ##@Log tail for all service log
-	docker-compose logs -f --tail=200
+	docker-compose -f ${COMPOSE_FILE} logs -f --tail=200
 
 image-clean: clean ##@Clean all existing images to rebuild
 	echo "Clean all cello related images, may need to remove all containers before"
@@ -205,14 +214,15 @@ initial-env: ##@Configuration Initial Configuration for dashboard
 
 start: ##@Service Start service
 	@$(MAKE) $(START_OPTIONS)
-	echo "Start all services... docker images must exist local now, otherwise, run 'make setup-master first' !"
-	docker-compose -f ${DEPLOY_COMPOSE_FILE} up -d --no-recreate
+	echo "Start all services with ${COMPOSE_FILE}... docker images must exist local now, otherwise, run 'make setup-master first' !"
+	docker-compose -f ${COMPOSE_FILE} up -d --no-recreate
+	echo "Now you can visit operator-dashboard at localhost:8080, or user-dashboard at localhost:8081"
 
 stop: ##@Service Stop service
-	echo "Stop all services..."
-	docker-compose -f ${DEPLOY_COMPOSE_FILE} stop
-	echo "Remove all services..."
-	docker-compose rm -f -a
+	echo "Stop all services with ${COMPOSE_FILE}..."
+	docker-compose -f ${COMPOSE_FILE} stop
+	echo "Remove all services with ${COMPOSE_FILE}..."
+	docker-compose -f ${COMPOSE_FILE} rm -f -a
 
 restart: stop start ##@Service Restart service
 
