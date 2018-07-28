@@ -19,7 +19,6 @@ fabric: {
   peer_db: "goleveldb",
   tls: false,
   generate_certs: true,
-  composer: false,
   logging_level: "ERROR",
   k8s: {
     exposeserviceport: True,

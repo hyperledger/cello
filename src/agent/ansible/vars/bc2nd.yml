@@ -12,6 +12,7 @@ fabric: {
   ssh_user: "ubuntu",
   peer_db: "goleveldb",
   tls: true,
+  generate_certs: true,
   logging_level: "ERROR",
   k8s: {
     exposeserviceport: False,
