@@ -34,15 +34,11 @@
     src: "{{ playbook_dir }}/../deploy_compose/certsetup/templates/connection.j2"
     dest: "{{ fabricworkdir }}/keyfiles/{{ item }}/connection.json"
   with_items: "{{ allorgs }}"
-  tags: "composer"
-  when: fabric.composer == true
 
 - name: Create endorsement policy file
   template:
     src: "{{ playbook_dir }}/../deploy_compose/certsetup/templates/policy.j2"
     dest: "{{ fabricworkdir }}/keyfiles/policy.json"
-  tags: "composer"
-  when: fabric.composer == true
 
 - name: Rename admin private key
   shell: >-
@@ -50,8 +46,6 @@
   args:
     chdir: "{{ fabricworkdir }}/keyfiles/{{ item }}/users/Admin@{{ item }}/msp/keystore"
   with_items: "{{ allorgs }}"
-  tags: "composer"
-  when: fabric.composer == true
 
 - name: Rename ca private key
   shell: >-
@@ -59,8 +53,6 @@
   args:
     chdir: "{{ fabricworkdir }}/keyfiles/{{ item }}/ca"
   with_items: "{{ allorgs }}"
-  tags: "composer"
-  when: fabric.composer == true
 
 - name: Rename ca tls private key
   shell: >-
@@ -68,8 +60,6 @@
   args:
     chdir: "{{ fabricworkdir }}/keyfiles/{{ item }}/tlsca"
   with_items: "{{ allorgs }}"
-  tags: "composer"
-  when: fabric.composer == true
 
 - name: Upload bna file
   copy:
@@ -77,8 +67,6 @@
     dest: "{{ fabricworkdir }}/keyfiles/"
   with_fileglob:
       - "{{ playbook_dir }}/../../secrets/networks/*.bna"
-  tags: "composer"
-  when: fabric.composer == true
 
 - name: Create core.yml file for every peer
   template:

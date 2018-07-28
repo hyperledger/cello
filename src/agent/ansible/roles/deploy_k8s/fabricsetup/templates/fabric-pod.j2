@@ -172,7 +172,7 @@ spec:
       imagePullPolicy: IfNotPresent
 {% endif %}
       env:
-        - { name: "FABRIC_CA_HOME", value: "/etc/hyperledger/fabric-ca-server-config//keyfiles/{{ ca.org }}/ca" }
+        - { name: "FABRIC_CA_HOME", value: "/etc/hyperledger/fabric-ca-server-config/keyfiles/{{ ca.org }}/ca" }
         - { name: "FABRIC_CA_SERVER_CA_NAME", value: "{{ ca.name}}" }
         - { name: "FABRIC_CA_SERVER_CA_KEYFILE", value: "/etc/hyperledger/fabric-ca-server-config/keyfiles/{{ ca.org }}/ca/ca_private.key" }
         - { name: "FABRIC_CA_SERVER_CA_CERTFILE", value: "/etc/hyperledger/fabric-ca-server-config/keyfiles/{{ ca.org }}/ca/ca.{{ ca.org }}-cert.pem" }
