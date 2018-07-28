@@ -69,15 +69,15 @@ $ make check
 $ git commit -s -a
 ```
 
-Example commit msg may look like:
+Example commit msg may look like (take CE-1234 for example):
 
 ```sh
-[CE-26] A short description of your change with no period at the end
+[CE-1234] A short description of your change with no period at the end
 
 You can add more details here in several paragraphs, but please keep each line
 width less than 80 characters. A bug fix should include the issue number.
 
-Fix https://jira.hyperledger.org/browse/CE-26.
+CE-1234 #done.
 
 Change-Id: If2e142ea1a21bc4b42f702f9a27d70d31edff20d
 Signed-off-by: Your Name <committer@email.address>
