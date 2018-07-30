@@ -57,6 +57,7 @@ services:
       - "8080:8080"
     volumes:
       - ./src/agent/docker/_compose_files:/cello
+    command: bash -c "ln -sf /node_modules . && npm run start"
 
  #TODO: need to follow other images to put at dockerhub
   user-dashboard:
@@ -87,7 +88,6 @@ services:
       - FABRIC_CFG_PATH=/etc/hyperledger/fabric
     volumes:
       - /opt/cello/baas:/opt/data
-    command: bash -c "cd /usr/app/src && [ "$DEV" = True ] && npm run dev || npm start"
 
   # cello engine service
   engine:

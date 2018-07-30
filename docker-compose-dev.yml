@@ -89,7 +89,7 @@ services:
     volumes:
       - ./user-dashboard/src:/var/www
       - /opt/cello/baas:/opt/data
-    command: bash -c "cd /usr/app/src && [ "$DEV" = True ] && npm run dev || npm start"
+    command: bash -c "ln -sf /node_modules . && npm run start"
 
   # cello engine service
   engine:
