@@ -15,7 +15,8 @@
 #   - dockerhub-pull: Pulling service images from dockerhub
 #   - license:		    Checks sourrce files for Apache license header
 #   - help:           Output the help instructions for each command
-#   - log:            Check the recent log output of all services
+#   - log:            Check the recent log output of given service
+#   - logs:           Check the recent log output of all services
 #   - restart:        Stop the cello service and then start
 #   - setup-master:   Setup the host as a master node, install pkg and download docker images
 #   - setup-worker:   Setup the host as a worker node, install pkg and download docker images
@@ -215,6 +216,9 @@ initial-env: ##@Configuration Initial Configuration for dashboard
 start: ##@Service Start service
 	@$(MAKE) $(START_OPTIONS)
 	echo "Start all services with ${COMPOSE_FILE}... docker images must exist local now, otherwise, run 'make setup-master first' !"
+	if [ "$(MODE)" = "dev" ]; then \
+		make build-admin-js; \
+	fi
 	docker-compose -f ${COMPOSE_FILE} up -d --no-recreate
 	echo "Now you can visit operator-dashboard at localhost:8080, or user-dashboard at localhost:8081"
 
