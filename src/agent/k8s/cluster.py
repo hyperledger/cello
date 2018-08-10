@@ -98,9 +98,9 @@ class ClusterOnKubernetes(ClusterBase):
             cluster = ClusterModel.objects.get(id=cid)
 
             cluster_name = cluster.name
-            kube_config = KubernetesOperation()._get_from_params(cluster
-                                                                 .host
-                                                                 .k8s_param)
+            kube_config = \
+                KubernetesOperation()._get_config_from_params(cluster.host
+                                                              .k8s_param)
 
             operation = K8sClusterOperation(kube_config)
             services_urls = operation.get_services_urls(cluster_name)
