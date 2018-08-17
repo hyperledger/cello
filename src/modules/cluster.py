@@ -288,11 +288,13 @@ class ClusterHandler(object):
             logger.error("Cannot find available host to create new network")
             return None
 
+        #TODO 创建后未必成功,应该再确定后再修改数据库状态
         if ClusterModel.objects(host=worker).count() >= worker.capacity:
             logger.warning("host {} is already full".format(host_id))
             return None
 
         peer_num = int(config.get_data().get("size", 4))
+        #TODO ca num这么获取？
         ca_num = 2 if peer_num > 1 else 1
 
         cid = uuid4().hex
@@ -331,7 +333,38 @@ class ClusterHandler(object):
                                                       orderer_ports,
                                                       explorer_ports))
         t.start()
+
+        #开发的时候用的，发布的时候需要撤掉
+        t.join()
         return cid
+
+    #添加一个节点到已存在的cluster中
+    def _add_cluster(self,cluster, cid, mapped_ports, worker, config,
+                        user_id, peer_ports, ca_ports, orderer_ports,
+                        explorer_ports ):
+
+        pass
+
+    def add(self, name, host_id, cluster_id, start_port=0,
+               user_id=""):
+
+        logger.info ("Add node to cluster {}, host_id={}, cluster={}, start_port={}, "
+                     "user_id={}".format (name, host_id, cluster_id,
+                                          start_port, user_id))
+        #
+        # worker = self.host_handler.get_active_host_by_id (host_id)
+        # if not worker:
+        #     logger.error ("Cannot find available host to create new network")
+        #     return None
+        #
+        # if ClusterModel.objects (host=worker).count() >= worker.capacity:
+        #     logger.warning ("host {} is already full".format (host_id))
+        #     return None
+
+
+
+        pass
+
 
     def delete(self, id, record=False, forced=False):
         """ Delete a cluster instance

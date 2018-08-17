@@ -79,5 +79,8 @@ class ClusterOnDocker(ClusterBase):
         return compose_stop(name, worker_api, mapped_ports, log_type,
                             log_level, log_server, config)
 
+    #TODO:在指定的cluster中添加一个节点
+    def add(self, cluster_id, mapped_ports, host, config,user_id=""):
+        return
 
 cluster_on_docker = ClusterOnDocker()

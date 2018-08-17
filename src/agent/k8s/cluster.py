@@ -98,7 +98,7 @@ class ClusterOnKubernetes(ClusterBase):
             cluster = ClusterModel.objects.get(id=cid)
 
             cluster_name = cluster.name
-            kube_config = KubernetesOperation()._get_from_params(cluster
+            kube_config = KubernetesOperation()._get_config_from_params(cluster
                                                                  .host
                                                                  .k8s_param)
 
@@ -166,6 +166,10 @@ class ClusterOnKubernetes(ClusterBase):
             logger.error("Failed to stop Kubernetes Cluster: {}".format(e))
             return False
         return True
+
+    #TODO:在指定的cluster中添加一个节点
+    def add(self, cid, mapped_ports, host, config, user_id=""):
+        return
 
     def restart(self, name, worker_api, mapped_ports, log_type, log_level,
                 log_server, config):

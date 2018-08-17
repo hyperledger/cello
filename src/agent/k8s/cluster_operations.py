@@ -50,6 +50,7 @@ class K8sClusterOperation():
 
     def _upload_config_file(self, cluster_name, consensus):
         try:
+            #TODO : cluster_path 因该修改为可以配置的
             cluster_path = os.path.join('/cello', cluster_name)
             # Uploading the 'resources' directory with its content in the
             # '/cello remote directory
@@ -84,6 +85,8 @@ class K8sClusterOperation():
             logger.error("Creating Kubernetes cluster error msg: {}".format(e))
             raise Exception(error_msg)
 
+    #transfer the config file to the k8s serveice.
+    #this function can be reused by `setup node`
     def _render_config_file(self, file_name, cluster_name,
                             cluster_ports, nfsServer_ip):
         # get template file's ports
@@ -104,13 +107,17 @@ class K8sClusterOperation():
             lstrip_blocks=True
         )
         template = env.get_template(file_name)
+
+        #replace the Environment in the peer template
+        #clusterName externalPort chaincodePort  nodePort
         output = template.render(clusterName=cluster_name,
                                  externalPort=externalPort,
                                  chaincodePort=chaincodePort,
                                  nodePort=nodePort,
                                  nfsServer=nfsServer_ip)
         return output
-
+    #exec the remote command
+    #this fuction can be used to join channel?
     def _pod_exec_command(self, pod_name, namespace, command):
         try:
             bash_command = ['/bin/bash']
@@ -189,6 +196,7 @@ class K8sClusterOperation():
 
         return external_port
 
+    #One important function
     def _create_deployment(self, namespace, data, **kwargs):
         try:
             resp = self.extendv1client.create_namespaced_deployment(namespace,
@@ -199,7 +207,7 @@ class K8sClusterOperation():
             logger.error(e)
         except Exception as e:
             logger.error(e)
-
+    #create a service in k8s
     def _create_service(self, namespace, data, **kwargs):
         try:
             resp = self.corev1client.create_namespaced_service(namespace,
@@ -211,6 +219,7 @@ class K8sClusterOperation():
         except Exception as e:
             logger.error(e)
 
+    #create a persistent volume in k8s
     def _create_persistent_volume_claim(self, namespace, data, **kwargs):
         try:
             resp = self.corev1client.\
@@ -397,7 +406,7 @@ class K8sClusterOperation():
         if ports_index:
             current_port = int(max(ports_index)) + 10
         else:
-            current_port = 30000
+            current_port = 31500
         cluster_ports = {}
         current_path = os.path.dirname(__file__)
         templates_path = os.path.join(current_path, "templates")

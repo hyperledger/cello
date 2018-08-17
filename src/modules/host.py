@@ -29,7 +29,7 @@ from common import \
     WORKER_TYPE_DOCKER, WORKER_TYPE_SWARM, WORKER_TYPE_VSPHERE, \
     WORKER_TYPE_K8S, HOST_STATUS, HOST_STATUS_PENDING
 
-from agent import DockerHost, VsphereHost, KubernetesHost
+from agent import DockerHost,  KubernetesHost, VsphereHost
 from modules import cluster
 from modules.models import Host as HostModel
 from modules.models import Cluster as ClusterModel

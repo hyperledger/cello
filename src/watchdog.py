@@ -13,7 +13,8 @@ from common import LOG_LEVEL, log_handler, NETWORK_STATUS_RUNNING
 from mongoengine import connect
 import os
 
-MONGODB_HOST = os.getenv('MONGODB_HOST', 'mongo')
+#MONGODB_HOST = os.getenv('MONGODB_HOST', 'mongo')
+MONGODB_HOST = os.getenv('MONGODB_HOST', '127.0.0.1')
 MONGODB_DB = os.getenv('MONGODB_DB', 'dev')
 MONGODB_PORT = int(os.getenv('MONGODB_PORT', 27017))
 MONGODB_USERNAME = os.getenv('MONGODB_USERNAME', '')
