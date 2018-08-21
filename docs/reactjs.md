@@ -3,7 +3,7 @@
 How to start service with react theme?
 --------------------------------------
 
-```sh
+```bash
 $ THEME=react make start
 ```
 
@@ -11,7 +11,7 @@ If you want to develop original js code for react, you must install node modules
 
 In the initialized state, must install node modules, the command is
 
-```sh
+```bash
 $ make npm-install
 ```
 
@@ -22,13 +22,13 @@ How to build react js?
 
 In the development phase
 
-```sh
+```bash
 $ make watch-mode
 ```
 
 In the production environment
 
-```sh
+```bash
 $ make build-js
 ```
 

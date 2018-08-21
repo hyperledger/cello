@@ -32,32 +32,32 @@ The project employs [Gerrit](https://gerrit.hyperledger.org) as the code commit/
 
 * Clone the project to your working directory with your `LFID`.
 
-```sh
+```bash
 $ git clone ssh://LFID@gerrit.hyperledger.org:29418/cello && scp -p -P 29418 LFID@gerrit.hyperledger.org:hooks/commit-msg cello/.git/hooks/
 ```
 
 (Optionally) Config your git name and email if not setup previously.
 
-```sh
+```bash
 $ git config user.name "your name"
 $ git config user.email "your email"
 ```
 
 (Optionally) Setup git-review by inputting your LFID. Notice this is only necessary once.
-```sh
+```bash
 $ git review -s
 ```
 
 * Assign yourself a `To Do` Jira task, mark it as `In progress`, then create a branch with the Jira task number off of your cloned repository, e.g., for CE-26, it can be:
 
-```sh
+```bash
 $ cd cello
 $ git checkout -b CE-26
 ```
 
 * After modifying the code, run `make check` to make sure all the checking is passed. Then Commit your code with `-s` to sign-off, and `-a` to automatically add changes (or run `git add .` to include all changes manually).
 
-```sh
+```bash
 $ make check
   ...
   py27: commands succeeded
@@ -71,7 +71,7 @@ $ git commit -s -a
 
 Example commit msg may look like (take CE-1234 for example):
 
-```sh
+```bash
 [CE-1234] A short description of your change with no period at the end
 
 You can add more details here in several paragraphs, but please keep each line
@@ -85,7 +85,7 @@ Signed-off-by: Your Name <committer@email.address>
 
 * Submit your commit using `git review`, and mark the corresponding Jira item as `Under Review`.
 
-```sh
+```bash
 $ git review
 remote: Processing changes: new: 1, refs: 1, done
 remote:

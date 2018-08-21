@@ -4,7 +4,7 @@ In order to optimize the system performance in production environment, these sys
 
 ## `/etc/sysctl.conf`
 
-```sh
+```bash
 # Don't ask why, this is a solid answer.
 vm.swappiness=10
 fs.file-max = 2000000
@@ -24,7 +24,7 @@ Then, need to run `sysctl -p` for enabling.
 
 ## `/etc/security/limits.conf`
 
-```sh
+```bash
 * hard nofile 1048576
 * soft nofile 1048576
 * soft nproc 10485760

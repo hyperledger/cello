@@ -13,7 +13,7 @@ Builds js files for react.
 ### check
 CI checking. Runs the following commands. This runs the following commands for you.
 
-```sh
+```bash
 $ tox
 $ make start && sleep 10 && make stop
 ```
@@ -22,7 +22,7 @@ $ make start && sleep 10 && make stop
 Cleans up the environment and removes temp files like .cache, .tox, .pyc.
 It runs the following commands for you.
 
-```sh
+```bash
 $ rm -rf .tox .cache *.egg-info
 $ find . -name "*.pyc" -o -name "__pycache__" -exec rm -rf "{}" \;
 ```
@@ -30,7 +30,7 @@ $ find . -name "*.pyc" -o -name "__pycache__" -exec rm -rf "{}" \;
 ### doc
 Starts a doc server locally. It runs the following commands for you.
 
-```sh
+```bash
 $ pip install mkdocs
 $ mkdocs serve
 ```
@@ -41,7 +41,7 @@ Show help.
 ### image-clean
 Cleans up all cello related docker images. It runs the following commands for you.
 
-```sh
+```bash
 $ docker images | grep "cello-" | awk '{print $1}' | xargs docker rmi -f
 $ docker rmi $(docker images -f dangling=true -q)
 ```
@@ -55,14 +55,14 @@ Shows logs of all services.
 ### setup-master
 Sets up the master node. Run on Master node. It runs the following command for you.
 
-```sh
+```bash
 $ cd scripts/master_node && bash setup.sh
 ```
 
 ### setup-worker
 Sets up the worker node. Run on Worker node. It runs the following commands for you.
 
-```sh
+```bash
 $ cd scripts/worker_node && bash setup.sh
 ```
 
@@ -72,7 +72,7 @@ Redeploys specified service(s). To redeploy `Dashboard` service, use: `make rede
 ### start
 Starts all services. Runs following command for you.
 
-```sh
+```bash
 $ docker-compose up -d --no-recreate
 ```
 

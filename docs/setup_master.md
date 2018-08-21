@@ -23,7 +23,7 @@ The [Master Node](./terminology.md) can be deployed by in 2 steps.
 
 You may check `git` and `make` are installed to clone the code.
 
-```sh
+```bash
 $ sudo aptitude install git make -y
 $ git clone http://gerrit.hyperledger.org/r/cello && cd cello
 ```
@@ -34,7 +34,7 @@ For the first time running, please setup the master node with the [setup.sh](htt
 
 Just run (safe to repeat it):
 
-```sh
+```bash
 $ make setup-master
 ```
 
@@ -45,7 +45,7 @@ Make sure there is no error during the setup. Otherwise, please check the log ms
 #### Start/Stop/Restart
 To start the whole services, please run
 
-```sh
+```bash
 $ [environment variables] make start
 ```
 Environment variables which you can use in the command:
@@ -62,11 +62,11 @@ Environment variables which you can use in the command:
 
 
 To stop or restart the whole services, please run
-```sh
+```bash
 $ make stop
 ```
 To restart the whole services, please run
-```sh
+```bash
 $ make restart
 ```
 
@@ -74,30 +74,30 @@ $ make restart
 As a developer, you can start/stop/restart services in development mode. In development mode, [user dashboard](./dashboard_user.md) will watch and restart service if files change. And [operator dashboard](./dashboard_operator.md) will enalbe flask debug.
 
 To start the whole services in developer mode, please run
-```sh
+```bash
 $ DEV=True make start
 ```
 
 
 
 To stop or restart the whole services, please run
-```sh
+```bash
 $ DEV=True make stop
 ```
 To restart the whole services, please run
-```sh
+```bash
 $ DEV=True make restart
 ```
 
 #### Check Logs
 To check the logs for all the services, please run
 
-```sh
+```bash
 $ make logs
 ```
 
 To check the logs for one specific service, please run
-```sh
+```bash
 $ make log service=watchdog
 ```
 
