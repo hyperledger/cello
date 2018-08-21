@@ -44,7 +44,7 @@ spec:
     spec:
       containers:
         - name: cli
-          image:  hyperledger/fabric-tools:x86_64-1.0.5
+          image:  hyperledger/fabric-tools:amd64-1.2.0
           env:
           - name: CORE_PEER_TLS_ENABLED
             value: "false"

@@ -8,6 +8,3 @@ import  abc
 
 def __init__(self):
     pass
-
-def myfunc(self):
-    print("Hello!")

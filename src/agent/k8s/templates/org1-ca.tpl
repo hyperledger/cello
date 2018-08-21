@@ -16,7 +16,7 @@ spec:
     spec:
      containers:
        - name: ca
-         image: hyperledger/fabric-ca:x86_64-1.0.5
+         image: hyperledger/fabric-ca:amd64-1.2.0
          env:
          - name:  FABRIC_CA_HOME
            value: /etc/hyperledger/fabric-ca-server
@@ -27,11 +27,11 @@ spec:
          - name:  FABRIC_CA_SERVER_TLS_CERTFILE
            value: /etc/hyperledger/fabric-ca-server-config/ca.org1-cert.pem
          - name:  FABRIC_CA_SERVER_TLS_KEYFILE
-           value: /etc/hyperledger/fabric-ca-server-config/2e6853c0049bf2a37b9811bd8804f610ad834b85118919393f298c19ac4c5639_sk
+           value: /etc/hyperledger/fabric-ca-server-config/9a8590e5aa2eac5bb6444c0184a479bafdbb25949ba650c4f8534448281cc9d4_sk
          ports:
           - containerPort: 7054
          command: ["sh"]
-         args:  ["-c", " fabric-ca-server start --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.org1-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/2e6853c0049bf2a37b9811bd8804f610ad834b85118919393f298c19ac4c5639_sk -b admin:adminpw -d "]
+         args:  ["-c", " fabric-ca-server start --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.org1-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/9a8590e5aa2eac5bb6444c0184a479bafdbb25949ba650c4f8534448281cc9d4_sk -b admin:adminpw -d "]
          volumeMounts:
           - mountPath: /etc/hyperledger/fabric-ca-server-config
             name: certificate

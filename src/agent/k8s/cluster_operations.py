@@ -12,11 +12,13 @@ import shutil
 import time
 import yaml
 
-from ..host_base import HostBase
+#from ..host_base import HostBase
 from common import log_handler, LOG_LEVEL, db, utils
 from jinja2 import Template, Environment, FileSystemLoader
 from kubernetes import client, config
 from kubernetes.stream import stream
+
+from common import NODETYPE_ORDERER, NODETYPE_PEER
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
@@ -91,12 +93,17 @@ class K8sClusterOperation():
                             cluster_ports, nfsServer_ip):
         # get template file's ports
         externalPort, chaincodePort, nodePort = "", "", ""
+        peerId, orgId = "",""
         if ("pvc" not in file_name and "namespace" not in file_name and
            "cli" not in file_name):
             if "peer" in file_name:
                 externalPort = cluster_ports[file_name].get("externalPort")
                 chaincodePort = cluster_ports[file_name].get("chaincodePort")
                 nodePort = cluster_ports[file_name].get("nodePort")
+                if "x" in file_name and "y" in file_name:
+                    peerId = cluster_ports[file_name].get ("peerId")
+                    orgId = cluster_ports[file_name].get ("organizationId")
+
             else:
                 nodePort = cluster_ports[file_name]
         current_path = os.path.dirname(__file__)
@@ -114,7 +121,9 @@ class K8sClusterOperation():
                                  externalPort=externalPort,
                                  chaincodePort=chaincodePort,
                                  nodePort=nodePort,
-                                 nfsServer=nfsServer_ip)
+                                 nfsServer=nfsServer_ip,
+                                 peerId=peerId,
+                                 organizationId=orgId)
         return output
     #exec the remote command
     #this fuction can be used to join channel?
@@ -429,6 +438,42 @@ class K8sClusterOperation():
                      .format(cluster_ports))
         return cluster_ports
 
+
+#nfserver_ip is not neccessary beacause of the pvc had been created.
+    def _deploy_cluster_peer(self, cluster_name, cluster_ports):
+        file_data = self._render_config_file("peerx.orgy.tpl", cluster_name, cluster_ports, "");
+        #print(file_data)
+        yaml_data = yaml.load_all(file_data)
+        self._deploy_k8s_resource (yaml_data)
+
+        return
+
+    def _deploy_cluster_orderer(self):
+        pass
+
+    def deploy_node(self, cluster_name, node_type=NODETYPE_PEER):
+        """
+            add a node to one cluster that has been exists.
+            node_type: create a peer or orderer node;
+            cluster_name: the cluster name, we can get paraments from db by the  cluster_name.
+        """
+
+        if node_type == NODETYPE_PEER:
+            cluster_ports = {
+                "peerx.orgy.tpl" : {
+                    "externalPort": 32050,
+                    "chaincodePort": 32052,
+                    "nodePort": 32053,
+                    "peerId": "peer3",
+                    "organizationId": "org1"
+                }
+            };
+            self._deploy_cluster_peer(cluster_name,  cluster_ports);
+        elif node_type == NODETYPE_ORDERER:
+            self._deploy_cluster_orderer()
+
+        return
+
     def _deploy_cluster_resource(self, cluster_name,
                                  cluster_ports, nfsServer_ip, consensus):
         # create namespace in advance
@@ -456,6 +501,9 @@ class K8sClusterOperation():
             for file in file_list:
                 # Then peers
                 if "peer" in file:
+                    if "x" in file and "y" in file:
+                        continue
+
                     file_data = self._render_config_file(file, cluster_name,
                                                          cluster_ports,
                                                          nfsServer_ip)
@@ -565,6 +613,9 @@ class K8sClusterOperation():
 
             for file in file_list:
                 if "peer" in file:
+                    if "x" in file and "y" in file:
+                        continue
+
                     file_data = self._render_config_file(file,
                                                          cluster_name,
                                                          cluster_ports,
@@ -631,3 +682,7 @@ class K8sClusterOperation():
         self._deploy_k8s_resource(yaml_data)
         time.sleep(2)
         return self._get_cluster_pods(cluster_name)
+
+if __name__ == '__main__':
+    clusterOperator = K8sClusterOperation(kube_config={})
+    clusterOperator.deploy_node("first");

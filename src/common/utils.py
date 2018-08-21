@@ -154,6 +154,8 @@ VCTHREAD_NAME = "setupvm"
 WORKER_API_PORT = 2375
 DEFAULT_TIMEOUT = 300
 
+NODETYPE_PEER = "peer"
+NODETYPE_ORDERER = "orderer"
 
 def json_decode(jsonstr):
     try:
