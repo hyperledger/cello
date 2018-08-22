@@ -24,14 +24,14 @@
 - name: Create deployment file for composer cli
   template:
     src: "{{ playbook_dir }}/composersetup/templates/{{ item }}.j2"
-    dest: "{{ playbook_dir }}/../../run/{{ item }}.yaml"
+    dest: "{{ pjrun }}/{{ item }}.yaml"
   with_items:
     - composercli
     - composerplayground
 
 - name: Create composer cli initialization pod
   command: >-
-    ./kubectl --kubeconfig kubeconfig apply -f ../run/composercli.yaml
+    ./kubectl --kubeconfig kubeconfig apply -f {{ pjrun }}/composercli.yaml
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
   tags: "createcomposerclipod"
@@ -145,7 +145,7 @@
 
 - name: Start composer playground pod and service
   command: >-
-    ./kubectl --kubeconfig kubeconfig apply -f ../run/composerplayground.yaml
+    ./kubectl --kubeconfig kubeconfig apply -f {{ pjrun }}/composerplayground.yaml
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
   tags: "startupplayground"

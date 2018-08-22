@@ -39,7 +39,7 @@ peer chaincode install -n firstchaincode -v 1.0 -p chaincode
 # Instantiate the chaincode
 echo '-------------- Instantiate chaincode'
 
-{% set chainpeer = peers[0] %}
+{% set chainpeer = clipeer %}
 export CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/allorgs/{{ chainpeer.org }}/peers/{{ chainpeer.name }}.{{ chainpeer.org }}/tls/server.key
 export CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/allorgs/{{ chainpeer.org }}/peers/{{ chainpeer.name }}.{{ chainpeer.org }}/tls/ca.crt
 export CORE_PEER_ID={{ chainpeer.name }}
@@ -85,7 +85,7 @@ peer chaincode install -n firstchaincode -v 1.0 -p chaincode
 # Instantiate the chaincode
 echo '-------------- Instantiate chaincode'
 
-{% set chainpeer = peers[0] %}
+{% set chainpeer = clipeer %}
 export CORE_PEER_ID={{ chainpeer.name }}
 export CORE_PEER_ADDRESS={{ chainpeer.name }}:7051
 export CORE_PEER_LOCALMSPID={{ chainpeer.org }}

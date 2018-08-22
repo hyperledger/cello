@@ -16,7 +16,7 @@
     dest: "{{ fabricworkdir }}/crypto-config.yml"
 
 - name: Create the certificate files
-  command: "{{ fabricpath }}/build/bin/cryptogen generate --config crypto-config.yml --output keyfiles"
+  command: "{{ fabricpath }}/bin/cryptogen generate --config crypto-config.yml --output keyfiles"
   args:
     chdir: "{{ fabricworkdir }}"
 
@@ -82,13 +82,20 @@
 - name: Create the gensis block and channel transaction
   shell: >-
     export FABRIC_CFG_PATH={{ fabricworkdir }} &&
-    {{ fabricpath }}/build/bin/configtxgen -profile OrdererGenesis
+    {{ fabricpath }}/bin/configtxgen -profile OrdererGenesis
     -outputBlock keyfiles/genesis.block -channelID orderersystemchannel &&
-    {{ fabricpath }}/build/bin/configtxgen -profile OrgChannel
+    {{ fabricpath }}/bin/configtxgen -profile OrgChannel
     -outputCreateChannelTx keyfiles/firstchannel.tx -channelID firstchannel
   args:
     chdir: "{{ fabricworkdir }}"
   when: allorderers | length > 0
+
+- name: Change file permissions
+  file:
+    path: "{{ fabricworkdir }}"
+    owner: 1000
+    group: 1000
+    recurse: yes
 
 - name: Create ca config file
   template:

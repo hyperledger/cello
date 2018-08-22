@@ -5,7 +5,7 @@
 - name: Create deployment files for certssetup and pvc
   template:
     src: "{{ playbook_dir }}/fabricsetup/templates/{{ item }}.j2"
-    dest: "{{ playbook_dir }}/../../run/{{ item }}.yaml"
+    dest: "{{ pjrun }}/{{ item }}.yaml"
   with_items:
     - pvc
     - certssetup
@@ -26,7 +26,7 @@
 
 - name: Create persistent volume
   command: >-
-    ./kubectl --kubeconfig kubeconfig apply -f ../run/pvc.yaml
+    ./kubectl --kubeconfig kubeconfig apply -f {{ pjrun }}/pvc.yaml
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
   tags: "createpvc"
@@ -45,7 +45,7 @@
 
 - name: Create certs volume initialization pod
   command: >-
-    ./kubectl --kubeconfig kubeconfig apply -f ../run/certssetup.yaml
+    ./kubectl --kubeconfig kubeconfig apply -f {{ pjrun }}/certssetup.yaml
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
   tags: "createcertspod"
@@ -141,7 +141,7 @@
 
 - name: Removing the certs pod
   command: >-
-    ./kubectl --kubeconfig kubeconfig delete -f ../run/certssetup.yaml
+    ./kubectl --kubeconfig kubeconfig delete -f {{ pjrun }}/certssetup.yaml
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
   tags: "deletecertspod"
@@ -149,7 +149,7 @@
 
 - name: Deploy chaincode container endpoint daemon set
   command: >-
-    ./kubectl --kubeconfig kubeconfig apply -f ../run/chainep.yaml
+    ./kubectl --kubeconfig kubeconfig apply -f {{ pjrun }}/chainep.yaml
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
   tags: "doendpointdaemonset"
@@ -157,10 +157,10 @@
 - name: Create k8s deployment files
   template:
     src: "{{ playbook_dir }}/../deploy_k8s/fabricsetup/templates/fabric-pod.j2"
-    dest: "{{ playbook_dir }}/../../vars/fabric-pod.yml"
+    dest: "{{ pjrun }}/fabric-pod.yml"
 
 - name: Start fabric pods
-  command: "./kubectl --kubeconfig kubeconfig apply -f fabric-pod.yml"
+  command: "./kubectl --kubeconfig kubeconfig apply -f {{ pjrun }}/fabric-pod.yml"
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
   tags: "fabricup"
@@ -173,6 +173,25 @@
     chdir: "{{ playbook_dir }}/../../vars/"
   register: podstatus
   until: podstatus.stdout_lines | length == allpeers | length
+  retries: 50
+  delay: 5
+
+- name: Get number of nodes
+  command: >-
+    ./kubectl --kubeconfig kubeconfig get nodes --no-headers
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+  register: numberofnodes
+
+- name: Wait for docker endpoint pods to be ready
+  command: >-
+    ./kubectl --kubeconfig kubeconfig -o=custom-columns=STATUS:.status.phase
+    get pods -l name=dind --no-headers --field-selector=status.phase=Running
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+  register: podstatus
+  until: (podstatus.stdout_lines|length) == (numberofnodes.stdout_lines|length)
+  when: (allorderers | length > 0) and (allpeers | length > 0)
   retries: 50
   delay: 5
 
@@ -196,7 +215,7 @@
   tags: "downloadccenv"
 
 - name: Start channel operations
-  command: "./kubectl --kubeconfig kubeconfig apply -f ../run/cli-k8s.yaml"
+  command: "./kubectl --kubeconfig kubeconfig apply -f {{ pjrun }}/cli-k8s.yaml"
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
   tags: "channeloperation"

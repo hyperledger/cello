@@ -1,10 +1,11 @@
 ---
+- name: Reuse common code
+  include_tasks: "{{ playbook_dir }}/../common/config_apply.yml"
+
 - name: Setup few variables
   set_fact:
-    fabricworkdir: "/opt/gopath/{{ env }}/fabric"
-    fabricpath: "/opt/gopath/{{ env }}/src/github.com/hyperledger/fabric"
-    gopath: "/opt/gopath/{{ env }}"
-    localhome: "/home/{{ fabric.ssh_user }}/.composer"
+    fabricworkdir: "/opt/fabric/{{ env }}"
+    localhome: "/opt/fabric/{{ env }}/.composer"
     alladmin: ""
     networkname: "{{ lookup('env', 'NETWORKNAME') | default('') }}"
 
@@ -13,9 +14,13 @@
     networkname: "{{ ((networkname|length)==0)|ternary('carauction-network', networkname) }}"
 
 - name: Make sure that working directory exists
+  become: true
+  become_user: root
   file:
     path: "{{ localhome }}"
     state: "directory"
+    owner: 1000
+    group: 1000
 
 - name: Pull composer container images from the docker hub
   command: "docker pull {{ fabric.repo.url }}{{ item }}"

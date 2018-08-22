@@ -4,4 +4,3 @@ etcdtoken: "{{ lookup('password',
 
 proxy_env: {
 }
-

@@ -1,12 +1,11 @@
 ---
 - name: Setup few variables
   set_fact:
-    fabricworkdir: "/opt/gopath/{{ env }}/fabric"
-    fabricpath: "/opt/gopath/{{ env }}/src/github.com/hyperledger/fabric"
-    gopath: "/opt/gopath/{{ env }}"
-    localhome: "/home/{{ fabric.ssh_user }}/.composer"
+    localhome: "/opt/fabric/{{ env }}/.composer"
 
 - name: Make sure that working directory is clean
+  become: true
+  become_user: root
   file:
     path: "{{ localhome }}"
     state: "absent"

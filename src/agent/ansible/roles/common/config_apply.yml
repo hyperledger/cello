@@ -1,9 +1,9 @@
 ---
 - name: Setup and initialize variables
   set_fact:
-    fabricworkdir: "/opt/gopath/{{ env }}/fabric"
-    fabricpath: "/opt/gopath/{{ env }}/src/github.com/hyperledger/fabric"
-    gopath: "/opt/gopath/{{ env }}"
+    fabricworkdir: "{{ pjroot }}/vars/{{ env }}/fabric"
+    fabricpath: "{{ pjroot }}/vars/{{ env }}"
+    pjrun: "{{ pjroot }}/vars/{{ env }}/run"
     peers: "{{ [] }}"
     orderers: "{{ [] }}"
     cas: "{{ [] }}"
@@ -25,14 +25,11 @@
     clipeer: "{}"
     cliorderer: "{}"
 
-- name: Make sure that working directory exists and clean
+- name: Make sure that working directory exists
   file:
-    path: "{{ fabricworkdir }}/run"
-    state: "{{ item }}"
+    path: "{{ pjrun }}"
+    state: "directory"
     mode: 0775
-  with_items:
-    - "absent"
-    - "directory"
 
 - name: Create component list
   set_fact:

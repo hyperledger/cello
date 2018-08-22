@@ -7,14 +7,14 @@ services:
 {% if fabric.peer_db == 'CouchDB' %}
   couchdb-{{ peer.name }}:
     container_name: couchdb-{{ peer.name }}
-    image: {{ fabric.repo.url }}fabric-couchdb:{{ helpertag | default(thetag) }}
+    image: {{ fabric.repo.url }}fabric-couchdb:{{ fabric.helper_tag }}
     network_mode: bridge
     hostname: couchdb-{{ peer.name }}
 {% endif %}
 
   {{ peer.name }}:
     container_name: {{ peer.name }}
-    image: {{ fabric.repo.url }}fabric-peer:{{ thetag }}
+    image: {{ fabric.repo.url }}fabric-peer:{{  fabric.baseimage_tag }}
     network_mode: bridge
     hostname: {{ peer.name }}
     environment:
@@ -42,7 +42,6 @@ services:
     volumes:
       - /var/run/:/host/var/run/
       - {{ fabricworkdir }}/run/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}:/etc/hyperledger/fabric
-      - {{ fabricworkdir }}/run/keyfiles:/etc/hyperledger/allorgs
     command: peer node start
 
 {% endfor %}

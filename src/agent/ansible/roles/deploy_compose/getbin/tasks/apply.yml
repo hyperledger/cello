@@ -1,23 +1,17 @@
 ---
 - name: Setup variables
   set_fact:
-    fabricpath: "/opt/gopath/{{ env }}/src/github.com/hyperledger/fabric"
-
-- name: Setup hyperledger directory
-  file:
-    path: "{{ fabricpath }}/build"
-    state: directory
-    force: yes
-    mode: 0775
+    fabricpath: "{{ pjroot }}/vars/{{ env }}"
 
 - stat:
-    path: "{{ fabricpath }}/build/bin/cryptogen"
+    path: "{{ fabricpath }}/bin/cryptogen"
   register: binexists
 
 - name: Download fabric binaries
   unarchive:
     src: "{{ fabric.repo.bin }}"
-    dest: "{{ fabricpath }}/build"
+    dest: "{{ fabricpath }}"
+    exclude: ["config"]
     remote_src: yes
   when: fabric.repo.bin|length > 0 and binexists.stat.exists == false
   tags: "downloadbin"

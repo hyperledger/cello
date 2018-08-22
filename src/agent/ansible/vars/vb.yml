@@ -1,7 +1,7 @@
 ---
 auth: {
   # Define where the VirtualBox(VB) system is
-  auth_url: "192.168.0.35",
+  auth_url: "192.168.0.101",
   # User name to log in to the remote VB system
   username: "tongli",
   # Password to the VB system, can specify at command line
@@ -12,7 +12,7 @@ auth: {
 # This variable defines cloud provision attributes
 cluster: {
   target_os: "ubuntu",
-  image_name: "fabricbase",
+  image_name: "fabric8base",
   ssh_user: "ubuntu",
   ssh_pass: "ps",
   validate_certs: True,

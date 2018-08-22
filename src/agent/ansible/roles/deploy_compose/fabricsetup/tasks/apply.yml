@@ -6,6 +6,14 @@
   set_fact:
     current_host: "{{ hostvars[inventory_hostname].inter_name }}"
     clihost: ""
+    fabricworkdir: "/opt/fabric/{{ env }}"
+
+- name: Make sure remote working directory exists
+  become: true
+  become_user: root
+  file:
+    path: "{{ fabricworkdir }}/run"
+    state: directory
 
 - name: Get peer container list
   set_fact:
@@ -34,43 +42,10 @@
     zookeepers: "{{ fabric.network[current_host].zookeepers | default([]) }}"
     kafkas: "{{ fabric.network[current_host].kafkas | default([]) }}"
 
-- name: Pull certificates from the builder machine
-  command: >-
-    scp -i "/opt/gopath/id_rsa" -r -o "StrictHostKeyChecking no" "{{ fabric.
-    ssh_user }}@{{ hostvars[groups['builders'][0]].private_ip }}:{{ fabricworkdir }}/certs.tgz"
-    "{{ fabricworkdir }}/allcerts.tgz"
-
-- name: Pull container images from the builder machine
-  command: >-
-    scp -i "/opt/gopath/id_rsa" -r -o "StrictHostKeyChecking no" "{{ fabric.
-    ssh_user }}@{{ hostvars[groups['builders'][0]].private_ip }}:{{ fabricworkdir }}/images/fabricimages.tar"
-    "{{ fabricworkdir }}/fabricimages.tar"
-  when: fabric.baseimage_tag == '' and inventory_hostname not in groups['builders']
-
-- name: Pull container version file from the build machine
-  command: >-
-    scp -i "/opt/gopath/id_rsa" -r -o "StrictHostKeyChecking no" "{{ fabric.
-    ssh_user }}@{{ hostvars[groups['builders'][0]].private_ip }}:{{ fabricworkdir }}/images/VERSION"
-    "{{ fabricworkdir }}/VERSION"
-
-- name: Find out the image tags
-  slurp:
-    src: "{{ fabricworkdir }}/VERSION"
-  register: imagetag
-
-- name: Set image tag from the file
-  set_fact:
-    thetag: "{{ imagetag['content'] | b64decode }}"
-    helpertag: "{{ fabric.helper_tag }}"
-
-- stat:
-    path: "{{ fabricworkdir }}/fabricimages.tar"
-  register: imagepack
-
-- name: Load all the docker images created by build machine
-  shell: >-
-    docker load -i {{ fabricworkdir }}/fabricimages.tar
-  when: imagepack.stat.exists == true and inventory_hostname not in groups['builders']
+- name: Pull certificates from the controller
+  copy:
+    src: "{{ pjroot }}/vars/{{ env }}/fabric/certs.tgz"
+    dest: "{{ fabricworkdir }}/allcerts.tgz"
 
 - name: Unpack the certificates
   unarchive:
@@ -80,7 +55,7 @@
 
 - name: Process private key files
   template:
-    src: "{{ playbook_dir }}/../deploy_compose/fabricsetup/templates/fabric-ca-server-config.j2"
+    src: "{{ playbook_dir }}/../deploy_compose/certsetup/templates/fabric-ca-server-config.j2"
     dest: "{{ fabricworkdir }}/run/keyfiles/{{ item.org }}/ca/fabric-ca-server-config.yaml"
   with_items: "{{ cas }}"
 
@@ -104,14 +79,14 @@
   command: "docker pull {{ fabric.repo.url }}{{ item.name }}"
   when: item.flag | length > 0 and fabric.baseimage_tag | length > 0
   with_items:
-    - { name: "fabric-ca:{{ fabric.ca.image_tag | default(thetag) }}", flag: "{{ cas }}" }
-    - { name: "fabric-zookeeper:{{ helpertag }}", flag: "{{ zookeepers }}" }
-    - { name: "fabric-kafka:{{ helpertag }}", flag: "{{ kafkas }}" }
-    - { name: "fabric-couchdb:{{ helpertag }}", flag: "{{ peers }}" }
-    - { name: "fabric-orderer:{{ thetag }}", flag: "{{ orderers }}" }
-    - { name: "fabric-peer:{{ thetag }}", flag: "{{ peers }}" }
-    - { name: "fabric-ccenv:{{ thetag }}", flag: "{{ peers }}" }
-    - { name: "fabric-tools:{{ thetag }}", flag: "tools" }
+    - { name: "fabric-ca:{{ fabric.ca.image_tag | default(fabric.baseimage_tag) }}", flag: "{{ cas }}" }
+    - { name: "fabric-zookeeper:{{ fabric.helper_tag }}", flag: "{{ zookeepers }}" }
+    - { name: "fabric-kafka:{{ fabric.helper_tag }}", flag: "{{ kafkas }}" }
+    - { name: "fabric-couchdb:{{ fabric.helper_tag }}", flag: "{{ peers }}" }
+    - { name: "fabric-orderer:{{ fabric.baseimage_tag }}", flag: "{{ orderers }}" }
+    - { name: "fabric-peer:{{ fabric.baseimage_tag }}", flag: "{{ peers }}" }
+    - { name: "fabric-ccenv:{{ fabric.baseimage_tag }}", flag: "{{ peers }}" }
+    - { name: "fabric-tools:{{ fabric.baseimage_tag }}", flag: "tools" }
   tags: "pullimages"
 
 - name: Create docker compose files
@@ -127,72 +102,14 @@
     - { name: "peer-compose", flag: "{{ peers }}" }
 
 - name: Start fabric components
-  command: "docker-compose -p {{ env }}.{{ item.name }} -f {{ fabricworkdir }}/run/{{ item.name }}.yml up -d"
+  shell: >-
+    docker-compose -p {{ env }}.{{ item.name }}
+    -f {{ fabricworkdir }}/run/{{ item.name }}.yml up -d && sleep 5
   when: item.flag | length > 0
   with_items:
-    - { name: "ca-compose", flag: "{{ cas }}" }
     - { name: "zookeeper-compose", flag: "{{ zookeepers }}" }
     - { name: "kafka-compose", flag: "{{ kafkas }}" }
     - { name: "orderer-compose", flag: "{{ orderers }}" }
     - { name: "peer-compose", flag: "{{ peers }}" }
+    - { name: "ca-compose", flag: "{{ cas }}" }
   tags: "fabricup"
-
-- name: Locate a host to run peer channel create command
-  set_fact:
-    clihost: "{{ item }}"
-    clipeer: "{{ allpeers | random }}"
-    cliorderer: "{{ allorderers | random }}"
-  when: peers | length > 0 and clihost == ""
-  with_items: "{{ groups['allnodes'] }}"
-
-- name: Make sure that working directory exists and clean
-  file:
-    path: "{{ fabricworkdir }}/run/keyfiles/chaincode"
-    state: "directory"
-    mode: 0775
-  when: clihost == inventory_hostname
-
-- name: Move chaincode to the server
-  copy:
-    src: "{{ playbook_dir }}/fabricsetup/templates/firstcode.go"
-    dest: "{{ fabricworkdir }}/run/keyfiles/chaincode/firstcode.go"
-    mode: "u=rw,g=rw"
-  when: clihost == inventory_hostname
-
-- name: Create peer channel command script
-  template:
-    src: "{{ playbook_dir }}/fabricsetup/templates/dochannel.j2"
-    dest: "{{ fabricworkdir }}/run/keyfiles/dochannel.sh"
-    mode: "u=rx,g=rx"
-  when: clihost == inventory_hostname
-
-- name: Create peer channel command docker compose file
-  template:
-    src: "{{ playbook_dir }}/fabricsetup/templates/cli-compose.j2"
-    dest: "{{ fabricworkdir }}/run/cli-compose.yml"
-  when: clihost == inventory_hostname
-
-- name: Start fabriccli components
-  command: "docker-compose -p {{ env }}.cli -f {{ fabricworkdir }}/run/cli-compose.yml up -d"
-  when: clihost == inventory_hostname
-  tags: "dochaincode"
-
-- name: Wait for fabriccli to start
-  command: >-
-    docker ps -a -q -f 'name=fabriccli'
-  register: clistatus
-  until: clistatus.stdout | length > 0
-  retries: 50
-  delay: 10
-  when: clihost == inventory_hostname
-  tags: "dochaincode"
-
-- name: Wait fabriccli to exit
-  command: >-
-    docker ps -a -q -f 'name=fabriccli' -f 'status=exited'
-  register: clistatus
-  until: clistatus.stdout | length > 0
-  retries: 50
-  delay: 10
-  when: clihost == inventory_hostname
-  tags: "dochaincode"

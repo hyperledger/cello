@@ -44,7 +44,6 @@
     extra_args: "{{ item.args | default('') }}"
   with_items:
     - { name: "pip", args: "--upgrade" }
-    - { name: "behave" }
     - { name: "nose" }
     - { name: "docker-compose" }
     - { name: "protobuf" }
@@ -55,17 +54,6 @@
     name: "{{ cluster.ssh_user }}"
     append: yes
     groups: "docker,root"
-
-- name: Retrive golang binary and unpackage it
-  unarchive:
-    src: "{{ cluster.go_repo }}"
-    dest: "/opt"
-    remote_src: True
-
-- name: Setup golang profile
-  template:
-    src: "{{ playbook_dir }}/../env_flanneld/fastinitnode/templates/goroot.j2"
-    dest: "/etc/profile.d/goroot.sh"
 
 - name: Place the certificate in the right place
   copy:

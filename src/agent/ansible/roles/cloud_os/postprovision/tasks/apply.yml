@@ -4,17 +4,17 @@
 
 - name: Remove the runhost file
   file:
-    path: "{{ playbook_dir }}/../../run/runhosts"
+    path: "{{ playbook_dir }}/../../vars/runhosts"
     state: absent
 
 - name: Remove the fabric host file
   file:
-    path: "{{ playbook_dir }}/../../run/fabrichosts"
+    path: "{{ playbook_dir }}/../../vars/fabrichosts"
     state: absent
 
 - name: Setup runhosts file
   lineinfile:
-    dest: "{{ playbook_dir }}/../../run/runhosts"
+    dest: "{{ playbook_dir }}/../../vars/runhosts"
     create: yes
     insertafter: EOF
     line: "{{ item }}"
@@ -46,7 +46,7 @@
 
 - name: Add all the hosts to the file
   lineinfile:
-    dest: "{{ playbook_dir }}/../../run/runhosts"
+    dest: "{{ playbook_dir }}/../../vars/runhosts"
     create: yes
     insertafter: EOF
     line: >-
@@ -59,7 +59,7 @@
 
 - name: Setup groups in the inventory file
   lineinfile:
-    dest: "{{ playbook_dir }}/../../run/runhosts"
+    dest: "{{ playbook_dir }}/../../vars/runhosts"
     insertafter: EOF
     regexp: 'NOT TO BE FOUND'
     state: present
@@ -71,7 +71,7 @@
 
 - name: Create the hosts file
   lineinfile:
-    dest: "{{ playbook_dir }}/../../run/fabrichosts"
+    dest: "{{ playbook_dir }}/../../vars/fabrichosts"
     create: yes
     insertafter: EOF
     line: >-

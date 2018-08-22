@@ -5,7 +5,7 @@ services:
 
   fabriccli:
     container_name: fabriccli
-    image: {{ fabric.repo.url }}fabric-tools:{{ thetag }}
+    image: {{ fabric.repo.url }}fabric-tools:{{ fabric.baseimage_tag }}
     network_mode: bridge
     hostname: fabriccli
     environment:

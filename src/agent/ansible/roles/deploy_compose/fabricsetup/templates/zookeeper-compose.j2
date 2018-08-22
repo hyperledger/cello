@@ -6,7 +6,7 @@ services:
 {% for zookeeper in zookeepers %}
   {{ zookeeper }}:
     container_name: {{ zookeeper }}
-    image: {{ fabric.repo.url }}fabric-zookeeper:{{ helpertag | default(thetag) }}
+    image: {{ fabric.repo.url }}fabric-zookeeper:{{ fabric.helper_tag }}
     network_mode: bridge
     hostname: {{ zookeeper }}
     restart: always

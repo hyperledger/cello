@@ -1,0 +1,59 @@
+---
+- name: Reuse common code
+  include_tasks: "{{ playbook_dir }}/../common/config_apply.yml"
+
+- name: Setup and initialize variables
+  set_fact:
+    fabricworkdir: "/opt/fabric/{{ env }}"
+    clipeer: "{{ allpeers | random }}"
+    cliorderer: "{{ allorderers | random }}"
+
+- name: Create peer org member string
+  set_fact:
+    orgmembers: >-
+      {{ peerorgs|map('regex_replace','(.*)',"'\g<1>.member'")|list|join(',') }}
+
+- name: Make sure that working directory exists and clean
+  file:
+    path: "{{ fabricworkdir }}/run/keyfiles/chaincode"
+    state: "directory"
+    mode: 0775
+
+- name: Move chaincode to the server
+  copy:
+    src: "{{ playbook_dir }}/chaincodesetup/templates/firstcode.go"
+    dest: "{{ fabricworkdir }}/run/keyfiles/chaincode/firstcode.go"
+    mode: "u=rw,g=rw"
+
+- name: Create peer channel command script
+  template:
+    src: "{{ playbook_dir }}/chaincodesetup/templates/dochannel.j2"
+    dest: "{{ fabricworkdir }}/run/keyfiles/dochannel.sh"
+    mode: "u=rx,g=rx"
+
+- name: Create peer channel command docker compose file
+  template:
+    src: "{{ playbook_dir }}/chaincodesetup/templates/cli-compose.j2"
+    dest: "{{ fabricworkdir }}/run/cli-compose.yml"
+
+- name: Start fabriccli components
+  command: "docker-compose -p {{ env }}.cli -f {{ fabricworkdir }}/run/cli-compose.yml up -d"
+  tags: "dochaincode"
+
+- name: Wait for fabriccli to start
+  command: >-
+    docker ps -a -q -f 'name=fabriccli'
+  register: clistatus
+  until: clistatus.stdout | length > 0
+  retries: 50
+  delay: 10
+  tags: "dochaincode"
+
+- name: Wait fabriccli to exit
+  command: >-
+    docker ps -a -q -f 'name=fabriccli' -f 'status=exited'
+  register: clistatus
+  until: clistatus.stdout | length > 0
+  retries: 50
+  delay: 10
+  tags: "dochaincode"

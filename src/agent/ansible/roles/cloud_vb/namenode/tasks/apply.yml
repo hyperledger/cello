@@ -5,7 +5,7 @@
     insertafter: EOF
     state: present
     line: "{{ item }}"
-  with_lines: cat "{{ playbook_dir }}/../../run/fabrichosts"
+  with_lines: cat "{{ playbook_dir }}/../../vars/fabrichosts"
 
 - name: Change the host name
   shell: >-

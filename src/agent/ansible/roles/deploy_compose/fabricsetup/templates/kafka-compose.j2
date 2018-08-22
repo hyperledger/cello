@@ -6,7 +6,7 @@ services:
 {% for kafka in kafkas %}
   {{ kafka }}:
     container_name: {{ kafka }}
-    image: {{ fabric.repo.url }}fabric-kafka:{{ helpertag | default(thetag) }}
+    image: {{ fabric.repo.url }}fabric-kafka:{{ fabric.helper_tag }}
     restart: always
     network_mode: bridge
     hostname: {{ kafka }}

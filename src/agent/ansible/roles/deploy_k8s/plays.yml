@@ -1,5 +1,5 @@
 ---
-- name: generate certificates
+- name: get fabric crypto tool
   hosts: cloud
   connection: local
   become: true
@@ -7,7 +7,7 @@
   vars_files:
     - "./../../vars/{{ env }}.yml"
   tasks:
-    - include_tasks: "getbin/tasks/{{ mode }}.yml"
+    - include_tasks: "../deploy_compose/getbin/tasks/{{ mode }}.yml"
   tags: "getbin"
 
 - name: generate certificates

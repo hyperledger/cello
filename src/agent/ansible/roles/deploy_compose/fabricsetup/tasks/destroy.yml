@@ -1,11 +1,11 @@
 ---
 - name: Setup variables
   set_fact:
-    fabricworkdir: "/opt/gopath/{{ env }}/fabric"
+    fabricworkdir: "/opt/fabric/{{ env }}/run"
 
 - name: Check docker compose file stats
   stat:
-    path: "{{ fabricworkdir }}/run/{{ item }}.yml"
+    path: "{{ fabricworkdir }}/{{ item }}.yml"
   register: cfiles
   with_items:
     - "zookeeper-compose"
@@ -15,7 +15,7 @@
     - "peer-compose"
 
 - name: Shut down fabric components
-  command: "docker-compose -p {{ env }}.{{ item.item }} -f {{ fabricworkdir }}/run/{{ item.item }}.yml down"
+  command: "docker-compose -p {{ env }}.{{ item.item }} -f {{ fabricworkdir }}/{{ item.item }}.yml down"
   when: item.stat.exists == true
   with_items: "{{ cfiles.results }}"
   no_log: true
@@ -43,5 +43,5 @@
   become: true
   become_user: root
   file:
-    path: "{{ fabricworkdir }}/run"
+    path: "{{ fabricworkdir }}"
     state: absent

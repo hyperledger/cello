@@ -6,14 +6,14 @@ services:
 {% for orderer in orderers %}
   {{ orderer.name }}:
     container_name: {{ orderer.name }}
-    image: {{ fabric.repo.url }}fabric-orderer:{{ thetag }}
+    image: {{ fabric.repo.url }}fabric-orderer:{{ fabric.baseimage_tag }}
     network_mode: bridge
     hostname: {{ orderer.name }}
     environment:
       - ORDERER_GENERAL_LOGLEVEL={{ fabric.logging_level | default('ERROR') }}
       - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
       - ORDERER_GENERAL_GENESISMETHOD=file
-      - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.block/genesis.block
+      - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/allorgs/genesis.block
       - ORDERER_GENERAL_LOCALMSPID={{ orderer.org }}
       - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
       - ORDERER_GENERAL_TLS_ENABLED={{ fabric.tls | lower }}
@@ -27,7 +27,6 @@ services:
       - ORDERER_KAFKA_RETRY_SHORTTOTAL=30s
       - ORDERER_KAFKA_VERBOSE=true
     volumes:
-      - {{ fabricworkdir }}/run/keyfiles:/var/hyperledger/orderer/orderer.genesis.block
       - {{ fabricworkdir }}/run/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}:/var/hyperledger/orderer
       - {{ fabricworkdir }}/run/keyfiles:/var/hyperledger/allorgs
     command: orderer

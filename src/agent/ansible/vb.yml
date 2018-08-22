@@ -22,6 +22,7 @@
   vars:
     env: "vb1st"
     deploy_type: "compose"
+    pjroot: "{{ playbook_dir }}/../.."
   import_playbook: "roles/deploy_compose/plays.yml"
 
 - name: Inform the installer

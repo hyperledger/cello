@@ -7,7 +7,7 @@
 
 - name: Remove composer cli pod
   command: >-
-    ./kubectl --kubeconfig=kubeconfig delete -f ../run/{{ item }}
+    ./kubectl --kubeconfig=kubeconfig delete -f {{ pjrun }}/{{ item }}
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
   with_items:
