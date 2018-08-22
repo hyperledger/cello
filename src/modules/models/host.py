@@ -60,6 +60,8 @@ class Cluster(Document):
     api_url = StringField(default="")
     env = DictField(default={})
     consensus_plugin = StringField(default="")
+    external_port_start = IntField(default=0)
+
 
 
 class Container(Document):
@@ -97,6 +99,7 @@ class ClusterSchema(Schema):
     consensus_plugin = fields.String()
     containers = fields.Method("get_containers")
     service_ports = fields.Method("get_service_ports")
+    external_port_start = fields.Integer()
 
     def get_host_name(self, cluster):
         return cluster.host.name

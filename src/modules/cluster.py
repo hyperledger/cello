@@ -29,7 +29,8 @@ from common import CLUSTER_PORT_START, CLUSTER_PORT_STEP, \
     NETWORK_SIZE_FABRIC_PRE_V1, \
     PEER_SERVICE_PORTS, EXPLORER_PORTS, \
     ORDERER_SERVICE_PORTS, \
-    NETWORK_STATUS_CREATING, NETWORK_STATUS_RUNNING, NETWORK_STATUS_DELETING
+    NETWORK_STATUS_CREATING, NETWORK_STATUS_RUNNING, NETWORK_STATUS_DELETING,\
+    EXTERNAL_SUB_MAX, EXTERNAL_SUB_MIX
 
 
 from common import FabricPreNetworkConfig, FabricV1NetworkConfig
@@ -289,7 +290,8 @@ class ClusterHandler(object):
             return None
 
         #TODO 创建后未必成功,应该再确定后再修改数据库状态
-        if ClusterModel.objects(host=worker).count() >= worker.capacity:
+        clusters_exists = ClusterModel.objects (host=worker)
+        if clusters_exists.count() >= worker.capacity:
             logger.warning("host {} is already full".format(host_id))
             return None
 
@@ -308,6 +310,20 @@ class ClusterHandler(object):
                                 for (k, v) in mapped_ports.items())
 
         network_type = config['network_type']
+        external_ports = [cluster.external_port_start for cluster in clusters_exists]
+
+        #the start port is 31000
+        external_port_start = EXTERNAL_SUB_MIX
+        for external_port in external_ports:
+            if external_port_start > EXTERNAL_SUB_MAX:
+                logger.error("external port %d has been over range!!" % external_port_start)
+                return None
+
+            if external_port_start != external_port:
+                break
+            else:
+                external_port +=100
+
         net = {  # net is a blockchain network instance
             'id': cid,
             'name': name,
@@ -318,6 +334,7 @@ class ClusterHandler(object):
             'status': NETWORK_STATUS_CREATING,
             'mapped_ports': mapped_ports,
             'service_url': {},  # e.g., {rest: xxx:7050, grpc: xxx:7051}
+            'external_port_start': external_port_start,
         }
         net.update(config.get_data())
 
@@ -334,7 +351,7 @@ class ClusterHandler(object):
                                                       explorer_ports))
         t.start()
 
-        #开发的时候用的，发布的时候需要撤掉
+        #TODO: 开发的时候用的，发布的时候需要撤掉
         t.join()
         return cid
 

@@ -410,17 +410,22 @@ class K8sClusterOperation():
 
         return service_url
 
-    def _get_cluster_ports(self, ports_index):
+    def _get_cluster_ports(self, ports_index, external_port_start):
         logger.debug("Current exsiting cluster ports= {}".format(ports_index))
         if ports_index:
+            #取出当前设置的最大端口
             current_port = int(max(ports_index)) + 10
         else:
-            current_port = 31500
+            current_port = external_port_start
+
         cluster_ports = {}
         current_path = os.path.dirname(__file__)
         templates_path = os.path.join(current_path, "templates")
         for (dir_path, dir_name, file_list) in os.walk(templates_path):
             for file in file_list:
+                #判断是否超出指定的端口分配范围
+                if current_port > external_port_start + 100:
+                    return None
                 # pvc and namespace files do not have port mapping
                 if ("pvc" not in file and "namespace" not in file and
                    "cli" not in file):
@@ -540,11 +545,11 @@ class K8sClusterOperation():
             time.sleep(3)
 
     def deploy_cluster(self, cluster_name, ports_index,
-                       nfsServer_ip, consensus):
+                       external_port_start, nfsServer_ip, consensus):
         self._upload_config_file(cluster_name, consensus)
         time.sleep(1)
 
-        cluster_ports = self._get_cluster_ports(ports_index)
+        cluster_ports = self._get_cluster_ports(ports_index, external_port_start)
 
         self._deploy_cluster_resource(cluster_name, cluster_ports,
                                       nfsServer_ip, consensus)
@@ -652,7 +657,7 @@ class K8sClusterOperation():
 
     def delete_cluster(self, cluster_name, ports_index,
                        nfsServer_ip, consensus):
-        cluster_ports = self._get_cluster_ports(ports_index)
+        cluster_ports = self._get_cluster_ports(ports_index, 40000)
         self._delete_cluster_resource(cluster_name, cluster_ports,
                                       nfsServer_ip, consensus)
         time.sleep(2)
@@ -661,7 +666,7 @@ class K8sClusterOperation():
         return True
 
     def stop_cluster(self, cluster_name, ports_index, nfsServer_ip, consensus):
-        cluster_ports = self._get_cluster_ports(ports_index)
+        cluster_ports = self._get_cluster_ports(ports_index, 40000)
         self._delete_cluster_resource(cluster_name, cluster_ports,
                                       nfsServer_ip, consensus)
         time.sleep(2)
@@ -669,7 +674,7 @@ class K8sClusterOperation():
 
     def start_cluster(self, cluster_name, ports_index, nfsServer_ip,
                       consensus):
-        cluster_ports = self._get_cluster_ports(ports_index)
+        cluster_ports = self._get_cluster_ports(ports_index, 40000)
         self._deploy_cluster_resource(cluster_name, cluster_ports,
                                       nfsServer_ip, consensus)
         time.sleep(2)

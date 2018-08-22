@@ -41,25 +41,31 @@ class ClusterOnKubernetes(ClusterBase):
         kube_config = KubernetesOperation()._get_config_from_params(cluster
                                                                     .host
                                                                     .k8s_param)
+        #查询当前host拥有的所有cluster
+        #clusters_exists = ClusterModel.objects(host=cluster.host)
 
-        clusters_exists = ClusterModel.objects(host=cluster.host)
+        #查询当前设置的所有端口
+        # ports_index = [service.port for service in ServicePort
+        #                .objects(cluster__in=clusters_exists)]
         ports_index = [service.port for service in ServicePort
-                       .objects(cluster__in=clusters_exists)]
+                        .objects(cluster=cluster)]
 
         nfsServer_ip = cluster.host.k8s_param.get('K8SNfsServer')
         consensus = config['consensus_plugin']
+        external_port_start = cluster.external_port_start
 
-        return cluster, cluster_name, kube_config, ports_index, \
+        return cluster, cluster_name, kube_config, ports_index, external_port_start, \
             nfsServer_ip, consensus
 
     def create(self, cid, mapped_ports, host, config, user_id):
         try:
-            cluster, cluster_name, kube_config, ports_index, nfsServer_ip, \
-                consensus = self._get_cluster_info(cid, config)
+            cluster, cluster_name, kube_config, ports_index, external_port_start, \
+                nfsServer_ip, consensus = self._get_cluster_info(cid, config)
 
             operation = K8sClusterOperation(kube_config)
             containers = operation.deploy_cluster(cluster_name,
                                                   ports_index,
+                                                  external_port_start,
                                                   nfsServer_ip,
                                                   consensus)
         except Exception as e:
@@ -69,8 +75,8 @@ class ClusterOnKubernetes(ClusterBase):
 
     def delete(self, cid, worker_api, config):
         try:
-            cluster, cluster_name, kube_config, ports_index, nfsServer_ip,\
-                consensus = self._get_cluster_info(cid, config)
+            cluster, cluster_name, kube_config, ports_index, external_port_start,\
+                nfsServer_ip, consensus = self._get_cluster_info(cid, config)
 
             operation = K8sClusterOperation(kube_config)
             operation.delete_cluster(cluster_name,
@@ -113,8 +119,8 @@ class ClusterOnKubernetes(ClusterBase):
     def start(self, name, worker_api, mapped_ports, log_type, log_level,
               log_server, config):
         try:
-            cluster, cluster_name, kube_config, ports_index, nfsServer_ip, \
-                consensus = self._get_cluster_info(name, config)
+            cluster, cluster_name, kube_config, ports_index, external_port_start, \
+                nfsServer_ip, consensus = self._get_cluster_info(name, config)
 
             operation = K8sClusterOperation(kube_config)
             containers = operation.start_cluster(cluster_name, ports_index,
@@ -146,8 +152,8 @@ class ClusterOnKubernetes(ClusterBase):
     def stop(self, name, worker_api, mapped_ports, log_type, log_level,
              log_server, config):
         try:
-            cluster, cluster_name, kube_config, ports_index, nfsServer_ip, \
-                consensus = self._get_cluster_info(name, config)
+            cluster, cluster_name, kube_config, ports_index, external_port_start, \
+                nfsServer_ip, consensus = self._get_cluster_info(name, config)
 
             operation = K8sClusterOperation(kube_config)
             operation.stop_cluster(cluster_name,

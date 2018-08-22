@@ -21,27 +21,6 @@
         ],
         "org1": {
             "admin": {
-                "cert": "/first-network/crypto-config/peerOrganizations/org2/users/Admin@org2/msp/signcerts",
-                "key": "/first-network/crypto-config/peerOrganizations/org2/users/Admin@org2/msp/keystore"
-            },
-            "ca": "http://ca-org2:7054",
-            "mspid": "Org2MSP",
-            "name": "peerorg2",
-            "peer0": {
-                "events": "grpc://peer0-org2:7053",
-                "requests": "grpc://peer0-org2:7051",
-                "server-hostname": "peer0.org2",
-                "tls_cacerts": "/first-network/crypto-config/peerOrganizations/org2/peers/peer0.org2/tls/ca.crt"
-            },
-            "peer1": {
-                "events": "grpc://peer1-org2:7053",
-                "requests": "grpc://peer1-org2:7051",
-                "server-hostname": "peer1.org2",
-                "tls_cacerts": "/first-network/crypto-config/peerOrganizations/org2/peers/peer1.org2/tls/ca.crt"
-            }
-        },
-        "org2": {
-            "admin": {
                 "cert": "/first-network/crypto-config/peerOrganizations/org1/users/Admin@org1/msp/signcerts",
                 "key": "/first-network/crypto-config/peerOrganizations/org1/users/Admin@org1/msp/keystore"
             },
@@ -59,6 +38,27 @@
                 "requests": "grpc://peer1-org1:7051",
                 "server-hostname": "peer1.org1",
                 "tls_cacerts": "/first-network/crypto-config/peerOrganizations/org1/peers/peer1.org1/tls/ca.crt"
+            }
+        },
+        "org2": {
+            "admin": {
+                "cert": "/first-network/crypto-config/peerOrganizations/org2/users/Admin@org2/msp/signcerts",
+                "key": "/first-network/crypto-config/peerOrganizations/org2/users/Admin@org2/msp/keystore"
+            },
+            "ca": "http://ca-org2:7054",
+            "mspid": "Org2MSP",
+            "name": "peerorg2",
+            "peer0": {
+                "events": "grpc://peer0-org2:7053",
+                "requests": "grpc://peer0-org2:7051",
+                "server-hostname": "peer0.org2",
+                "tls_cacerts": "/first-network/crypto-config/peerOrganizations/org2/peers/peer0.org2/tls/ca.crt"
+            },
+            "peer1": {
+                "events": "grpc://peer1-org2:7053",
+                "requests": "grpc://peer1-org2:7051",
+                "server-hostname": "peer1.org2",
+                "tls_cacerts": "/first-network/crypto-config/peerOrganizations/org2/peers/peer1.org2/tls/ca.crt"
             }
         }
     },

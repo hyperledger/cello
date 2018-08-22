@@ -157,6 +157,9 @@ DEFAULT_TIMEOUT = 300
 NODETYPE_PEER = "peer"
 NODETYPE_ORDERER = "orderer"
 
+EXTERNAL_SUB_MIX=31000
+EXTERNAL_SUB_MAX=32000
+
 def json_decode(jsonstr):
     try:
         json_object = json.loads(jsonstr)
