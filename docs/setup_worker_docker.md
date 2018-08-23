@@ -1,6 +1,6 @@
 ## Setup Docker Host as a Worker Node
 
-TLDR: `WORKDER_TYPE=docker MASTER_NODE=x.x.x.x make setup-worker`
+TLDR: `WORKER_TYPE=docker MASTER_NODE=x.x.x.x make setup-worker`
 
 For the Worker Node with meeting the [system requirements](#system-requirements), three steps are required:
 
