@@ -3,6 +3,12 @@
   set_fact:
     fabricpath: "{{ pjroot }}/vars/{{ env }}"
 
+- name: Make sure that working directory exists
+  file:
+    path: "{{ pjroot }}/vars/{{ env }}/run"
+    state: "directory"
+    mode: 0775
+
 - stat:
     path: "{{ fabricpath }}/bin/cryptogen"
   register: binexists
