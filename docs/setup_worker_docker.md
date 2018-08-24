@@ -22,7 +22,6 @@ Edit systemd service config file `/lib/systemd/system/docker.service`, update th
 
 ```
 [Service]
-DOCKER_OPTS="$DOCKER_OPTS "
 ExecStart=/usr/bin/dockerd -H fd:// -H unix:///var/run/docker.sock -H tcp://0.0.0.0:2375 --default-ulimit=nofile=8192:16384 --default-ulimit=nproc=8192:16384
 ```
 

@@ -1,30 +1,29 @@
 # Tutorial
 
-
 ## Basic Concepts
 
-Have a look at the [terminology](./terminology.md) to understand the basic concepts.
+Have a look at the [terminology](terminology.md) to understand the basic concepts first.
 
 ## Setup a Cello Cluster
 
-Following the [setup steps](./setup.md) to start a Cello cluster.
+Following the [setup guideline](setup.md) to start a Cello cluster.
 
-After that, operators can interact with Cello through dashboard.
+After that, operators can interact with Cello through the operator dashboard.
 
-By default, the operator dashboard will listen on port `8080` at the Master Node, you can login with default administrator account of `admin:pass`.
+By default, the operator dashboard will listen on port `8080` at the Master Node, with default administrator account of `admin:pass`.
 
 ## Add a Host
 
-The first time you start Cello, there will be no hosts in the pool. There are two methods to add more hosts into the pool.
+The first time to open the operator dashboard, there will be no hosts. There are two methods to add more hosts into the pool.
 
-* Through the `Overview` page: Click the `+` button after the `Working Hosts` keyword;
+* Through the `Overview` page: Click the `+` button after the `Working Hosts`;
 * Through the `Hosts` page: Click the `Add Host` button at the top right corner.
 
-Then you will see a jumped-out dialog to input the setup info.
+Then you will see a jumped-out dialog to input the setup info according to the chosen type.
 
 ![dashboard add host](imgs/tutorial_add_host.png)
 
-Suppose it's a Native Docker server to import as a host, input those fields
+Suppose to import a native Docker server, you may need to input those fields
 
 * Name: docker_host
 * Daemon URL: `192.168.7.220:2375` (replace this with your docker host address)
@@ -117,26 +116,25 @@ After the smart contract installed, click "Instantiate" to deploy the smart cont
 
 ## Invoke/Query a Smart Contract
 
-In the 'Invoke' page, you can perform the contract call.
+In the 'Invoke' page, you can perform the contract call as the following.
 
-* Smart Contrac: fabric-example02
-* Funtion Name: invoke
-* Parameters: a, b, 100
-* Method: Invoke
+* Smart Contrac: `fabric-example02`
+* Function Name: `invoke`
+* Parameters: `a`, `b`, `100`
+* Method: `Invoke`
 
 ![Invoke a smart contract](imgs/tutorial_invoke_contract.png)
 
-Then we query the current value of a, should be 900 now
+Then we query the current value of `a`, which should be 900 now
 
 ![Query a smart contract](imgs/tutorial_query_contract.png)
 
-
 ## Dashboard for operator
 
-If you want to know more advanced operational skills, please continue to the [Operator Dashboard](./dashboard_operator.md).
+If you want to know more advanced operational skills, please continue to the [Operator Dashboard](dashboard_operator.md).
 
 ## Dashboard for user
 
-If you want to know more usage of chains and smart contracts, please continue to the [User Dashboard](./dashboard_user.md).
+If you want to know more usage of chains and smart contracts, please continue to the [User Dashboard](dashboard_user.md).
 
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
