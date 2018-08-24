@@ -58,6 +58,8 @@ class ClusterOnKubernetes(ClusterBase):
                 consensus = self._get_cluster_info(cid, config)
 
             operation = K8sClusterOperation(kube_config)
+            cluster_name = self.trim_cluster_name(cluster_name)
+
             containers = operation.deploy_cluster(cluster_name,
                                                   ports_index,
                                                   nfsServer_ip,
@@ -73,6 +75,7 @@ class ClusterOnKubernetes(ClusterBase):
                 consensus = self._get_cluster_info(cid, config)
 
             operation = K8sClusterOperation(kube_config)
+            cluster_name = self.trim_cluster_name(cluster_name)
             operation.delete_cluster(cluster_name,
                                      ports_index,
                                      nfsServer_ip,
@@ -103,6 +106,7 @@ class ClusterOnKubernetes(ClusterBase):
                                                               .k8s_param)
 
             operation = K8sClusterOperation(kube_config)
+            cluster_name = self.trim_cluster_name(cluster_name)
             services_urls = operation.get_services_urls(cluster_name)
         except Exception as e:
             logger.error("Failed to get Kubernetes services's urls: {}"
@@ -117,6 +121,7 @@ class ClusterOnKubernetes(ClusterBase):
                 consensus = self._get_cluster_info(name, config)
 
             operation = K8sClusterOperation(kube_config)
+            cluster_name = self.trim_cluster_name(cluster_name)
             containers = operation.start_cluster(cluster_name, ports_index,
                                                  nfsServer_ip, consensus)
 
@@ -150,6 +155,7 @@ class ClusterOnKubernetes(ClusterBase):
                 consensus = self._get_cluster_info(name, config)
 
             operation = K8sClusterOperation(kube_config)
+            cluster_name = self.trim_cluster_name(cluster_name)
             operation.stop_cluster(cluster_name,
                                    ports_index,
                                    nfsServer_ip,
@@ -177,3 +183,8 @@ class ClusterOnKubernetes(ClusterBase):
         else:
             logger.error("Failed to Restart Kubernetes Cluster")
             return None
+
+    def trim_cluster_name(self, cluster_name):
+        if cluster_name.find("_") != -1:
+            cluster_name = cluster_name.replace("_", "-")
+        return cluster_name.lower()
