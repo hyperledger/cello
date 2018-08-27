@@ -47,7 +47,7 @@
   "orderers": {
 {% for orderer in allorderers %}
     "{{ orderer.name }}": {
-      "url": "{{ fabric.tls|ternary('grpcs','grpc') }}://{{ orderer.name }}:7050",
+      "url": "{{ tls|ternary('grpcs','grpc') }}://{{ orderer.name }}:7050",
       "grpcOptions": {
         "ssl-target-name-override": "{{ orderer.name }}"
       },
@@ -60,8 +60,8 @@
   "peers": {
 {% for peer in allpeers|selectattr('org', 'equalto', item)|list %}
     "{{ peer.name }}": {
-      "url": "{{ fabric.tls|ternary('grpcs','grpc') }}://{{ peer.name }}:7051",
-      "eventUrl": "{{ fabric.tls|ternary('grpcs','grpc') }}://{{ peer.name }}:7053",
+      "url": "{{ tls|ternary('grpcs','grpc') }}://{{ peer.name }}:7051",
+      "eventUrl": "{{ tls|ternary('grpcs','grpc') }}://{{ peer.name }}:7053",
       "grpcOptions": {
         "ssl-target-name-override": "{{ peer.name }}"
       },
@@ -74,7 +74,7 @@
   "certificateAuthorities": {
 {% for ca in allcas|selectattr('org', 'equalto', item)|list %}
     "{{ ca.name }}": {
-      "url": "{{ fabric.tls|ternary('https','http') }}://{{ca.name}}:7054",
+      "url": "{{ tls|ternary('https','http') }}://{{ca.name}}:7054",
       "caName": "{{ ca.name }}",
       "httpOptions": {"verify": false}
     }{{ '' if loop.last else ',' }}

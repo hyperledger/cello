@@ -176,7 +176,7 @@ spec:
         - { name: "FABRIC_CA_SERVER_CA_NAME", value: "{{ ca.name}}" }
         - { name: "FABRIC_CA_SERVER_CA_KEYFILE", value: "/etc/hyperledger/fabric-ca-server-config/keyfiles/{{ ca.org }}/ca/ca_private.key" }
         - { name: "FABRIC_CA_SERVER_CA_CERTFILE", value: "/etc/hyperledger/fabric-ca-server-config/keyfiles/{{ ca.org }}/ca/ca.{{ ca.org }}-cert.pem" }
-{% if fabric.tls %}
+{% if tls %}
         - { name: "FABRIC_CA_SERVER_TLS_ENABLED", value: "true" }
         - { name: "FABRIC_CA_SERVER_TLS_KEYFILE", value: "/etc/hyperledger/fabric-ca-server-config/keyfiles/{{ ca.org }}/tlsca/tlsca_private.key" }
         - { name: "FABRIC_CA_SERVER_TLS_CERTFILE", value: "/etc/hyperledger/fabric-ca-server-config/keyfiles/{{ ca.org }}/tlsca/tlsca.{{ ca.org }}-cert.pem" }
@@ -252,6 +252,7 @@ spec:
 {% endif %}
       securityContext:
         privileged: true
+{% include './resource.j2' %}
 {% endif %}
     - name: {{ peer.name }}
       image: {{ fabric.repo.url }}fabric-peer:{{ fabric.baseimage_tag }}
@@ -264,18 +265,17 @@ spec:
         privileged: true
       env:
         - { name: "CORE_VM_ENDPOINT", value: "unix:///var/run/docker.sock" }
-        - { name: "FABRIC_CFG_PATH", value: "/etc/hyperledger/fabric/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}" }
+        - { name: "FABRIC_CFG_PATH", value: "/etc/hyperledger/fabric/artifacts/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}" }
         - { name: "CORE_LOGGING_LEVEL", value: "{{ fabric.logging_level | default('ERROR') }}" }
-        - { name: "CORE_PEER_ENDORSER_ENABLED", value: "true" }
         - { name: "CORE_PEER_GOSSIP_USELEADERELECTION",
             value: "{{ allpeers|selectattr('org','equalto',peer.org)|list|selectattr('role','equalto','leader')|list|length|int==0 }}" }
         - { name: "CORE_PEER_GOSSIP_ORGLEADER", value: "{{ (peer.role == "leader") | ternary('true','false') }}" }
         - { name: "CORE_PEER_PROFILE_ENABLED", value: "true" }
-        - { name: "CORE_PEER_TLS_ENABLED", value: "{{ fabric.tls | lower }}" }
-{% if fabric.tls %}
-        - { name: "CORE_PEER_TLS_CERT_FILE", value: "/etc/hyperledger/fabric/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}/tls/server.crt" }
-        - { name: "CORE_PEER_TLS_KEY_FILE", value: "/etc/hyperledger/fabric/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}/tls/server.key" }
-        - { name: "CORE_PEER_TLS_ROOTCERT_FILE", value: "/etc/hyperledger/fabric/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}/tls/ca.crt" }
+        - { name: "CORE_PEER_TLS_ENABLED", value: "{{ tls | lower }}" }
+{% if tls %}
+        - { name: "CORE_PEER_TLS_CERT_FILE", value: "/etc/hyperledger/fabric/artifacts/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}/tls/server.crt" }
+        - { name: "CORE_PEER_TLS_KEY_FILE", value: "/etc/hyperledger/fabric/artifacts/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}/tls/server.key" }
+        - { name: "CORE_PEER_TLS_ROOTCERT_FILE", value: "/etc/hyperledger/fabric/artifacts/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}/tls/ca.crt" }
 {% endif %}
         - { name: "CORE_PEER_ID", value: "{{ peer.name }}" }
         - { name: "CORE_PEER_GOSSIP_EXTERNALENDPOINT", value: "{{ peer.name }}:7051" }
@@ -284,18 +284,24 @@ spec:
 {% if project_version is version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
         - { name: "CORE_PEER_CHAINCODEADDRESS", value: "{{ peer.name }}:7052" }
         - { name: "CORE_PEER_CHAINCODELISTENADDRESS", value: "0.0.0.0:7052" }
+{% if mutualtls %}
+        - { name: "CORE_PEER_TLS_CLIENTAUTHREQUIRED", value: "true" }
+        - { name: "CORE_PEER_TLS_CLIENTROOTCAS_FILES", value: "{{ rootca | list | join (" ") }}" }
+        - { name: "CORE_PEER_TLS_CLIENTKEY_FILE", value: "/etc/hyperledger/fabric/artifacts/keyfiles/{{ peer.org }}/users/Admin@{{ peer.org }}/tls/client.key" }
+        - { name: "CORE_PEER_TLS_CLIENTCERT_FILE", value: "/etc/hyperledger/fabric/artifacts/keyfiles/{{ peer.org }}/users/Admin@{{ peer.org }}/tls/client.crt" }
+{% endif %}
 {% else %}
         - { name: "CORE_PEER_CHAINCODELISTENADDRESS", value: "{{ peer.name }}:7052" }
 {% endif %}
         - { name: "CORE_PEER_LOCALMSPID", value: "{{ peer.org }}" }
-        - { name: "CORE_PEER_MSPCONFIGPATH", value: "/etc/hyperledger/fabric/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}/msp" }
+        - { name: "CORE_PEER_MSPCONFIGPATH", value: "/etc/hyperledger/fabric/artifacts/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}/msp" }
 {% if fabric.peer_db == 'CouchDB' %}
         - { name: "CORE_LEDGER_STATE_STATEDATABASE", value: "CouchDB" }
         - { name: "CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS", value: "localhost:5984" }
 {% endif %}
 {% include './resource.j2' %}
       volumeMounts:
-        - { mountPath: "/etc/hyperledger/fabric", name: "task-pv-storage" }
+        - { mountPath: "/etc/hyperledger/fabric/artifacts", name: "task-pv-storage" }
         - { mountPath: "/var/run", name: "rundind" }
       command: ["peer"]
       args: ["node", "start"]
@@ -366,22 +372,29 @@ spec:
         - { name: "ORDERER_GENERAL_LOGLEVEL", value: "{{ fabric.logging_level | default('ERROR') | lower }}" }
         - { name: "ORDERER_GENERAL_LISTENADDRESS", value: "0.0.0.0" }
         - { name: "ORDERER_GENERAL_GENESISMETHOD", value: "file" }
-        - { name: "ORDERER_GENERAL_GENESISFILE", value: "/var/hyperledger/orderer/keyfiles/genesis.block" }
+        - { name: "ORDERER_GENERAL_GENESISFILE", value: "/etc/hyperledger/fabric/artifacts/keyfiles/genesis.block" }
         - { name: "ORDERER_GENERAL_LOCALMSPID", value: "{{ orderer.org }}" }
-        - { name: "ORDERER_GENERAL_LOCALMSPDIR", value: "/var/hyperledger/orderer/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}/msp" }
-        - { name: "ORDERER_GENERAL_TLS_CLIENTAUTHENABLED", value: "false" }
-        - { name: "ORDERER_GENERAL_TLS_ENABLED", value: "{{ fabric.tls | lower }}" }
-{% if fabric.tls %}
-        - { name: "ORDERER_GENERAL_TLS_PRIVATEKEY", value: "/var/hyperledger/orderer/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}/tls/server.key" }
-        - { name: "ORDERER_GENERAL_TLS_CERTIFICATE", value: "/var/hyperledger/orderer/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}/tls/server.crt" }
-        - { name: "ORDERER_GENERAL_TLS_ROOTCAS", value: "[/var/hyperledger/orderer/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}/tls/ca.crt]" }
+        - { name: "ORDERER_GENERAL_LOCALMSPDIR", value: "/etc/hyperledger/fabric/artifacts/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}/msp" }
+        - { name: "ORDERER_GENERAL_TLS_ENABLED", value: "{{ tls | lower }}" }
+{% if tls %}
+        - { name: "ORDERER_GENERAL_TLS_PRIVATEKEY", value: "/etc/hyperledger/fabric/artifacts/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}/tls/server.key" }
+        - { name: "ORDERER_GENERAL_TLS_CERTIFICATE", value: "/etc/hyperledger/fabric/artifacts/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}/tls/server.crt" }
+        - { name: "ORDERER_GENERAL_TLS_ROOTCAS", value: "[/etc/hyperledger/fabric/artifacts/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}/tls/ca.crt]" }
 {% endif %}
         - { name: "ORDERER_KAFKA_RETRY_SHORTINTERVAL", value: "1s" }
         - { name: "ORDERER_KAFKA_RETRY_SHORTTOTAL", value: "30s" }
         - { name: "ORDERER_KAFKA_VERBOSE", value: "true" }
+{% if mutualtls %}
+{% if project_version | version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+        - { name: "ORDERER_GENERAL_TLS_CLIENTAUTHREQUIRED", value: "true" }
+{% else %}
+        - { name: "ORDERER_GENERAL_TLS_CLIENTAUTHENABLED", value: "true" }
+{% endif %}
+        - { name: "ORDERER_GENERAL_TLS_CLIENTROOTCAS", value: "[{{ rootca | list | join (", ")}}]" }
+{% endif %}
 {% include './resource.j2' %}
       volumeMounts:
-        - { mountPath: "/var/hyperledger/orderer", name: "task-pv-storage" }
+        - { mountPath: "/etc/hyperledger/fabric/artifacts", name: "task-pv-storage" }
       command: ["orderer"]
 ---
 kind: Service

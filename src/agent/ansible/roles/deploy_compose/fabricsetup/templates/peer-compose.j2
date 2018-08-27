@@ -24,8 +24,8 @@ services:
       - CORE_PEER_GOSSIP_USELEADERELECTION={{ allpeers|selectattr('org','equalto',peer.org)|list|selectattr('role','equalto','leader')|list|length|int==0 }}
       - CORE_PEER_GOSSIP_ORGLEADER={{ (peer.role == "leader") | ternary('true','false') }}
       - CORE_PEER_PROFILE_ENABLED=true
-      - CORE_PEER_TLS_ENABLED={{ fabric.tls | lower }}
-{% if fabric.tls %}
+      - CORE_PEER_TLS_ENABLED={{ tls | lower }}
+{% if tls %}
       - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
       - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
       - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
@@ -35,6 +35,12 @@ services:
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT={{ peer.name }}:7051
       - CORE_PEER_LOCALMSPID={{ peer.org }}
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
+{% if mutualtls %}
+      - CORE_PEER_TLS_CLIENTAUTHREQUIRED=true
+      - CORE_PEER_TLS_CLIENTROOTCAS_FILES={{ rootca | list | join (" ") }}
+      - CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/fabric/artifacts/keyfiles/{{ peer.org }}/users/Admin@{{ peer.org }}/tls/client.key
+      - CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/fabric/artifacts/keyfiles/{{ peer.org }}/users/Admin@{{ peer.org }}/tls/client.crt
+{% endif %}
 {% if fabric.peer_db == 'CouchDB' %}
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb-{{ peer.name }}:5984

@@ -16,13 +16,16 @@ services:
       - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/allorgs/genesis.block
       - ORDERER_GENERAL_LOCALMSPID={{ orderer.org }}
       - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
-      - ORDERER_GENERAL_TLS_ENABLED={{ fabric.tls | lower }}
-{% if fabric.tls %}
+      - ORDERER_GENERAL_TLS_ENABLED={{ tls | lower }}
+{% if tls %}
       - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
       - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
       - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
 {% endif %}
-      - ORDERER_GENERAL_TLS_CLIENTAUTHENABLED=false
+{% if mutualtls %}
+      - ORDERER_GENERAL_TLS_CLIENTAUTHREQUIRED=true
+      - ORDERER_GENERAL_TLS_CLIENTROOTCAS=[{{ rootca | list | join (", ")}}]
+{% endif %}
       - ORDERER_KAFKA_RETRY_SHORTINTERVAL=1s
       - ORDERER_KAFKA_RETRY_SHORTTOTAL=30s
       - ORDERER_KAFKA_VERBOSE=true

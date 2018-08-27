@@ -7,18 +7,23 @@
 {% set tag = fabric.baseimage_tag.split('-') %}
 {% set project_version = tag[1] %}
 {% endif %}
-{% if fabric.tls %}
-export CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/allorgs/keyfiles/{{ clipeer.org }}/peers/{{ clipeer.name }}.{{ clipeer.org }}/tls/server.key
-export CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/allorgs/keyfiles/{{ clipeer.org }}/peers/{{ clipeer.name }}.{{ clipeer.org }}/tls/ca.crt
+{% if tls %}
+export CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/artifacts/keyfiles/{{ clipeer.org }}/peers/{{ clipeer.name }}.{{ clipeer.org }}/tls/server.key
+export CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/artifacts/keyfiles/{{ clipeer.org }}/peers/{{ clipeer.name }}.{{ clipeer.org }}/tls/ca.crt
 export CORE_PEER_ID={{ clipeer.name }}
 export CORE_PEER_ADDRESS={{ clipeer.name }}:7051
 export CORE_PEER_LISTENADDRESS={{ clipeer.name }}:7051
 export CORE_PEER_CHAINCODELISTENADDRESS={{ clipeer.name }}:7052
 export CORE_PEER_LOCALMSPID={{ clipeer.org }}
-export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/allorgs/keyfiles/{{ clipeer.org }}/users/Admin@{{ clipeer.org }}/msp
+export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/artifacts/keyfiles/{{ clipeer.org }}/users/Admin@{{ clipeer.org }}/msp
+{% if mutualtls %}
+export CORE_PEER_TLS_CLIENTAUTHREQUIRED=true
+export CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/fabric/artifacts/keyfiles/{{ clipeer.org }}/users/Admin@{{ clipeer.org }}/tls/client.key
+export CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/fabric/artifacts/keyfiles/{{ clipeer.org }}/users/Admin@{{ clipeer.org }}/tls/client.crt
+{% endif %}
 
 # Run the peer channel create command
-cd /etc/hyperledger/allorgs/keyfiles
+cd /etc/hyperledger/fabric/artifacts/keyfiles
 {% if project_version is version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
 TIMEOUT=240s
 {% else %}
@@ -26,8 +31,13 @@ TIMEOUT=240
 {% endif %}
 
 peer channel create -o {{ cliorderer.name }}:7050 -c firstchannel \
-  -f /etc/hyperledger/allorgs/keyfiles/firstchannel.tx --tls true --timeout $TIMEOUT \
-  --cafile /etc/hyperledger/allorgs/keyfiles/{{ cliorderer.org }}/orderers/{{ cliorderer.name }}.{{ cliorderer.org }}/msp/tlscacerts/tlsca.{{ cliorderer.org }}-cert.pem
+  -f /etc/hyperledger/fabric/artifacts/keyfiles/firstchannel.tx --tls true --timeout $TIMEOUT \
+{% if mutualtls %}
+  --clientauth \
+  --certfile /etc/hyperledger/fabric/artifacts/keyfiles/{{ clipeer.org }}/users/Admin@{{ clipeer.org }}/tls/client.crt \
+  --keyfile /etc/hyperledger/fabric/artifacts/keyfiles/{{ clipeer.org }}/users/Admin@{{ clipeer.org }}/tls/client.key \
+{% endif %}
+  --cafile /etc/hyperledger/fabric/artifacts/keyfiles/{{ cliorderer.org }}/orderers/{{ cliorderer.name }}.{{ cliorderer.org }}/msp/tlscacerts/tlsca.{{ cliorderer.org }}-cert.pem
 
 export CORE_PEER_TLS_ENABLED=true
 export GOPATH=/opt/gopath
@@ -36,18 +46,23 @@ cp ../firstcode.go $GOPATH/src/chaincode
 
 {% for peer in allpeers %}
 
-export CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/allorgs/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}/tls/server.key
-export CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/allorgs/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}/tls/ca.crt
+export CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/artifacts/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}/tls/server.key
+export CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/artifacts/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}/tls/ca.crt
 export CORE_PEER_ID={{ peer.name }}
 export CORE_PEER_ADDRESS={{ peer.name }}:7051
 export CORE_PEER_LISTENADDRESS={{ peer.name }}:7051
 export CORE_PEER_CHAINCODELISTENADDRESS={{ peer.name }}:7052
 export CORE_PEER_LOCALMSPID={{ peer.org }}
-export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/allorgs/keyfiles/{{ peer.org }}/users/Admin@{{ peer.org }}/msp
+export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/artifacts/keyfiles/{{ peer.org }}/users/Admin@{{ peer.org }}/msp
+{% if mutualtls %}
+export CORE_PEER_TLS_CLIENTAUTHREQUIRED=true
+export CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/fabric/artifacts/keyfiles/{{ peer.org }}/users/Admin@{{ peer.org }}/tls/client.key
+export CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/fabric/artifacts/keyfiles/{{ peer.org }}/users/Admin@{{ peer.org }}/tls/client.crt
+{% endif %}
 
-peer channel join -b firstchannel.block
+peer channel join -b firstchannel.block {% if mutualtls %} --clientauth --certfile /etc/hyperledger/fabric/artifacts/keyfiles/{{ peer.org }}/users/Admin@{{ peer.org }}/tls/client.crt --keyfile /etc/hyperledger/fabric/artifacts/keyfiles/{{ peer.org }}/users/Admin@{{ peer.org }}/tls/client.key {% endif %}
 
-peer chaincode install -n firstchaincode -v 1.0 -p chaincode
+peer chaincode install --tls {% if mutualtls %} --clientauth --certfile /etc/hyperledger/fabric/artifacts/keyfiles/{{ peer.org }}/users/Admin@{{ peer.org }}/tls/client.crt --keyfile /etc/hyperledger/fabric/artifacts/keyfiles/{{ peer.org }}/users/Admin@{{ peer.org }}/tls/client.key {% endif %} -n firstchaincode -v 1.0 -p chaincode
 
 {% endfor %}
 
@@ -55,17 +70,27 @@ peer chaincode install -n firstchaincode -v 1.0 -p chaincode
 echo '-------------- Instantiate chaincode'
 
 {% set chainpeer = allpeers[0] %}
-export CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/allorgs/keyfiles/{{ chainpeer.org }}/peers/{{ chainpeer.name }}.{{ chainpeer.org }}/tls/server.key
-export CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/allorgs/keyfiles/{{ chainpeer.org }}/peers/{{ chainpeer.name }}.{{ chainpeer.org }}/tls/ca.crt
+export CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/artifacts/keyfiles/{{ chainpeer.org }}/peers/{{ chainpeer.name }}.{{ chainpeer.org }}/tls/server.key
+export CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/artifacts/keyfiles/{{ chainpeer.org }}/peers/{{ chainpeer.name }}.{{ chainpeer.org }}/tls/ca.crt
 export CORE_PEER_ID={{ chainpeer.name }}
 export CORE_PEER_ADDRESS={{ chainpeer.name }}:7051
 export CORE_PEER_LISTENADDRESS={{ chainpeer.name }}:7051
 export CORE_PEER_CHAINCODELISTENADDRESS={{ chainpeer.name }}:7052
 export CORE_PEER_LOCALMSPID={{ chainpeer.org }}
-export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/allorgs/keyfiles/{{ chainpeer.org }}/users/Admin@{{ chainpeer.org }}/msp
+export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/artifacts/keyfiles/{{ chainpeer.org }}/users/Admin@{{ chainpeer.org }}/msp
+{% if mutualtls %}
+export CORE_PEER_TLS_CLIENTAUTHREQUIRED=true
+export CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/fabric/artifacts/keyfiles/{{ chainpeer.org }}/users/Admin@{{ chainpeer.org }}/tls/client.key
+export CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/fabric/artifacts/keyfiles/{{ chainpeer.org }}/users/Admin@{{ chainpeer.org }}/tls/client.crt
+{% endif %}
 
 peer chaincode instantiate -o {{ cliorderer.name }}:7050 --tls true \
-  --cafile /etc/hyperledger/allorgs/keyfiles/{{ cliorderer.org }}/orderers/{{ cliorderer.name }}.{{ cliorderer.org }}/msp/tlscacerts/tlsca.{{ cliorderer.org }}-cert.pem \
+{% if mutualtls %}
+  --clientauth \
+  --certfile /etc/hyperledger/fabric/artifacts/keyfiles/{{ chainpeer.org }}/users/Admin@{{ chainpeer.org }}/tls/client.crt \
+  --keyfile /etc/hyperledger/fabric/artifacts/keyfiles/{{ chainpeer.org }}/users/Admin@{{ chainpeer.org }}/tls/client.key \
+{% endif %}
+  --cafile /etc/hyperledger/fabric/artifacts/keyfiles/{{ cliorderer.org }}/orderers/{{ cliorderer.name }}.{{ cliorderer.org }}/msp/tlscacerts/tlsca.{{ cliorderer.org }}-cert.pem \
   -C firstchannel -n firstchaincode -v 1.0 -c '{"Args":["init","a", "100", "b","200"]}' -P "AND ({{ orgmembers }})"
 
 # Query the chaincode
@@ -79,10 +104,10 @@ export CORE_PEER_ADDRESS={{ clipeer.name }}:7051
 export CORE_PEER_LISTENADDRESS={{ clipeer.name }}:7051
 export CORE_PEER_CHAINCODELISTENADDRESS={{ clipeer.name }}:7052
 export CORE_PEER_LOCALMSPID={{ clipeer.org }}
-export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/allorgs/keyfiles/{{ clipeer.org }}/users/Admin@{{ clipeer.org }}/msp
+export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/artifacts/keyfiles/{{ clipeer.org }}/users/Admin@{{ clipeer.org }}/msp
 
 # Run the peer channel create command
-cd /etc/hyperledger/allorgs/keyfiles
+cd /etc/hyperledger/fabric/artifacts/keyfiles
 {% if project_version is version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
 TIMEOUT=240s
 {% else %}
@@ -90,7 +115,7 @@ TIMEOUT=240
 {% endif %}
 
 peer channel create -o {{ cliorderer.name }}:7050 -c firstchannel \
-  -f /etc/hyperledger/allorgs/keyfiles/firstchannel.tx --timeout $TIMEOUT
+  -f /etc/hyperledger/fabric/artifacts/keyfiles/firstchannel.tx --timeout $TIMEOUT
 
 export CORE_PEER_TLS_ENABLED=false
 export GOPATH=/opt/gopath
@@ -105,7 +130,7 @@ export CORE_PEER_LISTENADDRESS={{ peer.name }}:7051
 export CORE_PEER_CHAINCODELISTENADDRESS={{ peer.name }}:7052
 
 export CORE_PEER_LOCALMSPID={{ peer.org }}
-export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/allorgs/keyfiles/{{ peer.org }}/users/Admin@{{ peer.org }}/msp
+export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/artifacts/keyfiles/{{ peer.org }}/users/Admin@{{ peer.org }}/msp
 
 peer channel join -b firstchannel.block
 
@@ -122,7 +147,7 @@ export CORE_PEER_ADDRESS={{ chainpeer.name }}:7051
 export CORE_PEER_LISTENADDRESS={{ chainpeer.name }}:7051
 export CORE_PEER_CHAINCODELISTENADDRESS={{ chainpeer.name }}:7052
 export CORE_PEER_LOCALMSPID={{ chainpeer.org }}
-export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/allorgs/keyfiles/{{ chainpeer.org }}/users/Admin@{{ chainpeer.org }}/msp
+export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/artifacts/keyfiles/{{ chainpeer.org }}/users/Admin@{{ chainpeer.org }}/msp
 
 peer chaincode instantiate -o {{ cliorderer.name }}:7050 \
   -C firstchannel -n firstchaincode -v 1.0 -c '{"Args":["init","a", "100", "b","200"]}' -P "OR ({{ orgmembers }})"

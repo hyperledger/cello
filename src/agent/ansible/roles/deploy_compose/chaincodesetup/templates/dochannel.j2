@@ -1,6 +1,6 @@
 #! /bin/bash
 
-{% if fabric.tls %}
+{% if tls %}
 
 # Set up environment varilables first
 
@@ -10,11 +10,21 @@ export CORE_PEER_ID={{ clipeer.name }}
 export CORE_PEER_ADDRESS={{ clipeer.name }}:7051
 export CORE_PEER_LOCALMSPID={{ clipeer.org }}
 export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/allorgs/{{ clipeer.org }}/users/Admin@{{ clipeer.org }}/msp
+{% if mutualtls %}
+export CORE_PEER_TLS_CLIENTAUTHREQUIRED=true
+export CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/fabric/artifacts/keyfiles/{{ clipeer.org }}/users/Admin@{{ clipeer.org }}/tls/client.key
+export CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/fabric/artifacts/keyfiles/{{ clipeer.org }}/users/Admin@{{ clipeer.org }}/tls/client.crt
+{% endif %}
 
 # Run the peer channel create command
 cd /etc/hyperledger/allorgs
 peer channel create -o {{ cliorderer.name }}:7050 -c firstchannel \
   -f /etc/hyperledger/allorgs/firstchannel.tx --tls true --timeout 240 \
+{% if mutualtls %}
+  --clientauth \
+  --certfile /etc/hyperledger/fabric/artifacts/keyfiles/{{ clipeer.org }}/users/Admin@{{ clipeer.org }}/tls/client.crt \
+  --keyfile /etc/hyperledger/fabric/artifacts/keyfiles/{{ clipeer.org }}/users/Admin@{{ clipeer.org }}/tls/client.key \
+{% endif %}
   --cafile /etc/hyperledger/allorgs/{{ cliorderer.org }}/orderers/{{ cliorderer.name }}.{{ cliorderer.org }}/msp/tlscacerts/tlsca.{{ cliorderer.org }}-cert.pem
 
 export CORE_PEER_TLS_ENABLED=true
@@ -29,10 +39,15 @@ export CORE_PEER_ID={{ peer.name }}
 export CORE_PEER_ADDRESS={{ peer.name }}:7051
 export CORE_PEER_LOCALMSPID={{ peer.org }}
 export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/allorgs/{{ peer.org }}/users/Admin@{{ peer.org }}/msp
+{% if mutualtls %}
+export CORE_PEER_TLS_CLIENTAUTHREQUIRED=true
+export CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/fabric/artifacts/keyfiles/{{ peer.org }}/users/Admin@{{ peer.org }}/tls/client.key
+export CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/fabric/artifacts/keyfiles/{{ peer.org }}/users/Admin@{{ peer.org }}/tls/client.crt
+{% endif %}
 
-peer channel join -b firstchannel.block
+peer channel join -b firstchannel.block {% if mutualtls %} --clientauth --certfile /etc/hyperledger/fabric/artifacts/keyfiles/{{ peer.org }}/users/Admin@{{ peer.org }}/tls/client.crt --keyfile /etc/hyperledger/fabric/artifacts/keyfiles/{{ peer.org }}/users/Admin@{{ peer.org }}/tls/client.key {% endif %}
 
-peer chaincode install -n firstchaincode -v 1.0 -p chaincode
+peer chaincode install {% if mutualtls %} --clientauth --certfile /etc/hyperledger/fabric/artifacts/keyfiles/{{ peer.org }}/users/Admin@{{ peer.org }}/tls/client.crt --keyfile /etc/hyperledger/fabric/artifacts/keyfiles/{{ peer.org }}/users/Admin@{{ peer.org }}/tls/client.key {% endif %} -n firstchaincode -v 1.0 -p chaincode
 
 {% endfor %}
 
@@ -46,8 +61,18 @@ export CORE_PEER_ID={{ chainpeer.name }}
 export CORE_PEER_ADDRESS={{ chainpeer.name }}:7051
 export CORE_PEER_LOCALMSPID={{ chainpeer.org }}
 export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/allorgs/{{ chainpeer.org }}/users/Admin@{{ chainpeer.org }}/msp
+{% if mutualtls %}
+export CORE_PEER_TLS_CLIENTAUTHREQUIRED=true
+export CORE_PEER_TLS_CLIENTKEY_FILE=/etc/hyperledger/fabric/artifacts/keyfiles/{{ chainpeer.org }}/users/Admin@{{ chainpeer.org }}/tls/client.key
+export CORE_PEER_TLS_CLIENTCERT_FILE=/etc/hyperledger/fabric/artifacts/keyfiles/{{ chainpeer.org }}/users/Admin@{{ chainpeer.org }}/tls/client.crt
+{% endif %}
 
 peer chaincode instantiate -o {{ cliorderer.name }}:7050 --tls true \
+{% if mutualtls %}
+  --clientauth \
+  --certfile /etc/hyperledger/fabric/artifacts/keyfiles/{{ chainpeer.org }}/users/Admin@{{ chainpeer.org }}/tls/client.crt \
+  --keyfile /etc/hyperledger/fabric/artifacts/keyfiles/{{ chainpeer.org }}/users/Admin@{{ chainpeer.org }}/tls/client.key \
+{% endif %}
   --cafile /etc/hyperledger/allorgs/{{ cliorderer.org }}/orderers/{{ cliorderer.name }}.{{ cliorderer.org }}/msp/tlscacerts/tlsca.{{ cliorderer.org }}-cert.pem \
   -C firstchannel -n firstchaincode -v 1.0 -c '{"Args":["init","a", "100", "b","200"]}' -P "OR ({{ orgmembers }})"
 
