@@ -82,15 +82,14 @@ spec:
          #  subPath: channel-artifacts
          - mountPath: /etc/hyperledger/fabric/msp
            name: certificate
-           #subPath: crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp
-           subPath: peers/peer0.org2/msp
+           subPath: peers/peer0.org2.example.com/msp
          - mountPath: /etc/hyperledger/fabric/tls
            name: certificate
            #subPath: crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/
-           subPath: peers/peer0.org2/tls
+           subPath: peers/peer0.org2.example.com/tls
          - mountPath: /var/hyperledger/production
            name: certificate
-           subPath: peers/peer0.org2/production
+           subPath: peers/peer0.org2.example.com/production
          - mountPath: /host/var/run
            name: run
       volumes:

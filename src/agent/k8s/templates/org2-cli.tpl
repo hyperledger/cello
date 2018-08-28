@@ -77,10 +77,10 @@ spec:
           # when enable tls , should mount orderer tls ca
            - mountPath: /etc/hyperledger/fabric/msp
              name: certificate
-             subPath: users/Admin@org2/msp
+             subPath: users/Admin@org2.example.com/msp
            - mountPath: /etc/hyperledger/fabric/tls
              name: certificate
-             subPath: users/Admin@org2/tls
+             subPath: users/Admin@org2.example.com/tls
            - mountPath: /opt/gopath/src/github.com/hyperledger/fabric/peer/resources/chaincodes
              name: resources
              subPath: chaincodes

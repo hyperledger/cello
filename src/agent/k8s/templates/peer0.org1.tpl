@@ -77,20 +77,16 @@ spec:
         command: ["/bin/bash", "-c", "--"]
         args: ["sleep 5; peer node start"]
         volumeMounts:
-         #- mountPath: /opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
-         #  name: certificate
-         #  subPath: channel-artifacts
          - mountPath: /etc/hyperledger/fabric/msp
            name: certificate
-           #subPath: crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp
-           subPath: peers/peer0.org1/msp
+           subPath: peers/peer0.org1.example.com/msp
          - mountPath: /etc/hyperledger/fabric/tls
            name: certificate
            #subPath: crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/
-           subPath: peers/peer0.org1/tls
+           subPath: peers/peer0.org1.example.com/tls
          - mountPath: /var/hyperledger/production
            name: certificate
-           subPath: peers/peer0.org1/production
+           subPath: peers/peer0.org1.example.com/production
          - mountPath: /host/var/run
            name: run
       volumes:
