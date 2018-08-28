@@ -113,13 +113,10 @@ class K8sClusterOperation():
 
     def _pod_exec_command(self, pod_name, namespace, command):
         try:
-            bash_command = ['/bin/bash']
+            bash_command = ['/bin/bash', '-c', command]
             resp = stream(self.corev1client.connect_get_namespaced_pod_exec,
                           pod_name, namespace, command=bash_command,
-                          stderr=True, stdin=True, stdout=True,
-                          tty=False, _preload_content=False)
-
-            resp.write_stdin(command + "\n")
+                          stdout=True)
 
             logger.debug(resp)
         except client.rest.ApiException as e:
@@ -375,41 +372,46 @@ class K8sClusterOperation():
             time.sleep(3)
 
     def _setup_cluster(self, cluster_name):
-        pod_commands_1 = ["peer channel create -c businesschannel -o \
+        pod_commands_1 = ["peer channel create -c mychannel -o \
                           orderer0:7050 \
-                          -f resources/channel-artifacts/channel.tx",
-                          "cp ./businesschannel.block \
+                          -f resources/channel-artifacts/mychannel.tx",
+                          "cp ./mychannel.block \
                           ./resources/channel-artifacts -rf",
                           "env CORE_PEER_ADDRESS=peer0-org1:7051 \
                           peer channel join -b \
-                          resources/channel-artifacts/businesschannel.block",
+                          resources/channel-artifacts/mychannel.block",
                           "env CORE_PEER_ADDRESS=peer1-org1:7051 \
                           peer channel join -b \
-                          resources/channel-artifacts/businesschannel.block",
+                          resources/channel-artifacts/mychannel.block",
                           "peer channel update -o \
-                          orderer0:7050 -c businesschannel \
+                          orderer0:7050 -c mychannel \
                           -f resources/channel-artifacts/Org1MSPanchors.tx"
                           ]
 
         pod_commands_2 = ["env CORE_PEER_ADDRESS=peer0-org2:7051 \
                           peer channel join -b \
-                          resources/channel-artifacts/businesschannel.block",
+                          resources/channel-artifacts/mychannel.block",
                           "env CORE_PEER_ADDRESS=peer1-org2:7051 \
                           peer channel join -b \
-                          resources/channel-artifacts/businesschannel.block",
+                          resources/channel-artifacts/mychannel.block",
                           "peer channel update -o \
-                          orderer0:7050 -c businesschannel \
+                          orderer0:7050 -c mychannel \
                           -f resources/channel-artifacts/Org2MSPanchors.tx"]
 
         pod_list = self._filter_cli_pod_name(cluster_name)
         if len(pod_list) == 2:
-            for cmd in pod_commands_1:
-                self._pod_exec_command(pod_list[0], cluster_name, cmd)
-                time.sleep(3)
+            for pod in pod_list:
+                if "org1" in pod:
+                    for cmd in pod_commands_1:
+                        time.sleep(10)
+                        self._pod_exec_command(pod, cluster_name, cmd)
 
-            for cmd in pod_commands_2:
-                self._pod_exec_command(pod_list[1], cluster_name, cmd)
-                time.sleep(3)
+                elif "org2" in pod:
+                    for cmd in pod_commands_2:
+                        time.sleep(10)
+                        self._pod_exec_command(pod, cluster_name, cmd)
+                else:
+                    logger.info("Unknown cli pod: {}  was found".format(pod))
         else:
             e = ("Cannot not find Kubernetes cli pods.")
             logger.error("Kubernetes cluster creation error msg: {}".format(e))
@@ -433,7 +435,7 @@ class K8sClusterOperation():
         if ports_index:
             current_port = int(max(ports_index)) + 10
         else:
-            current_port = 30000
+            current_port = 30500
         cluster_ports = {}
         current_path = os.path.dirname(__file__)
         templates_path = os.path.join(current_path, "templates")
@@ -546,12 +548,13 @@ class K8sClusterOperation():
 
         time.sleep(3)
 
+        # Disable explorer
         # fabric explorer at last
-        file_data = self._render_config_file("fabric-1-0-explorer.tpl",
-                                             cluster_name, cluster_ports,
-                                             nfsServer_ip)
-        yaml_data = yaml.load_all(file_data)
-        self._deploy_k8s_resource(yaml_data)
+        # file_data = self._render_config_file("fabric-1-0-explorer.tpl",
+        #                                      cluster_name, cluster_ports,
+        #                                      nfsServer_ip)
+        # yaml_data = yaml.load_all(file_data)
+        # self._deploy_k8s_resource(yaml_data)
 
         time.sleep(3)
 
