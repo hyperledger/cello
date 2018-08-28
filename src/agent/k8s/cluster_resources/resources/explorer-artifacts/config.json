@@ -19,7 +19,7 @@
                 "url": "grpc://orderer0:7050"
             }
         ],
-        "org1": {
+        "org2": {
             "admin": {
                 "cert": "/first-network/crypto-config/peerOrganizations/org2/users/Admin@org2/msp/signcerts",
                 "key": "/first-network/crypto-config/peerOrganizations/org2/users/Admin@org2/msp/keystore"
@@ -40,7 +40,7 @@
                 "tls_cacerts": "/first-network/crypto-config/peerOrganizations/org2/peers/peer1.org2/tls/ca.crt"
             }
         },
-        "org2": {
+        "org1": {
             "admin": {
                 "cert": "/first-network/crypto-config/peerOrganizations/org1/users/Admin@org1/msp/signcerts",
                 "key": "/first-network/crypto-config/peerOrganizations/org1/users/Admin@org1/msp/keystore"
