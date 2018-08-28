@@ -160,6 +160,10 @@ class K8sClusterOperation():
             for addr in i.status.addresses:
                 if addr.type == "ExternalIP":
                     ip = addr.address
+                elif addr.type == "InternalIP":
+                    ip = addr.address
+                else:
+                    continue
         return ip
 
     def _get_node_ip_of_service(self, service_name):
@@ -173,21 +177,57 @@ class K8sClusterOperation():
             if i.metadata.name.startswith(service_name):
                 return self._get_node_ip(i.spec.node_name)
 
-    def _get_service_external_port(self, service_name):
+    def _get_service_external_port(self, namespace, ip):
         ret = self.corev1client.list_service_for_all_namespaces(watch=False)
+        results = {}
+        # result template
+        r_template = ip + ":" + "{}"
         for i in ret.items:
-            if i.metadata.name == service_name:
-                external_port = ""
+            if i.metadata.namespace == namespace:
+                tmp_name = i.metadata.name.replace("-", "_")
                 if i.metadata.name.startswith("peer"):
                     for port in i.spec.ports:
+                        # transfer port name which can be recognized.
                         if port.name == "externale-listen-endpoint":
                             external_port = port.node_port
-                else:
-                    for port in i.spec.ports:
-                        # these services only have one port
-                        external_port = port.node_port
+                            name = tmp_name + "_grpc"
+                            value = r_template.format(external_port)
 
-        return external_port
+                        elif port.name == "listen":
+                            event_port = port.node_port
+                            name = tmp_name + "_event"
+                            value = r_template.format(event_port)
+
+                        else:
+                            continue
+
+                        results[name] = value
+
+                elif i.metadata.name.startswith("ca"):
+                    name = tmp_name + "_ecap"
+                    for port in i.spec.ports:
+                        _port = port.node_port
+                        value = r_template.format(_port)
+                        results[name] = value
+
+                elif i.metadata.name.startswith("orderer"):
+                    name = "orderer"
+                    for port in i.spec.ports:
+                        _port = port.node_port
+                        value = r_template.format(_port)
+                        results[name] = value
+
+                elif i.metadata.name.startswith("fabric-explorer"):
+                    name = "dashboard"
+                    for port in i.spec.ports:
+                        _port = port.node_port
+                        value = r_template.format(_port)
+                        results[name] = value
+
+                else:
+                    continue
+
+        return results
 
     def _create_deployment(self, namespace, data, **kwargs):
         try:
@@ -377,20 +417,16 @@ class K8sClusterOperation():
 
     def get_services_urls(self, cluster_name):
         ret = self.corev1client.list_service_for_all_namespaces(watch=False)
-        service_url = {}
-        value = ""
+        service = ""
         for i in ret.items:
             if i.metadata.namespace == cluster_name:
-                service_name = i.metadata.name
-                value = self._get_node_ip_of_service(service_name) + ":" + \
-                    str(self._get_service_external_port(service_name))
-                service_url[service_name] = value
+                service = i.metadata.name
+                break
 
-                # Use fabric-explorer as dashboard
-                if "fabric-explorer" in service_name:
-                    service_url["dashboard"] = value
-
-        return service_url
+        service_ip = self._get_node_ip_of_service(service)
+        service_urls = self._get_service_external_port(cluster_name,
+                                                       service_ip)
+        return service_urls
 
     def _get_cluster_ports(self, ports_index):
         logger.debug("Current exsiting cluster ports= {}".format(ports_index))
@@ -402,19 +438,19 @@ class K8sClusterOperation():
         current_path = os.path.dirname(__file__)
         templates_path = os.path.join(current_path, "templates")
         for (dir_path, dir_name, file_list) in os.walk(templates_path):
-            for file in file_list:
-                # pvc and namespace files do not have port mapping
-                if ("pvc" not in file and "namespace" not in file and
-                   "cli" not in file):
-                    if "peer" in file:
+            for f in file_list:
+                # pvc and namespace fs do not have port mapping
+                if ("pvc" not in f and "namespace" not in f and
+                   "cli" not in f):
+                    if "peer" in f:
                         peers_ports = {}
                         peers_ports["externalPort"] = str(current_port)
                         peers_ports["chaincodePort"] = str(current_port + 1)
                         peers_ports["nodePort"] = str(current_port + 2)
                         current_port = current_port + 3
-                        cluster_ports[file] = peers_ports
+                        cluster_ports[f] = peers_ports
                     else:
-                        cluster_ports[file] = str(current_port)
+                        cluster_ports[f] = str(current_port)
                         current_port = current_port + 1
         logger.debug("return generated cluster ports= {}"
                      .format(cluster_ports))
