@@ -75,7 +75,7 @@ services:
       - RESTFUL_SERVER=operator-dashboard:8080
       - DEBUG=node:*
       - DEV=$DEV
-      - LOG_LEVEL=$LOG_LEVEL
+      - LOG_LEVEL=DEBUG
       - ENABLE_EMAIL_ACTIVE=$ENABLE_EMAIL_ACTIVE
       - SMTP_SERVER=$SMTP_SERVER
       - SMTP_PORT=$SMTP_PORT

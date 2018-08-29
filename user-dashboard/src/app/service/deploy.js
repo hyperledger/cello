@@ -45,10 +45,19 @@ class DeployService extends Service {
     const { ctx, config } = this;
     const deploy = await ctx.model.SmartContractDeploy.findOne({ _id: deployId }).populate('smartContractCode smartContract chain');
     const chainId = deploy.chain._id.toString();
+    const chain = await ctx.model.Chain.findOne({ _id: chainId });
     const chainRootDir = `${config.dataDir}/${ctx.user.id}/chains/${chainId}`;
     const keyValueStorePath = `${chainRootDir}/client-kvs`;
-    const network = await ctx.service.chain.generateNetwork(chainId);
-    const result = await ctx.invokeChainCode(network, keyValueStorePath, ['peer1'], config.default.channelName, deploy.name, functionName, args, ctx.user.username, 'org1');
+    const network = await ctx.service.chain.generateNetwork(chainId, chain.type);
+    let peers = ['peer1'];
+    switch (chain.type) {
+      case 'fabric-1.2':
+        peers = ['peer0.org1.example.com'];
+        break;
+      default:
+        break;
+    }
+    const result = await ctx.invokeChainCode(network, keyValueStorePath, peers, config.default.channelName, deploy.name, functionName, args, ctx.user.username, 'org1', chain.type);
     if (result.success) {
       await ctx.model.Operation.create({
         chain: chainId,
@@ -81,10 +90,19 @@ class DeployService extends Service {
     const { ctx, config } = this;
     const deploy = await ctx.model.SmartContractDeploy.findOne({ _id: deployId }).populate('smartContractCode smartContract chain');
     const chainId = deploy.chain._id.toString();
+    const chain = await ctx.model.Chain.findOne({ _id: chainId });
     const chainRootDir = `${config.dataDir}/${ctx.user.id}/chains/${chainId}`;
     const keyValueStorePath = `${chainRootDir}/client-kvs`;
-    const network = await ctx.service.chain.generateNetwork(chainId);
-    const result = await ctx.queryChainCode(network, keyValueStorePath, 'peer1', config.default.channelName, deploy.name, functionName, args, ctx.user.username, 'org1');
+    const network = await ctx.service.chain.generateNetwork(chainId, chain.type);
+    let peer = 'peer1';
+    switch (chain.type) {
+      case 'fabric-1.2':
+        peer = 'peer0.org1.example.com';
+        break;
+      default:
+        break;
+    }
+    const result = await ctx.queryChainCode(network, keyValueStorePath, peer, config.default.channelName, deploy.name, functionName, args, ctx.user.username, 'org1', chain.type);
     if (result.success) {
       await ctx.model.Operation.create({
         chain: chainId,

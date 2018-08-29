@@ -168,13 +168,22 @@ class SmartContractService extends Service {
     const { functionName, args, deployId } = ctx.request.body;
     const chainRootDir = `${config.dataDir}/${ctx.user.id}/chains/${chainId}`;
     const keyValueStorePath = `${chainRootDir}/client-kvs`;
-    const network = await ctx.service.chain.generateNetwork(chainId);
+    const chain = await ctx.model.Chain.findOne({ _id: chainId });
+    const network = await ctx.service.chain.generateNetwork(chainId, chain.type);
+    let peers = ['peer1', 'peer2'];
+    switch (chain.type) {
+      case 'fabric-1.2':
+        peers = ['peer0.org1.example.com', 'peer1.org1.example.com'];
+        break;
+      default:
+        break;
+    }
     switch (operation) {
       case 'install':
-        return await ctx.installSmartContract(network, keyValueStorePath, ['peer1', 'peer2'], ctx.user.id, id, chainId, 'org1');
+        return await ctx.installSmartContract(network, keyValueStorePath, peers, ctx.user.id, id, chainId, 'org1', chain.type, ctx.user.username);
       case 'instantiate': {
         const deploy = await ctx.model.SmartContractDeploy.findOne({ _id: deployId }).populate('chain smartContract smartContractCode');
-        const result = await ctx.instantiateSmartContract(network, keyValueStorePath, config.default.channelName, deployId, functionName, args, 'org1');
+        const result = await ctx.instantiateSmartContract(network, keyValueStorePath, config.default.channelName, deployId, functionName, args, 'org1', chain.type, peers, ctx.user.username);
         const nsp = app.io.of('/');
         const msg = ctx.helper.parseMsg('instantiate-done', result, {
           chainName: deploy.chain.name,

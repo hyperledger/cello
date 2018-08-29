@@ -93,9 +93,7 @@ const messages = defineMessages({
 }))
 class Chain extends PureComponent {
   componentDidMount() {
-    this.props.dispatch({
-      type: 'chain/fetchChains',
-    });
+    this.loadChains();
   }
   onClickAddChain = () => {
     this.props.dispatch(
@@ -103,6 +101,11 @@ class Chain extends PureComponent {
         pathname: '/create-chain',
       })
     );
+  };
+  loadChains = () => {
+    this.props.dispatch({
+      type: 'chain/fetchChains',
+    });
   };
   changeChainType = e => {
     this.props.dispatch({
@@ -159,17 +162,17 @@ class Chain extends PureComponent {
     };
     function badgeStatus(status) {
       switch (status) {
-        case 'running':
+        case 'OK':
           return 'success';
-        case 'error':
+        case 'FAIL':
           return 'error';
-        case 'stopped':
-          return 'default';
+        case '':
+          return 'processing';
         default:
-          break;
+          return 'default';
       }
     }
-    const ListContent = ({ data: { user_id, create_ts, status } }) => (
+    const ListContent = ({ data: { user_id, create_ts, health } }) => (
       <div className={styles.listContent}>
         <div className={styles.listContentItem}>
           <span>
@@ -184,7 +187,7 @@ class Chain extends PureComponent {
           <p>{create_ts}</p>
         </div>
         <div className={styles.listContentItem}>
-          <Badge className={styles['status-badge']} status={badgeStatus(status)} text={status} />
+          <Badge className={styles['status-badge']} status={badgeStatus(health)} text={health === '' ? 'Waiting' : health} />
         </div>
       </div>
     );
@@ -218,6 +221,7 @@ class Chain extends PureComponent {
     );
     const extraContent = (
       <div className={styles.extraContent}>
+        <Button type="primary" style={{marginRight: 10}} icon="reload" onClick={this.loadChains} />
         <RadioGroup defaultValue="active" onChange={this.changeChainType}>
           <RadioButton value="active">
             <FormattedMessage {...messages.radio.option.active} />

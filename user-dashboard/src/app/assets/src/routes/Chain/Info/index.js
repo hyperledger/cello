@@ -124,7 +124,7 @@ export default class Index extends PureComponent {
             </Tooltip>
           </p>
           <p>
-            {instantiatedChainCodes.length}<span> / {installedChainCodes.length}</span>
+            {instantiatedChainCodes ? instantiatedChainCodes.length : 0}<span> / {installedChainCodes ? installedChainCodes.length : 0}</span>
           </p>
         </div>
       </div>
@@ -228,7 +228,7 @@ export default class Index extends PureComponent {
               <List
                 className={styles["card-list"]}
                 loading={loadingSummary}
-                dataSource={recentTransaction}
+                dataSource={recentTransaction || []}
                 renderItem={item => (
                   <List.Item>
                     <List.Item.Meta

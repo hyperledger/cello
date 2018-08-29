@@ -1,0 +1,15 @@
+{
+  "name": "user-dashboard",
+  "version": "1.0.0",
+  "description": "Cello User Dashboard",
+  "private": true,
+  "dependencies": {
+    "fabric-client": "1.0.5",
+    "fabric-ca-client": "1.0.5"
+  },
+  "engines": {
+    "node": ">=8.9.0"
+  },
+  "author": "hightall",
+  "license": "MIT"
+}
