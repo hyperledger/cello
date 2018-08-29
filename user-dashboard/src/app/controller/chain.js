@@ -17,7 +17,9 @@ class ChainController extends Controller {
       size: { type: 'int' },
       name: { type: 'string' },
     });
+    ctx.logger.info('request body ', ctx.request.body);
     const success = await ctx.service.chain.apply();
+    ctx.logger.info('done');
     ctx.status = success ? 200 : 400;
     ctx.body = {
       success,
@@ -45,7 +47,7 @@ class ChainController extends Controller {
       switch (queryType) {
         case 'summary': {
           const chain = await ctx.model.Chain.findOne({ _id: chainId });
-          const network = await ctx.service.chain.generateNetwork(chainId);
+          const network = await ctx.service.chain.generateNetwork(chainId, chain.type);
           const deploys = await ctx.model.SmartContractDeploy.find({ chain, status: 'instantiated' }, '_id name status deployTime').populate('smartContractCode smartContract', '_id version name description').sort('-deployTime')
             .limit(6);
           const operations = await ctx.model.Operation.find({ chain, user: ctx.user.id }).populate('smartContract smartContractCode', '_id version name').sort('-operateTime')
@@ -57,12 +59,12 @@ class ChainController extends Controller {
             };
           }
           const queries = [
-            await ctx.service.chain.getChannelHeight(chainId),
-            await ctx.service.chain.getRecentBlock(chainId, count),
-            await ctx.service.chain.getRecentTransactions(chainId, count),
-            await ctx.service.chain.getChannels(chainId),
-            await ctx.service.chain.getChainCodes(chainId, 'installed'),
-            await ctx.service.chain.getChainCodes(chainId, 'instantiated'),
+            await ctx.service.chain.getChannelHeight(chainId, chain.type),
+            await ctx.service.chain.getRecentBlock(chainId, count, chain.type),
+            await ctx.service.chain.getRecentTransactions(chainId, count, chain.type),
+            await ctx.service.chain.getChannels(chainId, chain.type),
+            await ctx.service.chain.getChainCodes(chainId, 'installed', chain.type),
+            await ctx.service.chain.getChainCodes(chainId, 'instantiated', chain.type),
           ];
           const results = await queries;
           ctx.body = {
@@ -114,7 +116,8 @@ class ChainController extends Controller {
   async downloadNetworkConfig() {
     const { ctx } = this;
     const chainId = ctx.params.id;
-    const network = await ctx.service.chain.generateNetwork(chainId);
+    const chain = await ctx.model.Chain.findOne({ _id: chainId });
+    const network = await ctx.service.chain.generateNetwork(chainId, chain.type);
     ctx.response.set({
       'Content-Type': 'application/octet-stream',
       'Content-Disposition': `attachment; filename=${chainId}.json`,

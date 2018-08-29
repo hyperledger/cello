@@ -58,4 +58,7 @@ module.exports = {
   get sleep() {
     return this.app.sleep;
   },
+  get getRegisteredUserV1_2() {
+    return this.app.getRegisteredUserV1_2;
+  },
 };
