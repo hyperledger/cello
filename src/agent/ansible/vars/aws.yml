@@ -22,7 +22,7 @@ cluster: {
   ssh_user: "ubuntu",
   validate_certs: True,
   private_net_name: "demonet",
-
+  root_block_device_name: "/dev/sda1", # the name by which AWS mounts the root volume as - typically /dev/sda
   public_key_file: "/home/ubuntu/.ssh/fd.pub",
   private_key_file: "/home/ubuntu/.ssh/fd",
   ssh_key_name: "fabric",
