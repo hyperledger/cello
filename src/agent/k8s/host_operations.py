@@ -63,20 +63,11 @@ class KubernetesOperation():
             k8s_config.verify_ssl = False
         else:
             k8s_config.verify_ssl = True
-            k8s_config.ssl_ca_cert = k8s_params.get('K8SSslCert')
+            k8s_config.ssl_ca_cert = \
+                config.kube_config. \
+                _create_temp_file_with_content(k8s_params.get('K8SSslCert'))
 
         client.Configuration.set_default(k8s_config)
-
-        v1 = client.CoreV1Api()
-        try:
-            v1.list_pod_for_all_namespaces(watch=False)
-        except Exception as e:
-            error_msg = (
-                "Cannot create kubernetes host due "
-                "to an incorrect parameters."
-            )
-            logger.error("Kubernetes host error msg: {}".format(e))
-            raise Exception(error_msg)
 
         return k8s_config
 
