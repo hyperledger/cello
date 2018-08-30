@@ -36,6 +36,12 @@ services:
   #    - PORT=8080
   #    - USERNAME=admin
   #    - PASSWORD=pass
+  rabbitmq:
+    image: rabbitmq
+    environment:
+    - RABBITMQ_DEFAULT_USER=$RABBITMQ_DEFAULT_USER
+    - RABBITMQ_DEFAULT_PASS=$RABBITMQ_DEFAULT_PASS
+    - RABBITMQ_DEFAULT_VHOST=$RABBITMQ_DEFAULT_VHOST
 
   # cello dashboard service for network operator
   operator-dashboard:
@@ -53,6 +59,8 @@ services:
       - STATIC_FOLDER=$STATIC_FOLDER
       - TEMPLATE_FOLDER=$TEMPLATE_FOLDER
       - ENABLE_EMAIL_ACTIVE=$ENABLE_EMAIL_ACTIVE
+      - BROKER=amqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672/$RABBITMQ_DEFAULT_VHOST
+      - BACKEND=amqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672/$RABBITMQ_DEFAULT_VHOST
     ports:
       - "8080:8080"
     volumes:

@@ -38,9 +38,9 @@ BASENAME ?= $(DOCKER_NS)/cello
 VERSION ?= 0.9.0
 IS_RELEASE=false
 
-DOCKER_BASE_x86_64=ubuntu:xenial
-DOCKER_BASE_ppc64le=ppc64le/ubuntu:xenial
-DOCKER_BASE_s390x=s390x/debian:jessie
+DOCKER_BASE_x86_64=python:3.6
+DOCKER_BASE_ppc64le=ppc64le/python:3.6
+DOCKER_BASE_s390x=s390x/python:3.6
 DOCKER_BASE=$(DOCKER_BASE_$(ARCH))
 BASE_VERSION ?= $(ARCH)-$(VERSION)
 

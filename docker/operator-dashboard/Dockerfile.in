@@ -5,4 +5,4 @@ RUN	cd /app/ && \
 	pip install -r requirements.txt && \
 	rm -rf /tmp/cello
 
-CMD if [ "$DEBUG" = "True" ]; then python dashboard.py ; else gunicorn -w 1 --worker-class eventlet -b 0.0.0.0:8080 dashboard:app ;fi
+CMD bash /app/celery.sh && if [ "$DEBUG" = "True" ]; then python dashboard.py ; else gunicorn -w 1 --worker-class eventlet -b 0.0.0.0:8080 dashboard:app ;fi

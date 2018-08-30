@@ -20,6 +20,7 @@ from resources import bp_index, \
     bp_login, bp_user_api, bp_user_view, front_rest_user_v2
 from modules.user import User
 from sockets.custom import CustomSockets
+from extensions import celery
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
@@ -33,6 +34,8 @@ socketio = SocketIO(app)
 
 app.config.from_object('config.DevelopmentConfig')
 app.config.from_envvar('CELLO_CONFIG_FILE', silent=True)
+
+celery.conf.update(app.config)
 
 connect(app.config.get("MONGODB_DB", "dashboard"),
         host=app.config.get("MONGODB_HOST", "mongo"),

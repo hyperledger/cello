@@ -8,6 +8,9 @@ export NPM_REGISTRY?=https://registry.npmjs.org
 export DEV?=False
 # whether enable user active, if enable user must be active to use user dashboard
 export ENABLE_EMAIL_ACTIVE?=False
+export RABBITMQ_DEFAULT_USER?=cello
+export RABBITMQ_DEFAULT_PASS?=cello
+export RABBITMQ_DEFAULT_VHOST?=cello
 
 NPM_REGISTRY_REPLACE=$(subst $(SLASH),$(REPLACE_SLASH),$(NPM_REGISTRY))
 

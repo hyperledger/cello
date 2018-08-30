@@ -21,6 +21,7 @@ from common import log_handler, LOG_LEVEL, \
     FabricPreNetworkConfig, FabricV1NetworkConfig
 
 from modules import cluster_handler, host_handler
+from tasks import release_cluster
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
@@ -140,10 +141,9 @@ def cluster_release(r):
     if not cluster_id:
         logger.warning("No cluster_id is given")
         return make_fail_resp("No cluster_id is given")
-    if cluster_handler.release_cluster(cluster_id):
-        return make_ok_resp()
+    release_cluster.delay(cluster_id)
 
-    return make_fail_resp("cluster release failed")
+    return make_ok_resp()
 
 
 @front_rest_v2.route('/cluster_op', methods=['GET', 'POST'])
