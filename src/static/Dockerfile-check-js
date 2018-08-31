@@ -6,5 +6,6 @@
 FROM node:8.11
 MAINTAINER haitao yue "hightall@me.com"
 COPY dashboard/package.json /
-RUN cd / && npm install --only=dev
-CMD bash -c "ln -sf /node_modules /var/www/dashboard/node_modules && cd /var/www/dashboard && npm run build && rm -rf node_modules"
+RUN cd / && sed -i '/dependencies/,/devDependencies/{//!d}' package.json && \
+    sed -i '/dependencies/d' package.json && yarn install
+CMD bash -c "ln -sf /node_modules /var/www/dashboard/node_modules && cd /var/www/dashboard && npm run lint"

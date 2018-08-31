@@ -16,5 +16,5 @@ services:
     build:
       context: $ROOT_PATH/src/static
     volumes:
-      - ./src/static:/var/www
-      - ./src/templates:/templates
+      - $ROOT_PATH/src/static:/var/www
+      - $ROOT_PATH/src/templates:/templates

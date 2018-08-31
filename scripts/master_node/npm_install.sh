@@ -27,7 +27,7 @@ else
 fi
 
 echo_b "Start install npm packages..."
-docker-compose -f docker-compose-npm-install.yaml up --force-recreate
+docker-compose -f docker-compose-files/docker-compose-npm-install.yaml up --force-recreate
 
 #echo "Restarting mongo_express"
 #[[ "$(docker ps -q --filter='name=mongo_express')" != "" ]] && docker restart mongo_express

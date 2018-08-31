@@ -9,13 +9,14 @@ services:
     build:
       context: $ROOT_PATH/src/static
       dockerfile: Dockerfile-check-js
+    container_name: cello-check-admin-js
     volumes:
-      - ./src/static:/var/www
-    command: bash -c "ln -sf /node_modules /var/www/dashboard/node_modules && cd /var/www/dashboard && npm run lint && rm -rf node_modules"
+      - $ROOT_PATH/src/static:/var/www
 
   check-user-dashboard:
     build:
       context: $ROOT_PATH/user-dashboard
       dockerfile: Dockerfile-check-js
+    container_name: cello-check-user-dashboard-js
     volumes:
-      - ./user-dashboard/src:/var/www
+      - $ROOT_PATH/user-dashboard/src:/var/www
