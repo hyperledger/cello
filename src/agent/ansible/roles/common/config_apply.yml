@@ -24,6 +24,8 @@
     allorderers: "{{ [] }}"
     clipeer: "{}"
     cliorderer: "{}"
+    tls: "{}"
+    mutualtls: "{}"
 
 - name: Make sure that working directory exists
   file:
@@ -115,3 +117,41 @@
 - name: Create all orgs list
   set_fact:
     allorgs: "{{ (caorgs + peerorgs + ordererorgs) | sort | unique }}"
+
+- name: TLS
+  set_fact:
+    tls: "{{ fabric.tls | default('true') }}"
+    mutualtls: "false"
+  when: fabric.tls != "client"
+
+- name: Mutual tls
+  set_fact:
+    mutualtls: "true"
+    tls: "true"
+  when: fabric.tls == "client"
+
+- name: Create peerorg rootca list
+  set_fact:
+    peerorg_rootca: |
+      {{ peerorg_rootca | default([]) | replace('+', ',') }}  +  [ '/etc/hyperledger/fabric/artifacts/keyfiles/{{ item }}/ca/ca.{{ item }}-cert.pem' ]
+  with_items: "{{ peerorgs }}"
+  when: fabric.tls == "client"
+
+- name: Create peers rootca list
+  set_fact:
+    peers_rootca: |
+      {{ peers_rootca | default([]) | replace('+', ',') }}  +  [ '/etc/hyperledger/fabric/artifacts/keyfiles/{{ item.org }}/peers/{{ item.name }}.{{ item.org }}/tls/ca.crt' ]
+  with_items: "{{ allpeers }}"
+  when: fabric.tls == "client"
+
+- name: Create orderers rootca list
+  set_fact:
+    orderer_rootca: |
+      {{ orderer_rootca | default([]) | replace('+', ',') }} + [ '/etc/hyperledger/fabric/artifacts/keyfiles/{{ item.org }}/orderers/{{ item.name }}.{{ item.org }}/tls/ca.crt' ]
+  with_items: "{{ allorderers }}"
+  when: fabric.tls == "client"
+
+- name: Joining the orderer rootca list and peerorg rootca list
+  set_fact:
+    rootca: "{{ peerorg_rootca }} + {{ peers_rootca }} + {{ orderer_rootca }}"
+  when: fabric.tls == "client"
