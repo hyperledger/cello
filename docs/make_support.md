@@ -70,7 +70,7 @@ $ cd scripts/worker_node && bash setup.sh
 Redeploys specified service(s). To redeploy `Dashboard` service, use: `make redeploy service=dashboard`.
 
 ### start
-Starts all services. Runs following command for you.
+Starts all services, include nfs server. Runs following command for you.
 
 ```bash
 $ docker-compose up -d --no-recreate
@@ -89,3 +89,9 @@ Runs watch mode with js files for react.
 
 ### npm-install
 Installs modules with npm package management.
+
+### start-nfs
+Start NFS server manually.
+
+### stop-nfs
+Stop NFS Server manually.

@@ -22,6 +22,8 @@
 #   - setup-worker:   Setup the host as a worker node, install pkg and download docker images
 #   - start:          Start the cello service
 #   - stop:           Stop the cello service, and remove all service containers
+#   - start-nfs:      Start the cello nfs service
+#   - stop-nfs:       Stop the cello nfs service
 
 GREEN  := $(shell tput -Txterm setaf 2)
 WHITE  := $(shell tput -Txterm setaf 7)
@@ -105,9 +107,9 @@ WORKER_TYPE ?= docker
 # Specify the running mode, prod or dev
 MODE ?= prod
 ifeq ($(MODE),prod)
-	COMPOSE_FILE=docker-compose.yml
+	COMPOSE_FILE=docker-compose-files/docker-compose.yml
 else
-	COMPOSE_FILE=docker-compose-dev.yml
+	COMPOSE_FILE=docker-compose-files/docker-compose-dev.yml
 endif
 
 
@@ -172,7 +174,7 @@ license:
 install: $(patsubst %,build/docker/%/.push,$(DOCKER_IMAGES))
 
 check-js: ##@Code Check check js code format
-	docker-compose -f docker-compose-check-js.yaml up
+	docker-compose -f docker-compose-files/docker-compose-check-js.yaml up
 
 check: setup-master docker-operator-dashboard ##@Code Check code format
 	@$(MAKE) license
@@ -221,6 +223,7 @@ start: ##@Service Start service
 	fi
 	docker-compose -f ${COMPOSE_FILE} up -d --no-recreate
 	echo "Now you can visit operator-dashboard at localhost:8080, or user-dashboard at localhost:8081"
+	@$(MAKE) start-nfs
 
 stop: ##@Service Stop service
 	echo "Stop all services with ${COMPOSE_FILE}..."
@@ -252,6 +255,12 @@ npm-install: ##@Nodejs Install modules with npm package management
 
 help: ##@other Show this help.
 	@perl -e '$(HELP_FUN)' $(MAKEFILE_LIST)
+
+start-nfs: ##@Service start nfs service
+	docker-compose -f docker-compose-files/docker-compose-nfs.yml up -d --no-recreate
+
+stop-nfs: ##@Service stop nfs service
+	docker-compose -f docker-compose-files/docker-compose-nfs.yml down
 
 HELP_FUN = \
 	%help; \

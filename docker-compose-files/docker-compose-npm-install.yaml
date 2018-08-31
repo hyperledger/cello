@@ -13,9 +13,10 @@
 version: '2'
 services:
   # cello dashboard service
-  watch-mode:
-    image: hyperledger/cello-baseimage
-    container_name: watch-mode
+  npm-install:
+    image: node:9.3
     volumes:  # This should be removed in product env
-      - ./src/themes/react/static:/app
-    command: bash -c "cd /app && npm run watch-mode"
+      - $ROOT_PATH/src/$STATIC_FOLDER:/app
+    environment:
+      - NPM_REGISTRY=$NPM_REGISTRY
+    command: bash -c "cd /app && npm install --loglevel http --registry $NPM_REGISTRY"

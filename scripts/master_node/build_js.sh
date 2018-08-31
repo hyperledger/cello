@@ -28,7 +28,7 @@ fi
 
 
 echo_b "Start build js files..."
-docker-compose -f docker-compose-build-js.yaml up --force-recreate
+docker-compose -f docker-compose-files/docker-compose-build-js.yaml up --force-recreate
 
 #echo "Restarting mongo_express"
 #[[ "$(docker ps -q --filter='name=mongo_express')" != "" ]] && docker restart mongo_express

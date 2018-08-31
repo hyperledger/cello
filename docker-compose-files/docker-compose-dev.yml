@@ -36,12 +36,16 @@ services:
   #    - PORT=8080
   #    - USERNAME=admin
   #    - PASSWORD=pass
+#  redis:
+#    image: redis
   rabbitmq:
     image: rabbitmq
+    restart: unless-stopped
+    container_name: cello-dashboard_rabbitmq
     environment:
-    - RABBITMQ_DEFAULT_USER=$RABBITMQ_DEFAULT_USER
-    - RABBITMQ_DEFAULT_PASS=$RABBITMQ_DEFAULT_PASS
-    - RABBITMQ_DEFAULT_VHOST=$RABBITMQ_DEFAULT_VHOST
+      - RABBITMQ_DEFAULT_USER=$RABBITMQ_DEFAULT_USER
+      - RABBITMQ_DEFAULT_PASS=$RABBITMQ_DEFAULT_PASS
+      - RABBITMQ_DEFAULT_VHOST=$RABBITMQ_DEFAULT_VHOST
 
   # cello dashboard service for network operator
   operator-dashboard:
@@ -49,12 +53,14 @@ services:
     container_name: cello-operator-dashboard
     hostname: cello-operator-dashboard
     restart: unless-stopped
+    links:
+      - rabbitmq
     environment:
       - MONGO_URL=mongodb://cello-mongo:27017  # used by pymongo, deprecate soon
       - MONGO_HOST=mongo
       - MONGO_DB=dev
       - MONGODB_PORT=27017
-      - DEBUG=False    # in debug mode, service will auto-restart
+      - DEBUG=True   # in debug mode, service will auto-restart
       - LOG_LEVEL=$LOG_LEVEL  # what level log will be output
       - STATIC_FOLDER=$STATIC_FOLDER
       - TEMPLATE_FOLDER=$TEMPLATE_FOLDER
@@ -63,8 +69,9 @@ services:
       - BACKEND=amqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672/$RABBITMQ_DEFAULT_VHOST
     ports:
       - "8080:8080"
-    volumes:
-      - ./src/agent/docker/_compose_files:/cello
+    volumes:  # This should be removed in product env
+      - $ROOT_PATH/src/agent/docker/_compose_files:/cello
+      - $ROOT_PATH/src:/app
 
  #TODO: need to follow other images to put at dockerhub
   user-dashboard:
@@ -78,11 +85,11 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=dev
       - RESTFUL_SERVER=operator-dashboard:8080
       - DEBUG=node:*
       - DEV=$DEV
-      - LOG_LEVEL=INFO
+      - LOG_LEVEL=DEBUG
       - ENABLE_EMAIL_ACTIVE=$ENABLE_EMAIL_ACTIVE
       - SMTP_SERVER=$SMTP_SERVER
       - SMTP_PORT=$SMTP_PORT
@@ -94,6 +101,7 @@ services:
       - WEBROOT=$USER_DASHBOARD_WEBROOT
       - FABRIC_CFG_PATH=/etc/hyperledger/fabric
     volumes:
+      - $ROOT_PATH/user-dashboard/src:/var/www
       - /opt/cello/baas:/opt/data
 
   # cello engine service
@@ -111,6 +119,8 @@ services:
       - LOG_LEVEL=$LOG_LEVEL  # what level log will be output
     ports:
       - "80:80"
+    volumes:
+      - $ROOT_PATH/src:/app
 
   # cello watchdog service
   watchdog:
@@ -125,6 +135,8 @@ services:
       - MONGODB_PORT=27017
       - DEBUG=$DEV    # in debug mode, service will auto-restart
       - LOG_LEVEL=$LOG_LEVEL  # what level log will be output
+    volumes:  # This should be removed in product env
+      - $ROOT_PATH/src:/app
 
   # mongo database, may use others in future
   mongo:
@@ -159,13 +171,3 @@ services:
       - NO_USED=0
     volumes:
       - /opt/cello/dashboard_mongo:/data/db
-
-  nfs:
-    image: itsthenetwork/nfs-server-alpine:9
-    restart: unless-stopped
-    environment:
-      - SHARED_DIRECTORY=/cello
-    volumes:
-      - ./src/agent/docker/_compose_files:/cello
-    privileged: true
-    network_mode: host
