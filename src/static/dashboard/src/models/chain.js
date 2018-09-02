@@ -4,8 +4,8 @@
 import { routerRedux } from 'dva/router';
 import { IntlProvider, defineMessages } from 'react-intl';
 import { message } from 'antd';
-import { queryChains, operateChain, deleteChain, createChain } from '../services/chain';
-import { getLocale } from '../utils/utils';
+import { queryChains, operateChain, deleteChain, createChain, getChain } from '../services/chain';
+import { getLocale, sleep } from '../utils/utils';
 
 const currentLocale = getLocale();
 const intlProvider = new IntlProvider(
@@ -42,15 +42,59 @@ export default {
 
   state: {
     chains: [],
+    canQueryChain: false,
   },
 
   effects: {
     *fetchChains({ payload }, { call, put }) {
       const response = yield call(queryChains, payload);
+      const chains = response.data || [];
       yield put({
         type: 'setChains',
-        payload: response.data,
+        payload: chains,
       });
+      yield *chains.map((chain) => {
+        if (['creating', 'deleting'].indexOf(chain.status) >= 0 || ['', 'FAIL'].indexOf(chain.health) >= 0) {
+          return put({
+            type: 'getChain',
+            payload: {
+              id: chain.id,
+            },
+          })
+        } else {
+          return true;
+        }
+      })
+    },
+    *getChain({ payload }, { select, call, put}) {
+      const response = yield call(getChain, payload.id);
+      const canQueryChain = yield select(state => state.chain.canQueryChain);
+      if (response.code === 200) {
+        yield put({
+          type: 'updateChain',
+          payload: {
+            id: payload.id,
+            data: response.data,
+          },
+        });
+        const chain = response.data;
+        if (canQueryChain && (['creating', 'deleting'].indexOf(chain.status) >= 0 || ['', 'FAIL'].indexOf(chain.health) >= 0)) {
+          yield sleep(5000);
+          yield put({
+            type: 'getChain',
+            payload: {
+              id: chain.id,
+            },
+          })
+        }
+      } else if (response.code === 404) {
+        yield put({
+          type: 'removeChain',
+          payload: {
+            id: payload.id,
+          },
+        })
+      }
     },
     *operateChain({ payload }, { call, put }) {
       const response = yield call(operateChain, payload);
@@ -91,6 +135,41 @@ export default {
         ...state,
         chains: action.payload,
       };
+    },
+    updateChain(state, action) {
+      const { id, data } = action.payload;
+      const { chains } = state;
+      chains.forEach((chain, index) => {
+        if (chain.id === id) {
+          chains[index] = data;
+          return false;
+        }
+      });
+      return {
+        ...state,
+        chains,
+      }
+    },
+    removeChain(state, action) {
+      const { id } = action.payload;
+      const { chains } = state;
+      chains.forEach((chain, index) => {
+        if (chain.id === id) {
+          chains.splice(index, 1);
+          return false;
+        }
+      });
+      return {
+        ...state,
+        chains,
+      }
+    },
+    setCanQuery(state, action) {
+      const { canQueryChain } = action.payload;
+      return {
+        ...state,
+        canQueryChain,
+      }
     },
   },
 };

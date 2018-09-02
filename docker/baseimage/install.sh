@@ -8,5 +8,5 @@ set -x
 # Based thie file on https://github.com/docker-library/mongo/blob/master/3.4/Dockerfile &
 # https://docs.mongodb.com/manual/tutorial/install-mongodb-enterprise-on-ubuntu/#install-mongodb-enterprise
 
-#set -x \
-#	&& apt-get update && apt-get install -y --no-install-recommends circus && rm -rf /var/lib/apt/lists/*
+set -x \
+	&& apt-get update && apt-get install -y supervisor && rm -rf /var/lib/apt/lists/*

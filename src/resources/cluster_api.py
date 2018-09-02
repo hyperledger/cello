@@ -21,7 +21,7 @@ from common import log_handler, LOG_LEVEL, \
     FabricPreNetworkConfig, FabricV1NetworkConfig
 
 from modules import cluster_handler, host_handler
-from tasks import release_cluster
+from tasks import release_cluster, delete_cluster
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
@@ -295,16 +295,8 @@ def cluster_delete():
     else:
         logger.debug("cluster delete with id={0}, col_name={1}".format(
             cluster_id, col_name))
-        if col_name == "active":
-            result = cluster_handler.delete(id=cluster_id)
-        else:
-            result = cluster_handler.delete_released(id=cluster_id)
-        if result:
-            return make_ok_resp()
-        else:
-            error_msg = "Failed to delete cluster {}".format(cluster_id)
-            logger.warning(error_msg)
-            return make_fail_resp(error=error_msg)
+        delete_cluster.delay(cluster_id, col_name)
+        return make_ok_resp()
 
 
 @bp_cluster_api.route('/clusters', methods=['GET', 'POST'])
