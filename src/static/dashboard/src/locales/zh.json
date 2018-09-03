@@ -98,6 +98,8 @@
   "Chain.Label.ConsensusPlugin": "共识",
   "Chain.Label.Owner": "使用者",
   "Chain.Label.CreateTime": "创建时间",
+  "Chain.Label.Status": "状态",
+  "Chain.Label.Health": "健康",
   "Chain.Create.Title": "创建新的链",
   "Chain.Create.Validate.Required.Host": "必须选择一个主机",
   "Chain.Create.Label.Host": "主机",

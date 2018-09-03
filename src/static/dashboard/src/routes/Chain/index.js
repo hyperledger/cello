@@ -6,6 +6,7 @@ import { connect } from 'dva';
 import { defineMessages, injectIntl, FormattedMessage } from 'react-intl';
 import { List, Card, Button, Dropdown, Menu, Icon, Badge, Modal, Radio } from 'antd';
 import { routerRedux } from 'dva/router';
+import moment from 'moment';
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
 import styles from './style.less';
 
@@ -64,6 +65,18 @@ const messages = defineMessages({
       id: 'Chain.Label.CreateTime',
       defaultMessage: 'Create Time',
     },
+    status: {
+      id: 'Chain.Label.Status',
+      defaultMessage: 'Status',
+    },
+    health: {
+      id: 'Chain.Label.Health',
+      defaultMessage: 'Health',
+    },
+    host: {
+      id: 'Chain.Create.Label.Host',
+      defaultMessage: 'Host',
+    },
   },
   radio: {
     option: {
@@ -93,8 +106,22 @@ const messages = defineMessages({
 }))
 class Chain extends PureComponent {
   componentDidMount() {
+    this.props.dispatch({
+      type: 'chain/setCanQuery',
+      payload: {
+        canQueryChain: true,
+      },
+    });
     this.loadChains();
   }
+  componentWillUnmount() {
+    this.props.dispatch({
+      type: 'chain/setCanQuery',
+      payload: {
+        canQueryChain: false,
+      },
+    });
+  };
   onClickAddChain = () => {
     this.props.dispatch(
       routerRedux.push({
@@ -162,6 +189,18 @@ class Chain extends PureComponent {
     };
     function badgeStatus(status) {
       switch (status) {
+        case 'running':
+          return 'success';
+        case 'creating':
+        case 'deleting':
+          return 'processing';
+        case 'stopped':
+        default:
+          return 'default';
+      }
+    }
+    function badgeHealth(health) {
+      switch (health) {
         case 'OK':
           return 'success';
         case 'FAIL':
@@ -172,7 +211,7 @@ class Chain extends PureComponent {
           return 'default';
       }
     }
-    const ListContent = ({ data: { user_id, create_ts, health } }) => (
+    const ListContent = ({ data: { user_id, create_ts, health, status } }) => (
       <div className={styles.listContent}>
         <div className={styles.listContentItem}>
           <span>
@@ -184,10 +223,23 @@ class Chain extends PureComponent {
           <span>
             <FormattedMessage {...messages.label.createTime} />
           </span>
-          <p>{create_ts}</p>
+          <p>{moment(create_ts).format("YYYY-MM-DD HH:mm:ss")}</p>
         </div>
         <div className={styles.listContentItem}>
-          <Badge className={styles['status-badge']} status={badgeStatus(health)} text={health === '' ? 'Waiting' : health} />
+          <span>
+            <FormattedMessage {...messages.label.status} />
+          </span>
+          <p>
+            <Badge className={styles['status-badge']} status={badgeStatus(status)} text={status} />
+          </p>
+        </div>
+        <div className={styles.listContentItem}>
+          <span>
+            <FormattedMessage {...messages.label.health} />
+          </span>
+          <p>
+            <Badge className={styles['status-badge']} status={badgeHealth(health)} text={health === '' ? 'Waiting' : health} />
+          </p>
         </div>
       </div>
     );
@@ -264,6 +316,7 @@ class Chain extends PureComponent {
                     description={
                       <div>
                         <p>
+                          <FormattedMessage {...messages.label.host} />: {item.host} &nbsp;&nbsp;
                           <FormattedMessage {...messages.label.networkType} />: {item.network_type}
                         </p>
                         <p>

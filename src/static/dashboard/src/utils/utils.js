@@ -146,3 +146,7 @@ export function getLocale() {
 export function getLang() {
   return (window.localStorage && localStorage.getItem('language')) || (navigator.language || navigator.browserLanguage).toLowerCase();
 }
+
+export async function sleep(sleep_time_ms) {
+  return new Promise(resolve => setTimeout(resolve, sleep_time_ms));
+}

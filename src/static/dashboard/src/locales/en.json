@@ -98,6 +98,8 @@
   "Chain.Label.ConsensusPlugin": "Consensus Plugin",
   "Chain.Label.Owner": "Owner",
   "Chain.Label.CreateTime": "Create Time",
+  "Chain.Label.Status": "Status",
+  "Chain.Label.Health": "Health",
   "Chain.Create.Title": "Create New Chain",
   "Chain.Create.Validate.Required.Host": "Must select a host",
   "Chain.Create.Label.Host": "Host",

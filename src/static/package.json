@@ -18,7 +18,8 @@
     "echarts-for-react": "^1.1.6",
     "react-draft-wysiwyg": "^1.8.1",
     "react-helmet": "^5.0.0",
-    "echarts": "^3.4.0"
+    "echarts": "^3.4.0",
+    "moment": "^2.22.2"
   },
   "devDependencies": {
     "atool-build": "^0.7.6",
