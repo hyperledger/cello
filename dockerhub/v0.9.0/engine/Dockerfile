@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-FROM hyperledger/cello-baseimage:x86_64-0.8.0
+FROM hyperledger/cello-baseimage:x86_64-0.9.0
 
 # use this in development
 CMD ["python", "restserver.py"]

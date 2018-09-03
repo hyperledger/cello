@@ -54,7 +54,7 @@ else
 endif
 
 # Docker images needed to run cello services
-DOCKER_IMAGES = baseimage mongo engine operator-dashboard ansible-agent watchdog user-dashboard fabric-initial
+DOCKER_IMAGES = baseimage mongo engine operator-dashboard ansible-agent watchdog user-dashboard
 DUMMY = .$(IMG_TAG)
 
 ifeq ($(DOCKER_BASE), )
@@ -152,7 +152,7 @@ docker-operator-dashboard: build/docker/operator-dashboard/$(DUMMY)
 
 docker-clean: stop image-clean ##@Clean all existing images
 
-DOCKERHUB_IMAGES = baseimage engine operator-dashboard user-dashboard watchdog ansible-agent fabric-initial
+DOCKERHUB_IMAGES = baseimage engine operator-dashboard user-dashboard watchdog ansible-agent
 
 dockerhub: $(patsubst %,dockerhub-%,$(DOCKERHUB_IMAGES))  ##@Building latest images with dockerhub materials, to valid them
 
