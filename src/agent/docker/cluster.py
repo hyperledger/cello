@@ -81,6 +81,6 @@ class ClusterOnDocker(ClusterBase):
 
     #TODO:在指定的cluster中添加一个节点
     def add(self, cluster_id, mapped_ports, host, config,user_id=""):
-        return
+        pass
 
 cluster_on_docker = ClusterOnDocker()

@@ -90,7 +90,7 @@ spec:
     spec:
       containers:
       - name: kafka0
-        image: hyperledger/fabric-kafka:amd64-1.2.0
+        image: hyperledger/fabric-kafka:amd64-0.4.10
         env:
         - name: KAFKA_MESSAGE_MAX_BYTES
           value: "1048576"
@@ -130,7 +130,7 @@ spec:
     spec:
       containers:
       - name: kafka1
-        image: hyperledger/fabric-kafka:amd64-1.2.0
+        image: hyperledger/fabric-kafka:amd64-0.4.10
         env:
         - name: KAFKA_MESSAGE_MAX_BYTES
           value: "1048576"
@@ -170,7 +170,7 @@ spec:
     spec:
       containers:
       - name: kafka2
-        image: hyperledger/fabric-kafka:amd64-1.2.0
+        image: hyperledger/fabric-kafka:amd64-0.4.10
         env:
         - name: KAFKA_MESSAGE_MAX_BYTES
           value: "1048576"
@@ -210,7 +210,7 @@ spec:
     spec:
       containers:
       - name: zookeeper0
-        image: hyperledger/fabric-zookeeper:amd64-1.2.0
+        image: hyperledger/fabric-zookeeper:amd64-0.4.10
         env:
         - name: ZOO_MY_ID
           value: "1"
@@ -240,7 +240,7 @@ spec:
     spec:
       containers:
       - name: zookeeper1
-        image: hyperledger/fabric-zookeeper:amd64-1.2.0
+        image: hyperledger/fabric-zookeeper:amd64-0.4.10
         env:
         - name: ZOO_MY_ID
           value: "2"
@@ -270,7 +270,7 @@ spec:
     spec:
       containers:
       - name: zookeeper2
-        image: hyperledger/fabric-zookeeper:amd64-1.2.0
+        image: hyperledger/fabric-zookeeper:amd64-0.4.10
         env:
         - name: ZOO_MY_ID
           value: "3"

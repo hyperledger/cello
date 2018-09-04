@@ -93,7 +93,7 @@ class K8sClusterOperation():
                             cluster_ports, nfsServer_ip):
         # get template file's ports
         externalPort, chaincodePort, nodePort = "", "", ""
-        peerId, orgId = "",""
+        ordererId, peerId, orgId = "","", ""
         if ("pvc" not in file_name and "namespace" not in file_name and
            "cli" not in file_name):
             if "peer" in file_name:
@@ -104,8 +104,14 @@ class K8sClusterOperation():
                     peerId = cluster_ports[file_name].get ("peerId")
                     orgId = cluster_ports[file_name].get ("organizationId")
 
+            elif "x" in file_name and "orderer" in file_name:
+                orgId = cluster_ports[file_name].get ("organizationId")
+                ordererId = cluster_ports[file_name].get ("ordererId")
+                nodePort = cluster_ports[file_name].get("nodePort")
             else:
                 nodePort = cluster_ports[file_name]
+
+
         current_path = os.path.dirname(__file__)
         templates_path = os.path.join(current_path, "templates")
         env = Environment(
@@ -123,7 +129,8 @@ class K8sClusterOperation():
                                  nodePort=nodePort,
                                  nfsServer=nfsServer_ip,
                                  peerId=peerId,
-                                 organizationId=orgId)
+                                 organizationId=orgId,
+                                 ordererId=ordererId)
         return output
     #exec the remote command
     #this fuction can be used to join channel?
@@ -414,7 +421,7 @@ class K8sClusterOperation():
         logger.debug("Current exsiting cluster ports= {}".format(ports_index))
         if ports_index:
             #取出当前设置的最大端口
-            current_port = int(max(ports_index)) + 10
+            current_port = int(max(ports_index)) + 5
         else:
             current_port = external_port_start
 
@@ -430,6 +437,9 @@ class K8sClusterOperation():
                 if ("pvc" not in file and "namespace" not in file and
                    "cli" not in file):
                     if "peer" in file:
+                        if "x" in file and "y" in file:
+                            continue
+
                         peers_ports = {}
                         peers_ports["externalPort"] = str(current_port)
                         peers_ports["chaincodePort"] = str(current_port + 1)
@@ -445,7 +455,7 @@ class K8sClusterOperation():
 
 
 #nfserver_ip is not neccessary beacause of the pvc had been created.
-    def _deploy_cluster_peer(self, cluster_name, cluster_ports):
+    def _deploy_node_peer(self, cluster_name, cluster_ports):
         file_data = self._render_config_file("peerx.orgy.tpl", cluster_name, cluster_ports, "");
         #print(file_data)
         yaml_data = yaml.load_all(file_data)
@@ -453,31 +463,57 @@ class K8sClusterOperation():
 
         return
 
-    def _deploy_cluster_orderer(self):
-        pass
+    #add a orderer
+    def _deploy_node_orderer(self, cluster_name, cluster_ports):
+        file_data = self._render_config_file ("ordererx.ordererorg-kafka.tpl", cluster_name, cluster_ports, "");
+        # print(file_data)
+        yaml_data = yaml.load_all (file_data)
+        self._deploy_k8s_resource (yaml_data)
 
-    def deploy_node(self, cluster_name, node_type=NODETYPE_PEER):
+        return
+
+    def deploy_node(self, cluster_name, ports_index, external_port_start,
+                    nodeId, orgId, node_type):
         """
             add a node to one cluster that has been exists.
             node_type: create a peer or orderer node;
             cluster_name: the cluster name, we can get paraments from db by the  cluster_name.
+            nodeId: one peer id or orderer id
+            ports_index: the ports had been used.
+            external_port_start: the start port in the cluster that named cluster_name
+            orgId: the organization that new node belongs to
         """
+        #为新增加的节点产生端口
+        if ports_index:
+            # 取出当前设置的最大端口
+            current_port = int(max (ports_index)) + 5
+        else:
+            current_port = external_port_start
 
-        if node_type == NODETYPE_PEER:
+
+        if node_type==NODETYPE_PEER:
             cluster_ports = {
                 "peerx.orgy.tpl" : {
-                    "externalPort": 32050,
-                    "chaincodePort": 32052,
-                    "nodePort": 32053,
-                    "peerId": "peer3",
-                    "organizationId": "org1"
+                    "externalPort": str(current_port),
+                    "chaincodePort": str(current_port + 1),
+                    "nodePort": str(current_port + 2),
+                    "peerId": nodeId,
+                    "organizationId": orgId
                 }
             };
-            self._deploy_cluster_peer(cluster_name,  cluster_ports);
+            self._deploy_node_peer(cluster_name,  cluster_ports);
         elif node_type == NODETYPE_ORDERER:
-            self._deploy_cluster_orderer()
+            cluster_ports = {
+                "ordererx.ordererorg-kafka.tpl":{
+                    "nodePort": str (current_port + 2),
+                    "ordererId": nodeId,
+                    "organizationId": orgId
+                }
+            }
+            self._deploy_node_orderer( cluster_name,cluster_ports)
 
-        return
+        return self._get_cluster_pods(cluster_name)
+
 
     def _deploy_cluster_resource(self, cluster_name,
                                  cluster_ports, nfsServer_ip, consensus):
@@ -523,8 +559,7 @@ class K8sClusterOperation():
                                                      cluster_ports,
                                                      nfsServer_ip)
             else:
-                file_data = self._render_config_file("orderer0.ordererorg-kafka\
-                                                     .tpl",
+                file_data = self._render_config_file("orderer0.ordererorg-kafka.tpl",
                                                      cluster_name,
                                                      cluster_ports,
                                                      nfsServer_ip)
@@ -636,8 +671,8 @@ class K8sClusterOperation():
                                                      cluster_ports,
                                                      nfsServer_ip)
             else:
-                file_data = self._render_config_file("orderer0.ordererorg-kafka\
-                                                     .tpl", cluster_name,
+                file_data = self._render_config_file("orderer0.ordererorg-kafka.tpl",
+                                                     cluster_name,
                                                      cluster_ports,
                                                      nfsServer_ip)
 

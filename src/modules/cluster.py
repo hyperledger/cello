@@ -289,40 +289,48 @@ class ClusterHandler(object):
             logger.error("Cannot find available host to create new network")
             return None
 
-        #TODO 创建后未必成功,应该再确定后再修改数据库状态
         clusters_exists = ClusterModel.objects (host=worker)
-        if clusters_exists.count() >= worker.capacity:
-            logger.warning("host {} is already full".format(host_id))
-            return None
+
+        #TODO start the part in no debug
+        # if clusters_exists.count() >= worker.capacity:
+        #     logger.warning("host {} is already full".format(host_id))
+        #     return None
 
         peer_num = int(config.get_data().get("size", 4))
-        #TODO ca num这么获取？
         ca_num = 2 if peer_num > 1 else 1
 
         cid = uuid4().hex
-        mapped_ports, peer_ports, ca_ports, orderer_ports, explorer_ports = \
-            self.gen_ports_mapping(peer_num, ca_num, start_port, host_id)
-        if not mapped_ports:
-            logger.error("mapped_ports={}".format(mapped_ports))
-            return None
+        explorer_ports, orderer_ports, ca_ports, peer_ports, \
+            env_mapped_ports, mapped_ports = {}, {}, {}, {}, {}, {}
+        external_port_start = 0
 
-        env_mapped_ports = dict(((k + '_port').upper(), str(v))
-                                for (k, v) in mapped_ports.items())
-
-        network_type = config['network_type']
-        external_ports = [cluster.external_port_start for cluster in clusters_exists]
-
-        #the start port is 31000
-        external_port_start = EXTERNAL_SUB_MIX
-        for external_port in external_ports:
-            if external_port_start > EXTERNAL_SUB_MAX:
-                logger.error("external port %d has been over range!!" % external_port_start)
+        #k8s create map port in agent
+        if worker.type != WORKER_TYPE_K8S:
+            mapped_ports, peer_ports, ca_ports, orderer_ports, explorer_ports = \
+                self.gen_ports_mapping(peer_num, ca_num, start_port, host_id)
+            if not mapped_ports:
+                logger.error("mapped_ports={}".format(mapped_ports))
                 return None
 
-            if external_port_start != external_port:
-                break
-            else:
-                external_port +=100
+            env_mapped_ports = dict(((k + '_port').upper(), str(v))
+                                    for (k, v) in mapped_ports.items())
+        else:
+            external_ports = [cluster.external_port_start for cluster in clusters_exists]
+
+            # the start port is 31000
+            external_port_start = EXTERNAL_SUB_MIX
+            for external_port in external_ports:
+                if external_port_start > EXTERNAL_SUB_MAX:
+                    logger.error ("external port %d has been over range!!" % external_port_start)
+                    return None
+
+                if external_port_start != external_port:
+                    break
+                else:
+                    external_port += 100
+
+        network_type = config['network_type']
+
 
         net = {  # net is a blockchain network instance
             'id': cid,
@@ -351,36 +359,102 @@ class ClusterHandler(object):
                                                       explorer_ports))
         t.start()
 
-        #TODO: 开发的时候用的，发布的时候需要撤掉
+        #TODO: start the part in no debug
         t.join()
         return cid
 
-    #添加一个节点到已存在的cluster中
-    def _add_cluster(self,cluster, cid, mapped_ports, worker, config,
-                        user_id, peer_ports, ca_ports, orderer_ports,
-                        explorer_ports ):
 
-        pass
+    # 添加一个节点到已存在的cluster中
+    def _add_element(self, cluster, cid, worker, element, user_id):
+        containers = self.cluster_agents[worker.type].add(cid, element, user_id)
 
-    def add(self, name, host_id, cluster_id, start_port=0,
-               user_id=""):
+        # 更新cluster containers 和 service url 的信息
+        if  containers is None :
+            logger.warning ("failed to add element to cluster={}"
+                            .format (cluster.name))
+            return None
 
-        logger.info ("Add node to cluster {}, host_id={}, cluster={}, start_port={}, "
-                     "user_id={}".format (name, host_id, cluster_id,
-                                          start_port, user_id))
+            # creation done, update the container table in db
+        for k, v in containers.items ():
+            container = Container (id=v, name=k, cluster=cluster)
+            container.save ()
+
+        # service urls can only be calculated after service is created
+        if worker.type == WORKER_TYPE_K8S:
+            service_urls = self.cluster_agents[worker.type] \
+                .get_services_urls (cid)
+        else:
+            return None
+
+        # update the service port table in db
+        for k, v in service_urls.items():
+            ip = v.split(":")[0]
+            port = v.split(":")[1]
+            # the kafka and zookeeper containers do not own external ports, It is none.
+            if port is not None:
+                service_port = ServicePort(name=k, ip=ip,
+                                            port=int(v.split(":")[1]),
+                                            cluster=cluster)
+                service_port.save()
+
+        # update api_url, container, user_id and status
+        self.db_update_one(
+            {"id": cid},
+            {
+                "user_id": user_id,
+                'api_url': service_urls.get('rest', ""),
+                'service_url': service_urls,
+                'status': NETWORK_STATUS_RUNNING
+            }
+        )
+
+        # def check_health_work(cid):
+        #     time.sleep (60)
+        #     self.refresh_health (cid)
         #
-        # worker = self.host_handler.get_active_host_by_id (host_id)
-        # if not worker:
-        #     logger.error ("Cannot find available host to create new network")
+        # t = Thread (target=check_health_work, args=(cid,))
+        # t.start ()
+
+        return None
+
+
+    def add(self, cluster_id, host_id, element, user_id=""):
+
+        logger.info ("Add node to cluster={}, host_id={}, org_id={}, element={}"
+                     "user_id={}".format (cluster_id, host_id, cluster_id,
+                                          element, user_id))
+
+        #检查host_id 和 cluster_id
+        worker = self.host_handler.get_active_host_by_id (host_id)
+        if not worker:
+            logger.error ("Cannot find available host to create new network")
+            return None
+
+        cluster = ClusterModel.objects.get(id=cluster_id)
+        if cluster is None:
+            logger.error ("the cluster id: {} is not exist".format(cluster_id))
+            return None
+
+        if cluster.host.id!= host_id:
+            logger.error ("the cluster id: {} is not belong to {}".format(cluster_id, host_id))
+            return None
+
+        # if cluster.status != NETWORK_STATUS_RUNNING:
+        #     logger.error ("the cluster id: {} is not runnig to {}".format(cluster_id, host_id))
         #     return None
-        #
-        # if ClusterModel.objects (host=worker).count() >= worker.capacity:
-        #     logger.warning ("host {} is already full".format (host_id))
-        #     return None
 
+        #TODO: 准备端口 k8s这一步不需要在这里做，所以先省略
+        if worker.type == WORKER_TYPE_K8S:
+            logger.debug("tht work type is k8s")
+            # start cluster creation asynchronously for better user experience.
+            t = Thread (target=self._add_element, args=(cluster, cluster_id, worker,
+                                                        element, user_id))
+            t.start()
+            t.join()
+        else:
+            return None
 
-
-        pass
+        return
 
 
     def delete(self, id, record=False, forced=False):

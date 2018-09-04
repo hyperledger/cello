@@ -9,7 +9,7 @@ from agent import K8sClusterOperation
 from agent import KubernetesOperation
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-from common import log_handler, LOG_LEVEL
+from common import log_handler, LOG_LEVEL, NODETYPE_ORDERER, NODETYPE_PEER
 
 from agent import compose_up, compose_clean, compose_start, compose_stop, \
     compose_restart
@@ -34,24 +34,23 @@ class ClusterOnKubernetes(ClusterBase):
     def __init__(self):
         pass
 
-    def _get_cluster_info(self, cid, config):
+    def _get_cluster_info(self, cid, config=None):
         cluster = ClusterModel.objects.get(id=cid)
 
         cluster_name = cluster.name
         kube_config = KubernetesOperation()._get_config_from_params(cluster
                                                                     .host
                                                                     .k8s_param)
-        #查询当前host拥有的所有cluster
-        #clusters_exists = ClusterModel.objects(host=cluster.host)
 
-        #查询当前设置的所有端口
-        # ports_index = [service.port for service in ServicePort
-        #                .objects(cluster__in=clusters_exists)]
         ports_index = [service.port for service in ServicePort
                         .objects(cluster=cluster)]
 
         nfsServer_ip = cluster.host.k8s_param.get('K8SNfsServer')
-        consensus = config['consensus_plugin']
+
+        consensus = None
+        if config is not None:
+            consensus = config['consensus_plugin']
+
         external_port_start = cluster.external_port_start
 
         return cluster, cluster_name, kube_config, ports_index, external_port_start, \
@@ -173,9 +172,26 @@ class ClusterOnKubernetes(ClusterBase):
             return False
         return True
 
-    #TODO:在指定的cluster中添加一个节点
-    def add(self, cid, mapped_ports, host, config, user_id=""):
-        return
+    #在指定的cluster中添加一个元素
+    def add(self, cid, element, user_id):
+        try:
+            cluster, cluster_name, kube_config, ports_index, external_port_start, \
+            nfsServer_ip, consensus = self._get_cluster_info (cid)
+
+
+            operation = K8sClusterOperation (kube_config)
+            container = operation.deploy_node (cluster_name,
+                                                ports_index,
+                                                external_port_start,
+                                                element["node_id"],
+                                                element["org_id"],
+                                                element["type"])
+
+        except Exception as e:
+            logger.error ("Failed to create Kubernetes Cluster: {}".format (e))
+            return None
+        return container
+
 
     def restart(self, name, worker_api, mapped_ports, log_type, log_level,
                 log_server, config):
