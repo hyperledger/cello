@@ -198,10 +198,6 @@ class ChainService extends Service {
     };
     const channelsPeers = {};
     let network = {};
-    const adminKeys = [
-      '3e8b264983a774f79e5e058423d43c1cb3809d747469a7a90932a4eb4e98b595_sk',
-      'de2da995ea42d2111e284a0fb5b7346ea673381ec6618c2d0a06aee177523e56_sk',
-    ];
     for (let index = 0; index < orgConfigCount; index++) {
       const orgConfig = orgConfigs[index];
       const caConfig = await ctx.model.CaConfig.findOne({ networkConfig, sequence: orgConfig.sequence });
@@ -229,7 +225,7 @@ class ChainService extends Service {
       }
       organizations[`org${index + 1}`] = {
         adminPrivateKey: {
-          path: `/var/www/app/lib/fabric/fixtures/channel/v1.2/crypto-config/peerOrganizations/org${index + 1}.example.com/users/Admin@org${index + 1}.example.com/msp/keystore/${adminKeys[index]}`,
+          path: `/var/www/app/lib/fabric/fixtures/channel/v1.2/crypto-config/peerOrganizations/org${index + 1}.example.com/users/Admin@org${index + 1}.example.com/msp/keystore/admin_sk`,
         },
         certificateAuthorities: [`ca-org${index + 1}`],
         mspid: `Org${index + 1}MSP`,
