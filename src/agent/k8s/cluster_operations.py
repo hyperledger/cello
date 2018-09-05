@@ -723,6 +723,6 @@ class K8sClusterOperation():
         time.sleep(2)
         return self._get_cluster_pods(cluster_name)
 
-if __name__ == '__main__':
-    clusterOperator = K8sClusterOperation(kube_config={})
-    clusterOperator.deploy_node("first");
+# if __name__ == '__main__':
+#     clusterOperator = K8sClusterOperation(kube_config={})
+#     clusterOperator.deploy_node("first");
