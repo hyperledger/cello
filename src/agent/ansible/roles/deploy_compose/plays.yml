@@ -54,4 +54,5 @@
     - "./../../vars/{{ env }}.yml"
   tasks:
     - include_tasks: "composersetup/tasks/{{ mode }}.yml"
+      when: fabric.composer == true or fabric.composer is undefined
   tags: "composersetup"
