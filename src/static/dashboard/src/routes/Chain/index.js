@@ -257,7 +257,7 @@ class Chain extends PureComponent {
         <Menu.Item key="release" chain={chainItem}>
           <FormattedMessage {...messages.button.release} />
         </Menu.Item>
-        <Menu.Item key="delete" chain={chainItem}>
+        <Menu.Item disabled={chainItem.user_id !== ''} key="delete" chain={chainItem}>
           <span className={styles['delete-button']}>
             <FormattedMessage {...messages.button.delete} />
           </span>

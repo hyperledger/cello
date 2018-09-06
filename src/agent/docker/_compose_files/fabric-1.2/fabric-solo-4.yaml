@@ -242,42 +242,42 @@ services:
 #      - ${COMPOSE_PROJECT_PATH}/examples:/opt/gopath/src/examples
 #    command: bash -c 'sleep 15; cd /tmp; source scripts/func.sh; bash scripts/test_channel_create.sh; bash scripts/test_channel_join.sh; bash scripts/test_cc_install.sh; while true; do sleep 20180101; done'
 
-  explorer:
-    image: yeasy/blockchain-explorer:0.1.0-preview
-    container_name: ${COMPOSE_PROJECT_NAME}_explorer
-    hostname: explorer
-    restart: always
-    volumes:
-      - ${COMPOSE_PROJECT_PATH}/explorer-artifacts/config.json:/blockchain-explorer/config.json
-      - ${COMPOSE_PROJECT_PATH}/crypto-config:/blockchain-explorer/first-network/crypto-config
-    ports:
-      - "${EXPLORER_PORT}:8080"
-    depends_on:
-      - mysql
-      - orderer.example.com
-      - peer0.org1.example.com
-      - peer1.org1.example.com
-      - peer0.org2.example.com
-      - peer1.org2.example.com
-    links:
-      - orderer.example.com
-      - peer0.org1.example.com
-      - peer1.org1.example.com
-      - peer0.org2.example.com
-      - peer1.org2.example.com
-    command: bash -c 'sleep 30; node main.js'
-
-  mysql: # mysql service
-    image: mysql:5.7
-    container_name: ${COMPOSE_PROJECT_NAME}_mysql
-    hostname: mysql
-    restart: always
-    environment:
-      - MYSQL_ROOT_PASSWORD=root
-      - MYSQL_DATABASE=fabricexplorer
-      - STARTUP_SQL=/fabricexplorer.sql
-    volumes:
-      - ${COMPOSE_PROJECT_PATH}/explorer-artifacts/fabricexplorer.sql:/docker-entrypoint-initdb.d/fabricexplorer.sql
-    expose:
-      - "3306"
-    command: mysqld
+#  explorer:
+#    image: yeasy/blockchain-explorer:0.1.0-preview
+#    container_name: ${COMPOSE_PROJECT_NAME}_explorer
+#    hostname: explorer
+#    restart: always
+#    volumes:
+#      - ${COMPOSE_PROJECT_PATH}/explorer-artifacts/config.json:/blockchain-explorer/config.json
+#      - ${COMPOSE_PROJECT_PATH}/crypto-config:/blockchain-explorer/first-network/crypto-config
+#    ports:
+#      - "${EXPLORER_PORT}:8080"
+#    depends_on:
+#      - mysql
+#      - orderer.example.com
+#      - peer0.org1.example.com
+#      - peer1.org1.example.com
+#      - peer0.org2.example.com
+#      - peer1.org2.example.com
+#    links:
+#      - orderer.example.com
+#      - peer0.org1.example.com
+#      - peer1.org1.example.com
+#      - peer0.org2.example.com
+#      - peer1.org2.example.com
+#    command: bash -c 'sleep 30; node main.js'
+#
+#  mysql: # mysql service
+#    image: mysql:5.7
+#    container_name: ${COMPOSE_PROJECT_NAME}_mysql
+#    hostname: mysql
+#    restart: always
+#    environment:
+#      - MYSQL_ROOT_PASSWORD=root
+#      - MYSQL_DATABASE=fabricexplorer
+#      - STARTUP_SQL=/fabricexplorer.sql
+#    volumes:
+#      - ${COMPOSE_PROJECT_PATH}/explorer-artifacts/fabricexplorer.sql:/docker-entrypoint-initdb.d/fabricexplorer.sql
+#    expose:
+#      - "3306"
+#    command: mysqld
