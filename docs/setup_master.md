@@ -1,5 +1,5 @@
 ## Master Node Setup
-The [Master Node](./terminology.md) includes several services:
+The [Master Node](terminology.md) includes several services:
 
 * `operator dashboard`: Provide Web UI for operators.
 * `user dashboard`: Provide Web UI for users.
@@ -11,10 +11,11 @@ The [Master Node](./terminology.md) includes several services:
 ### System Requirement
 
 * Hardware: 8c16g100g
+* Linux Kernel >= 3.0.0
 * Docker engine: 1.10.0~1.13.0 (Docker 17.0+ support is experimental)
 * docker-compose: 1.8.0~1.12.0
 
-The [Master Node](./terminology.md) can be deployed by in 2 steps.
+The [Master Node](terminology.md) can be deployed by in 2 steps:
 
 * Clone code
 * Run setup script
@@ -115,10 +116,21 @@ Please keep it safe by backups or using more high-available solutions.
 
 ### Work with MacOS
 
+#### Local Path Mount
 In MacOS, Docker cannot mount local path from host by default. Hence for mongo container data volume, users need to:
 
 * Make sure the `/opt/cello` path exists locally, and it is writable for the current user account. Simply just run `make setup-master`.
 * Add the path to `File Sharing` list in the preference of [Docker for MacOS](https://docs.docker.com/docker-for-mac/install/), to make it mountable by container.
+
+#### Install envsubst
+macOS does not have envsubst command. In order to install it, need to use the [Homebrew](https://brew.sh) tool.
+
+```bash
+$ brew install gettext
+$ brew link gettext
+$ export PATH="/usr/local/opt/gettext/bin:$PATH"
+$ echo 'export PATH="/usr/local/opt/gettext/bin:$PATH"' >> ~/.bash_profile
+```
 
 ## More Commands using make
 
