@@ -62,7 +62,7 @@ spec:
            subPath: orderers/orderer.example.com/tls
          - mountPath: /var/hyperledger/orderer/orderer.genesis.block
            name: certificate
-           subPath: genesis.block
+           subPath: orderer.genesis.block
          - mountPath: /var/hyperledger/production
            name: certificate
            subPath: orderers/orderer.example.com/production

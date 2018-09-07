@@ -166,10 +166,6 @@ class K8sClusterOperation():
     def _get_node_ip_of_service(self, service_name):
         ret = self.corev1client.list_pod_for_all_namespaces(watch=False)
 
-        # The fabric-explorer service_name is different with it's pod
-        if "fabric-explorer" in service_name:
-            service_name = "fabric-explorer"
-
         for i in ret.items:
             if i.metadata.name.startswith(service_name):
                 return self._get_node_ip(i.spec.node_name)
@@ -209,13 +205,6 @@ class K8sClusterOperation():
 
                 elif i.metadata.name.startswith("orderer"):
                     name = "orderer"
-                    for port in i.spec.ports:
-                        _port = port.node_port
-                        value = r_template.format(_port)
-                        results[name] = value
-
-                elif i.metadata.name.startswith("fabric-explorer"):
-                    name = "dashboard"
                     for port in i.spec.ports:
                         _port = port.node_port
                         value = r_template.format(_port)
@@ -499,11 +488,12 @@ class K8sClusterOperation():
                                                      cluster_ports,
                                                      nfsServer_ip)
             else:
-                file_data = self._render_config_file("orderer0.ordererorg-kafka\
-                                                     .tpl",
-                                                     cluster_name,
-                                                     cluster_ports,
-                                                     nfsServer_ip)
+                file_data = self \
+                    ._render_config_file("orderer0.ordererorg-kafka.tpl",
+                                         cluster_name,
+                                         cluster_ports,
+                                         nfsServer_ip)
+
             yaml_data = yaml.load_all(file_data)
             self._deploy_k8s_resource(yaml_data)
 
@@ -548,16 +538,6 @@ class K8sClusterOperation():
 
         time.sleep(3)
 
-        # Disable explorer
-        # fabric explorer at last
-        # file_data = self._render_config_file("fabric-1-0-explorer.tpl",
-        #                                      cluster_name, cluster_ports,
-        #                                      nfsServer_ip)
-        # yaml_data = yaml.load_all(file_data)
-        # self._deploy_k8s_resource(yaml_data)
-
-        time.sleep(3)
-
         return self._get_cluster_pods(cluster_name)
 
     def _delete_cluster_resource(self, cluster_name,
@@ -565,14 +545,6 @@ class K8sClusterOperation():
         """ The order to delete the cluster is reverse to
             create except for namespace
         """
-        file_data = self._render_config_file("fabric-1-0-explorer.tpl",
-                                             cluster_name, cluster_ports,
-                                             nfsServer_ip)
-        yaml_data = yaml.load_all(file_data)
-        self._delete_k8s_resource(yaml_data)
-
-        time.sleep(3)
-
         current_path = os.path.dirname(__file__)
         templates_path = os.path.join(current_path, "templates")
         for (dir_path, dir_name, file_list) in os.walk(templates_path):
@@ -610,10 +582,11 @@ class K8sClusterOperation():
                                                      cluster_ports,
                                                      nfsServer_ip)
             else:
-                file_data = self._render_config_file("orderer0.ordererorg-kafka\
-                                                     .tpl", cluster_name,
-                                                     cluster_ports,
-                                                     nfsServer_ip)
+                file_data = self. \
+                    _render_config_file("orderer0.ordererorg-kafka.tpl",
+                                        cluster_name,
+                                        cluster_ports,
+                                        nfsServer_ip)
 
             time.sleep(3)
 
@@ -651,13 +624,5 @@ class K8sClusterOperation():
         cluster_ports = self._get_cluster_ports(ports_index)
         self._deploy_cluster_resource(cluster_name, cluster_ports,
                                       nfsServer_ip, consensus)
-        time.sleep(2)
-        # fabric explorer at last
-        file_data = self._render_config_file("fabric-1-0-explorer.tpl",
-                                             cluster_name,
-                                             cluster_ports,
-                                             nfsServer_ip)
-        yaml_data = yaml.load_all(file_data)
-        self._deploy_k8s_resource(yaml_data)
         time.sleep(2)
         return self._get_cluster_pods(cluster_name)
