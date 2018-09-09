@@ -1,3 +1,122 @@
+## v0.9.0-alpha
+Sun Sep 9 13:13:21 UTC 2018
+
+* [987d36c](https://github.com/hyperledger/cello/commit/987d36c) [CE-468](https://jira.hyperledger.org/browse/CE-468) Add envsubst install to doc
+* [433822b](https://github.com/hyperledger/cello/commit/433822b) [CE-466](https://jira.hyperledger.org/browse/CE-466) Genesis block not found in Orderer
+* [d4c1909](https://github.com/hyperledger/cello/commit/d4c1909) [CE-462](https://jira.hyperledger.org/browse/CE-462) Remove explorer from docker agent
+* [7b94a5e](https://github.com/hyperledger/cello/commit/7b94a5e) [CE-449](https://jira.hyperledger.org/browse/CE-449) renaming the root device for ansible agent
+* [042637f](https://github.com/hyperledger/cello/commit/042637f) [CE-465](https://jira.hyperledger.org/browse/CE-465) Repair genesis block for fabric 1.2
+* [fb92583](https://github.com/hyperledger/cello/commit/fb92583) [CE-464](https://jira.hyperledger.org/browse/CE-464) Change crypto-config files for 1.2 fabric
+* [fefe906](https://github.com/hyperledger/cello/commit/fefe906) [CE-461](https://jira.hyperledger.org/browse/CE-461) Refine dockerhub latest dockerfile
+* [81301e1](https://github.com/hyperledger/cello/commit/81301e1) [CE-458](https://jira.hyperledger.org/browse/CE-458) Refine delete cluster api
+* [87b5945](https://github.com/hyperledger/cello/commit/87b5945) [CE-451](https://jira.hyperledger.org/browse/CE-451) Make deployment of HL Composer optional
+* [39b391d](https://github.com/hyperledger/cello/commit/39b391d) [CE-448](https://jira.hyperledger.org/browse/CE-448) Fixes hard-coded AWS credentials
+* [f8afc98](https://github.com/hyperledger/cello/commit/f8afc98) [CE-450](https://jira.hyperledger.org/browse/CE-450) Enable access to peer via docker network
+* [182ee45](https://github.com/hyperledger/cello/commit/182ee45) [CE-452](https://jira.hyperledger.org/browse/CE-452) Remove nfs container from master service
+* [2b35193](https://github.com/hyperledger/cello/commit/2b35193) [CE-446](https://jira.hyperledger.org/browse/CE-446) Support async task in flask server
+* [3e22eab](https://github.com/hyperledger/cello/commit/3e22eab) [CE-441](https://jira.hyperledger.org/browse/CE-441)[CE-447] Fix SSL and remove redundant code
+* [243460f](https://github.com/hyperledger/cello/commit/243460f) [CE-395](https://jira.hyperledger.org/browse/CE-395) Enable mutual tls in cello/ansible
+* [a8fb378](https://github.com/hyperledger/cello/commit/a8fb378) [CE-445](https://jira.hyperledger.org/browse/CE-445) Fix fabric-1.0 directory not found
+* [2407d62](https://github.com/hyperledger/cello/commit/2407d62) [CE-427](https://jira.hyperledger.org/browse/CE-427) Support fabric v1.2 sdk in user dashboard
+* [2b9c5b4](https://github.com/hyperledger/cello/commit/2b9c5b4) [CE-439](https://jira.hyperledger.org/browse/CE-439) Create "mychannel" for later use
+* [bdc58f8](https://github.com/hyperledger/cello/commit/bdc58f8) [CE-438](https://jira.hyperledger.org/browse/CE-438) Update certificates and templates
+* [3311ff7](https://github.com/hyperledger/cello/commit/3311ff7) [CE-437](https://jira.hyperledger.org/browse/CE-437) Unable to find orderer service url
+* [f516693](https://github.com/hyperledger/cello/commit/f516693) [CE-411](https://jira.hyperledger.org/browse/CE-411) Kubernetes host can not run fill up
+* [8b1bb18](https://github.com/hyperledger/cello/commit/8b1bb18) [CE-436](https://jira.hyperledger.org/browse/CE-436) Mismatched contents in config.json
+* [d16f929](https://github.com/hyperledger/cello/commit/d16f929) [CE-435](https://jira.hyperledger.org/browse/CE-435) Improve docs of setup and tutorial
+* [a791098](https://github.com/hyperledger/cello/commit/a791098) [CE-434](https://jira.hyperledger.org/browse/CE-434)create a work directory automatically
+* [1d236d9](https://github.com/hyperledger/cello/commit/1d236d9) [CE-432](https://jira.hyperledger.org/browse/CE-432)clean up unused files
+* [a7fd65b](https://github.com/hyperledger/cello/commit/a7fd65b) [CE-431](https://jira.hyperledger.org/browse/CE-431) Fix typo
+* [2c5821d](https://github.com/hyperledger/cello/commit/2c5821d) [CE-342](https://jira.hyperledger.org/browse/CE-342) Fix systemd config update doc
+* [a318849](https://github.com/hyperledger/cello/commit/a318849) [CE-426](https://jira.hyperledger.org/browse/CE-426) Chain in k8s host thrown Exception
+* [073278b](https://github.com/hyperledger/cello/commit/073278b) [CE-371](https://jira.hyperledger.org/browse/CE-371) Remove wrong command in docker-compose.yml
+* [ffb5608](https://github.com/hyperledger/cello/commit/ffb5608) [CE-430](https://jira.hyperledger.org/browse/CE-430) Generate crypto config files dynamically
+* [55a0190](https://github.com/hyperledger/cello/commit/55a0190) [CE-421](https://jira.hyperledger.org/browse/CE-421) Change command line for user dashboard
+* [092e6d0](https://github.com/hyperledger/cello/commit/092e6d0) [CE-424](https://jira.hyperledger.org/browse/CE-424) Add make build-admin-js cmd in dev mode
+* [a3707b5](https://github.com/hyperledger/cello/commit/a3707b5) [CE-423](https://jira.hyperledger.org/browse/CE-423) Update the contribution doc
+* [8c905e2](https://github.com/hyperledger/cello/commit/8c905e2) [CE-422](https://jira.hyperledger.org/browse/CE-422)fix ca private key renaming issue
+* [40617d2](https://github.com/hyperledger/cello/commit/40617d2) [CE-419](https://jira.hyperledger.org/browse/CE-419) Clean up startup
+* [fd28261](https://github.com/hyperledger/cello/commit/fd28261) [CE-418](https://jira.hyperledger.org/browse/CE-418)Add option to reuse certs in cello/ansible
+* [abe30db](https://github.com/hyperledger/cello/commit/abe30db) [CE-417](https://jira.hyperledger.org/browse/CE-417) Clean up the setup steps
+* [b5c0e9b](https://github.com/hyperledger/cello/commit/b5c0e9b) [CE-415](https://jira.hyperledger.org/browse/CE-415) Support Fabric 1.2.0 in docker agent
+* [b9098c3](https://github.com/hyperledger/cello/commit/b9098c3) [CE-416](https://jira.hyperledger.org/browse/CE-416) Nominate Luke Chen as new maintainer
+* [33087f1](https://github.com/hyperledger/cello/commit/33087f1) [CE-414](https://jira.hyperledger.org/browse/CE-414)Remove deprecated methods in playbooks
+* [59dd1a9](https://github.com/hyperledger/cello/commit/59dd1a9) [CE-412](https://jira.hyperledger.org/browse/CE-412) Add ssl_ca content for k8s host creation
+* [9c3d2ea](https://github.com/hyperledger/cello/commit/9c3d2ea) [CE-384](https://jira.hyperledger.org/browse/CE-384) User guide for kubernetes agent
+* [0345ebe](https://github.com/hyperledger/cello/commit/0345ebe) [CE-413](https://jira.hyperledger.org/browse/CE-413)Enable composer on fabric over k8s
+* [f012b10](https://github.com/hyperledger/cello/commit/f012b10) [CE-402](https://jira.hyperledger.org/browse/CE-402) Unable to create k8s host using cert/key
+* [a969010](https://github.com/hyperledger/cello/commit/a969010) [CE-409](https://jira.hyperledger.org/browse/CE-409) Add fabric initial image build
+* [0a86b97](https://github.com/hyperledger/cello/commit/0a86b97) [CE-403](https://jira.hyperledger.org/browse/CE-403) Add helm charts for deploy cello master
+* [d0ed152](https://github.com/hyperledger/cello/commit/d0ed152) [CE-407](https://jira.hyperledger.org/browse/CE-407)Allow agent to deploy peer or orderer only
+* [9ed8658](https://github.com/hyperledger/cello/commit/9ed8658) [CE-405](https://jira.hyperledger.org/browse/CE-405) Change expose port for user dashboard
+* [06763ee](https://github.com/hyperledger/cello/commit/06763ee) [CE-404](https://jira.hyperledger.org/browse/CE-404) Support dynamic config mongo in user-dashboard
+* [73f4d16](https://github.com/hyperledger/cello/commit/73f4d16) [CE-305](https://jira.hyperledger.org/browse/CE-305) Support Fabric 1.1.0 in docker agent
+* [6b238b4](https://github.com/hyperledger/cello/commit/6b238b4) [CE-398](https://jira.hyperledger.org/browse/CE-398) Add socket.io communicate with server
+* [86a55d3](https://github.com/hyperledger/cello/commit/86a55d3) [CE-399](https://jira.hyperledger.org/browse/CE-399) Fix edit host error in operator dashboard
+* [88dad37](https://github.com/hyperledger/cello/commit/88dad37) [CE-401](https://jira.hyperledger.org/browse/CE-401) Remove nginx from compose in dev mode
+* [b814ccf](https://github.com/hyperledger/cello/commit/b814ccf) [CE-400](https://jira.hyperledger.org/browse/CE-400) Fix product compose file for user-dashboard
+* [437f085](https://github.com/hyperledger/cello/commit/437f085) [CE-397](https://jira.hyperledger.org/browse/CE-397) Fix user dashboard dockerhub build error
+* [f152bb8](https://github.com/hyperledger/cello/commit/f152bb8) [CE-396](https://jira.hyperledger.org/browse/CE-396) Add chain info page
+* [0c6f2f2](https://github.com/hyperledger/cello/commit/0c6f2f2) [CE-394](https://jira.hyperledger.org/browse/CE-394) Fixing configtx.j2 in cello/ansible k8s
+* [6a07c72](https://github.com/hyperledger/cello/commit/6a07c72) [CE-369](https://jira.hyperledger.org/browse/CE-369) Implement invoke/query smart contract
+* [589ea4c](https://github.com/hyperledger/cello/commit/589ea4c) [CE-393](https://jira.hyperledger.org/browse/CE-393)Ansible agent container does not allow sudo
+* [fb5d8cb](https://github.com/hyperledger/cello/commit/fb5d8cb) [CE-301](https://jira.hyperledger.org/browse/CE-301) Update terminologies and figures
+* [ef9b808](https://github.com/hyperledger/cello/commit/ef9b808) [CE-389](https://jira.hyperledger.org/browse/CE-389) Add smart contract info page
+* [a5f98ca](https://github.com/hyperledger/cello/commit/a5f98ca) [CE-390](https://jira.hyperledger.org/browse/CE-390)Fix the agent dns upstream lookup issue
+* [e53af90](https://github.com/hyperledger/cello/commit/e53af90) [CE-392](https://jira.hyperledger.org/browse/CE-392) Fix operator js code format
+* [9909115](https://github.com/hyperledger/cello/commit/9909115) [CE-368](https://jira.hyperledger.org/browse/CE-368) Implement smart contract management.
+* [cc7e2ac](https://github.com/hyperledger/cello/commit/cc7e2ac) [CE-388](https://jira.hyperledger.org/browse/CE-388) Clean up unused nginx images
+* [402ad34](https://github.com/hyperledger/cello/commit/402ad34) [CE-386](https://jira.hyperledger.org/browse/CE-386)[CE-387]Refactor code to reduce duplicate code
+* [6555a71](https://github.com/hyperledger/cello/commit/6555a71) [CE-384](https://jira.hyperledger.org/browse/CE-384) Use defualt NFS server for k8s agent
+* [64cf1b6](https://github.com/hyperledger/cello/commit/64cf1b6) [CE-385](https://jira.hyperledger.org/browse/CE-385) Using cert/key to create kubernetes host
+* [21f0027](https://github.com/hyperledger/cello/commit/21f0027) [CE-377](https://jira.hyperledger.org/browse/CE-377) Support initialize fabric in user dashboard
+* [b42e272](https://github.com/hyperledger/cello/commit/b42e272) [CE-382](https://jira.hyperledger.org/browse/CE-382) Allow resource allocation for k8s install
+* [47a8f57](https://github.com/hyperledger/cello/commit/47a8f57) [CE-381](https://jira.hyperledger.org/browse/CE-381) Support PodAntiAffinity in cello/ansible
+* [8fc89a1](https://github.com/hyperledger/cello/commit/8fc89a1) [CE-378](https://jira.hyperledger.org/browse/CE-378) Updated code to handle k8s params from UI
+* [41e05f6](https://github.com/hyperledger/cello/commit/41e05f6) [CE-379](https://jira.hyperledger.org/browse/CE-379) Fixing timeout syntax for cli in ansible
+* [85b3974](https://github.com/hyperledger/cello/commit/85b3974) [CE-376](https://jira.hyperledger.org/browse/CE-376) Changes to cello/ansible k8s
+* [db76e9b](https://github.com/hyperledger/cello/commit/db76e9b) [CE-367](https://jira.hyperledger.org/browse/CE-367) Add chain apply,list,delete support
+* [c7dde0e](https://github.com/hyperledger/cello/commit/c7dde0e) [CE-374](https://jira.hyperledger.org/browse/CE-374) Ansible plays updating/redeploying BNA archive
+* [88c7a6a](https://github.com/hyperledger/cello/commit/88c7a6a) [CE-370](https://jira.hyperledger.org/browse/CE-370) Make ansible agent run on existing k8s
+* [b92de40](https://github.com/hyperledger/cello/commit/b92de40) [CE-365](https://jira.hyperledger.org/browse/CE-365) Use eggjs framework rewrite user dashboard
+* [6b1b614](https://github.com/hyperledger/cello/commit/6b1b614) [CE-366](https://jira.hyperledger.org/browse/CE-366) Add persistent volume for k8s
+* [1cb8546](https://github.com/hyperledger/cello/commit/1cb8546) [CE-363](https://jira.hyperledger.org/browse/CE-363) Generate kubeconfig locally for ansible agent
+* [03fb3d0](https://github.com/hyperledger/cello/commit/03fb3d0) [CE-288](https://jira.hyperledger.org/browse/CE-288) Add kubernetes configuration in ui
+* [0071edf](https://github.com/hyperledger/cello/commit/0071edf) [CE-363](https://jira.hyperledger.org/browse/CE-363) Generate kubeconfig locally for ansible agent
+* [896c084](https://github.com/hyperledger/cello/commit/896c084) [CE-361](https://jira.hyperledger.org/browse/CE-361) Update make targets for ppc64le/s390x
+* [b2f4437](https://github.com/hyperledger/cello/commit/b2f4437) [CE-360](https://jira.hyperledger.org/browse/CE-360) Fix page crashed when apply multi chain
+* [4d9e02e](https://github.com/hyperledger/cello/commit/4d9e02e) [CE-269](https://jira.hyperledger.org/browse/CE-269) Use NFS instead of copy compose files
+* [c48f30a](https://github.com/hyperledger/cello/commit/c48f30a) [CE-359](https://jira.hyperledger.org/browse/CE-359) make docker fails
+* [31f058e](https://github.com/hyperledger/cello/commit/31f058e) [CE-358](https://jira.hyperledger.org/browse/CE-358) Fix static port mapping of explorer
+* [4b251f0](https://github.com/hyperledger/cello/commit/4b251f0) [CE-357](https://jira.hyperledger.org/browse/CE-357) Fix user dashboard fabric client not work
+* [a7d098f](https://github.com/hyperledger/cello/commit/a7d098f) [CE-355](https://jira.hyperledger.org/browse/CE-355) Add user-dashboard docker build locally
+* [e9ce9b7](https://github.com/hyperledger/cello/commit/e9ce9b7) [CE-351](https://jira.hyperledger.org/browse/CE-351)Add ansible agent image to docker hub
+* [ef66d55](https://github.com/hyperledger/cello/commit/ef66d55) [CE-354](https://jira.hyperledger.org/browse/CE-354) Fix operator DEV mode error
+* [8076ef0](https://github.com/hyperledger/cello/commit/8076ef0) [CE-353](https://jira.hyperledger.org/browse/CE-353) Fix operator dashboard build error
+* [416e174](https://github.com/hyperledger/cello/commit/416e174) [CE-351](https://jira.hyperledger.org/browse/CE-351)Add ansible agent image onto docker hub
+* [c3742cc](https://github.com/hyperledger/cello/commit/c3742cc) [CE-352](https://jira.hyperledger.org/browse/CE-352) Remove unused theme files
+* [47fe47b](https://github.com/hyperledger/cello/commit/47fe47b) [CE-351](https://jira.hyperledger.org/browse/CE-351)Make ansible agent image on docker hub
+* [293504d](https://github.com/hyperledger/cello/commit/293504d) [CE-346](https://jira.hyperledger.org/browse/CE-346) Implement user management page
+* [393f045](https://github.com/hyperledger/cello/commit/393f045) [CE-351](https://jira.hyperledger.org/browse/CE-351) Create ansible agent docker image
+* [d6a1633](https://github.com/hyperledger/cello/commit/d6a1633) [CE-333](https://jira.hyperledger.org/browse/CE-333) Support kafka consensus mode in k8s agent
+* [21f0696](https://github.com/hyperledger/cello/commit/21f0696) [CE-345](https://jira.hyperledger.org/browse/CE-345) Add chain management page
+* [491c544](https://github.com/hyperledger/cello/commit/491c544) [CE-287](https://jira.hyperledger.org/browse/CE-287) Update module layer to support k8s agent
+* [250d693](https://github.com/hyperledger/cello/commit/250d693) [CE-349](https://jira.hyperledger.org/browse/CE-349) Add fillup,reset,clean,update operation
+* [b20929b](https://github.com/hyperledger/cello/commit/b20929b) [CE-344](https://jira.hyperledger.org/browse/CE-344) Support host list, create, delete
+* [dbbed6e](https://github.com/hyperledger/cello/commit/dbbed6e) [CE-303](https://jira.hyperledger.org/browse/CE-303) E2E play with smart contract on User Dashboard
+* [fc0da0a](https://github.com/hyperledger/cello/commit/fc0da0a) [CE-343](https://jira.hyperledger.org/browse/CE-343) Enable i18n in operator dashboard
+* [cccd958](https://github.com/hyperledger/cello/commit/cccd958) [CE-337](https://jira.hyperledger.org/browse/CE-337) Implement overview page in react theme
+* [7b95cd3](https://github.com/hyperledger/cello/commit/7b95cd3) [CE-340](https://jira.hyperledger.org/browse/CE-340) Fix URLs for downloading binaries
+* [cadef31](https://github.com/hyperledger/cello/commit/cadef31) [CE-338](https://jira.hyperledger.org/browse/CE-338) Enable socket.io in operator dashboard
+* [07f39e3](https://github.com/hyperledger/cello/commit/07f39e3) [CE-339](https://jira.hyperledger.org/browse/CE-339) Support DEBUG & LOG_LEVEL dynamic.
+* [e07d543](https://github.com/hyperledger/cello/commit/e07d543) [CE-286](https://jira.hyperledger.org/browse/CE-286) Necessary file for Deploying Fabric cluster
+* [30e0264](https://github.com/hyperledger/cello/commit/30e0264) [CE-259](https://jira.hyperledger.org/browse/CE-259) Change operator dashboard theme react.
+* [8ecc686](https://github.com/hyperledger/cello/commit/8ecc686) [CE-285](https://jira.hyperledger.org/browse/CE-285) The Cluster part of kubernetes agent
+* [e59cde5](https://github.com/hyperledger/cello/commit/e59cde5) [CE-332](https://jira.hyperledger.org/browse/CE-332)Add connection profile and composer playground
+* [ef6fc2f](https://github.com/hyperledger/cello/commit/ef6fc2f) [CE-329](https://jira.hyperledger.org/browse/CE-329) Remove release history page
+* [082dec6](https://github.com/hyperledger/cello/commit/082dec6) [CE-326](https://jira.hyperledger.org/browse/CE-326) Update Flags for v0.9.0 release
+* [3b948fa](https://github.com/hyperledger/cello/commit/3b948fa) [CE-327](https://jira.hyperledger.org/browse/CE-327) Fix bugs of cluster and host actions
+
 ## v0.8.0
 Wed Mar 28 13:13:21 UTC 2018
 
