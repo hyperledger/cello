@@ -13,7 +13,9 @@ services:
     restart: unless-stopped
     environment:
     - SHARED_DIRECTORY=/cello
+    - SYNC=true
+    ports:
+    - 2049:2049
     volumes:
     - $ROOT_PATH/src/agent/docker/_compose_files:/cello
     privileged: true
-    network_mode: host
