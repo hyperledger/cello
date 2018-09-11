@@ -1,5 +1,28 @@
 # Release Notes
 
+## [v0.9.0-alpha](https://github.com/hyperledger/cello/releases/tag/v0.9.0-alpha) September 9, 2018
+
+### Add new features
+
+* Support kubernetes agent deploy fabric;
+* Support fabric v1.2 in user dashboard;
+
+### Improvement
+
+* Move long time task into async task queue in background;
+* Refine dockerfile for operator dashboard;
+
+### Known Vulnerabilities
+none
+
+### Resolved Vulnerabilities
+none
+
+### Known Issues & Workarounds
+
+* Kubernetes agent can't deploy fabric v1.2, and can't be used in user dashboard;
+* In user dashboard create, join channel for fabric v1.2, will cause peer node restart random;
+
 ## [v0.8.0](https://github.com/hyperledger/cello/releases/tag/v0.8.0) March 28, 2018
 
 ### Add new features
