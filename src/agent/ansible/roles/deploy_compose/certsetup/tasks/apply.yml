@@ -35,6 +35,12 @@
     dest: "{{ fabricworkdir }}/keyfiles/{{ item }}/connection.json"
   with_items: "{{ allorgs }}"
 
+- name: Create yaml connection profiles
+  template:
+    src: "{{ playbook_dir }}/../deploy_compose/certsetup/templates/connyaml.j2"
+    dest: "{{ fabricworkdir }}/keyfiles/{{ item }}/connection.yml"
+  with_items: "{{ allorgs }}"
+
 - name: Create endorsement policy file
   template:
     src: "{{ playbook_dir }}/../deploy_compose/certsetup/templates/policy.j2"
