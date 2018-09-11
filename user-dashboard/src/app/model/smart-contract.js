@@ -14,6 +14,7 @@ module.exports = app => {
     description: { type: String },
     path: { type: String },
     createTime: { type: Date, default: Date.now },
+    default: { type: Schema.Types.Mixed },
   });
 
   SmartContractSchema.post('remove', function(doc) {

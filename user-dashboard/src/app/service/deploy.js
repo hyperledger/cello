@@ -29,7 +29,7 @@ class DeployService extends Service {
   }
   async query(id) {
     const { ctx } = this;
-    const deploy = await ctx.model.SmartContractDeploy.findOne({ _id: id }, '_id name status deployTime').populate('smartContractCode chain smartContract', '_id version name chainId type size');
+    const deploy = await ctx.model.SmartContractDeploy.findOne({ _id: id }, '_id name status deployTime').populate('smartContractCode chain smartContract', '_id version name chainId type size default');
     if (!deploy) {
       return {
         success: false,

@@ -148,12 +148,14 @@ export default class AdvancedProfile extends Component {
       operation: 'invoke',
       onSubmit: this.operateAPI,
       submitting: operating,
+      currentDeploy,
     };
     const queryProps = {
       operation: 'query',
       onSubmit: this.operateAPI,
       submitting: operating,
       result: queryResult,
+      currentDeploy,
     };
 
     const contentList = {

@@ -147,8 +147,11 @@ export default class Deploy extends Component {
 
   render() {
     const { stepDirection, current, version, versionId, chainName, chainId, installing, instantiating } = this.state;
-    const { chains, codes } = this.props;
+    const { chains, codes, currentSmartContract } = this.props;
     const { getFieldDecorator } = this.props.form;
+    const defaultValues = currentSmartContract.default || {};
+    const defaultParameters = defaultValues.parameters || {};
+    const defaultInstantiateParameters = defaultParameters.instantiate ? defaultParameters.instantiate.join(",") : "";
     const versionOptions = codes.map(code => <Option value={code._id}>{code.version}</Option>);
     const chainOptions = chains.map(chain => <Option value={chain._id}>{chain.name}</Option>);
     const versionDesc = (
@@ -221,7 +224,7 @@ export default class Deploy extends Component {
               extra="Must use ',' separate arguments."
             >
               {getFieldDecorator('args', {
-                initialValue: '',
+                initialValue: defaultInstantiateParameters,
                 rules: [
                   {
                     required: true,

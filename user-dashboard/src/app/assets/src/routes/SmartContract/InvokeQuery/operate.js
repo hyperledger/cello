@@ -37,7 +37,14 @@ export default class OperateDeploy extends Component {
     });
   };
   render() {
-    const { form: { getFieldDecorator }, operation, submitting, result } = this.props;
+    const { form: { getFieldDecorator }, operation, submitting, result, currentDeploy } = this.props;
+    const smartContract = currentDeploy.smartContract || {};
+    const defaultValues = smartContract.default || {};
+    const parameters = defaultValues.parameters || {};
+    const functions = defaultValues.functions || {};
+    const functionName = operation === "query" ? functions.query || "" : functions.invoke || "";
+    const parameter = operation === "query" ? parameters.query || [] : parameters.invoke || [];
+    const parameterStr = parameter.join(",");
     const formItemLayout = {
       labelCol: {
         xs: { span: 24 },
@@ -74,7 +81,7 @@ export default class OperateDeploy extends Component {
                   label="Function Name"
                 >
                   {getFieldDecorator('functionName', {
-                  initialValue: '',
+                  initialValue: functionName,
                   rules: [
                     {
                       required: true,
@@ -89,7 +96,7 @@ export default class OperateDeploy extends Component {
                   extra="Must use ',' separate arguments."
                 >
                   {getFieldDecorator('args', {
-                  initialValue: '',
+                  initialValue: parameterStr,
                   rules: [
                     {
                       required: true,

@@ -44,7 +44,18 @@ module.exports = appInfo => {
             name: 'chaincode_example02',
             path: '/var/www/resource/smart_contract/fabric/chaincode_example02',
             version: 'v1.0',
-            description: 'This is a demo smart contract example02.',
+            description: 'This is a demo smart contract example02 for fabric v1.0, can not install&instantiate on fabric v1.2',
+            default: {
+              parameters: {
+                instantiate: ['a', '100', 'b', '100'],
+                invoke: ['a', 'b', '1'],
+                query: ['a'],
+              },
+              functions: {
+                invoke: 'invoke',
+                query: 'query',
+              },
+            },
           },
         ],
       },

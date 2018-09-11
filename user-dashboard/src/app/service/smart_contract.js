@@ -36,6 +36,7 @@ class SmartContractService extends Service {
           name: smartContract.name,
           description: smartContract.description,
           path: smartContractPath,
+          default: smartContract.default,
           user: userId,
         });
         await ctx.model.SmartContractCode.create({
@@ -145,7 +146,7 @@ class SmartContractService extends Service {
   }
   async querySmartContract(id) {
     const { ctx } = this;
-    const smartContract = await ctx.model.SmartContract.findOne({ _id: id }, '_id description name createTime');
+    const smartContract = await ctx.model.SmartContract.findOne({ _id: id }, '_id description name createTime default');
     if (!smartContract) {
       return {
         success: false,
