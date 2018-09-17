@@ -48,7 +48,7 @@
 
 - name: Rename admin private key
   shell: >-
-    ls *_sk | cat -n | while read n f; do mv "$f" "admin_private.key"; done
+    ls *_sk | cat -n | while read n f; do cp "$f" "admin_private.key"; done
   args:
     chdir: "{{ fabricworkdir }}/keyfiles/{{ item }}/users/Admin@{{ item }}/msp/keystore"
   with_items: "{{ allorgs }}"

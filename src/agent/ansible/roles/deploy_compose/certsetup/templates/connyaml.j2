@@ -4,6 +4,8 @@ x-type: "hlfv1"
 version: "1.0.0"
 client:
   organization: "{{ item }}"
+  cryptoconfig:
+    path: "/fabric/keyfiles"
   connection:
     timeout:
       peer:
@@ -28,6 +30,7 @@ organizations:
 {% for org in allorgs %}
   {{ org }}:
     mspid: "{{ org }}"
+    cryptoPath: "{{ org }}/users/{username}@{{ org}}/msp"
     peers:
 {% for peer in allpeers|selectattr('org', 'equalto', org)|list %}
       - {{ peer.name }}
@@ -63,4 +66,6 @@ certificateAuthorities:
     caName: "{{ ca.name }}"
     httpOptions:
       verify: false
+    tlsCACerts:
+      path: "{{ '/fabric/keyfiles/'+ca.org+'/tlsca/tlsca.'+ca.org+'-cert.pem' }}"
 {% endfor %}
