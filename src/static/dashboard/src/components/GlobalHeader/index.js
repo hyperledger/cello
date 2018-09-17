@@ -2,11 +2,12 @@
  SPDX-License-Identifier: Apache-2.0
 */
 import React, { PureComponent } from 'react';
-import { Menu, Icon, Spin, Dropdown, Avatar, Divider, Button } from 'antd';
+import { Menu, Icon, Spin, Dropdown, Avatar, Divider, Button, Tooltip } from 'antd';
 import Debounce from 'lodash-decorators/debounce';
 import { Link } from 'dva/router';
 import styles from './index.less';
 import { getLang } from '../../utils/utils';
+import stackOverflow from '../../assets/so.svg';
 
 const language = getLang();
 export default class GlobalHeader extends PureComponent {
@@ -52,6 +53,28 @@ export default class GlobalHeader extends PureComponent {
           onClick={this.toggle}
         />
         <div className={styles.right}>
+          <Tooltip title="Document">
+            <a
+              target="_blank"
+              href="https://cello.readthedocs.io"
+              rel="noopener noreferrer"
+              className={styles.action}
+              title="Document"
+            >
+              <Icon type="question-circle-o" />
+            </a>
+          </Tooltip>
+          <Tooltip title="Stack Overflow">
+            <a
+              target="_blank"
+              href="https://stackoverflow.com/questions/tagged/hyperledger-cello"
+              rel="noopener noreferrer"
+              className={styles.action}
+              title="Stack Overflow"
+            >
+              <img src={stackOverflow} style={{ width: 18 }} />
+            </a>
+          </Tooltip>
           <Button size="small" onClick={this.changeLanguage}>
             {language === 'en' ? '中文' : 'En'}
           </Button>
