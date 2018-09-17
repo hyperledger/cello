@@ -214,7 +214,7 @@ This step will install all necessary software packages, setup an overlay
 network, and configure DNS services and registrator services on the machines created in
 previous step:
 
-        ansible-playbook -i run/runhosts -e "mode=apply env=mycloud env_type=flanneld" initcluster.yml
+        ansible-playbook -i vars/runhosts -e "mode=apply env=mycloud env_type=flanneld" initcluster.yml
 
 The parameter `env` is same as in previous step. The parameter `env_type`
 indicates what communication environment you would like to setup. The possible
@@ -224,7 +224,7 @@ environment.
 
 To remove everything this step created, run the following command:
 
-        ansible-playbook -i run/runhosts -e "mode=destroy env=mycloud env_type=flanneld" initcluster.yml
+        ansible-playbook -i vars/runhosts -e "mode=destroy env=mycloud env_type=flanneld" initcluster.yml
 
 # <a name="setup-fabric-network"></a>Set up the Fabric network
 
@@ -233,7 +233,7 @@ Fabric binaries and docker images, create certificates, and eventually run
 various fabric components such as peer, orderer, kafka, zookeeper, fabric ca,
 etc on the environment produced by the previous steps:
 
-        ansible-playbook -i run/runhosts -e "mode=apply env=myfabric deploy_type=compose" setupfabric.yml
+        ansible-playbook -i vars/runhosts -e "mode=apply env=myfabric deploy_type=compose" setupfabric.yml
 
 The `env` value in the command indicates which Fabric network configuration to
 use. The meaning of this parameter is a bit different compared to the
@@ -244,14 +244,14 @@ This should corrlate to the `env_type` parameter given in the
 
 To remove everything this step created, run the following command:
 
-        ansible-playbook -i run/runhosts -e "mode=destroy env=myfabric deploy_type=compose" setupfabric.yml
+        ansible-playbook -i vars/runhosts -e "mode=destroy env=myfabric deploy_type=compose" setupfabric.yml
 
 # <a name="verify-fabric-network"></a>Verify the Fabric network
 
 If all previous steps run without any errors, you can run the following playbook
 to verify the running status of each container:
 
-        ansible-playbook -i run/runhosts -e "mode=verify env=bc1st" verify.yml
+        ansible-playbook -i vars/runhosts -e "mode=verify env=bc1st" verify.yml
 
 The `env` value in the command should match the value used in [Setup the fabric network](#setup-fabric-network)
 The command should access all the servers and display the container
@@ -428,7 +428,7 @@ Ansible allows you to run tasks in a playbook with particular tags or skip
 particular tags. For example, you can run the follow command
 
 ```
-    ansible-playbook -i run/runhosts -e "mode=apply env=bc1st \
+    ansible-playbook -i vars/runhosts -e "mode=apply env=bc1st \
     deploy_type=compose" setupfabric.yml --tags "certsetup"
 ```
 The above command will use the runhosts inventory file and only run tasks
@@ -436,7 +436,7 @@ or plays tagged `certsetup`, all other plays in the playbooks will be
 skipped.
 
 ```
-    ansible-playbook -i run/runhosts -e "mode=apply env=bc1st \
+    ansible-playbook -i vars/runhosts -e "mode=apply env=bc1st \
     deploy_type=compose" setupfabric.yml --skip-tags "certsetup"
 ```
 The above command will run all tasks *except for* the tasks/plays tagged `certsetup`
