@@ -607,10 +607,34 @@ class K8sClusterOperation():
         cluster_ports = self._get_cluster_ports(ports_index)
         self._delete_cluster_resource(cluster_name, cluster_ports,
                                       nfsServer_ip, consensus)
-        time.sleep(2)
-        self._delete_config_file(cluster_name)
         time.sleep(5)
+
+        # check if the pvs have been deleted before removing the
+        # entire folder.
+        while not self.check_pvs(cluster_name):
+            time.sleep(3)
+
+        time.sleep(5)
+        self._delete_config_file(cluster_name)
         return True
+
+    def check_pvs(self, cluster_name):
+        mapping_list = [cluster_name + '-ordererorg-pv',
+                        cluster_name + '-org1-pv',
+                        cluster_name + '-org2-pv',
+                        cluster_name + '-org1-resources-pv',
+                        cluster_name + '-org2-resources-pv']
+
+        try:
+            response = self.corev1client.list_persistent_volume()
+            for item in response.items:
+                if item.metadata.name in mapping_list:
+                    return False
+
+            return True
+
+        except client.rest.ApiException as e:
+            logger.error("Exception raised in list pv: %s\n" % e)
 
     def stop_cluster(self, cluster_name, ports_index, nfsServer_ip, consensus):
         cluster_ports = self._get_cluster_ports(ports_index)
