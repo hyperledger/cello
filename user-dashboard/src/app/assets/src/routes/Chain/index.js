@@ -46,6 +46,13 @@ export default class CardList extends PureComponent {
       })
     );
   };
+  clickChain = (chain) => {
+    this.props.dispatch(
+      routerRedux.push({
+        pathname: `/chain/info/${chain._id}`,
+      })
+    );
+  };
 
   render() {
     const { chain: { chains }, loading } = this.props;
@@ -82,6 +89,7 @@ export default class CardList extends PureComponent {
                         <Avatar size="large" style={{ backgroundColor: '#08c' }} icon="link" />
                       }
                       title={<a href="#">{item.name}</a>}
+                      onClick={() => this.clickChain(item)}
                       description={
                         <Ellipsis className={styles.item} lines={3}>
                           {item.type}
