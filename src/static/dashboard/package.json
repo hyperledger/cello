@@ -49,7 +49,8 @@
     "react-fittext": "^1.0.0",
     "react-intl": "^2.4.0",
     "url-polyfill": "^1.0.10",
-    "socket.io-client": "^2.1.0"
+    "socket.io-client": "^2.1.0",
+    "react-particles-js": "^2.3.0"
   },
   "devDependencies": {
     "babel-eslint": "^8.1.2",

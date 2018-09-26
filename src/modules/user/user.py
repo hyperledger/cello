@@ -10,6 +10,7 @@ from common import log_handler, LOG_LEVEL
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
 logger.addHandler(log_handler)
+AUTHORITY = ['admin', 'operator', 'user']
 
 
 class User(UserMixin):
@@ -117,6 +118,7 @@ class User(UserMixin):
             self.id = dbUser.id
             self.balance = dbUser.balance
             self.profile = dbUser.profile
+            self.role = AUTHORITY[dbUser.role]
             self.dbUser = dbUser
 
             return self

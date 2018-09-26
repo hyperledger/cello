@@ -18,6 +18,7 @@ export default {
       delete: `${apiBase}/user/delete`,
       search: `${apiBase}/user/search`,
       update: `${apiBase}/user/update`,
+      login: `${apiBase}/auth/login`,
     },
   },
 };

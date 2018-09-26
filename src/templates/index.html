@@ -30,6 +30,7 @@
     window.username = "{{ username }}";
     window.user_id = "{{ user_id }}";
     window.isAdmin = "{{ is_admin }}";
+    localStorage.setItem('cello-authority', "{{ authority }}");
 </script>
 <script src="{{ url_for('static', filename='dist/index.js') }}"> </script>
 

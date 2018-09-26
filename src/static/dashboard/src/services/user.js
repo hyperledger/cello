@@ -37,3 +37,10 @@ export async function updateUser(params) {
     body: params,
   });
 }
+
+export async function login(params) {
+  return request(urls.user.login, {
+    method: "POST",
+    body: params,
+  });
+}

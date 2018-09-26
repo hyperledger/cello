@@ -6,13 +6,12 @@
 import logging
 import os
 import sys
+
 from flask import Blueprint, render_template
 from flask import request as r
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-from common import log_handler, LOG_LEVEL, NETWORK_TYPES, \
-    CONSENSUS_MODES, WORKER_TYPES, NETWORK_SIZE_FABRIC_PRE_V1, request_debug, \
-    CLUSTER_LOG_TYPES, CLUSTER_LOG_LEVEL
+from common import log_handler, LOG_LEVEL, request_debug
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
@@ -25,4 +24,4 @@ bp_login = Blueprint('bp_login', __name__)
 def login():
     request_debug(r, logger)
 
-    return render_template("login.html")
+    return render_template("index.html")

@@ -3,13 +3,14 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-from flask_restful import Resource, reqparse, fields, marshal_with
-from flask import url_for
-from flask_login import login_user, logout_user
 import logging
-import sys
 import os
+import sys
+
 import bcrypt
+from flask import url_for
+from flask_login import login_user
+from flask_restful import Resource, reqparse, fields, marshal_with
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 from common import log_handler, LOG_LEVEL
@@ -30,10 +31,10 @@ login_fields = {
 
 login_parser = reqparse.RequestParser()
 login_parser.add_argument('username', required=True,
-                          location='form',
+                          location=['form', 'json'],
                           help='Username for create')
 login_parser.add_argument('password', required=True,
-                          location='form',
+                          location=['form', 'json'],
                           help='Password for create')
 
 
