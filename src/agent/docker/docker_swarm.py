@@ -26,13 +26,12 @@ else:  # py3
 from common import log_handler, LOG_LEVEL
 from common import \
     WORKER_TYPES, \
-    CLUSTER_NETWORK, NETWORK_TYPES, \
-    CONSENSUS_PLUGINS_FABRIC_V1, CONSENSUS_MODES, \
+    CLUSTER_NETWORK, CONSENSUS_PLUGINS_FABRIC_V1, \
     CLUSTER_LOG_TYPES, CLUSTER_LOG_LEVEL, \
-    NETWORK_SIZE_FABRIC_PRE_V1, NETWORK_SIZE_FABRIC_V1, \
     SERVICE_PORTS, \
     NETWORK_TYPE_FABRIC_V1_1, NETWORK_TYPE_FABRIC_V1_2, \
     NETWORK_TYPE_FABRIC_PRE_V1, NETWORK_TYPE_FABRIC_V1, HLF_VERSION
+from agent.docker.compose_generator import ComposeGenerator
 
 COMPOSE_FILE_PATH = os.getenv("COMPOSE_FILE_PATH",
                               "." + os.sep + "agent" + os.sep + "docker" +
@@ -425,6 +424,20 @@ def compose_up(name, host, mapped_ports, config=None, timeout=5):
 
     _compose_set_env(name, worker_api, mapped_ports, log_level, log_type,
                      log_server, config)
+    network_type = config.get("network_type", "fabric-1.0")
+    consensus_plugin = config.get("consensus_plugin", "solo")
+    size = int(config.get("size", "4"))
+    config_file = "/app/agent/docker/_compose_files/%s/fabric-%s-%s.yaml" % \
+                  (network_type, consensus_plugin, size)
+    if config:
+        config.update({
+            "config_file": config_file
+        })
+
+    # check whether docker compose yaml file existed, if not, generate the file
+    if not os.path.isfile(config_file):
+        compose_generator = ComposeGenerator(config=config)
+        compose_generator.generate_compose_file()
 
     try:
         template_path = COMPOSE_FILE_PATH + os.sep + config['network_type']
