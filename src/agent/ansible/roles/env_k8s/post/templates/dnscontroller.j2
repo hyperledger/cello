@@ -70,7 +70,7 @@ spec:
           initialDelaySeconds: 3
           timeoutSeconds: 5
         args:
-        - --domain=fabricnet.
+        - --domain= {{ cluster.domain }}.
         - --dns-port=10053
         - --kubecfg-file=/kube-config
         - --config-dir=/kube-dns-config
