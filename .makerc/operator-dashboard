@@ -21,3 +21,8 @@ else
     export LOG_LEVEL:=INFO
     DEPLOY_COMPOSE_FILE:=docker-compose-files/docker-compose.yml
 endif
+
+export OPERATOR_DASHBOARD_SSO_KEY?=cello-operator-dashboard
+export OPERATOR_DASHBOARD_SSO_SECRET?=60a84835-7495-4e75-a53a-197075f5cede
+export OPERATOR_DEFAULT_ADMIN_NAME?=admin
+export OPERATOR_DEFAULT_ADMIN_PASSWORD?=pass

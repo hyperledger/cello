@@ -4,13 +4,13 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import datetime
-
 import logging
+from enum import Enum
+
+from marshmallow import Schema, fields
 from mongoengine import Document, StringField, \
     BooleanField, DateTimeField, IntField, \
-    ReferenceField, DictField, ListField, LongField, CASCADE
-from enum import Enum
-from marshmallow import Schema, fields
+    ReferenceField, DictField, ListField, CASCADE
 
 logger = logging.getLogger(__name__)
 

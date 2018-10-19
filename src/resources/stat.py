@@ -8,12 +8,12 @@ import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from flask import Blueprint, jsonify, render_template
+from flask import Blueprint, jsonify
 from flask import request as r
 from common import log_handler, LOG_LEVEL, CODE_OK, request_debug
 from version import version
-from modules import host_handler, stat_handler
-from flask_login import login_required
+from modules import stat_handler
+from auth import oidc, role_required
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
@@ -35,6 +35,8 @@ def health():
 
 
 @bp_stat_api.route('/stat', methods=['GET'])
+@oidc.accept_token(True)
+@role_required(roles=['administrator', 'operator'])
 def get():
     request_debug(r, logger)
     res = r.args.get('res')
@@ -47,17 +49,4 @@ def get():
             'example': '/api/stat?res=host'
         }
 
-    logger.debug(result)
     return jsonify(result), CODE_OK
-
-
-bp_stat_view = Blueprint('bp_stat_view', __name__, url_prefix='/view')
-
-
-@bp_stat_view.route('/stat', methods=['GET'])
-@login_required
-def show():
-    logger.info("path={}, method={}".format(r.path, r.method))
-    hosts = list(host_handler.list())
-
-    return render_template("stat.html", hosts=hosts)

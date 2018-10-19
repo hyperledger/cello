@@ -72,13 +72,15 @@ class ClusterHandler(object):
             'kubernetes': ClusterOnKubernetes()
         }
 
-    def list(self, filter_data={}, col_name="active"):
+    def list(self, filter_data=None, col_name="active"):
         """ List clusters with given criteria
 
         :param filter_data: Image with the filter properties
         :param col_name: Use data in which col_name
         :return: list of serialized doc
         """
+        if filter_data is None:
+            filter_data = {}
         result = []
         if col_name in [e.name for e in CLUSTER_STATE]:
             logger.debug("List all {} clusters".format(col_name))

@@ -7,9 +7,11 @@ const rimraf = require('rimraf');
 module.exports = app => {
   const mongoose = app.mongoose;
   const Schema = mongoose.Schema;
+  require('mongoose-uuid2')(mongoose);
+  const UUID = mongoose.Types.UUID;
 
   const SmartContractSchema = new Schema({
-    user: { type: Schema.Types.ObjectId, ref: 'User' },
+    user: { type: UUID, ref: 'User' },
     name: { type: String },
     description: { type: String },
     path: { type: String },

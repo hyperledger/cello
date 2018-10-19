@@ -65,10 +65,12 @@ endif
 SLASH:=/
 REPLACE_SLASH:=\/
 
+-include .makerc/service
 -include .makerc/email
 -include .makerc/operator-dashboard
 -include .makerc/user-dashboard
 -include .makerc/worker-node
+-include .makerc/keycloak
 
 export ROOT_PATH = ${PWD}
 ROOT_PATH_REPLACE=$(subst $(SLASH),$(REPLACE_SLASH),$(ROOT_PATH))
@@ -81,24 +83,12 @@ else
 	SED = sed -i
 endif
 
-ifeq (${THEME}, basic) # basic theme doesn't need js compiling
-	START_OPTIONS = initial-env
+ifneq ($(wildcard /opt/cello/keycloak-mysql),)
+	INITIAL_CMD =
+	INITIAL_KEYCLOAK=false
 else
-	BUILD_JS=
-#	ifeq (${THEME}, react) # react needs compiling js first
-#		ifneq ($(wildcard ./src/${STATIC_FOLDER}/dist),)
-#			BUILD_JS=
-#		else
-#			BUILD_JS=build-admin-js build-user-dashboard-js
-#		endif
-#	else
-#		ifneq ($(wildcard ./src/${STATIC_FOLDER}/dist),)
-#			BUILD_JS=
-#		else
-#			BUILD_JS=build-admin-js build-user-dashboard-js
-#		endif
-#	endif
-	START_OPTIONS = initial-env $(BUILD_JS)
+	INITIAL_CMD = make initial-keycloak
+	INITIAL_KEYCLOAK=true
 endif
 
 # Specify what type the worker node is setup as
@@ -182,7 +172,7 @@ check: setup-master docker-operator-dashboard ##@Code Check code format
 	tox
 	@$(MAKE) check-js
 	@$(MAKE) test-case
-	make start && sleep 60 && make stop
+	MODE=dev make start && sleep 60 && MODE=dev make stop
 
 test-case: ##@Code Run test case for flask server
 	@$(MAKE) -C test/ all
@@ -215,13 +205,23 @@ image-clean: clean ##@Clean all existing images to rebuild
 initial-env: ##@Configuration Initial Configuration for dashboard
 	@envsubst < env.tmpl > .env
 
+initial-keycloak:
+	docker-compose -f docker-compose-files/docker-compose-initial.yml up --abort-on-container-exit
+
 start: ##@Service Start service
-	@$(MAKE) $(START_OPTIONS)
+	make initial-env
 	echo "Start all services with ${COMPOSE_FILE}... docker images must exist local now, otherwise, run 'make setup-master first' !"
 	if [ "$(MODE)" = "dev" ]; then \
 		make build-admin-js; \
 	fi
-	docker-compose -f ${COMPOSE_FILE} up -d --no-recreate
+	$(INITIAL_CMD)
+	if [ "$(INITIAL_KEYCLOAK)" = "true" ]; then \
+		OPERATOR_DASHBOARD_SSO_SECRET=`sed -n '/export OPERATOR_DASHBOARD_SSO_SECRET?=/ {s///p;q;}' .makerc/operator-dashboard` \
+		USER_DASHBOARD_SSO_SECRET=`sed -n '/export USER_DASHBOARD_SSO_SECRET?=/ {s///p;q;}' .makerc/user-dashboard` \
+		docker-compose -f ${COMPOSE_FILE} up -d --force-recreate; \
+	else \
+		docker-compose -f ${COMPOSE_FILE} up -d --force-recreate; \
+	fi
 	echo "Now you can visit operator-dashboard at localhost:8080, or user-dashboard at localhost:8081"
 	@$(MAKE) start-nfs
 

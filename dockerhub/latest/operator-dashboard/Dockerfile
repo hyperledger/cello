@@ -12,4 +12,4 @@ FROM hyperledger/cello-baseimage:x86_64-latest
 
 COPY --from=build_js /var/www/dist /app/static/dist
 COPY --from=build_js /tmp/cello/src/celery.conf /etc/supervisor/conf.d/
-CMD /etc/init.d/supervisor start && if [ "$DEBUG" = "True" ]; then python dashboard.py ; else gunicorn -w 1 --worker-class eventlet -b 0.0.0.0:8080 dashboard:app ;fi
+CMD /etc/init.d/supervisor start && bash /app/init_client_secrets.sh && if [ "$DEBUG" = "True" ]; then python dashboard.py ; else gunicorn -w 1 --worker-class eventlet -b 0.0.0.0:8080 dashboard:app ;fi

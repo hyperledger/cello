@@ -130,6 +130,9 @@ function checkStatus(response) {
 export default function request(url, options) {
   const defaultOptions = {
     credentials: 'include',
+    headers: {
+      Authorization: `Bearer ${window.accessToken}`,
+    },
   };
   const newOptions = { ...defaultOptions, ...options };
   if (newOptions.method === 'POST' || newOptions.method === 'PUT') {

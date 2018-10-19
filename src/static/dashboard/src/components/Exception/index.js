@@ -29,7 +29,7 @@ export default ({ className, linkElement = 'a', type, title, desc, img, actions,
                 to: '/',
                 href: '/',
               },
-              <Button type="primary">返回首页</Button>
+              <Button type="primary">Back Home</Button>
             )}
         </div>
       </div>

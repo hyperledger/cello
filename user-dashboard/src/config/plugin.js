@@ -7,9 +7,9 @@ exports.passport = {
   package: 'egg-passport',
 };
 
-exports.passportLocal = {
+exports.passportOauth2 = {
   enable: true,
-  package: 'egg-passport-local',
+  package: 'egg-passport-oauth2',
 };
 
 exports.nunjucks = {

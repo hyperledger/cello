@@ -9,4 +9,4 @@ set -x
 # https://docs.mongodb.com/manual/tutorial/install-mongodb-enterprise-on-ubuntu/#install-mongodb-enterprise
 
 set -x \
-	&& apt-get update && apt-get install -y supervisor && rm -rf /var/lib/apt/lists/*
+	&& apt-get update && apt-get install -y supervisor gettext-base && rm -rf /var/lib/apt/lists/*

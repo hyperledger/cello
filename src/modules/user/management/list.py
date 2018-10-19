@@ -4,15 +4,16 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 from flask_restful import Resource, reqparse, fields, marshal_with
-from flask_login import login_required
+from flask import g
 import logging
 import sys
 import os
+import time
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-from common import log_handler, LOG_LEVEL
+from common import log_handler, LOG_LEVEL, KeyCloakClient
 from modules.models import User as UserModel
-import time
+from auth import oidc
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
@@ -23,10 +24,11 @@ user_fields = {
     "id": fields.String,
     "name": fields.String,
     "isAdmin": fields.Boolean,
-    "role": fields.Integer,
+    "role": fields.String,
     "active": fields.Boolean,
-    "balance": fields.Integer,
-    "timestamp": fields.Integer
+    "email": fields.String,
+    "tenant": fields.String,
+    "createdTimeStamp": fields.Integer,
 }
 
 user_result_fields = {
@@ -50,44 +52,58 @@ user_list_parser.add_argument('sortColumns', default="",
 
 
 class ListUser(Resource):
-    @login_required
+    @oidc.accept_token(True)
     @marshal_with(user_list_fields)
     def get(self, **kwargs):
-        args = user_list_parser.parse_args()
-        page = args['pageNo']
-        per_page = args['pageSize']
-        sort_columns = args['sortColumns']
-        sort_columns = sort_columns.split(" ")
-        sort_str = ''
-        if len(sort_columns) > 1:
-            sort_type = sort_columns[1]
-            sort_field = sort_columns[0]
-            if sort_type == "desc":
-                sort_str = "-%s" % sort_field
+        token_info = g.oidc_token_info
+        # user_id = token_info.get("sub")
+        # username = token_info.get("username")
+        role = token_info.get("role", "")
+        tenant = token_info.get("tenant", "")
+
+        keycloak_client = KeyCloakClient()
+        users = keycloak_client.list_users()
+        user_list = []
+        for user in users:
+            user_role = user.get("attributes", {}).get("role", [])
+            if len(user_role):
+                user_role = user_role[0]
             else:
-                sort_str = sort_field
-        offset = (page - 1) * per_page
+                user_role = "user"
+            name = user.get("username", "")
+            user_id = user.get("id")
+            active = user.get("enabled", False)
+            user_tenant = user.get("attributes", {}).get("tenant", [])
+            if len(user_tenant):
+                user_tenant = user_tenant[0]
+            else:
+                user_tenant = ""
 
-        user_count = UserModel.objects.all().count()
-        users = \
-            UserModel.objects.skip(offset).limit(per_page).order_by(sort_str)
+            email = user.get("email", "")
+            create_time_stamp = user.get("createdTimestamp", 0)
+            if role == "administrator" or (role == "operator" and
+                                           user_role != "administrator" and
+                                           (user_tenant == tenant or
+                                            user_tenant == "")):
+                user_list.append({
+                    "id": user_id,
+                    "name": name,
+                    "isAdmin": False,
+                    "role": user_role,
+                    "active": active,
+                    "email": email,
+                    "createdTimeStamp": create_time_stamp,
+                    "tenant": user_tenant
+                })
 
-        users = [{
-            "id": str(user.id),
-            "name": user.username,
-            "isAdmin": user.isAdmin,
-            "role": user.role,
-            "active": user.active,
-            "balance": user.balance,
-            "timestamp": time.mktime(user.timestamp.timetuple())
-        } for user in users]
+        user_count = len(user_list)
 
         result = {
             "users": {
-                "result": users,
+                "result": user_list,
                 "totalCount": user_count,
-                "pageSize": per_page,
-                "pageNo": page
+                "pageSize": 10,
+                "pageNo": 1
             },
         }
 

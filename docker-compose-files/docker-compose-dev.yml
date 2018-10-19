@@ -55,6 +55,7 @@ services:
     restart: unless-stopped
     links:
       - rabbitmq
+      - keycloak
     environment:
       - MONGO_URL=mongodb://cello-mongo:27017  # used by pymongo, deprecate soon
       - MONGO_HOST=mongo
@@ -67,6 +68,13 @@ services:
       - ENABLE_EMAIL_ACTIVE=$ENABLE_EMAIL_ACTIVE
       - BROKER=amqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672/$RABBITMQ_DEFAULT_VHOST
       - BACKEND=amqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672/$RABBITMQ_DEFAULT_VHOST
+      - SSO_KEY=$OPERATOR_DASHBOARD_SSO_KEY
+      - SSO_SECRET=$OPERATOR_DASHBOARD_SSO_SECRET
+      - SERVER_PUBLIC_IP=$SERVER_PUBLIC_IP
+      - KEYCLOAK_REALM=$KEYCLOAK_REALM
+      - KEYCLOAK_SERVER_PORT=$KEYCLOAK_SERVER_PORT
+      - KEYCLOAK_ADMIN_NAME=$KEYCLOAK_ADMIN_NAME
+      - KEYCLOAK_ADMIN_PASSWORD=$KEYCLOAK_ADMIN_PASSWORD
     ports:
       - "8080:8080"
     volumes:  # This should be removed in product env
@@ -82,6 +90,7 @@ services:
       - mongo:dashboard_mongo
       - dashboard_mongo
       - operator-dashboard
+      - keycloak
     ports:
       - "8081:8081"
     environment:
@@ -100,6 +109,11 @@ services:
       - FROM_EMAIL=$FROM_EMAIL
       - WEBROOT=$USER_DASHBOARD_WEBROOT
       - FABRIC_CFG_PATH=/etc/hyperledger/fabric
+      - SSO_KEY=$USER_DASHBOARD_SSO_KEY
+      - SSO_SECRET=$USER_DASHBOARD_SSO_SECRET
+      - SERVER_PUBLIC_IP=$SERVER_PUBLIC_IP
+      - KEYCLOAK_REALM=$KEYCLOAK_REALM
+      - KEYCLOAK_SERVER_PORT=$KEYCLOAK_SERVER_PORT
     volumes:
       - $ROOT_PATH/user-dashboard/src:/var/www
       - /opt/cello/baas:/opt/data
@@ -171,3 +185,33 @@ services:
       - NO_USED=0
     volumes:
       - /opt/cello/dashboard_mongo:/data/db
+
+  mysql:
+    image: mariadb:10.3.10
+    container_name: cello-keycloak-mysql
+    environment:
+      - MYSQL_DATABASE=keycloak
+      - MYSQL_USER=$KEYCLOAK_DB_USERNAME
+      - MYSQL_PASSWORD=$KEYCLOAK_DB_PASSWORD
+      - MYSQL_ROOT_PASSWORD=$KEYCLOAK_MYSQL_ROOT_PASSWORD
+    volumes:
+      - /opt/cello/keycloak-mysql:/var/lib/mysql
+
+  keycloak:
+    image: jboss/keycloak:4.5.0.Final
+    container_name: cello-keycloak-server
+    environment:
+      - KEYCLOAK_USER=$KEYCLOAK_ADMIN_NAME
+      - KEYCLOAK_PASSWORD=$KEYCLOAK_ADMIN_PASSWORD
+      - DB_ADDR=mysql
+      - DB_USER=$KEYCLOAK_DB_USERNAME
+      - DB_PASSWORD=$KEYCLOAK_DB_PASSWORD
+      - KEYCLOAK_HTTPS_PORT=$KEYCLOAK_SERVER_HTTPS_PORT
+    volumes:
+      - $ROOT_PATH/keycloak/resources/img/keycloak-bg.png:/opt/jboss/keycloak/themes/keycloak/login/resources/img/keycloak-bg.png
+      - $ROOT_PATH/keycloak/resources/img/keycloak-logo-text.png:/opt/jboss/keycloak/themes/keycloak/login/resources/img/keycloak-logo-text.png
+    links:
+      - mysql
+    ports:
+      - $KEYCLOAK_SERVER_PORT:8080
+      - $KEYCLOAK_SERVER_HTTPS_PORT:8443

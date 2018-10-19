@@ -1,3 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 # web site url for user active link
 export USER_DASHBOARD_WEBROOT?=/
+
+export USER_DASHBOARD_SSO_KEY?=cello-user-dashboard
+export USER_DASHBOARD_SSO_SECRET?=

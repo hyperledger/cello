@@ -6,9 +6,11 @@
 module.exports = app => {
   const mongoose = app.mongoose;
   const Schema = mongoose.Schema;
+  require('mongoose-uuid2')(mongoose);
+  const UUID = mongoose.Types.UUID;
 
   const SmartContractDeploySchema = new Schema({
-    user: { type: Schema.Types.ObjectId, ref: 'User' },
+    user: { type: UUID, ref: 'User' },
     smartContract: { type: Schema.Types.ObjectId, ref: 'SmartContract' },
     smartContractCode: { type: Schema.Types.ObjectId, ref: 'SmartContractCode' },
     chain: { type: Schema.Types.ObjectId, ref: 'Chain' },

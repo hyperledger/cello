@@ -125,5 +125,8 @@
   "UserManagement.Messages.Operate.Success.Create": "创建用户 {name} 成功",
   "UserManagement.Messages.Operate.Success.Delete": "删除用户 {name} 成功",
   "UserManagement.Messages.Operate.Success.Update": "更新用户 {name} 成功",
-  "UserManagement.Confirm.DeleteUser": "是否确认删除用户 {name}"
+  "UserManagement.Confirm.DeleteUser": "是否确认删除用户 {name}",
+  "UserManagement.Role.User": "用户",
+  "UserManagement.Role.Operator": "操作员",
+  "UserManagement.Role.Administrator": "管理员"
 }
