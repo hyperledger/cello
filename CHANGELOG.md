@@ -1,3 +1,18 @@
+## v0.9.0-beta
+Sun Oct 21 05:39:36 UTC 2018
+
+* [bf212da](https://github.com/hyperledger/cello/commit/bf212da) [CE-482](https://jira.hyperledger.org/browse/CE-482) Support compose files dynamic generation
+* [3d78ad7](https://github.com/hyperledger/cello/commit/3d78ad7) [CE-481](https://jira.hyperledger.org/browse/CE-481) Modify user dashboard tutorial docs
+* [0390ccb](https://github.com/hyperledger/cello/commit/0390ccb) [CE-471](https://jira.hyperledger.org/browse/CE-471) Fix operator dashboard login page
+* [a798544](https://github.com/hyperledger/cello/commit/a798544) [CE-472](https://jira.hyperledger.org/browse/CE-472) Allow jump to chain info when click chain
+* [81b17a7](https://github.com/hyperledger/cello/commit/81b17a7) [CE-467](https://jira.hyperledger.org/browse/CE-467) Unable to remove resource on NFS server
+* [328b669](https://github.com/hyperledger/cello/commit/328b669) [CE-479](https://jira.hyperledger.org/browse/CE-479) Add stack overflow link in document
+* [338d200](https://github.com/hyperledger/cello/commit/338d200) [CE-480](https://jira.hyperledger.org/browse/CE-480) change location of runhosts file
+* [fd08855](https://github.com/hyperledger/cello/commit/fd08855) [CE-478](https://jira.hyperledger.org/browse/CE-478)adding missing connection profile fields
+* [7e4aa01](https://github.com/hyperledger/cello/commit/7e4aa01) [CE-476](https://jira.hyperledger.org/browse/CE-476)Added yaml connection profile
+* [339cf7f](https://github.com/hyperledger/cello/commit/339cf7f) [CE-477](https://jira.hyperledger.org/browse/CE-477) Kafka pods cannot be started successfully
+* [a5be12d](https://github.com/hyperledger/cello/commit/a5be12d) [CE-473](https://jira.hyperledger.org/browse/CE-473) Add default parameters for example code
+
 ## v0.9.0-alpha
 Sun Sep 9 13:13:21 UTC 2018
 

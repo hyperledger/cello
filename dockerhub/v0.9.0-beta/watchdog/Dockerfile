@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-FROM hyperledger/cello-baseimage:x86_64-0.9.0-alpha
+FROM hyperledger/cello-baseimage:x86_64-0.9.0-beta
 
 # use this in development
 CMD ["python", "watchdog.py"]

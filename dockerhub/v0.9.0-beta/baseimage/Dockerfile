@@ -1,7 +1,7 @@
 FROM busybox as downloader
 
-RUN cd /tmp && wget -c https://github.com/hyperledger/cello/archive/v0.9.0-alpha.zip && \
-    unzip v0.9.0-alpha.zip && mv cello-0.9.0-alpha cello
+RUN cd /tmp && wget -c https://github.com/hyperledger/cello/archive/v0.9.0-beta.zip && \
+    unzip v0.9.0-beta.zip && mv cello-0.9.0-beta cello
 
 FROM python:3.6
 

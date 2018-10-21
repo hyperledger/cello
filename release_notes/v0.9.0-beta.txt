@@ -1,0 +1,32 @@
+v0.9.0-beta https://github.com/hyperledger/cello/releases/tag/v0.9.0-beta October 21, 2018
+------------------------
+
+Release Notes
+-------------
+Add new features
+
+none
+
+Improvement
+
+* Add tutorial for user dashboard;
+* Add default parameters for invoke/query in user dashboard for example code;
+* Support docker compose file dynamic generation;
+
+Known Vulnerabilities
+---------------------
+none
+
+Resolved Vulnerabilities
+------------------------
+* Fix Operator/User Dashboard bugs;
+
+Known Issues & Workarounds
+--------------------------
+* User system is very simple, need to improve;
+* Kubernetes agent can't deploy fabric v1.2, and can't be used in user dashboard;
+
+
+Change Log
+----------
+https://github.com/hyperledger/cello/blob/master/CHANGELOG.md#v090-beta

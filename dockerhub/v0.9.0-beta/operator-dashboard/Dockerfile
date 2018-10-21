@@ -4,11 +4,11 @@
 #
 FROM node:8.9 as build_js
 MAINTAINER haitao yue "hightall@me.com"
-RUN cd /tmp && git clone -b 'v0.9.0-alpha' --single-branch --depth 1 https://github.com/hyperledger/cello.git
+RUN cd /tmp && git clone -b 'v0.9.0-beta' --single-branch --depth 1 https://github.com/hyperledger/cello.git
 RUN cp -r /tmp/cello/src/static /var/www
 RUN cd /var/www/dashboard && npm install && npm run build
 
-FROM hyperledger/cello-baseimage:x86_64-0.9.0-alpha
+FROM hyperledger/cello-baseimage:x86_64-0.9.0-beta
 
 COPY --from=build_js /var/www/dist /app/static/dist
 COPY --from=build_js /tmp/cello/src/celery.conf /etc/supervisor/conf.d/
