@@ -92,7 +92,8 @@ export default class SmartContract extends PureComponent {
                       avatar={
                         <Avatar size="large" style={{ backgroundColor: '#08c' }} icon="link" />
                       }
-                      title={<a href="#">{item.name}</a>}
+                      title={<a onClick={() => this.smartContractInfo(item)}>{item.name}</a>}
+                      onClick={() => this.smartContractInfo(item)}
                       description={
                         <Ellipsis className={styles.item} lines={3}>
                           {item.description}
