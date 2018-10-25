@@ -1,0 +1,104 @@
+{{- /* set root with the value of "." as the "." is override inside the range loop */}}
+{{- $root := . }}
+
+{{- range $ordererOrg := $root.Values.ordererOrgs}}
+
+{{- /* shared variables */}}
+{{- $clusterName := $root.Values.clusterName }}
+{{- $orgName := $ordererOrg.name }}
+{{- $orgDomainName := $ordererOrg.domain }}
+{{- $namespace := printf "%s-%s" $orgName $clusterName }}
+{{- $pvcName := printf "%s-shared" $namespace }}
+
+# namespace
+{{- $scope := dict "name" $namespace }}
+{{- template "namespace" $scope }}
+
+# persistent volume
+{{- $name := printf "%s-shared" $namespace }}
+{{- $nfsPath := printf "%s/%s/resources/crypto-config/ordererOrganizations/%s" $root.Values.nfs.basePath $clusterName $orgDomainName }}
+{{- $scope := dict "name" $name "nfsServer" $root.Values.nfs.ip "nfsPath" $nfsPath "pvcNamespace" $namespace "pvcName" $pvcName }}
+{{- template "persistentVolume" $scope }}
+
+# persistent volume claim
+{{- $scope := dict "name" $pvcName "namespace" $namespace }}
+{{- template "persistentVolumeClaim" $scope }}
+
+{{- if eq $root.Values.consensusType "kafka" }}
+  # the deployment of zookeeper0
+  {{- $zooServers := "server.1=0.0.0.0:2888:3888 server.2=zookeeper1:2888:3888 server.3=zookeeper2:2888:3888" }}
+  {{- $scope := dict "name" "zookeeper0" "namespace" $namespace "zooMyID" "1" "zooServers" $zooServers }}
+  {{- template "zookeeper.deployment" $scope }}
+
+  # the deployment of zookeeper1
+  {{- $zooServers := "server.1=zookeeper0:2888:3888 server.2=0.0.0.0:2888:3888 server.3=zookeeper2:2888:3888" }}
+  {{- $scope := dict "name" "zookeeper1" "namespace" $namespace "zooMyID" "2" "zooServers" $zooServers }}
+  {{- template "zookeeper.deployment" $scope }}
+
+  # the deployment of zookeeper2
+  {{- $zooServers := "server.1=zookeeper0:2888:3888 server.2=zookeeper1:2888:3888 server.3=0.0.0.0:2888:3888" }}
+  {{- $scope := dict "name" "zookeeper2" "namespace" $namespace "zooMyID" "3" "zooServers" $zooServers }}
+  {{- template "zookeeper.deployment" $scope }}
+
+  # the service of zookeeper0
+  {{- $scope := dict "name" "zookeeper0" "namespace" $namespace }}
+  {{- template "zookeeper.service" $scope }}
+
+  # the service of zookeeper1
+  {{- $scope := dict "name" "zookeeper1" "namespace" $namespace }}
+  {{- template "zookeeper.service" $scope }}
+
+  # the service of zookeeper2
+  {{- $scope := dict "name" "zookeeper2" "namespace" $namespace }}
+  {{- template "zookeeper.service" $scope }}
+
+  # the deployment of kafka0
+  {{- $zookeeperConnect := "zookeeper0:2181,zookeeper1:2181,zookeeper2:2181" }}
+  {{- $scope := dict "name" "kafka0" "namespace" $namespace "brokerID" "0" "zookeeperConnect" $zookeeperConnect }}
+  {{- template "kafka.deployment" $scope }}
+
+  # the deployment of kafka1
+  {{- $scope := dict "name" "kafka1" "namespace" $namespace "brokerID" "1" "zookeeperConnect" $zookeeperConnect }}
+  {{- template "kafka.deployment" $scope }}
+
+  # the deployment of kafka2
+  {{- $scope := dict "name" "kafka2" "namespace" $namespace "brokerID" "2" "zookeeperConnect" $zookeeperConnect }}
+  {{- template "kafka.deployment" $scope }}
+
+  # the service of kafka0
+  {{- $scope := dict "name" "kafka0" "namespace" $namespace }}
+  {{- template "kafka.service" $scope }}
+
+  # the service of kafka1
+  {{- $scope := dict "name" "kafka1" "namespace" $namespace }}
+  {{- template "kafka.service" $scope }}
+
+  # the service of kafka2
+  {{- $scope := dict "name" "kafka2" "namespace" $namespace }}
+  {{- template "kafka.service" $scope }}
+{{- end }}
+
+# orderers
+{{- range $index := until ($ordererOrg.template.count | int) }}
+# the deployment of orderer
+{{- $name := printf "orderer%d" $index }}
+{{- if eq $root.Values.consensusType "kafka" }}
+  {{- $kafkaBrokers := "[kafka0:9092,kafka1:9092,kafka2:9092]" }}
+  {{- $scope := dict "name" $name "namespace" $namespace "orgName" $orgName "orgDomainName" $orgDomainName "pvc" $pvcName "kafkaBrokers" $kafkaBrokers }}
+  {{- template "orderer.kafka.deployment" $scope }}
+{{- else }}
+  {{- $scope := dict "name" $name "namespace" $namespace "orgName" $orgName "orgDomainName" $orgDomainName "pvc" $pvcName }}
+  {{- template "orderer.default.deployment" $scope }}
+{{- end }}
+
+# the service of orderer
+{{- $scope := dict "name" $name "namespace" $namespace }}
+{{- template "orderer.service" $scope }}
+
+# the ingress of orderer
+{{- $path := printf "/fabric/%s/%s/%s" $clusterName $orgName $name }}
+{{- $scope := dict "name" $name "namespace" $namespace "path" $path "backendServiceName" $name "backendServicePort" "7050" }}
+{{- template "ingress" $scope }}
+
+{{- end }}
+{{- end }}

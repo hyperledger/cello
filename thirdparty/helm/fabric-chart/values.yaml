@@ -1,0 +1,28 @@
+# Default values for fabric.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+clusterName: cluster
+# consensus type: kafka, solo
+consensusType: solo
+ordererOrgs:
+  - name: orderer
+    domain: orderer.com
+    template:
+      count: 1
+peerOrgs:
+  - name: org1
+    domain: org1.com
+    template:
+      count: 2
+    users:
+      count: 1
+  - name: org2
+    domain: org2.com
+    template:
+      count: 2
+    users:
+      count: 1
+nfs:
+  ip: 10.112.122.230
+  basePath: /opt/share

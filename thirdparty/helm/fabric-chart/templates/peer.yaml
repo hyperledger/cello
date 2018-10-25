@@ -1,0 +1,76 @@
+{{- /* set root with the value of "." as the "." is override inside the range loop */}}
+{{- $root := . }}
+
+{{- range $peerOrg := $root.Values.peerOrgs}}
+
+{{- /* shared variables */}}
+{{- $clusterName := $root.Values.clusterName}}
+{{- $orgName :=  $peerOrg.name }}
+{{- $orgDomainName := $peerOrg.domain }}
+{{- $namespace := printf "%s-%s" $orgName $clusterName }}
+{{- $sharedPVCName := printf "%s-shared" $namespace }}
+{{- $cliPVCName := printf "%s-cli" $namespace }}
+
+# namespace
+{{- $scope := dict "name" $namespace }}
+{{- template "namespace" $scope }}
+
+# shared persistent volume
+{{- $name := printf "%s-shared" $namespace }}
+{{- $nfsPath := printf "%s/%s/resources/crypto-config/peerOrganizations/%s" $root.Values.nfs.basePath $clusterName $orgDomainName }}
+{{- $scope := dict "name" $name "nfsServer" $root.Values.nfs.ip "nfsPath" $nfsPath "pvcNamespace" $namespace "pvcName" $sharedPVCName }}
+{{- template "persistentVolume" $scope }}
+
+# cli persistent volume
+{{- $name := printf "%s-cli" $namespace }}
+{{- $nfsPath := printf "%s/%s/resources/" $root.Values.nfs.basePath $clusterName }}
+{{- $scope := dict "name" $name "nfsServer" $root.Values.nfs.ip "nfsPath" $nfsPath "pvcNamespace" $namespace "pvcName" $cliPVCName }}
+{{- template "persistentVolume" $scope }}
+
+# shared persistent volume claim
+{{- $scope := dict "name" $sharedPVCName "namespace" $namespace }}
+{{- template "persistentVolumeClaim" $scope }}
+
+# cli persistent volume claim
+{{- $scope := dict "name" $cliPVCName "namespace" $namespace }}
+{{- template "persistentVolumeClaim" $scope }}
+
+# the deployment of ca
+{{- $name := "ca" }}
+{{- $scope := dict "name" $name "namespace" $namespace "pvc" $sharedPVCName }}
+{{- template "ca.deployment" $scope }}
+
+# the service of ca
+{{- $name := "ca" }}
+{{- $scope := dict "name" $name "namespace" $namespace }}
+{{- template "ca.service" $scope }}
+
+# the ingress of ca
+{{- $path := printf "/fabric/%s/%s/%s" $clusterName $orgName $name }}
+{{- $scope := dict "name" $name "namespace" $namespace "path" $path "backendServiceName" $name "backendServicePort" "7054" }}
+{{- template "ingress" $scope }}
+
+# the deployment of cli
+{{- $name := "cli" }}
+{{- $scope := dict "name" $name "namespace" $namespace "orgName" $orgName "orgDomainName" $orgDomainName "sharedPVC" $sharedPVCName "cliPVC" $cliPVCName }}
+{{- template "cli.deployment" $scope }}
+
+# peers
+{{- range $index := until ($peerOrg.template.count | int) }}
+# the deployment of peer
+{{- $name := printf "peer%d" $index }}
+{{- $scope := dict "name" $name "namespace" $namespace "orgName" $orgName "orgDomainName" $orgDomainName "pvc" $sharedPVCName }}
+{{- template "peer.deployment" $scope }}
+
+# the service of peer
+{{- $name := printf "peer%d" $index }}
+{{- $scope := dict "name" $name "namespace" $namespace }}
+{{- template "peer.service" $scope }}
+
+# the ingress of peer
+{{- $path := printf "/fabric/%s/%s/%s" $clusterName $orgName $name }}
+{{- $scope := dict "name" $name "namespace" $namespace "path" $path "backendServiceName" $name "backendServicePort" "7051" }}
+{{- template "ingress" $scope }}
+
+{{- end }}
+{{- end }}
