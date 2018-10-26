@@ -437,6 +437,6 @@ class VsphereOperation():
                 timeout -= 5
                 sk.connect((vmip, vmport))
                 return True
-            except Exception as e:
+            except Exception:
                 pass
         return False

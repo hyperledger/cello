@@ -42,7 +42,7 @@ class StringValidator(object):
                         return False
 
             except Exception as e:
-                raise
+                raise e
 
         return True if not fail else results
 
@@ -55,7 +55,7 @@ class StringValidator(object):
         try:
             float(input)
             return True
-        except Exception as e:
+        except Exception:
             return False
 
     def _check_is_alpha(self, input):
@@ -71,14 +71,14 @@ class StringValidator(object):
         try:
             int(input)
             return True
-        except Exception as e:
+        except Exception:
             return False
 
     def _check_is_float(self, input):
         """Check if a given string is float"""
         try:
             return True if str(float(input)) == input else False
-        except Exception as e:
+        except Exception:
             return False
 
     def _check_longer_than(self, input, args):
