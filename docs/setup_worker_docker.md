@@ -79,4 +79,10 @@ $ docker run -d -v /var/run/docker.sock:/var/run/docker.sock -p 127.0.0.1:2375:2
 $ docker -H 127.0.0.1:2375 info
 ```
 
+And users can use  `0.0.0.0` to replace `127.0.0.1` to make sure Master can reach Worker Node through this port, as Ubuntu.
+
+```bash
+$ docker run -d -v /var/run/docker.sock:/var/run/docker.sock -p 0.0.0.0:2375:2375 bobrik/socat TCP-LISTEN:2375,fork UNIX-CONNECT:/var/run/docker.sock
+```
+
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
