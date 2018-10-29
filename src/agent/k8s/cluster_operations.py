@@ -13,7 +13,9 @@ import time
 import yaml
 
 from ..host_base import HostBase
-from common import log_handler, LOG_LEVEL, db, utils
+from common import log_handler, LOG_LEVEL, db, utils, \
+    NETWORK_TYPE_FABRIC_V1, NETWORK_TYPE_FABRIC_V1_1, \
+    NETWORK_TYPE_FABRIC_V1_2
 from jinja2 import Template, Environment, FileSystemLoader
 from kubernetes import client, config
 from kubernetes.stream import stream
@@ -48,7 +50,7 @@ class K8sClusterOperation():
             "Namespace": self._delete_namespace
         }
 
-    def _upload_config_file(self, cluster_name, consensus):
+    def _upload_config_file(self, cluster_name, consensus, network_type):
         try:
             cluster_path = os.path.join('/cello', cluster_name)
             # Uploading the 'resources' directory with its content in the
@@ -58,10 +60,12 @@ class K8sClusterOperation():
             # Only solo and kafka supported
             if consensus == "solo":
                 resources_path = os.path.join(current_path,
-                                              "cluster_resources")
+                                              "cluster_resources",
+                                              network_type)
             else:
                 resources_path = os.path.join(current_path,
-                                              "cluster_resources_kafka")
+                                              "cluster_resources_kafka",
+                                              network_type)
 
             shutil.copytree(resources_path, cluster_path)
         except Exception as e:
@@ -85,7 +89,12 @@ class K8sClusterOperation():
             raise Exception(error_msg)
 
     def _render_config_file(self, file_name, cluster_name,
-                            cluster_ports, nfsServer_ip):
+                            cluster_ports, nfsServer_ip, network_type):
+        # images_version = self._version_network_images(network_type)
+        # if images_version is None:
+        #     raise Exception("the network_type: {} is not supported".
+        #                     format(network_type))
+
         # get template file's ports
         externalPort, chaincodePort, nodePort = "", "", ""
         if ("pvc" not in file_name and "namespace" not in file_name and
@@ -97,7 +106,7 @@ class K8sClusterOperation():
             else:
                 nodePort = cluster_ports[file_name]
         current_path = os.path.dirname(__file__)
-        templates_path = os.path.join(current_path, "templates")
+        templates_path = os.path.join(current_path, "templates", network_type)
         env = Environment(
             loader=FileSystemLoader(templates_path),
             trim_blocks=True,
@@ -108,7 +117,7 @@ class K8sClusterOperation():
                                  externalPort=externalPort,
                                  chaincodePort=chaincodePort,
                                  nodePort=nodePort,
-                                 nfsServer=nfsServer_ip)
+                                 nfsServer=nfsServer_ip,)
         return output
 
     def _pod_exec_command(self, pod_name, namespace, command):
@@ -288,7 +297,7 @@ class K8sClusterOperation():
         except Exception as e:
             logger.error(e)
 
-    def _delete_service(self, name, data, namespace, **kwargs):
+    def _delete_service(self, name, namespace, data, **kwargs):
         try:
             # delete_namespaced_service does not need data actually.
             resp = self.corev1client.delete_namespaced_service(name,
@@ -362,7 +371,7 @@ class K8sClusterOperation():
 
     def _setup_cluster(self, cluster_name):
         pod_commands_1 = ["peer channel create -c mychannel -o \
-                          orderer0:7050 \
+                          orderer0:7050 --tls --cafile $ORDERER_CA \
                           -f resources/channel-artifacts/mychannel.tx",
                           "cp ./mychannel.block \
                           ./resources/channel-artifacts -rf",
@@ -372,8 +381,8 @@ class K8sClusterOperation():
                           "env CORE_PEER_ADDRESS=peer1-org1:7051 \
                           peer channel join -b \
                           resources/channel-artifacts/mychannel.block",
-                          "peer channel update -o \
-                          orderer0:7050 -c mychannel \
+                          "peer channel update -c mychannel -o \
+                          orderer0:7050 --tls --cafile $ORDERER_CA \
                           -f resources/channel-artifacts/Org1MSPanchors.tx"
                           ]
 
@@ -383,8 +392,8 @@ class K8sClusterOperation():
                           "env CORE_PEER_ADDRESS=peer1-org2:7051 \
                           peer channel join -b \
                           resources/channel-artifacts/mychannel.block",
-                          "peer channel update -o \
-                          orderer0:7050 -c mychannel \
+                          "peer channel update -c mychannel -o \
+                          orderer0:7050 --tls --cafile $ORDERER_CA \
                           -f resources/channel-artifacts/Org2MSPanchors.tx"]
 
         pod_list = self._filter_cli_pod_name(cluster_name)
@@ -447,25 +456,36 @@ class K8sClusterOperation():
                      .format(cluster_ports))
         return cluster_ports
 
+    # transfer the network type to images version
+    def _version_network_images(self, network_version):
+        network_images = {NETWORK_TYPE_FABRIC_V1: '1.0.5',
+                          NETWORK_TYPE_FABRIC_V1_1: '1.1.0',
+                          NETWORK_TYPE_FABRIC_V1_2: '1.2.0'}
+
+        return network_images.get(network_version, None)
+
     def _deploy_cluster_resource(self, cluster_name,
-                                 cluster_ports, nfsServer_ip, consensus):
+                                 cluster_ports, nfsServer_ip,
+                                 consensus, network_type):
         # create namespace in advance
         file_data = self._render_config_file("namespace.tpl", cluster_name,
-                                             cluster_ports, nfsServer_ip)
+                                             cluster_ports, nfsServer_ip,
+                                             network_type)
         yaml_data = yaml.load_all(file_data)
         self._deploy_k8s_resource(yaml_data)
 
         time.sleep(3)
 
         current_path = os.path.dirname(__file__)
-        templates_path = os.path.join(current_path, "templates")
+        templates_path = os.path.join(current_path, "templates", network_type)
         for (dir_path, dir_name, file_list) in os.walk(templates_path):
             for file in file_list:
                 # pvc should be created at first
                 if "pvc" in file:
                     file_data = self._render_config_file(file, cluster_name,
                                                          cluster_ports,
-                                                         nfsServer_ip)
+                                                         nfsServer_ip,
+                                                         network_type)
                     yaml_data = yaml.load_all(file_data)
                     self._deploy_k8s_resource(yaml_data)
 
@@ -476,7 +496,8 @@ class K8sClusterOperation():
                 if "peer" in file:
                     file_data = self._render_config_file(file, cluster_name,
                                                          cluster_ports,
-                                                         nfsServer_ip)
+                                                         nfsServer_ip,
+                                                         network_type)
                     yaml_data = yaml.load_all(file_data)
                     self._deploy_k8s_resource(yaml_data)
 
@@ -486,13 +507,15 @@ class K8sClusterOperation():
                 file_data = self._render_config_file("orderer0.ordererorg.tpl",
                                                      cluster_name,
                                                      cluster_ports,
-                                                     nfsServer_ip)
+                                                     nfsServer_ip,
+                                                     network_type)
             else:
                 file_data = self \
                     ._render_config_file("orderer0.ordererorg-kafka.tpl",
                                          cluster_name,
                                          cluster_ports,
-                                         nfsServer_ip)
+                                         nfsServer_ip,
+                                         network_type)
 
             yaml_data = yaml.load_all(file_data)
             self._deploy_k8s_resource(yaml_data)
@@ -504,21 +527,23 @@ class K8sClusterOperation():
                 if "-ca" in file or "-cli" in file:
                     file_data = self._render_config_file(file, cluster_name,
                                                          cluster_ports,
-                                                         nfsServer_ip)
+                                                         nfsServer_ip,
+                                                         network_type)
                     yaml_data = yaml.load_all(file_data)
                     self._deploy_k8s_resource(yaml_data)
 
             time.sleep(3)
 
     def deploy_cluster(self, cluster_name, ports_index,
-                       nfsServer_ip, consensus):
-        self._upload_config_file(cluster_name, consensus)
+                       nfsServer_ip, consensus,
+                       network_type=NETWORK_TYPE_FABRIC_V1):
+        self._upload_config_file(cluster_name, consensus, network_type)
         time.sleep(1)
 
         cluster_ports = self._get_cluster_ports(ports_index)
 
         self._deploy_cluster_resource(cluster_name, cluster_ports,
-                                      nfsServer_ip, consensus)
+                                      nfsServer_ip, consensus, network_type)
 
         check_times = 0
         while check_times < 10:
@@ -541,25 +566,28 @@ class K8sClusterOperation():
         return self._get_cluster_pods(cluster_name)
 
     def _delete_cluster_resource(self, cluster_name,
-                                 cluster_ports, nfsServer_ip, consensus):
+                                 cluster_ports, nfsServer_ip,
+                                 consensus, network_type):
         """ The order to delete the cluster is reverse to
             create except for namespace
         """
         current_path = os.path.dirname(__file__)
-        templates_path = os.path.join(current_path, "templates")
+        templates_path = os.path.join(current_path, "templates", network_type)
         for (dir_path, dir_name, file_list) in os.walk(templates_path):
             for file in file_list:
                 if "-ca" in file or "-cli" in file:
                     file_data = self._render_config_file(file, cluster_name,
                                                          cluster_ports,
-                                                         nfsServer_ip)
+                                                         nfsServer_ip,
+                                                         network_type)
                     yaml_data = yaml.load_all(file_data)
                     self._delete_k8s_resource(yaml_data)
 
             file_data = self._render_config_file("namespace.tpl",
                                                  cluster_name,
                                                  cluster_ports,
-                                                 nfsServer_ip)
+                                                 nfsServer_ip,
+                                                 network_type)
             yaml_data = yaml.load_all(file_data)
             self._delete_k8s_resource(yaml_data)
 
@@ -570,7 +598,8 @@ class K8sClusterOperation():
                     file_data = self._render_config_file(file,
                                                          cluster_name,
                                                          cluster_ports,
-                                                         nfsServer_ip)
+                                                         nfsServer_ip,
+                                                         network_type)
                     yaml_data = yaml.load_all(file_data)
                     self._delete_k8s_resource(yaml_data)
 
@@ -580,13 +609,15 @@ class K8sClusterOperation():
                 file_data = self._render_config_file("orderer0.ordererorg.tpl",
                                                      cluster_name,
                                                      cluster_ports,
-                                                     nfsServer_ip)
+                                                     nfsServer_ip,
+                                                     network_type)
             else:
                 file_data = self. \
                     _render_config_file("orderer0.ordererorg-kafka.tpl",
                                         cluster_name,
                                         cluster_ports,
-                                        nfsServer_ip)
+                                        nfsServer_ip,
+                                        network_type)
 
             time.sleep(3)
 
@@ -598,20 +629,32 @@ class K8sClusterOperation():
                     file_data = self._render_config_file(file,
                                                          cluster_name,
                                                          cluster_ports,
-                                                         nfsServer_ip)
+                                                         nfsServer_ip,
+                                                         network_type)
                     yaml_data = yaml.load_all(file_data)
                     self._delete_k8s_resource(yaml_data)
 
     def delete_cluster(self, cluster_name, ports_index,
-                       nfsServer_ip, consensus):
+                       nfsServer_ip, consensus,
+                       network_type=NETWORK_TYPE_FABRIC_V1):
         cluster_ports = self._get_cluster_ports(ports_index)
         self._delete_cluster_resource(cluster_name, cluster_ports,
-                                      nfsServer_ip, consensus)
+                                      nfsServer_ip, consensus,
+                                      network_type)
         time.sleep(5)
 
         # check if the pvs have been deleted before removing the
         # entire folder.
         while not self.check_pvs(cluster_name):
+            time.sleep(3)
+
+        while True:
+            logger.info("cleaning the namespace {} ... ..."
+                        .format(cluster_name))
+            namespaces = self.corev1client.list_namespace()
+            namespace_list = [n.metadata.name for n in namespaces.items]
+            if cluster_name not in namespace_list:
+                break
             time.sleep(3)
 
         time.sleep(5)
@@ -636,17 +679,30 @@ class K8sClusterOperation():
         except client.rest.ApiException as e:
             logger.error("Exception raised in list pv: %s\n" % e)
 
-    def stop_cluster(self, cluster_name, ports_index, nfsServer_ip, consensus):
+    def stop_cluster(self, cluster_name, ports_index, nfsServer_ip,
+                     consensus, network_type=NETWORK_TYPE_FABRIC_V1):
         cluster_ports = self._get_cluster_ports(ports_index)
         self._delete_cluster_resource(cluster_name, cluster_ports,
-                                      nfsServer_ip, consensus)
+                                      nfsServer_ip, consensus,
+                                      network_type)
         time.sleep(2)
+
+        while True:
+            logger.info("cleaning the namespace {} ... ..."
+                        .format(cluster_name))
+            namespaces = self.corev1client.list_namespace()
+            namespace_list = [n.metadata.name for n in namespaces.items]
+            if cluster_name not in namespace_list:
+                break
+            time.sleep(3)
+
         return True
 
     def start_cluster(self, cluster_name, ports_index, nfsServer_ip,
-                      consensus):
+                      consensus, network_type=NETWORK_TYPE_FABRIC_V1):
         cluster_ports = self._get_cluster_ports(ports_index)
         self._deploy_cluster_resource(cluster_name, cluster_ports,
-                                      nfsServer_ip, consensus)
+                                      nfsServer_ip, consensus,
+                                      network_type)
         time.sleep(2)
         return self._get_cluster_pods(cluster_name)

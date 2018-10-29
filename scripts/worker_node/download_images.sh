@@ -81,7 +81,7 @@ function downloadImages() {
 
     IMG_TAG=$5
     echo_b "Downloading and retag images for kafka/zookeeper separately, as their img_tag format is different"
-    for IMG in kafka zookeeper; do
+    for IMG in kafka zookeeper couchdb; do
         HLF_IMG=hyperledger/fabric-${IMG}
         if [ -z "$(docker images -q ${HLF_IMG}:${HLF_VERSION} 2> /dev/null)" ]; then  # not exist
             docker pull ${HLF_IMG}:$ARCH-$IMG_TAG
