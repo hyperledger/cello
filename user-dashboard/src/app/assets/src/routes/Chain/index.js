@@ -2,7 +2,7 @@
  SPDX-License-Identifier: Apache-2.0
 */
 import React, { PureComponent } from 'react';
-import { routerRedux, Link } from 'dva/router';
+import { routerRedux } from 'dva/router';
 import { connect } from 'dva';
 import { Card, Button, Icon, List, Avatar, Modal } from 'antd';
 import QueueAnim from 'rc-queue-anim';
@@ -83,12 +83,12 @@ export default class CardList extends PureComponent {
             renderItem={item =>
               item ? (
                 <List.Item key={item._id}>
-                  <Card hoverable className={styles.card} actions={[<Link to={`/chain/info/${item._id}`}>Info</Link>, <a onClick={() => this.releaseChain(item)}>Release</a>, <a href={config.url.chain.downloadNetworkConfig.format({ id: item._id })}><Icon type="download" /></a>]}>
+                  <Card hoverable className={styles.card} actions={[<a onClick={() => this.clickChain(item)}>Info</a>, <a onClick={() => this.releaseChain(item)}>Release</a>, <a href={config.url.chain.downloadNetworkConfig.format({ id: item._id })}><Icon type="download" /></a>]}>
                     <Card.Meta
                       avatar={
                         <Avatar size="large" style={{ backgroundColor: '#08c' }} icon="link" />
                       }
-                      title={<a href="#">{item.name}</a>}
+                      title={<a onClick={() => this.clickChain(item)}>{item.name}</a>}
                       onClick={() => this.clickChain(item)}
                       description={
                         <Ellipsis className={styles.item} lines={3}>
