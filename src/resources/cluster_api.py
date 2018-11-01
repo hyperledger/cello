@@ -318,7 +318,7 @@ def cluster_list():
     logger.info(f)
     col_name = f.get("state", "active")
     result = cluster_handler.list(filter_data=f, col_name=col_name)
-    logger.error(result)
+    logger.info(result)
     return make_ok_resp(data=result)
 
 
