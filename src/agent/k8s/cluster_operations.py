@@ -583,14 +583,6 @@ class K8sClusterOperation():
                     yaml_data = yaml.load_all(file_data)
                     self._delete_k8s_resource(yaml_data)
 
-            file_data = self._render_config_file("namespace.tpl",
-                                                 cluster_name,
-                                                 cluster_ports,
-                                                 nfsServer_ip,
-                                                 network_type)
-            yaml_data = yaml.load_all(file_data)
-            self._delete_k8s_resource(yaml_data)
-
             time.sleep(3)
 
             for file in file_list:
@@ -633,6 +625,15 @@ class K8sClusterOperation():
                                                          network_type)
                     yaml_data = yaml.load_all(file_data)
                     self._delete_k8s_resource(yaml_data)
+
+            time.sleep(3)
+            file_data = self._render_config_file("namespace.tpl",
+                                                 cluster_name,
+                                                 cluster_ports,
+                                                 nfsServer_ip,
+                                                 network_type)
+            yaml_data = yaml.load_all(file_data)
+            self._delete_k8s_resource(yaml_data)
 
     def delete_cluster(self, cluster_name, ports_index,
                        nfsServer_ip, consensus,
