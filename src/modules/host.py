@@ -398,14 +398,21 @@ class HostHandler(object):
         if not host:
             logger.warning("No host found with id=" + id)
             return False
-        if not self.host_agents[host.type]\
-                .refresh_status(host.worker_api):
-            logger.warning("Host {} is inactive".format(id))
-            self.db_set_by_id(id, **{"status": "inactive"})
-            return False
+        if host.type == WORKER_TYPE_K8S:
+            if not self.host_agents[host.type]\
+                    .refresh_status(host.k8s_param):
+                logger.warning("Host {} is inactive".format(id))
+                self.db_set_by_id(id, **{"status": "inactive"})
+                return False
         else:
-            self.db_set_by_id(id, **{"status": "active"})
-            return True
+            if not self.host_agents[host.type]\
+                    .refresh_status(host.worker_api):
+                logger.warning("Host {} is inactive".format(id))
+                self.db_set_by_id(id, **{"status": "inactive"})
+                return False
+
+        self.db_set_by_id(id, **{"status": "active"})
+        return True
 
     def is_active(self, host_id):
         """

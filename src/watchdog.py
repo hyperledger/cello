@@ -18,6 +18,7 @@ MONGODB_DB = os.getenv('MONGODB_DB', 'dev')
 MONGODB_PORT = int(os.getenv('MONGODB_PORT', 27017))
 MONGODB_USERNAME = os.getenv('MONGODB_USERNAME', '')
 MONGODB_PASSWORD = os.getenv('MONGODB_PASSWORD', '')
+PERIOD_TIME = int(os.getenv('PERIOD_TIME', 15))
 
 connect(MONGODB_DB, host=MONGODB_HOST, username=MONGODB_USERNAME,
         password=MONGODB_PASSWORD, connect=False, tz_aware=True)
@@ -133,4 +134,4 @@ def watch_run(period=15):
 
 
 if __name__ == '__main__':
-    watch_run()
+    watch_run(PERIOD_TIME)
