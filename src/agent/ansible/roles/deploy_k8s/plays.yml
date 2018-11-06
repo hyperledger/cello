@@ -33,6 +33,18 @@
     - include_tasks: "fabricsetup/tasks/{{ mode }}.yml"
   tags: "fabricsetup"
 
+- name: Generate connection profile using public IPs
+  hosts: cloud
+  connection: local
+  become: true
+  become_user: root
+  vars_files:
+    - "./../../vars/{{ env }}.yml"
+  tasks:
+    - include_tasks: "pubconn/tasks/{{ mode }}.yml"
+      when: fabric.k8s.exposeserviceport == True
+  tags: "conngen"
+
 - name: setup composer
   hosts: cloud
   connection: local

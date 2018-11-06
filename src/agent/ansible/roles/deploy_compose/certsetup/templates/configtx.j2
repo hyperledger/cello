@@ -130,8 +130,8 @@ Application: &ApplicationDefaults
           Rule: "MAJORITY Admins"
 {% endif %}
 {% if project_version is version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
-    Capabilities:
-      <<: *ApplicationCapabilities
+  Capabilities:
+    <<: *ApplicationCapabilities
 {% endif %}
 
 {% if project_version is version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
