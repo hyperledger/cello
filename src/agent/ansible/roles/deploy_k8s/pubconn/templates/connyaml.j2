@@ -69,3 +69,19 @@ certificateAuthorities:
     tlsCACerts:
       path: "{{ '/fabric/keyfiles/'+ca.org+'/tlsca/tlsca.'+ca.org+'-cert.pem' }}"
 {% endfor %}
+entityMatchers:
+  orderer:
+{% for orderer in allorderers %}
+  - mappedHost: {{ orderer.name }}
+    pattern: (\w*){{ orderer.name }}(\w*)
+    sslTargetOverrideUrlSubstitutionExp: {{ orderer.name }}
+    urlSubstitutionExp: "{{ tls|ternary('grpcs','grpc') }}://{{ allips|random }}:{{ k8sports[orderer.name+':7050'] }}"
+{% endfor %}
+  peer:
+{% for peer in allpeers|selectattr('org', 'equalto', item)|list %}
+  - mappedHost: {{ peer.name }}
+    pattern: (\w*){{ peer.name }}(\w*)
+    sslTargetOverrideUrlSubstitutionExp: {{ peer.name }}
+    urlSubstitutionExp: "{{ tls|ternary('grpcs','grpc') }}://{{ allips|random }}:{{ k8sports[peer.name+':7051'] }}"
+    eventUrlSubstitutionExp: "{{ tls|ternary('grpcs','grpc') }}://{{ allips|random }}:{{ k8sports[peer.name+':7053'] }}"
+{% endfor %}
