@@ -83,20 +83,20 @@
   "entityMatchers": {
     "orderer": [
 {% for orderer in allorderers %}
-      { mappedHost: "{{ orderer.name }}",
-        pattern: (\w*){{ orderer.name }}(\w*),
-        sslTargetOverrideUrlSubstitutionExp: {{ orderer.name }},
-        urlSubstitutionExp: "{{ tls|ternary('grpcs','grpc') }}://{{ allips|random }}:{{ k8sports[orderer.name+':7050'] }}"
+      { "mappedHost": "{{ orderer.name }}",
+        "pattern": "(\\w*){{ orderer.name }}(\\w*)",
+        "sslTargetOverrideUrlSubstitutionExp": "{{ orderer.name }}",
+        "urlSubstitutionExp": "{{ tls|ternary('grpcs','grpc') }}://{{ allips|random }}:{{ k8sports[orderer.name+':7050'] }}"
       }{{ '' if loop.last else ',' }}
 {% endfor %}
     ],
     "peer": [
 {% for peer in allpeers|selectattr('org', 'equalto', item)|list %}
-      { mappedHost: "{{ peer.name }}"
-        pattern: (\w*){{ peer.name }}(\w*),
-        sslTargetOverrideUrlSubstitutionExp: {{ peer.name }},
-        urlSubstitutionExp: "{{ tls|ternary('grpcs','grpc') }}://{{ allips|random }}:{{ k8sports[peer.name+':7051'] }}",
-        eventUrlSubstitutionExp: "{{ tls|ternary('grpcs','grpc') }}://{{ allips|random }}:{{ k8sports[peer.name+':7053'] }}"
+      { "mappedHost": "{{ peer.name }}",
+        "pattern": "(\\w*){{ peer.name }}(\\w*)",
+        "sslTargetOverrideUrlSubstitutionExp": "{{ peer.name }}",
+        "urlSubstitutionExp": "{{ tls|ternary('grpcs','grpc') }}://{{ allips|random }}:{{ k8sports[peer.name+':7051'] }}",
+        "eventUrlSubstitutionExp": "{{ tls|ternary('grpcs','grpc') }}://{{ allips|random }}:{{ k8sports[peer.name+':7053'] }}"
       }{{ '' if loop.last else ',' }}
 {% endfor %}
     ]
