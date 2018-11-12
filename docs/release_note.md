@@ -1,5 +1,26 @@
 # Release Notes
 
+## [v0.9.0](https://github.com/hyperledger/cello/releases/tag/v0.9.0) November 12, 2018
+
+### Add new features
+
+* Support v1.1/v1.2 fabric in k8s agent;
+* Add v1_3 capabilities to ansible agent;
+
+### Improvement
+
+* Extend the connection profiles;
+
+### Known Vulnerabilities
+none
+
+### Resolved Vulnerabilities
+* Fix User dashboard image built failed;
+
+### Known Issues & Workarounds
+
+* User dashboard can't work with kubernetes agent;
+
 ## [v0.9.0-beta](https://github.com/hyperledger/cello/releases/tag/v0.9.0-beta) October 21, 2018
 
 ### Add new features
