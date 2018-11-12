@@ -1,3 +1,22 @@
+## v0.9.0
+Mon Nov 12 13:58:38 UTC 2018
+
+* [7c7d0ea](https://github.com/hyperledger/cello/commit/7c7d0ea) [CE-495](https://jira.hyperledger.org/browse/CE-495) Fix user dashboard dockerhub build failed
+* [83e8ea7](https://github.com/hyperledger/cello/commit/83e8ea7) [CE-498](https://jira.hyperledger.org/browse/CE-498) JSON connection profile misses few quotes
+* [8faf345](https://github.com/hyperledger/cello/commit/8faf345) [CE-497](https://jira.hyperledger.org/browse/CE-497) Extend the connection profiles
+* [26e4384](https://github.com/hyperledger/cello/commit/26e4384) [CE-494](https://jira.hyperledger.org/browse/CE-494) Connection profile use public IP
+* [31b9371](https://github.com/hyperledger/cello/commit/31b9371) [CE-493](https://jira.hyperledger.org/browse/CE-493) Check K8s Host Status failed
+* [af989e2](https://github.com/hyperledger/cello/commit/af989e2) [CE-414](https://jira.hyperledger.org/browse/CE-414) adding V1_3 capabilities to ansible agent
+* [00f23e7](https://github.com/hyperledger/cello/commit/00f23e7) [CE-483](https://jira.hyperledger.org/browse/CE-483) Fix docker version range
+* [be8d6b6](https://github.com/hyperledger/cello/commit/be8d6b6) [CE-491](https://jira.hyperledger.org/browse/CE-491) Support Fabric 1.1 for k8s agent
+* [77736ae](https://github.com/hyperledger/cello/commit/77736ae) [CE-487](https://jira.hyperledger.org/browse/CE-487) support Fabric 1.2 on K8s agent
+* [f4c8b7a](https://github.com/hyperledger/cello/commit/f4c8b7a) [CE-488](https://jira.hyperledger.org/browse/CE-488) Fabric Chart for Cello
+* [9de6569](https://github.com/hyperledger/cello/commit/9de6569) [CE-490](https://jira.hyperledger.org/browse/CE-490) Add a new command to start worker with mac os
+* [0bf79ca](https://github.com/hyperledger/cello/commit/0bf79ca) [CE-489](https://jira.hyperledger.org/browse/CE-489) Fixed Code Format Issue
+* [8de0e03](https://github.com/hyperledger/cello/commit/8de0e03) [CE-472](https://jira.hyperledger.org/browse/CE-472) Jump to info when click card in list page
+* [ca0cd5a](https://github.com/hyperledger/cello/commit/ca0cd5a) [CE-484](https://jira.hyperledger.org/browse/CE-484) updata how set docker on ubuntu16.04
+* [dec726f](https://github.com/hyperledger/cello/commit/dec726f) [CE-486](https://jira.hyperledger.org/browse/CE-486) Release v0.9.0-beta version
+
 ## v0.9.0-beta
 Sun Oct 21 05:39:36 UTC 2018
 
