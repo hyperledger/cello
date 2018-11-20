@@ -125,5 +125,8 @@
   "UserManagement.Messages.Operate.Success.Create": "Create user {name} successfully",
   "UserManagement.Messages.Operate.Success.Delete": "Delete user {name} successfully",
   "UserManagement.Messages.Operate.Success.Update": "Update user {name} successfully",
-  "UserManagement.Confirm.DeleteUser": "Do you confirm to delete user {name}"
+  "UserManagement.Confirm.DeleteUser": "Do you confirm to delete user {name}",
+  "UserManagement.Role.User": "User",
+  "UserManagement.Role.Operator": "Operator",
+  "UserManagement.Role.Administrator": "Administrator"
 }

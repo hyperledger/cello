@@ -7,13 +7,12 @@ import logging
 import os
 import sys
 
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, session, redirect
 from flask import request as r
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from common import log_handler, LOG_LEVEL, request_debug
-from version import version, homepage, author
-from flask_login import login_required, current_user
+from auth import oidc
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
@@ -21,27 +20,48 @@ logger.addHandler(log_handler)
 
 bp_index = Blueprint('bp_index', __name__)
 
+SERVER_PUBLIC_IP = os.environ.get("SERVER_PUBLIC_IP")
+KEYCLOAK_REALM = os.environ.get("KEYCLOAK_REALM")
+KEYCLOAK_SERVER_PORT = os.environ.get("KEYCLOAK_SERVER_PORT")
+
+LOGOUT_URL = "http://%s:%s/auth/realms/%s/protocol/openid-connect/logout" % (
+    SERVER_PUBLIC_IP,
+    KEYCLOAK_SERVER_PORT,
+    KEYCLOAK_REALM
+)
+REDIRECT_URL = "http://%s:8080" % SERVER_PUBLIC_IP
+
 
 @bp_index.route('/', methods=['GET'])
 @bp_index.route('/index', methods=['GET'])
-@login_required
+@oidc.require_login
 def show():
     request_debug(r, logger)
-    user_id, username, is_admin, authority = \
-        str(current_user.id), current_user.username,\
-        current_user.isAdmin, current_user.role
-
-    return render_template("index.html",
-                           username=username,
-                           user_id=user_id,
-                           is_admin=is_admin,
-                           authority=authority
-                           )
-
-
-@bp_index.route('/about', methods=['GET'])
-@login_required
-def about():
-    logger.info("path={}, method={}".format(r.path, r.method))
-    return render_template("about.html", author=author, version=version,
-                           homepage=homepage)
+    try:
+        username = oidc.user_getfield('preferred_username')
+        role = oidc.user_getfield('role')
+        tenant = oidc.user_getfield('tenant')
+        user_id = oidc.user_getfield('sub')
+        is_admin = role == "cello-administrator"
+        access_token = oidc.get_access_token()
+        if access_token:
+            session["token"] = access_token
+        else:
+            access_token = session["token"]
+        token_valid = oidc.validate_token(access_token)
+        if not token_valid:
+            oidc.logout()
+            return redirect('%s?redirect_uri=%s' % (LOGOUT_URL, REDIRECT_URL))
+    except Exception as exc:
+        logger.error('exc {}'.format(str(exc)))
+        oidc.logout()
+        return redirect('%s?redirect_uri=%s' % (LOGOUT_URL, REDIRECT_URL))
+    else:
+        return render_template("index.html",
+                               username=username,
+                               user_id=user_id,
+                               is_admin=is_admin,
+                               authority=role,
+                               tenant=tenant,
+                               access_token=access_token
+                               )

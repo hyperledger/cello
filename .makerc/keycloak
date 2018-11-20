@@ -1,0 +1,8 @@
+export KEYCLOAK_SERVER_PORT?=8083
+export KEYCLOAK_SERVER_HTTPS_PORT?=8084
+export KEYCLOAK_ADMIN_NAME?=keycloak-admin
+export KEYCLOAK_ADMIN_PASSWORD?=password
+export KEYCLOAK_REALM?=cello-realm
+export KEYCLOAK_DB_USERNAME?=cello
+export KEYCLOAK_DB_PASSWORD?=password
+export KEYCLOAK_MYSQL_ROOT_PASSWORD?=password

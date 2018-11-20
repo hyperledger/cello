@@ -239,13 +239,14 @@ class HostHandler(object):
         h_new = self.get_by_id(id)
         return self._schema(h_new)
 
-    def list(self, filter_data={}):
+    def list(self, filter_data=None):
         """ List hosts with given criteria
 
         :param filter_data: Image with the filter properties
         :return: iteration of serialized doc
         """
-        logger.info("filter data {}".format(filter_data))
+        if filter_data is None:
+            filter_data = {}
         hosts = HostModel.objects(__raw__=filter_data)
         return self._schema(hosts, many=True)
 

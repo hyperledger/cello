@@ -24,6 +24,7 @@ from modules import host_handler
 from modules.models import Cluster as ClusterModel
 from modules.models import Host as HostModel
 from agent import detect_daemon_type
+from auth import oidc
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
@@ -35,6 +36,7 @@ bp_host_api = Blueprint('bp_host_api', __name__,
 
 
 @bp_host_api.route('/hosts', methods=['GET'])
+@oidc.accept_token(True)
 def hosts_list():
     logger.info("/hosts_list method=" + r.method)
     request_debug(r, logger)

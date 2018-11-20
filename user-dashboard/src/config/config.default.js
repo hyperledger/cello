@@ -12,6 +12,13 @@ module.exports = appInfo => {
       prefix: `${process.env.WEBROOT}static/`,
       dir: [path.join(appInfo.baseDir, 'app/assets/public')],
     },
+    passportOauth2: {
+      key: process.env.SSO_KEY,
+      secret: process.env.SSO_SECRET,
+      callbackURL: `${process.env.WEBROOT}passport/oauth2`,
+      authorizationURL: `http://${process.env.SERVER_PUBLIC_IP}:${process.env.KEYCLOAK_SERVER_PORT}/auth/realms/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/auth`,
+      tokenURL: `http://${process.env.SERVER_PUBLIC_IP}:${process.env.KEYCLOAK_SERVER_PORT}/auth/realms/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/token`,
+    },
     view: {
       defaultViewEngine: 'nunjucks',
       defaultExtension: '.tpl',

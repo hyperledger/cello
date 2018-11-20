@@ -21,19 +21,24 @@ const currentLocale = getLocale();
 addLocaleData(currentLocale.data);
 function RouterConfig({ history, app }) {
   const routerData = getRouterData(app);
-  const UserLayout = routerData['/user'].component;
   const BasicLayout = routerData['/'].component;
   return (
     <IntlProvider locale={currentLocale.locale} messages={currentLocale.messages}>
       <LocaleProvider locale={currentLocale.antd}>
         <ConnectedRouter history={history}>
           <Switch>
-            <Route path="/user" component={UserLayout} />
+            <Route path="/exception" component={BasicLayout} />
+            <AuthorizedRoute
+              path="/administrator"
+              render={props => <BasicLayout {...props} />}
+              authority={['administrator']}
+              redirectPath="/exception/403"
+            />
             <AuthorizedRoute
               path="/"
               render={props => <BasicLayout {...props} />}
-              authority={['admin', 'user', 'operator']}
-              redirectPath="/user/login"
+              authority={['administrator', 'operator']}
+              redirectPath="/exception/403"
             />
           </Switch>
         </ConnectedRouter>

@@ -4,7 +4,8 @@
 import React, { PureComponent, Fragment } from 'react';
 import { connect } from 'dva';
 import { stringify } from 'qs';
-import { Card, Divider, Button, Modal, Form, Input, Select, InputNumber, Switch } from 'antd';
+import moment from 'moment';
+import { Card, Divider, Button, Modal, Form, Input, Select, Switch } from 'antd';
 import { defineMessages, injectIntl, FormattedMessage } from 'react-intl';
 import StandardTable from '../../components/StandardTable';
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
@@ -90,6 +91,20 @@ const messages = defineMessages({
       defaultMessage: 'Do you confirm to delete user {name}',
     },
   },
+  role: {
+    user: {
+      id: 'UserManagement.Role.User',
+      defaultMessage: 'User',
+    },
+    operator: {
+      id: 'UserManagement.Role.Operator',
+      defaultMessage: 'Operator',
+    },
+    administrator: {
+      id: 'UserManagement.Role.Administrator',
+      defaultMessage: 'Administrator',
+    },
+  },
 });
 
 const CreateForm = Form.create()(props => {
@@ -151,15 +166,15 @@ const CreateForm = Form.create()(props => {
   };
   const roles = [
     {
-      value: 1,
+      value: 'operator',
       label: 'Operator',
     },
     {
-      value: 0,
-      label: 'Admin',
+      value: 'administrator',
+      label: 'Administrator',
     },
     {
-      value: 2,
+      value: 'user',
       label: 'User',
     },
   ];
@@ -205,12 +220,6 @@ const CreateForm = Form.create()(props => {
           initialValue: method === 'edit' ? currentUser.role : roles[0].value,
           rules: [{ required: true, message: 'Please select a role' }],
         })(<Select>{roleOptions}</Select>)}
-      </FormItem>
-      <FormItem {...formItemLayout} label={intl.formatMessage(messages.label.balance)}>
-        {form.getFieldDecorator('balance', {
-          initialValue: method === 'edit' ? currentUser.balance : 0,
-          rules: [{ required: true, message: 'Please input balance' }],
-        })(<InputNumber min={0} max={1000} />)}
       </FormItem>
       <FormItem {...formItemLayout} label={intl.formatMessage(messages.label.active)}>
         {form.getFieldDecorator('active', {})(
@@ -316,20 +325,20 @@ class UserManagement extends PureComponent {
     const { user, loadingUsers, intl } = this.props;
     const { modalVisible, userActive, creating, method, currentUser } = this.state;
     const { users, pageNo, pageSize, total } = user;
-    const roles = ['Admin', 'Operator', 'User'];
     const columns = [
       {
         title: intl.formatMessage(messages.label.name),
         dataIndex: 'name',
       },
       {
-        title: intl.formatMessage(messages.label.balance),
-        dataIndex: 'balance',
+        title: 'Create Time',
+        dataIndex: 'createdTimeStamp',
+        render: text => moment(text).format('YYYY-MM-DD HH:mm:ss'),
       },
       {
         title: intl.formatMessage(messages.label.role),
         dataIndex: 'role',
-        render: val => <span>{roles[val]}</span>,
+        render: val => <span><FormattedMessage {...messages.role[val]} /></span>,
       },
       {
         title: intl.formatMessage(messages.label.operate),
@@ -339,9 +348,11 @@ class UserManagement extends PureComponent {
               <FormattedMessage {...messages.button.edit} />
             </a>
             <Divider type="vertical" />
+            {window.authority === "administrator" && (
             <a style={{ color: 'red' }} onClick={() => this.operateItem(item, 'delete')}>
               <FormattedMessage {...messages.button.delete} />
             </a>
+)}
           </Fragment>
         ),
       },

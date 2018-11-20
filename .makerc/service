@@ -1,0 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# Theme name for admin dashboard basic/vue/react
+export SERVER_PUBLIC_IP?=

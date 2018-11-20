@@ -6,7 +6,7 @@ import logging
 import os
 import sys
 
-from flask import Blueprint, render_template
+from flask import Blueprint
 from flask import request as r
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -14,14 +14,15 @@ from common import log_handler, LOG_LEVEL, \
     request_get, make_ok_resp, make_fail_resp, \
     request_debug, request_json_body, \
     CODE_CREATED, CODE_NOT_FOUND, \
-    NETWORK_TYPES, NETWORK_TYPE_FABRIC_PRE_V1, \
+    NETWORK_TYPE_FABRIC_PRE_V1, \
     NETWORK_TYPE_FABRIC_V1, NETWORK_TYPE_FABRIC_V1_1, \
     NETWORK_TYPE_FABRIC_V1_2, \
     CONSENSUS_PLUGINS_FABRIC_V1, CONSENSUS_MODES, NETWORK_SIZE_FABRIC_PRE_V1, \
     FabricPreNetworkConfig, FabricV1NetworkConfig
 
-from modules import cluster_handler, host_handler
+from modules import cluster_handler
 from tasks import release_cluster, delete_cluster
+from auth import oidc
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
@@ -148,6 +149,7 @@ def cluster_release(r):
 
 @front_rest_v2.route('/cluster_op', methods=['GET', 'POST'])
 @bp_cluster_api.route('/cluster_op', methods=['GET', 'POST'])
+@oidc.accept_token(True)
 def cluster_actions():
     """Issue some operations on the cluster.
     Valid operations include: apply, release, start, stop, restart
@@ -179,6 +181,7 @@ def cluster_actions():
 
 @bp_cluster_api.route('/cluster/<cluster_id>', methods=['GET'])
 @front_rest_v2.route('/cluster/<cluster_id>', methods=['GET'])
+@oidc.accept_token(True)
 def cluster_query(cluster_id):
     """Query a json obj of a cluster
 
@@ -188,7 +191,6 @@ def cluster_query(cluster_id):
     """
     request_debug(r, logger)
     result = cluster_handler.get_by_id(cluster_id)
-    logger.info(result)
     if result:
         return make_ok_resp(data=result)
     else:
@@ -199,6 +201,7 @@ def cluster_query(cluster_id):
 
 
 @bp_cluster_api.route('/cluster', methods=['POST'])
+@oidc.accept_token(True)
 def cluster_create():
     """Create a cluster on a host
 
@@ -268,6 +271,7 @@ def cluster_create():
 
 
 @bp_cluster_api.route('/cluster', methods=['DELETE'])
+@oidc.accept_token(True)
 def cluster_delete():
     """Delete a cluster
 
@@ -301,6 +305,7 @@ def cluster_delete():
 
 @bp_cluster_api.route('/clusters', methods=['GET', 'POST'])
 @front_rest_v2.route('/clusters', methods=['GET', 'POST'])
+@oidc.accept_token(True)
 def cluster_list():
     """List clusters with the filter
     e.g.,
@@ -324,6 +329,7 @@ def cluster_list():
 
 # will deprecate
 @front_rest_v2.route('/cluster_apply', methods=['GET', 'POST'])
+@oidc.accept_token(True)
 def cluster_apply_dep():
     """
     Return a Cluster json body.

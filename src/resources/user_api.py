@@ -5,13 +5,24 @@
 import os
 import sys
 
-from flask import Blueprint, redirect, url_for
+from flask import Blueprint, redirect
 from flask_restful import Api
-from flask_login import logout_user
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from modules.user import ListUser, CreateUser, UpdateUser, \
     DeleteUser, Register, Login, UserInfo, UserProfile, UserSearch
+from auth import oidc
+
+SERVER_PUBLIC_IP = os.environ.get("SERVER_PUBLIC_IP")
+KEYCLOAK_REALM = os.environ.get("KEYCLOAK_REALM")
+KEYCLOAK_SERVER_PORT = os.environ.get("KEYCLOAK_SERVER_PORT")
+
+LOGOUT_URL = "http://%s:%s/auth/realms/%s/protocol/openid-connect/logout" % (
+    SERVER_PUBLIC_IP,
+    KEYCLOAK_SERVER_PORT,
+    KEYCLOAK_REALM
+)
+REDIRECT_URL = "http://%s:8080" % SERVER_PUBLIC_IP
 
 
 bp_user_api = Blueprint('bp_user_api', __name__,
@@ -29,8 +40,8 @@ auth_api.add_resource(Login, '/login')
 
 @bp_auth_api.route('/logout', methods=['GET'])
 def logout():
-    logout_user()
-    return redirect(url_for('bp_index.show'))
+    oidc.logout()
+    return redirect('%s?redirect_uri=%s' % (LOGOUT_URL, REDIRECT_URL))
 
 
 user_api = Api(bp_user_api)

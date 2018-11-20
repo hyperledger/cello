@@ -8,13 +8,10 @@ from flask_login import login_required
 import logging
 import sys
 import os
-from flask import current_app as app
-import bcrypt
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-from common import log_handler, LOG_LEVEL
-from modules.models import ADMIN
-from modules.user.user import User
+from common import log_handler, LOG_LEVEL, KeyCloakClient
+from auth import oidc
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
@@ -32,38 +29,46 @@ user_create_parser.add_argument('username', required=True,
 user_create_parser.add_argument('password', required=True,
                                 location=['form', 'json'],
                                 help='Password for create')
-user_create_parser.add_argument('role', type=int, required=True,
+user_create_parser.add_argument('role', type=str, required=True,
                                 location=['form', 'json'],
                                 help='User role for create')
-user_create_parser.add_argument('balance', type=int, default=0,
-                                location=['form', 'json'],
-                                help='User balance')
 user_create_parser.add_argument('active', required=True,
                                 location=['form', 'json'],
                                 help='Whether active user when create')
 
 
 class CreateUser(Resource):
-    @login_required
+    @oidc.accept_token(True)
     @marshal_with(user_create_fields)
     def post(self, **kwargs):
         args = user_create_parser.parse_args()
         username, password = args["username"], args["password"]
         role, active = args["role"], args["active"]
-        balance = args["balance"]
         active = active == "true"
-        salt = app.config.get("SALT", b"")
-        password = bcrypt.hashpw(password.encode('utf8'), bytes(salt.encode()))
         status = "OK"
+        status_code = 200
         user_id = ""
+        keycloak_client = KeyCloakClient()
 
         try:
-            user = User(username, password, is_admin=role == ADMIN,
-                        role=role, active=active, balance=balance)
-            user.save()
-            user_id = user.id
+            create_user_body = {
+                "username": username,
+                "requiredActions": [],
+                "enabled": active
+            }
+
+            keycloak_client.create_user(create_user_body)
+
+            user_id = keycloak_client.get_user_id(username=username)
+            keycloak_client.reset_user_password(user_id, password)
+            keycloak_client.update_user(user_id, body={
+                "attributes": {
+                    "role": role,
+                },
+            })
         except Exception as exc:
             logger.error("exc %s", exc)
             status = "FAIL"
+            status_code = 400
 
-        return {"status": status, "id": user_id}, 200
+        return {"status": status, "id": user_id}, status_code

@@ -22,7 +22,11 @@ class ChainService extends Service {
       timeout: 30000,
       contentType: 'json',
       dataType: 'json',
+      headers: {
+        Authorization: `Bearer ${ctx.user.token}`,
+      },
     });
+    ctx.logger.debug('response ', response);
     if (response.status === 200) {
       const ids = response.data.data.map(chain => { return chain.id; });
       chains = await ctx.model.Chain.find({ chainId: { $in: ids } });
@@ -72,6 +76,9 @@ class ChainService extends Service {
     const chain = await ctx.model.Chain.findOne({ chainId: clusterId });
     const response = await ctx.curl(operateUrl, {
       method: 'POST',
+      headers: {
+        Authorization: `Bearer ${ctx.user.token}`,
+      },
       data: {
         action: 'release',
         user_id: ctx.user.id,
@@ -329,6 +336,9 @@ class ChainService extends Service {
     const { type, size, name } = ctx.request.body;
     const response = await ctx.curl(operateUrl, {
       method: 'POST',
+      headers: {
+        Authorization: `Bearer ${ctx.user.token}`,
+      },
       data: {
         action: 'apply',
         user_id: ctx.user.id,

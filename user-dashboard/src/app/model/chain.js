@@ -6,9 +6,11 @@
 module.exports = app => {
   const mongoose = app.mongoose;
   const Schema = mongoose.Schema;
+  require('mongoose-uuid2')(mongoose);
+  const UUID = mongoose.Types.UUID;
 
   const ChainSchema = new Schema({
-    user: { type: Schema.Types.ObjectId, ref: 'User' },
+    user: { type: UUID, ref: 'User' },
     chainId: { type: String },
     serviceUrl: { type: Schema.Types.Mixed },
     size: { type: Number },

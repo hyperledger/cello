@@ -327,7 +327,7 @@ module.exports = app => {
         smartContract: smartContractCode.smartContract,
         name: chainCodeName,
         chain: chainId,
-        user: userId,
+        // user: userId,
       }, {
         status: 'installed',
       }, { upsert: true, new: true });

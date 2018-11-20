@@ -17,9 +17,7 @@ class ChainController extends Controller {
       size: { type: 'int' },
       name: { type: 'string' },
     });
-    ctx.logger.info('request body ', ctx.request.body);
     const success = await ctx.service.chain.apply();
-    ctx.logger.info('done');
     ctx.status = success ? 200 : 400;
     ctx.body = {
       success,

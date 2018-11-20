@@ -10,8 +10,9 @@ import os
 from flask_login import login_required
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-from common import log_handler, LOG_LEVEL
+from common import log_handler, LOG_LEVEL, KeyCloakClient
 from modules.user.user import User
+from auth import oidc
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
@@ -32,7 +33,7 @@ user_search_parser.add_argument('username',
 
 
 class UserSearch(Resource):
-    # @login_required
+    @oidc.accept_token(True)
     @marshal_with(user_search_fields)
     def get(self):
         """
@@ -43,16 +44,17 @@ class UserSearch(Resource):
         """
         args = user_search_parser.parse_args()
         username = args["username"]
-        user_obj = User()
-        user = user_obj.get_by_username(username)
+        keycloak_client = KeyCloakClient()
+        user = keycloak_client.get_user(username)
+        logger.info("user {}".format(user))
         if not user:
             return {"user_exists": False}, 200
 
         data = {
-            "username": user.username,
-            "apikey": str(user.id),
-            "isActivated": user.active,
-            "balance": user.balance,
+            "username": username,
+            "apikey": user.get("id"),
+            # "isActivated": user.active,
+            # "balance": user.balance,
             "user_exists": True
         }
 

@@ -95,13 +95,14 @@ export const getRouterData = app => {
     '/user-management': {
       component: dynamicWrapper(app, ['user'], () => import('../routes/UserManagement')),
     },
-    "/user": {
-      component: dynamicWrapper(app, [], () => import("../layouts/UserLayout")),
+    "/exception/403": {
+      component: dynamicWrapper(app, [], () => import('../routes/Exception/403')),
     },
-    "/user/login": {
-      component: dynamicWrapper(app, ["login"], () =>
-        import("../routes/User/Login")
-      ),
+    "/exception/404": {
+      component: dynamicWrapper(app, [], () => import('../routes/Exception/404')),
+    },
+    "/exception/500": {
+      component: dynamicWrapper(app, [], () => import('../routes/Exception/500')),
     },
   };
   // Get name from ./menu.js or just set it in the router data.
