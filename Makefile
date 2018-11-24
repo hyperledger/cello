@@ -172,7 +172,7 @@ check: setup-master docker-operator-dashboard ##@Code Check code format
 	tox
 	@$(MAKE) check-js
 	@$(MAKE) test-case
-	MODE=dev make start && sleep 60 && MODE=dev make stop
+	MODE=dev SERVER_PUBLIC_IP=0.0.0.0 make start && sleep 60 && MODE=dev make stop
 
 test-case: ##@Code Run test case for flask server
 	@$(MAKE) -C test/ all
@@ -208,7 +208,14 @@ initial-env: ##@Configuration Initial Configuration for dashboard
 initial-keycloak:
 	docker-compose -f docker-compose-files/docker-compose-initial.yml up --abort-on-container-exit
 
+check-environment:
+	if [ "$(SERVER_PUBLIC_IP)" = "" ]; then \
+		echo "Environment variable SERVICE_PUBLIC_IP not set"; \
+		exit 1; \
+	fi
+
 start: ##@Service Start service
+	@$(MAKE) check-environment
 	make initial-env
 	echo "Start all services with ${COMPOSE_FILE}... docker images must exist local now, otherwise, run 'make setup-master first' !"
 	if [ "$(MODE)" = "dev" ]; then \
