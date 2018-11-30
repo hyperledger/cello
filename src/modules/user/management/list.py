@@ -3,16 +3,15 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-from flask_restful import Resource, reqparse, fields, marshal_with
-from flask import g
 import logging
-import sys
 import os
-import time
+import sys
+
+from flask import g
+from flask_restful import Resource, reqparse, fields, marshal_with
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 from common import log_handler, LOG_LEVEL, KeyCloakClient
-from modules.models import User as UserModel
 from auth import oidc
 
 logger = logging.getLogger(__name__)

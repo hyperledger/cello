@@ -7,11 +7,9 @@ from flask_restful import Resource, fields, marshal_with, reqparse
 import logging
 import sys
 import os
-from flask_login import login_required
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 from common import log_handler, LOG_LEVEL, KeyCloakClient
-from modules.user.user import User
 from auth import oidc
 
 logger = logging.getLogger(__name__)
@@ -53,8 +51,6 @@ class UserSearch(Resource):
         data = {
             "username": username,
             "apikey": user.get("id"),
-            # "isActivated": user.active,
-            # "balance": user.balance,
             "user_exists": True
         }
 

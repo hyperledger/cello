@@ -54,6 +54,7 @@ services:
     links:
       - rabbitmq
       - keycloak
+      - parse
     environment:
       - MONGO_URL=mongodb://cello-mongo:27017  # used by pymongo, deprecate soon
       - MONGO_HOST=mongo
@@ -73,6 +74,10 @@ services:
       - KEYCLOAK_SERVER_PORT=$KEYCLOAK_SERVER_PORT
       - KEYCLOAK_ADMIN_NAME=$KEYCLOAK_ADMIN_NAME
       - KEYCLOAK_ADMIN_PASSWORD=$KEYCLOAK_ADMIN_PASSWORD
+      - PARSE_API_ROOT=http://parse:1337/parse
+      - PARSE_SERVER_APPLICATION_ID=$PARSE_SERVER_APPLICATION_ID
+      - PARSE_SERVER_MASTER_KEY=$PARSE_SERVER_MASTER_KEY
+      - PARSE_SERVER_REST_API_KEY=$PARSE_SERVER_REST_API_KEY
     ports:
       - "8080:8080"
     volumes:
@@ -88,6 +93,7 @@ services:
       - dashboard_mongo
       - operator-dashboard
       - keycloak
+      - parse
     ports:
       - "8081:8081"
     environment:
@@ -111,6 +117,10 @@ services:
       - SERVER_PUBLIC_IP=$SERVER_PUBLIC_IP
       - KEYCLOAK_REALM=$KEYCLOAK_REALM
       - KEYCLOAK_SERVER_PORT=$KEYCLOAK_SERVER_PORT
+      - PARSE_API_ROOT=http://parse:1337/parse
+      - PARSE_SERVER_APPLICATION_ID=$PARSE_SERVER_APPLICATION_ID
+      - PARSE_SERVER_MASTER_KEY=$PARSE_SERVER_MASTER_KEY
+      - PARSE_SERVER_REST_API_KEY=$PARSE_SERVER_REST_API_KEY
     volumes:
       - /opt/cello/baas:/opt/data
 
@@ -207,3 +217,14 @@ services:
     ports:
       - $KEYCLOAK_SERVER_PORT:8080
       - $KEYCLOAK_SERVER_HTTPS_PORT:8443
+
+  parse:
+    image: parseplatform/parse-server:3.1.2
+    container_name: cello-parse-server
+    links:
+    - mongo
+    environment:
+    - PARSE_SERVER_APPLICATION_ID=$PARSE_SERVER_APPLICATION_ID
+    - PARSE_SERVER_MASTER_KEY=$PARSE_SERVER_MASTER_KEY
+    - PARSE_SERVER_REST_API_KEY=$PARSE_SERVER_REST_API_KEY
+    - PARSE_SERVER_DATABASE_URI=$PARSE_SERVER_DATABASE_URI

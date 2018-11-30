@@ -5,6 +5,3 @@
 #
 from .management import ListUser, CreateUser, UpdateUser, \
     DeleteUser, UserInfo, UserSearch, UserActive, ChangePassword, ResetPassword
-from .auth import Register, Login
-from .user import User
-from .profile import UserProfile

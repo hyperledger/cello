@@ -1,0 +1,4 @@
+export PARSE_SERVER_APPLICATION_ID?=application-id
+export PARSE_SERVER_MASTER_KEY?=master-key
+export PARSE_SERVER_REST_API_KEY?=rest-api-key
+export PARSE_SERVER_DB_NAME?=parse-db

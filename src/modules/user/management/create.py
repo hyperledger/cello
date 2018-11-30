@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 from flask_restful import Resource, reqparse, fields, marshal_with
-from flask_login import login_required
 import logging
 import sys
 import os

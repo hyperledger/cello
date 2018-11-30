@@ -71,6 +71,7 @@ REPLACE_SLASH:=\/
 -include .makerc/user-dashboard
 -include .makerc/worker-node
 -include .makerc/keycloak
+-include .makerc/parse-server
 
 export ROOT_PATH = ${PWD}
 ROOT_PATH_REPLACE=$(subst $(SLASH),$(REPLACE_SLASH),$(ROOT_PATH))

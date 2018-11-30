@@ -5,20 +5,16 @@
 import logging
 import os
 
-import bcrypt
 from flask import Flask, jsonify
-from flask_login import LoginManager
 from flask_socketio import SocketIO
 from mongoengine import connect
 
 from common import log_handler, LOG_LEVEL
-from modules.models import ADMIN
 from resources import bp_index, \
     bp_stat_api, \
     bp_cluster_api, \
     bp_host_api, bp_auth_api, \
     bp_user_api, front_rest_user_v2
-from modules.user import User
 from sockets.custom import CustomSockets
 from extensions import celery
 from auth import oidc
@@ -46,9 +42,6 @@ connect(app.config.get("MONGODB_DB", "dashboard"),
         password=app.config.get("MONGODB_PASSWORD", ""),
         connect=False, tz_aware=True)
 
-login_manager = LoginManager()
-login_manager.init_app(app)
-
 app.logger.setLevel(LOG_LEVEL)
 app.logger.addHandler(log_handler)
 
@@ -59,16 +52,6 @@ app.register_blueprint(bp_stat_api)
 app.register_blueprint(bp_auth_api)
 app.register_blueprint(bp_user_api)
 app.register_blueprint(front_rest_user_v2)
-
-admin = os.environ.get("ADMIN", "admin")
-admin_password = os.environ.get("ADMIN_PASSWORD", "pass")
-salt = app.config.get("SALT", b"")
-password = bcrypt.hashpw(admin_password.encode('utf8'), bytes(salt.encode()))
-try:
-    user = User(admin, password, is_admin=True, role=ADMIN)
-    user.save()
-except Exception:
-    pass
 
 
 @app.errorhandler(404)

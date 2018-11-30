@@ -26,3 +26,4 @@ redis>=2.10.0,<=2.10.6
 holdup>1.5.0,<=1.6.0
 Flask-OIDC>1.3.0,<=1.4.0
 itsdangerous<0.24,<=1.0.0
+parse_client<=0.1.2

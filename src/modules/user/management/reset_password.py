@@ -11,8 +11,7 @@ from flask import current_app as app
 import bcrypt
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-from common import log_handler, LOG_LEVEL
-from modules.user.user import User
+from common import log_handler, LOG_LEVEL, KeyCloakClient
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
@@ -39,15 +38,8 @@ class ResetPassword(Resource):
         args = user_password_parser.parse_args()
         new_password = args["new_password"]
 
-        user_obj = User()
-        user = user_obj.get_by_id(user_id)
-        if not user:
-            return {"error": "No such User", "success": False}, 400
-        salt = app.config.get("SALT", b"")
-        new_password = bcrypt.hashpw(new_password.encode('utf8'),
-                                     bytes(salt.encode()))
-
-        user.update_password(new_password.decode())
+        keycloak_client = KeyCloakClient()
+        keycloak_client.reset_user_password(user_id, new_password)
 
         data = {
             "success": True
