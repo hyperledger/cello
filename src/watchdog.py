@@ -10,18 +10,15 @@ from threading import Thread
 
 from modules import host_handler, cluster_handler
 from common import LOG_LEVEL, log_handler, NETWORK_STATUS_RUNNING
-from mongoengine import connect
+from parse_client.connection import register
 import os
 
-MONGODB_HOST = os.getenv('MONGODB_HOST', 'mongo')
-MONGODB_DB = os.getenv('MONGODB_DB', 'dev')
-MONGODB_PORT = int(os.getenv('MONGODB_PORT', 27017))
-MONGODB_USERNAME = os.getenv('MONGODB_USERNAME', '')
-MONGODB_PASSWORD = os.getenv('MONGODB_PASSWORD', '')
-PERIOD_TIME = int(os.getenv('PERIOD_TIME', 15))
+APP_ID = os.environ.get("PARSE_SERVER_APPLICATION_ID")
+MASTER_KEY = os.environ.get("PARSE_SERVER_MASTER_KEY")
+REST_API_KEY = os.environ.get("PARSE_SERVER_REST_API_KEY")
 
-connect(MONGODB_DB, host=MONGODB_HOST, username=MONGODB_USERNAME,
-        password=MONGODB_PASSWORD, connect=False, tz_aware=True)
+register(APP_ID, REST_API_KEY, master_key=MASTER_KEY)
+PERIOD_TIME = int(os.getenv('PERIOD_TIME', 15))
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)

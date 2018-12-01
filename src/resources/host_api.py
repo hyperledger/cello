@@ -8,9 +8,8 @@ import os
 import sys
 import uuid
 
-from flask import jsonify, Blueprint, render_template
+from flask import Blueprint
 from flask import request as r
-import json
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from common import log_handler, LOG_LEVEL, \
@@ -287,8 +286,9 @@ def host_actions():
             if host_handler.reset(host_id):
                 logger.debug("reset successfully")
                 try:
-                    host_model = HostModel.objects.get(id=host_id)
-                    clusters = ClusterModel.objects(host=host_model)
+                    host_model = HostModel.Query.get(id=host_id)
+                    clusters = ClusterModel.Query.\
+                        filter(host=host_model.as_pointer)
                     for cluster_item in clusters:
                         cluster_item.delete()
                 except Exception:

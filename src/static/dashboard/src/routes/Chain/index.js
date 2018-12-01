@@ -223,7 +223,7 @@ class Chain extends PureComponent {
           <span>
             <FormattedMessage {...messages.label.createTime} />
           </span>
-          <p>{moment(create_ts).format("YYYY-MM-DD HH:mm:ss")}</p>
+          <p>{moment.unix(create_ts).format("YYYY-MM-DD HH:mm:ss")}</p>
         </div>
         <div className={styles.listContentItem}>
           <span>

@@ -7,7 +7,6 @@ import os
 
 from flask import Flask, jsonify
 from flask_socketio import SocketIO
-from mongoengine import connect
 
 from common import log_handler, LOG_LEVEL
 from resources import bp_index, \
@@ -18,11 +17,18 @@ from resources import bp_index, \
 from sockets.custom import CustomSockets
 from extensions import celery
 from auth import oidc
+from parse_client.connection import register
 
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
 logger.addHandler(log_handler)
+
+APP_ID = os.environ.get("PARSE_SERVER_APPLICATION_ID")
+MASTER_KEY = os.environ.get("PARSE_SERVER_MASTER_KEY")
+REST_API_KEY = os.environ.get("PARSE_SERVER_REST_API_KEY")
+
+register(APP_ID, REST_API_KEY, master_key=MASTER_KEY)
 
 STATIC_FOLDER = "static"
 TEMPLATE_FOLDER = "templates"
@@ -35,12 +41,6 @@ app.config.from_envvar('CELLO_CONFIG_FILE', silent=True)
 
 oidc.init_app(app)
 celery.conf.update(app.config)
-
-connect(app.config.get("MONGODB_DB", "dashboard"),
-        host=app.config.get("MONGODB_HOST", "mongo"),
-        username=app.config.get("MONGODB_USERNAME", ""),
-        password=app.config.get("MONGODB_PASSWORD", ""),
-        connect=False, tz_aware=True)
 
 app.logger.setLevel(LOG_LEVEL)
 app.logger.addHandler(log_handler)

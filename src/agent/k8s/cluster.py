@@ -11,12 +11,6 @@ from agent import KubernetesOperation
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from common import log_handler, LOG_LEVEL
 
-from agent import compose_up, compose_clean, compose_start, compose_stop, \
-    compose_restart
-
-from common import NETWORK_TYPES, CONSENSUS_PLUGINS_FABRIC_V1, \
-    CONSENSUS_MODES, NETWORK_SIZE_FABRIC_PRE_V1
-
 from ..cluster_base import ClusterBase
 
 from modules.models import Cluster as ClusterModel
@@ -35,16 +29,18 @@ class ClusterOnKubernetes(ClusterBase):
         pass
 
     def _get_cluster_info(self, cid, config):
-        cluster = ClusterModel.objects.get(id=cid)
+        cluster = ClusterModel.Query.get(id=cid)
 
         cluster_name = cluster.name
         kube_config = KubernetesOperation()._get_config_from_params(cluster
                                                                     .host
                                                                     .k8s_param)
 
-        clusters_exists = ClusterModel.objects(host=cluster.host)
+        clusters_exists = ClusterModel.Query.\
+            filter(host=cluster.host.as_pointer)
+        clusters_exists = [cluster.as_pointer for cluster in clusters_exists]
         ports_index = [service.port for service in ServicePort
-                       .objects(cluster__in=clusters_exists)]
+                       .Query.filter(cluster__in=clusters_exists)]
 
         nfsServer_ip = cluster.host.k8s_param.get('K8SNfsServer')
         consensus = config['consensus_plugin']
@@ -84,11 +80,13 @@ class ClusterOnKubernetes(ClusterBase):
                                      config.get('network_type'))
 
             # delete ports for clusters
-            cluster_ports = ServicePort.objects(cluster=cluster)
+            cluster_ports = \
+                ServicePort.Query.filter(cluster=cluster.as_pointer)
             if cluster_ports:
                 for ports in cluster_ports:
                     ports.delete()
-            cluster_containers = Container.objects(cluster=cluster)
+            cluster_containers = Container.Query.\
+                filter(cluster=cluster.as_pointer)
             if cluster_containers:
                 for container in cluster_containers:
                     container.delete()
@@ -100,7 +98,7 @@ class ClusterOnKubernetes(ClusterBase):
 
     def get_services_urls(self, cid):
         try:
-            cluster = ClusterModel.objects.get(id=cid)
+            cluster = ClusterModel.Query.get(id=cid)
 
             cluster_name = cluster.name
             kube_config = \
@@ -166,10 +164,12 @@ class ClusterOnKubernetes(ClusterBase):
                                    consensus,
                                    config.get('network_type'))
 
-            cluster_ports = ServicePort.objects(cluster=cluster)
+            cluster_ports = \
+                ServicePort.Query.filter(cluster=cluster.as_pointer)
             for ports in cluster_ports:
                 ports.delete()
-            cluster_containers = Container.objects(cluster=cluster)
+            cluster_containers = Container.Query.\
+                filter(cluster=cluster.as_pointer)
             for container in cluster_containers:
                 container.delete()
 

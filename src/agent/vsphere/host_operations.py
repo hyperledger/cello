@@ -284,7 +284,7 @@ class VsphereOperation():
         clonespec.powerOn = True
 
         try:
-            host = HostModel.objects.get(id=hid)
+            host = HostModel.Query.get(id=hid)
         except Exception:
             logger.error("No vsphere host found with id=" + hid)
             return
@@ -336,7 +336,7 @@ class VsphereOperation():
             logger.error(e)
             if self.check_isport_open(vmip, utils.WORKER_API_PORT,
                                       utils.DEFAULT_TIMEOUT):
-                host = HostModel.objects.get(id=hid)
+                host = HostModel.Query.get(id=hid)
                 uuid = host.vcparam[utils.VMUUID]
                 self.delete_vm(vcip, vcusername, vcpwd, vcport, uuid)
             host.delete()

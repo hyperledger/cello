@@ -7,6 +7,7 @@ import { routerRedux } from 'dva/router';
 import { defineMessages, injectIntl, FormattedMessage } from 'react-intl';
 import { List, Card, Button, Dropdown, Menu, Icon, Badge, Modal } from 'antd';
 import { stringify } from 'qs';
+import moment from 'moment'
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
 import styles from './style.less';
 
@@ -170,7 +171,7 @@ class Host extends PureComponent {
           <span>
             <FormattedMessage {...messages.label.createTime} />
           </span>
-          <p>{create_ts}</p>
+          <p>{moment.unix(create_ts).format("YYYY/MM/DD H:mm:ss")}</p>
         </div>
         <div className={styles.listContentItem}>
           <Badge className={styles['status-badge']} status={badgeStatus(status)} text={status} />

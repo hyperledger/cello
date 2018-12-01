@@ -56,10 +56,6 @@ services:
       - keycloak
       - parse
     environment:
-      - MONGO_URL=mongodb://cello-mongo:27017  # used by pymongo, deprecate soon
-      - MONGO_HOST=mongo
-      - MONGO_DB=dev
-      - MONGODB_PORT=27017
       - DEBUG=False    # in debug mode, service will auto-restart
       - LOG_LEVEL=$LOG_LEVEL  # what level log will be output
       - STATIC_FOLDER=$STATIC_FOLDER
@@ -146,6 +142,8 @@ services:
     container_name: cello-watchdog
     hostname: cello-watchdog
     restart: unless-stopped
+    links:
+      - parse
     environment:
       - MONGO_URL=mongodb://mongo:27017  # used by pymongo, deprecate soon
       - MONGO_HOST=mongo
@@ -153,6 +151,10 @@ services:
       - MONGODB_PORT=27017
       - DEBUG=$DEV    # in debug mode, service will auto-restart
       - LOG_LEVEL=$LOG_LEVEL  # what level log will be output
+      - PARSE_API_ROOT=http://parse:1337/parse
+      - PARSE_SERVER_APPLICATION_ID=$PARSE_SERVER_APPLICATION_ID
+      - PARSE_SERVER_MASTER_KEY=$PARSE_SERVER_MASTER_KEY
+      - PARSE_SERVER_REST_API_KEY=$PARSE_SERVER_REST_API_KEY
 
   # mongo database, may use others in future
   mongo:
@@ -228,3 +230,4 @@ services:
     - PARSE_SERVER_MASTER_KEY=$PARSE_SERVER_MASTER_KEY
     - PARSE_SERVER_REST_API_KEY=$PARSE_SERVER_REST_API_KEY
     - PARSE_SERVER_DATABASE_URI=$PARSE_SERVER_DATABASE_URI
+    - PARSE_SERVER_OBJECT_ID_SIZE=32

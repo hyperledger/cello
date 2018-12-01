@@ -13,11 +13,11 @@ from threading import Thread
 import socket
 
 import requests
-from pymongo.collection import ReturnDocument
+from parse_client.connection import ParseBatcher
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from agent import get_swarm_node_ip, KubernetesHost
+from agent import get_swarm_node_ip
 
 from common import db, log_handler, LOG_LEVEL, utils
 from common import CLUSTER_PORT_START, CLUSTER_PORT_STEP, \
@@ -87,7 +87,7 @@ class ClusterHandler(object):
             filter_data.update({
                 "state": col_name
             })
-            clusters = ClusterModel.objects(__raw__=filter_data)
+            clusters = ClusterModel.Query.filter(**filter_data)
             result = self._schema(clusters, many=True)
         else:
             logger.warning("Unknown cluster col_name=" + col_name)
@@ -105,7 +105,7 @@ class ClusterHandler(object):
                 col_name != CLUSTER_STATE.released.name else \
                 CLUSTER_STATE.released.name
             logger.info("find state {} cluster".format(state))
-            cluster = ClusterModel.objects.get(id=id, state=state)
+            cluster = ClusterModel.Query.get(id=id, state=state)
         except Exception:
             logger.warning("No cluster found with id=" + id)
             return {}
@@ -217,7 +217,7 @@ class ClusterHandler(object):
 
         # creation done, update the container table in db
         for k, v in containers.items():
-            container = Container(id=v, name=k, cluster=cluster)
+            container = Container(id=v, name=k, cluster=cluster.as_pointer)
             container.save()
 
         # service urls can only be calculated after service is created
@@ -231,7 +231,7 @@ class ClusterHandler(object):
         for k, v in service_urls.items():
             service_port = ServicePort(name=k, ip=v.split(":")[0],
                                        port=int(v.split(":")[1]),
-                                       cluster=cluster)
+                                       cluster=cluster.as_pointer)
             service_port.save()
 
         # update api_url, container, user_id and status
@@ -251,8 +251,8 @@ class ClusterHandler(object):
         t = Thread(target=check_health_work, args=(cid,))
         t.start()
 
-        host = HostModel.objects.get(id=worker.id)
-        host.update(add_to_set__clusters=[cid])
+        # host = HostModel.Query.get(id=worker.id)
+        # host.update(add_to_set__clusters=[cid])
         logger.info("Create cluster OK, id={}".format(cid))
 
     def create(self, name, host_id, config, start_port=0,
@@ -280,7 +280,8 @@ class ClusterHandler(object):
             logger.error("Cannot find available host to create new network")
             return None
 
-        if ClusterModel.objects(host=worker).count() >= worker.capacity:
+        if ClusterModel.Query.filter(host=worker.as_pointer).count() >= \
+                worker.capacity:
             logger.warning("host {} is already full".format(host_id))
             return None
 
@@ -307,13 +308,15 @@ class ClusterHandler(object):
             'env': env_mapped_ports,
             'status': NETWORK_STATUS_CREATING,
             'mapped_ports': mapped_ports,
+            'state': CLUSTER_STATE.active.name,
+            'health': "",
             'service_url': {},  # e.g., {rest: xxx:7050, grpc: xxx:7051}
         }
         net.update(config.get_data())
 
         # try to start one cluster at the host
         cluster = ClusterModel(**net)
-        cluster.host = worker
+        cluster.host = worker.as_pointer
         cluster.save()
         # start cluster creation asynchronously for better user experience.
         t = Thread(target=self._create_cluster, args=(cluster, cid,
@@ -337,7 +340,7 @@ class ClusterHandler(object):
         logger.debug("Delete cluster: id={}, forced={}".format(id, forced))
 
         try:
-            cluster = ClusterModel.objects.get(id=id)
+            cluster = ClusterModel.Query.get(id=id)
         except Exception:
             logger.warning("Cannot find cluster {}".format(id))
             return False
@@ -346,17 +349,17 @@ class ClusterHandler(object):
                                after=False)
         # we are safe from occasional applying now
         user_id = c.user_id  # original user_id
-        if not forced and user_id != "":
+        if not forced and user_id and user_id != "":
             # not forced, and chain is used by normal user, then no process
             logger.warning("Cannot delete cluster {} by "
                            "user {}".format(id, user_id))
-            cluster.update(
-                set__user_id=user_id,
-                upsert=True
-            )
+            cluster = ClusterModel(objectId=cluster.objectId, user_id=user_id)
+            cluster.save()
             return False
         else:
-            cluster.update(set__status=NETWORK_STATUS_DELETING, upsert=True)
+            cluster = ClusterModel(objectId=cluster.objectId,
+                                   status=NETWORK_STATUS_DELETING)
+            cluster.save()
 
         host_id, worker_api, network_type, consensus_plugin, cluster_size = \
             str(c.host.id), c.worker_api, \
@@ -369,7 +372,8 @@ class ClusterHandler(object):
         h = self.host_handler.get_active_host_by_id(host_id)
         if not h:
             logger.warning("Host {} inactive".format(host_id))
-            cluster.update(set__user_id=user_id, upsert=True)
+            cluster = ClusterModel(objectId=cluster.objectId, user_id=user_id)
+            cluster.save()
             return False
 
         if network_type == NETWORK_TYPE_FABRIC_V1:
@@ -391,21 +395,29 @@ class ClusterHandler(object):
             return False
 
         config.update({
-            "env": cluster.env
+            "env": c.env
         })
 
         delete_result = self.cluster_agents[h.type].delete(id, worker_api,
                                                            config)
         if not delete_result:
             logger.warning("Error to run compose clean work")
-            cluster.update(set__user_id=user_id, upsert=True)
+            cluster = ClusterModel(objectId=cluster.objectId,
+                                   user_id=user_id)
+            cluster.save()
             return False
 
         # remove cluster info from host
         logger.info("remove cluster from host, cluster:{}".format(id))
-        h.update(pull__clusters=id)
+        # h.update(pull__clusters=id)
+        # h = HostModel(objectId=h.objectId)
 
         c.delete()
+        service_ports = ServicePort.Query.filter(cluster=c.as_pointer)
+        batcher = ParseBatcher()
+        batcher.batch_delete(service_ports)
+        containers = Container.Query.filter(cluster=c.as_pointer)
+        batcher.batch_delete(containers)
         return True
 
     def delete_released(self, id):
@@ -434,18 +446,20 @@ class ClusterHandler(object):
                 logger.debug("Already assigned cluster for " + user_id)
                 return self._schema(c)
         logger.debug("Try find available cluster for " + user_id)
-        cluster = ClusterModel.\
-            objects(user_id="",
-                    network_type__icontains=condition.get("apply_type",
-                                                          "fabric"),
-                    size=condition.get("size", 0),
-                    status=NETWORK_STATUS_RUNNING,
-                    health="OK").first()
+        clusters = ClusterModel. \
+            Query.filter(user_id="",
+                         network_type__regex="(?i)%s" %
+                                             condition.get("apply_type",
+                                                           "fabric"),
+                         size=condition.get("size", 0),
+                         status=NETWORK_STATUS_RUNNING,
+                         health="OK").limit(1)
+        cluster = clusters[0] if len(clusters) > 0 else None
         if cluster:
-            cluster.update(upsert=True, **{
-                "user_id": user_id,
-                "apply_ts": datetime.datetime.now()
-            })
+            update_cluster = ClusterModel(objectId=cluster.objectId,
+                                          user_id=user_id,
+                                          apply_ts=datetime.datetime.now())
+            update_cluster.save()
             logger.info("Now have cluster {} at {} for user {}".format(
                 cluster.id, cluster.host.id, user_id))
             return self._schema(cluster)
@@ -798,14 +812,15 @@ class ClusterHandler(object):
             logger.warning("Cannot find host with id={}", host_id)
             return ""
 
-        clusters_exists = ClusterModel.objects(host=host)
+        clusters_exists = ClusterModel.Query.filter(host=host.as_pointer)
+        clusters_exists = [cluster.as_pointer for cluster in clusters_exists]
         # clusters_valid = list(filter(lambda c: c.get("service_url"),
         #                              clusters_exists))
         # ports_existed = list(map(
         #     lambda c: int(c["service_url"]["rest"].split(":")[-1]),
         #     clusters_valid))
         ports_existed = [service.port for service in
-                         ServicePort.objects(cluster__in=clusters_exists)]
+                         ServicePort.Query.filter(cluster__in=clusters_exists)]
 
         logger.debug("The ports existed: {}".format(ports_existed))
         if len(ports_existed) + number >= 1000:
@@ -899,20 +914,18 @@ class ClusterHandler(object):
         filter.update({
             "state": state
         })
-        logger.info("filter {} operations {}".format(filter, operations))
-        kwargs = dict(('set__' + k, v) for (k, v) in operations.items())
-        for k, v in kwargs.items():
-            logger.info("k={}, v={}".format(k, v))
+        logger.debug("filter {} operations {}".format(filter, operations))
         try:
-            ClusterModel.objects(id=filter.get("id")).update(
-                upsert=True,
-                **kwargs
-            )
-            doc = ClusterModel.objects.get(id=filter.get("id"))
+            cluster_found = ClusterModel.Query.get(id=filter.get("id"))
+            cluster = ClusterModel(objectId=cluster_found.objectId,
+                                   **operations)
+            cluster.save()
+            if after:
+                cluster_found = ClusterModel.Query.get(id=filter.get("id"))
         except Exception as exc:
             logger.info("exception {}".format(exc.message))
             return None
-        return doc
+        return cluster_found
 
     def _schema(self, doc, many=False):
         cluster_schema = ClusterSchema(many=many)

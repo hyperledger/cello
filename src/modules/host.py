@@ -94,7 +94,7 @@ class HostHandler(object):
             # params is None when host_type is either docker or swarm.
             worker_api = "tcp://" + worker_api
 
-        if HostModel.objects(worker_api=worker_api).count():
+        if HostModel.Query.filter(worker_api=worker_api).count():
             logger.warning("{} already existed in db".format(worker_api))
             return {}
 
@@ -194,7 +194,7 @@ class HostHandler(object):
         :return: serialized result or obj
         """
         try:
-            ins = HostModel.objects.get(id=id)
+            ins = HostModel.Query.get(id=id)
         except Exception:
             logger.warning("No host found with id=" + id)
             return None
@@ -224,7 +224,8 @@ class HostHandler(object):
 
         if "capacity" in d:
             d["capacity"] = int(d["capacity"])
-        if d["capacity"] < ClusterModel.objects(host=h_old).count():
+        if d["capacity"] < ClusterModel.Query.filter(host=h_old.as_pointer).\
+                count():
             logger.warning("Cannot set cap smaller than running clusters")
             return {}
         if "log_server" in d and "://" not in d["log_server"]:
@@ -247,7 +248,7 @@ class HostHandler(object):
         """
         if filter_data is None:
             filter_data = {}
-        hosts = HostModel.objects(__raw__=filter_data)
+        hosts = HostModel.Query.filter(**filter_data)
         return self._schema(hosts, many=True)
 
     def delete(self, id):
@@ -259,14 +260,14 @@ class HostHandler(object):
         logger.debug("Delete a host with id={0}".format(id))
 
         try:
-            h = HostModel.objects.get(id=id)
+            h = HostModel.Query.get(id=id)
         except Exception:
             logger.warning("Cannot delete non-existed host")
             return False
 
         host_type = h.type
 
-        if ClusterModel.objects(host=h).count():
+        if ClusterModel.Query.filter(host=h.as_pointer).count():
             logger.warning("Host type not found.")
             return False
 
@@ -305,7 +306,7 @@ class HostHandler(object):
         if host.status != "active":
             logger.warning("host {} is not active".format(id))
             return False
-        clusters = ClusterModel.objects(host=host)
+        clusters = ClusterModel.Query.filter(host=host.as_pointer)
         num_new = host.capacity - len(clusters)
         if num_new <= 0:
             logger.warning("host {} already full".format(id))
@@ -350,7 +351,7 @@ class HostHandler(object):
         host = self.get_by_id(id)
         if not host:
             return False
-        clusters = ClusterModel.objects(host=host)
+        clusters = ClusterModel.Query.filter(host=host.as_pointer)
         if host.status != "active":
             return False
 
@@ -382,7 +383,8 @@ class HostHandler(object):
         """
         logger.debug("clean host with id = {}".format(id))
         host = self.get_by_id(id)
-        if not host or ClusterModel.objects(host=host).count() < 0:
+        if not host or ClusterModel.Query.\
+                filter(host=host.as_pointer).count() < 0:
             logger.warning("No find resettable host with id ={}".format(id))
             return False
         host_type = host.type
@@ -437,7 +439,7 @@ class HostHandler(object):
         """
         logger.debug("check host with id = {}".format(id))
         try:
-            host = HostModel.objects.get(id=id)
+            host = HostModel.Query.get(id=id)
         except Exception:
             logger.warning("No active host found with id=" + id)
             return None
@@ -473,14 +475,15 @@ class HostHandler(object):
         :param kwargs: kv pairs
         :return: The updated host json dict
         """
-        kwargs = dict(('set__' + k, v)
-                      for (k, v) in locals().get("kwargs", {}).items())
-        HostModel.objects(id=id).update(
-            upsert=True,
-            **kwargs
-        )
+        try:
+            host = HostModel.Query.get(id=id)
+            host = HostModel(objectId=host.objectId, **kwargs)
+            host.save()
+            host = HostModel.Query.get(id=id)
+        except Exception:
+            return None
 
-        return HostModel.objects.get(id=id)
+        return host
 
 
 host_handler = HostHandler()
