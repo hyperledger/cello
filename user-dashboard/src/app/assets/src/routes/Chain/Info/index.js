@@ -59,14 +59,14 @@ export default class Index extends PureComponent {
                 <span className={styles.event}>
                   {item.smartContract && item.smartContract.name} {item.smartContractCode && item.smartContractCode.version}&nbsp;&nbsp;
                   {item.fcn && <span>Function: {item.fcn}</span>}&nbsp;&nbsp;
-                  {item.arguments && <span>Arguments: {item.arguments}</span>}
+                  {item.arguments && <span>Arguments: {Array.isArray(item.arguments) ? item.arguments.join(',') : item.arguments}</span>}
                   {item.error && <div><Alert type="error" message={item.error} /></div>}
                 </span>
               </span>
             }
             description={
-              <span className={styles.datetime} title={item.operateTime}>
-                {moment(item.operateTime).fromNow()}
+              <span className={styles.datetime} title={item.createdAt}>
+                {moment.utc(item.createdAt).fromNow()}
               </span>
             }
           />
@@ -89,7 +89,7 @@ export default class Index extends PureComponent {
         </div>
         <div className={styles.content}>
           <div className={styles.contentTitle}>{currentChain.name}</div>
-          <div>Apply Time: {moment(currentChain.applyTime).format('YYYY-MM-DD HH:mm')}</div>
+          <div>Apply Time: {moment(currentChain.createdAt).format('YYYY-MM-DD HH:mm')}</div>
           <div>Type: {currentChain.type}</div>
         </div>
       </div>
@@ -144,7 +144,7 @@ export default class Index extends PureComponent {
               bodyStyle={{ padding: 0 }}
             >
               {deploys.map(item => (
-                <Card.Grid className={styles.projectGrid} key={item._id}>
+                <Card.Grid className={styles.projectGrid} key={item.objectId}>
                   <Card bodyStyle={{ padding: 0 }} bordered={false}>
                     <Card.Meta
                       title={
@@ -154,13 +154,13 @@ export default class Index extends PureComponent {
                             style={{ backgroundColor: '#1890ff' }}
                             icon="api"
                           />
-                          <Link to={`/smart-contract/invoke-query/${item._id}`}>{item.smartContract.name} / {item.smartContractCode.version}</Link>
+                          <Link to={`/smart-contract/invoke-query/${item.objectId}`}>{item.smartContract.name} / {item.smartContractCode.version}</Link>
                         </div>
                       }
                       description={item.smartContract.description}
                     />
                     <div className={styles.projectItemContent}>
-                      <Link to={`/smart-contract/invoke-query/${item._id}`}>
+                      <Link to={`/smart-contract/invoke-query/${item.objectId}`}>
                         <Badge status='success' text={<span className={styles["status-text"]}>{item.status}</span>} />
                       </Link>
                       {item.deployTime && (

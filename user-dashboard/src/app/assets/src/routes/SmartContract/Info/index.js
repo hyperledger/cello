@@ -96,14 +96,14 @@ export default class AdvancedProfile extends Component {
     const { smartContract, dispatch } = this.props;
     const { currentSmartContract } = smartContract;
     dispatch(routerRedux.push({
-      pathname: `/smart-contract/new-code/${currentSmartContract._id}`,
+      pathname: `/smart-contract/new-code/${currentSmartContract.objectId}`,
     }));
   };
   onClickDeploy = (smartContractCode) => {
     this.setState({
       deployStep: 1,
       selectedVersion: smartContractCode.version,
-      selectedVersionId: smartContractCode._id,
+      selectedVersionId: smartContractCode.objectId,
       operationKey: 'deploy',
     });
   };
@@ -120,7 +120,7 @@ export default class AdvancedProfile extends Component {
     dispatch({
       type: 'smartContract/querySmartContract',
       payload: {
-        id: currentSmartContract._id,
+        id: currentSmartContract.objectId,
       },
     });
     this.onOperationTabChange('detail');
@@ -128,7 +128,7 @@ export default class AdvancedProfile extends Component {
 
   onInvokeQuery = (item) => {
     this.props.dispatch(routerRedux.push({
-      pathname: `/smart-contract/invoke-query/${item._id}`,
+      pathname: `/smart-contract/invoke-query/${item.objectId}`,
     }));
   };
 
@@ -187,7 +187,7 @@ export default class AdvancedProfile extends Component {
 
     const description = (
       <DescriptionList className={styles.headerList} size="small" col="2">
-        <Description term="Create Time">{currentSmartContract && moment(currentSmartContract.createTime).format('YYYY-MM-DD HH:mm:ss')}</Description>
+        <Description term="Create Time">{currentSmartContract && moment(currentSmartContract.createdAt).format('YYYY-MM-DD HH:mm:ss')}</Description>
         <Description term="Description">{currentSmartContract && currentSmartContract.description}</Description>
         <Description term="Versions">{versionTags}</Description>
       </DescriptionList>

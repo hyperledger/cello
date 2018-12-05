@@ -7,6 +7,6 @@ FROM parseplatform/parse-server:3.1.2
 
 LABEL maintainer="github.com/hyperledger/cello"
 
-COPY --from=downloader /tmp/cello-master/parse-server/cloud $WORDDIR/cloud
+COPY --from=downloader /tmp/cello-master/parse-server/cloud /parse-server/cloud
 
-RUN cd $WORDDIR/cloud && npm install
+RUN cd cloud && npm install

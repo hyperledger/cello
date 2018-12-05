@@ -26,10 +26,12 @@ module.exports = appInfo => {
         '.tpl': 'nunjucks',
       },
     },
-    mongoose: {
+    parse: {
       client: {
-        url: `mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}/${process.env.MONGO_DB}`,
-        options: {},
+        serverUrl: process.env.PARSE_SERVER_URL,
+        applicationId: process.env.PARSE_SERVER_APPLICATION_ID,
+        javascriptKey: process.env.PARSE_SERVER_JAVASCRIPT_KEY,
+        masterKey: process.env.PARSE_SERVER_MASTER_KEY,
       },
     },
     operator: {

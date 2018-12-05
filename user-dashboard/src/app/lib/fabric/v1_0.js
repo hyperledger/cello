@@ -281,14 +281,17 @@ module.exports = app => {
   }
   async function installSmartContract(network, keyValueStorePath, peers, userId, smartContractCodeId, chainId, org) {
     const ctx = app.createAnonymousContext();
-    const smartContractCode = await ctx.model.SmartContractCode.findOne({ _id: smartContractCodeId });
-    const chain = await ctx.model.Chain.findOne({ _id: chainId });
-    const chainCodeName = `${chain.chainId}-${smartContractCodeId}`;
+    const smartContractCodeQuery = new ctx.Parse.Query(ctx.parse.SmartContractCode);
+    const smartContractCode = await smartContractCodeQuery.get(smartContractCodeId);
+    const chainQuery = new ctx.Parse.Query(ctx.parse.Chain);
+    const chain = await chainQuery.get(chainId);
+    const chainCodeName = `${chain.get('chainId')}-${smartContractCodeId}`;
     const smartContractSourcePath = `github.com/${smartContractCodeId}`;
     const chainRootPath = `/opt/data/${userId}/chains/${chainId}`;
+    const operation = new ctx.parse.Operation();
     process.env.GOPATH = chainRootPath;
     fs.ensureDirSync(`${chainRootPath}/src/github.com`);
-    fs.copySync(smartContractCode.path, `${chainRootPath}/src/${smartContractSourcePath}`);
+    fs.copySync(smartContractCode.get('path'), `${chainRootPath}/src/${smartContractSourcePath}`);
 
     const helper = await fabricHelper(network, keyValueStorePath);
     const client = await getClientForOrg('org1', helper.clients);
@@ -299,7 +302,7 @@ module.exports = app => {
       targets: await newPeers(network, peers, org, helper.clients),
       chaincodePath: smartContractSourcePath,
       chaincodeId: chainCodeName,
-      chaincodeVersion: smartContractCode.version,
+      chaincodeVersion: smartContractCode.get('version'),
     };
     const results = await client.installChaincode(request);
     const proposalResponses = results[0];
@@ -322,35 +325,47 @@ module.exports = app => {
         proposalResponses[0].response.status));
       ctx.logger.debug('\nSuccessfully Installed chaincode on organization ' + org +
         '\n');
-      const deploy = await ctx.model.SmartContractDeploy.findOneAndUpdate({
+      const deployQuery = new ctx.Parse.Query(ctx.parse.SmartContractDeploy);
+      deployQuery.equalTo('smartContractCode', smartContractCode);
+      deployQuery.equalTo('smartContract', smartContractCode.get('smartContract'));
+      deployQuery.equalTo('name', chainCodeName);
+      deployQuery.equalTo('chain', chain);
+      let deploy = await deployQuery.first();
+      if (!deploy) {
+        deploy = new ctx.parse.SmartContractDeploy();
+        await deploy.save({
+          smartContractCode,
+          smartContract: smartContractCode.get('smartContract'),
+          name: chainCodeName,
+          chain,
+          status: 'installed',
+          user: userId,
+        });
+      } else {
+        deploy.set('status', 'installed');
+        await deploy.save();
+      }
+      await operation.save({
         smartContractCode,
-        smartContract: smartContractCode.smartContract,
-        name: chainCodeName,
-        chain: chainId,
-        // user: userId,
-      }, {
-        status: 'installed',
-      }, { upsert: true, new: true });
-      await ctx.model.Operation.create({
-        smartContractCode,
-        smartContract: smartContractCode.smartContract,
-        chain: chainId,
+        smartContract: smartContractCode.get('smartContract'),
+        chain,
         user: userId,
         operate: app.config.operations.InstallCode.key,
+        success: true,
       });
       return {
         success: true,
-        deployId: deploy._id.toString(),
+        deployId: deploy.id,
         message: 'Successfully Installed chaincode on organization ' + org,
       };
     }
     ctx.logger.error(
       'Failed to send install Proposal or receive valid response. Response null or status is not 200. exiting...'
     );
-    await ctx.model.Operation.create({
+    await operation.save({
       smartContractCode,
-      smartContract: smartContractCode.smartContract,
-      chain: chainId,
+      smartContract: smartContractCode.get('smartContract'),
+      chain,
       user: userId,
       operate: app.config.operations.InstallCode.key,
       success: false,
@@ -364,20 +379,23 @@ module.exports = app => {
   }
   async function instantiateSmartContract(network, keyValueStorePath, channelName, deployId, functionName, args, org) {
     const ctx = app.createAnonymousContext();
-    const deploy = await ctx.model.SmartContractDeploy.findOne({ _id: deployId }).populate('smartContractCode smartContract chain');
-    deploy.status = 'instantiating';
-    deploy.save();
+    const deployQuery = new ctx.Parse.Query(ctx.parse.SmartContractDeploy);
+    deployQuery.include(['smartContractCode', 'smartContract', 'chain']);
+    const deploy = await deployQuery.get(deployId);
+    deploy.set('status', 'instantiating');
+    await deploy.save();
     const helper = await fabricHelper(network, keyValueStorePath);
     const client = await getClientForOrg(org, helper.clients);
     const channel = await getChannelForOrg(org, helper.channels);
+    const operation = new ctx.parse.Operation();
 
     await getOrgAdmin(org, helper);
     await channel.initialize();
     const txId = client.newTransactionID();
     // send proposal to endorser
     const request = {
-      chaincodeId: deploy.name,
-      chaincodeVersion: deploy.smartContractCode.version,
+      chaincodeId: deploy.get('name'),
+      chaincodeVersion: deploy.get('smartContractCode').get('version'),
       args,
       txId,
     };
@@ -402,9 +420,9 @@ module.exports = app => {
       all_good = all_good & one_good;
     }
     if (all_good) {
-      deploy.status = 'instantiated';
-      deploy.deployTime = Date.now();
-      deploy.save();
+      deploy.set('status', 'instantiated');
+      deploy.set('deployTime', Date.now());
+      await deploy.save();
       ctx.logger.info(util.format(
         'Successfully sent Proposal and received ProposalResponse: Status - %s, message - "%s", metadata - "%s", endorsement signature: %s',
         proposalResponses[0].response.status, proposalResponses[0].response.message,
@@ -460,30 +478,31 @@ module.exports = app => {
       const promiseResults = await Promise.all([sendPromise].concat([txPromise]));
       const validateResult = promiseResults[1];
       if (validateResult && validateResult.success) {
-        await ctx.model.Operation.create({
-          smartContractCode: deploy.smartContractCode,
-          smartContract: deploy.smartContract,
-          chain: deploy.chain,
-          user: deploy.user,
+        await operation.save({
+          smartContractCode: deploy.get('smartContractCode'),
+          smartContract: deploy.get('smartContract'),
+          chain: deploy.get('chain'),
+          user: deploy.get('user'),
           operate: app.config.operations.InstantiateCode.key,
+          success: true,
         });
       } else {
-        await ctx.model.Operation.create({
-          smartContractCode: deploy.smartContractCode,
-          smartContract: deploy.smartContract,
-          chain: deploy.chain,
-          user: deploy.user,
+        await operation.save({
+          smartContractCode: deploy.get('smartContractCode'),
+          smartContract: deploy.get('smartContract'),
+          chain: deploy.get('chain'),
+          user: deploy.get('user'),
+          operate: app.config.operations.InstantiateCode.key,
           success: false,
           error: validateResult && validateResult.error,
-          operate: app.config.operations.InstantiateCode.key,
         });
       }
       return {
         success: promiseResults[0].status === 'SUCCESS',
       };
     }
-    deploy.status = 'error';
-    deploy.save();
+    deploy.set('status', 'error');
+    await deploy.save();
     ctx.logger.error(
       'Failed to send instantiate Proposal or receive valid response. Response null or status is not 200. exiting...'
     );

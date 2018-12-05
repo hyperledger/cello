@@ -26,10 +26,14 @@ module.exports = app => {
     userInfo.data.role = role;
     userInfo.data.tenant = tenant;
 
-    const userModel = await ctx.model.User.findOne({ username: preferred_username });
-    if (!userModel) {
-      await ctx.model.User.create({
-        _id: sub,
+    const userQuery = new ctx.Parse.Query(ctx.parse.User);
+    userQuery.equalTo('username', preferred_username);
+    const userCount = await userQuery.count();
+    ctx.logger.info('user count ', userCount);
+    if (userCount === 0) {
+      const userModel = new ctx.parse.User();
+      await userModel.save({
+        userId: sub,
         username: preferred_username,
       });
       await ctx.service.smartContract.copySystemSmartContract(sub);

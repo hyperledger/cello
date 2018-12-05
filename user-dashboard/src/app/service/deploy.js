@@ -9,16 +9,25 @@ class DeployService extends Service {
   async list() {
     const { ctx } = this;
     const status = ctx.query.status || '';
-    const total = await ctx.model.SmartContractDeploy.count({ user: ctx.user.id });
-    const instantiatedCount = await ctx.model.SmartContractDeploy.count({ user: ctx.user.id, status: 'instantiated' });
-    const instantiatingCount = await ctx.model.SmartContractDeploy.count({ user: ctx.user.id, status: 'instantiating' });
-    const errorCount = await ctx.model.SmartContractDeploy.count({ user: ctx.user.id, status: 'error' });
-    let data = [];
+    let smartContractDeployQuery = new ctx.Parse.Query(ctx.parse.SmartContractDeploy);
+    smartContractDeployQuery.equalTo('user', ctx.user.id);
+    const total = await smartContractDeployQuery.count();
+    smartContractDeployQuery.equalTo('status', 'instantiated');
+    const instantiatedCount = await smartContractDeployQuery.count();
+    smartContractDeployQuery.equalTo('status', 'instantiating');
+    const instantiatingCount = await smartContractDeployQuery.count();
+    smartContractDeployQuery.equalTo('status', 'error');
+    const errorCount = await smartContractDeployQuery.count();
+
+    smartContractDeployQuery.include(['smartContractCode', 'smartContract', 'chain']);
     if (status !== '') {
-      data = await ctx.model.SmartContractDeploy.find({ user: ctx.user.id, status }, '_id name status deployTime').populate('smartContractCode chain smartContract', '_id version name chainId type size').sort('-deployTime');
+      smartContractDeployQuery.equalTo('status', status);
     } else {
-      data = await ctx.model.SmartContractDeploy.find({ user: ctx.user.id }, '_id name status deployTime').populate('smartContractCode chain smartContract', '_id version name chainId type size').sort('-deployTime');
+      smartContractDeployQuery = new ctx.Parse.Query(ctx.parse.SmartContractDeploy);
+      smartContractDeployQuery.equalTo('user', ctx.user.id);
+      smartContractDeployQuery.include(['smartContractCode', 'smartContract', 'chain']);
     }
+    const data = await smartContractDeployQuery.find();
     return {
       total,
       instantiatedCount,
@@ -29,7 +38,9 @@ class DeployService extends Service {
   }
   async query(id) {
     const { ctx } = this;
-    const deploy = await ctx.model.SmartContractDeploy.findOne({ _id: id }, '_id name status deployTime').populate('smartContractCode chain smartContract', '_id version name chainId type size default');
+    const deployQuery = new ctx.Parse.Query(ctx.parse.SmartContractDeploy);
+    deployQuery.include(['smartContractCode', 'chain', 'smartContract']);
+    const deploy = await deployQuery.get(id);
     if (!deploy) {
       return {
         success: false,
@@ -43,44 +54,48 @@ class DeployService extends Service {
   }
   async invoke(functionName, args, deployId) {
     const { ctx, config } = this;
-    const deploy = await ctx.model.SmartContractDeploy.findOne({ _id: deployId }).populate('smartContractCode smartContract chain');
-    const chainId = deploy.chain._id.toString();
-    const chain = await ctx.model.Chain.findOne({ _id: chainId });
+    const deployQuery = new ctx.Parse.Query(ctx.parse.SmartContractDeploy);
+    deployQuery.include(['chain', 'smartContract', 'smartContractCode']);
+    const deploy = await deployQuery.get(deployId);
+    const chain = deploy.get('chain');
+    const chainId = chain.id;
     const chainRootDir = `${config.dataDir}/${ctx.user.id}/chains/${chainId}`;
     const keyValueStorePath = `${chainRootDir}/client-kvs`;
-    const network = await ctx.service.chain.generateNetwork(chainId, chain.type);
+    const network = await chain.generateNetwork();
     let peers = ['peer1'];
-    switch (chain.type) {
+    switch (chain.get('type')) {
       case 'fabric-1.2':
         peers = ['peer0.org1.example.com'];
         break;
       default:
         break;
     }
-    const result = await ctx.invokeChainCode(network, keyValueStorePath, peers, config.default.channelName, deploy.name, functionName, args, ctx.user.username, 'org1', chain.type);
+    const result = await ctx.invokeChainCode(network, keyValueStorePath, peers, config.default.channelName, deploy.get('name'), functionName, args, ctx.user.username, 'org1', chain.get('type'));
+    const operation = new ctx.parse.Operation();
     if (result.success) {
-      await ctx.model.Operation.create({
-        chain: chainId,
+      await operation.save({
+        chain,
         deploy,
-        smartContract: deploy.smartContract,
-        smartContractCode: deploy.smartContractCode,
+        smartContract: deploy.get('smartContract'),
+        smartContractCode: deploy.get('smartContractCode'),
         operate: config.operations.Invoke.key,
         fcn: functionName,
         arguments: args,
         user: ctx.user.id,
+        success: true,
       });
     } else {
-      await ctx.model.Operation.create({
-        chain: chainId,
+      await operation.save({
+        chain,
         deploy,
-        smartContract: deploy.smartContract,
-        smartContractCode: deploy.smartContractCode,
+        smartContract: deploy.get('smartContract'),
+        smartContractCode: deploy.get('smartContractCode'),
         operate: config.operations.Invoke.key,
-        success: false,
-        error: result.message,
         fcn: functionName,
         arguments: args,
         user: ctx.user.id,
+        error: result.message,
+        success: false,
       });
     }
     return result;
@@ -88,45 +103,49 @@ class DeployService extends Service {
 
   async queryChainCode(functionName, args, deployId) {
     const { ctx, config } = this;
-    const deploy = await ctx.model.SmartContractDeploy.findOne({ _id: deployId }).populate('smartContractCode smartContract chain');
-    const chainId = deploy.chain._id.toString();
-    const chain = await ctx.model.Chain.findOne({ _id: chainId });
+    const deployQuery = new ctx.Parse.Query(ctx.parse.SmartContractDeploy);
+    deployQuery.include(['chain', 'smartContract', 'smartContractCode']);
+    const deploy = await deployQuery.get(deployId);
+    const chain = deploy.get('chain');
+    const chainId = chain.id;
     const chainRootDir = `${config.dataDir}/${ctx.user.id}/chains/${chainId}`;
     const keyValueStorePath = `${chainRootDir}/client-kvs`;
-    const network = await ctx.service.chain.generateNetwork(chainId, chain.type);
+    const network = await chain.generateNetwork();
     let peer = 'peer1';
-    switch (chain.type) {
+    switch (chain.get('type')) {
       case 'fabric-1.2':
         peer = 'peer0.org1.example.com';
         break;
       default:
         break;
     }
-    const result = await ctx.queryChainCode(network, keyValueStorePath, peer, config.default.channelName, deploy.name, functionName, args, ctx.user.username, 'org1', chain.type);
+    const result = await ctx.queryChainCode(network, keyValueStorePath, peer, config.default.channelName, deploy.get('name'), functionName, args, ctx.user.username, 'org1', chain.get('type'));
+    const operation = new ctx.parse.Operation();
     if (result.success) {
-      await ctx.model.Operation.create({
-        chain: chainId,
+      await operation.save({
+        chain,
         deploy,
-        smartContract: deploy.smartContract,
-        smartContractCode: deploy.smartContractCode,
+        smartContract: deploy.get('smartContract'),
+        smartContractCode: deploy.get('smartContractCode'),
         operate: config.operations.Query.key,
         fcn: functionName,
         arguments: args,
-        result: result.result,
         user: ctx.user.id,
+        success: true,
+        result: result.result,
       });
     } else {
-      await ctx.model.Operation.create({
-        chain: chainId,
+      await operation.save({
+        chain,
         deploy,
-        smartContract: deploy.smartContract,
-        smartContractCode: deploy.smartContractCode,
+        smartContract: deploy.get('smartContract'),
+        smartContractCode: deploy.get('smartContractCode'),
         operate: config.operations.Query.key,
-        success: false,
-        error: result.message,
         fcn: functionName,
         arguments: args,
         user: ctx.user.id,
+        success: false,
+        error: result.message,
       });
     }
     return result;

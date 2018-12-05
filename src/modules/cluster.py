@@ -413,11 +413,11 @@ class ClusterHandler(object):
         # h = HostModel(objectId=h.objectId)
 
         c.delete()
-        service_ports = ServicePort.Query.filter(cluster=c.as_pointer)
-        batcher = ParseBatcher()
-        batcher.batch_delete(service_ports)
-        containers = Container.Query.filter(cluster=c.as_pointer)
-        batcher.batch_delete(containers)
+        # service_ports = ServicePort.Query.filter(cluster=c.as_pointer)
+        # batcher = ParseBatcher()
+        # batcher.batch_delete(service_ports)
+        # containers = Container.Query.filter(cluster=c.as_pointer)
+        # batcher.batch_delete(containers)
         return True
 
     def delete_released(self, id):

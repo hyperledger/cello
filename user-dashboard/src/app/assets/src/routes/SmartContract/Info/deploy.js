@@ -42,7 +42,7 @@ export default class Deploy extends Component {
     const { codes } = this.props;
     let codeVersion = this.state.version;
     codes.forEach(code => {
-      if (code._id === value) {
+      if (code.objectId === value) {
         codeVersion = code.version;
         return false;
       }
@@ -56,7 +56,7 @@ export default class Deploy extends Component {
     const { chains } = this.props;
     let { chainName } = this.state;
     chains.forEach(chain => {
-      if (chain._id === value) {
+      if (chain.objectId === value) {
         chainName = chain.name;
         return false;
       }
@@ -152,8 +152,8 @@ export default class Deploy extends Component {
     const defaultValues = currentSmartContract.default || {};
     const defaultParameters = defaultValues.parameters || {};
     const defaultInstantiateParameters = defaultParameters.instantiate ? defaultParameters.instantiate.join(",") : "";
-    const versionOptions = codes.map(code => <Option value={code._id}>{code.version}</Option>);
-    const chainOptions = chains.map(chain => <Option value={chain._id}>{chain.name}</Option>);
+    const versionOptions = codes.map(code => <Option value={code.objectId}>{code.version}</Option>);
+    const chainOptions = chains.map(chain => <Option value={chain.objectId}>{chain.name}</Option>);
     const versionDesc = (
       <div className={classNames(styles.textSecondary, styles.stepDescription)}>
         <Fragment>

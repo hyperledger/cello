@@ -49,7 +49,7 @@ export default class CardList extends PureComponent {
   clickChain = (chain) => {
     this.props.dispatch(
       routerRedux.push({
-        pathname: `/chain/info/${chain._id}`,
+        pathname: `/chain/info/${chain.objectId}`,
       })
     );
   };
@@ -82,8 +82,8 @@ export default class CardList extends PureComponent {
             dataSource={['', ...chains]}
             renderItem={item =>
               item ? (
-                <List.Item key={item._id}>
-                  <Card hoverable className={styles.card} actions={[<a onClick={() => this.clickChain(item)}>Info</a>, <a onClick={() => this.releaseChain(item)}>Release</a>, <a href={config.url.chain.downloadNetworkConfig.format({ id: item._id })}><Icon type="download" /></a>]}>
+                <List.Item key={item.objectId}>
+                  <Card hoverable className={styles.card} actions={[<a onClick={() => this.clickChain(item)}>Info</a>, <a onClick={() => this.releaseChain(item)}>Release</a>, <a href={config.url.chain.downloadNetworkConfig.format({ id: item.objectId })}><Icon type="download" /></a>]}>
                     <Card.Meta
                       avatar={
                         <Avatar size="large" style={{ backgroundColor: '#08c' }} icon="link" />

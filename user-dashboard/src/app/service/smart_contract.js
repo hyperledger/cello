@@ -4,7 +4,6 @@
 'use strict';
 
 const Service = require('egg').Service;
-const ObjectID = require('mongodb').ObjectID;
 const fs = require('fs-extra');
 const commonFs = require('fs');
 const shell = require('shelljs');
@@ -17,7 +16,9 @@ const rimraf = require('rimraf');
 class SmartContractService extends Service {
   async list() {
     const { ctx } = this;
-    return await ctx.model.SmartContract.find({ user: ctx.user.id });
+    const smartContractQuery = new ctx.Parse.Query(ctx.parse.SmartContract);
+    smartContractQuery.equalTo('user', ctx.user.id);
+    return await smartContractQuery.find();
   }
   async copySystemSmartContract(userId) {
     const { ctx, config } = this;
@@ -25,22 +26,25 @@ class SmartContractService extends Service {
     for (const networkType in config.default.smartContracts) {
       const networkSmartContract = config.default.smartContracts[networkType];
       for (const idx in networkSmartContract) {
-        const smartContractId = new ObjectID();
+        const dbSmartContract = new ctx.parse.SmartContract();
         const smartContract = networkSmartContract[idx];
+        await dbSmartContract.save({
+          name: smartContract.name,
+          description: smartContract.description,
+          default: smartContract.default,
+          user: userId,
+        });
+        const smartContractId = dbSmartContract.id;
         const smartContractPath = `${smartContractRootDir}/${smartContractId}`;
         const smartContractCodePath = `${smartContractRootDir}/${smartContractId}/${smartContract.version}`;
         fs.ensureDirSync(smartContractCodePath);
         shell.cp('-R', `${smartContract.path}/*`, smartContractCodePath);
-        await ctx.model.SmartContract.create({
-          _id: smartContractId,
-          name: smartContract.name,
-          description: smartContract.description,
-          path: smartContractPath,
-          default: smartContract.default,
-          user: userId,
-        });
-        await ctx.model.SmartContractCode.create({
-          smartContract: smartContractId,
+        dbSmartContract.set('path', smartContractPath);
+        await dbSmartContract.save();
+
+        const smartContactCode = new ctx.parse.SmartContractCode();
+        await smartContactCode.save({
+          smartContract: dbSmartContract,
           path: smartContractCodePath,
           version: smartContract.version,
         });
@@ -51,17 +55,38 @@ class SmartContractService extends Service {
     const { ctx, config } = this;
     const id = ctx.query.id;
     const smartContractRootDir = `${config.dataDir}/${ctx.user.id}/smart_contract`;
-    const smartContractId = id || new ObjectID();
+    let smartContract = new ctx.parse.SmartContract();
+    // const smartContractId = id || new ObjectID();
+    let smartContractId = id;
+
+    if (!id) {
+      await smartContract.save({
+        user: ctx.user.id,
+      });
+      smartContractId = smartContract.id;
+    } else {
+      const smartContractQuery = new ctx.Parse.Query(ctx.parse.SmartContract);
+      smartContract = await smartContractQuery.get(id);
+    }
+
     const targetFileName = `${smartContractId}${path.extname(stream.filename)}`;
     const smartContractPath = `${smartContractRootDir}/${smartContractId}`;
     const smartContractCodePath = `${smartContractRootDir}/${smartContractId}/tmp`;
     const zipFile = path.join(smartContractPath, targetFileName);
+
     fs.ensureDirSync(smartContractCodePath);
     const writeStream = fs.createWriteStream(zipFile);
     try {
       await awaitWriteStream(stream.pipe(writeStream));
+      if (!id) {
+        smartContract.set('path', smartContractPath);
+        await smartContract.save();
+      }
     } catch (err) {
       await sendToWormhole(stream);
+      if (!id) {
+        await smartContract.destroy();
+      }
       return {
         success: false,
       };
@@ -69,63 +94,57 @@ class SmartContractService extends Service {
     const zip = AdmZip(zipFile);
     zip.extractAllTo(smartContractCodePath, true);
     commonFs.unlinkSync(zipFile);
-    if (!id) {
-      await ctx.model.SmartContract.create({
-        _id: smartContractId,
-        path: smartContractPath,
-        user: ctx.user.id,
-      });
-    }
-    const smartContractCode = await ctx.model.SmartContractCode.create({
-      smartContract: smartContractId,
+    const smartContractCode = new ctx.parse.SmartContractCode();
+    await smartContractCode.save({
+      smartContract,
       path: smartContractCodePath,
     });
     return {
-      id: smartContractCode._id.toString(),
+      id: smartContractCode.id,
       success: true,
     };
   }
   async removeSmartContractCode(id) {
     const { ctx } = this;
-    const smartContractCode = await ctx.model.SmartContractCode.findOne({ _id: id }).populate('smartContract');
+    const smartContractCodeQuery = new ctx.Parse.Query(ctx.parse.SmartContractCode);
+    const smartContractCode = await smartContractCodeQuery.get(id);
     if (smartContractCode) {
-      await smartContractCode.remove();
-      if (smartContractCode.smartContract) {
-        const codeCount = await ctx.model.SmartContractCode.count({ smartContract: smartContractCode.smartContract });
-        if (codeCount === 0) {
-          await smartContractCode.smartContract.remove();
-        }
-      }
+      smartContractCode.destroy();
     }
   }
   async updateSmartContractCode(id) {
     const { ctx } = this;
-    const smartContractCode = await ctx.model.SmartContractCode.findOne({ _id: id }).populate('smartContract');
-    if (!smartContractCode || !smartContractCode.smartContract) {
+    const smartContractCodeQuery = new ctx.Parse.Query(ctx.parse.SmartContractCode);
+    smartContractCodeQuery.include('smartContract');
+    const smartContractCode = await smartContractCodeQuery.get(id);
+    if (!smartContractCode || !smartContractCode.get('smartContract')) {
       return {
         success: false,
       };
     }
-    const smartContract = smartContractCode.smartContract;
-    const version = ctx.request.body.version || smartContractCode.version;
-    const description = ctx.request.body.description || smartContract.description;
-    const smartContractPath = smartContractCode.smartContract.path;
-    const name = ctx.request.body.name || smartContract.name;
+    const smartContract = smartContractCode.get('smartContract');
+    const version = ctx.request.body.version || smartContractCode.get('version');
+    const description = ctx.request.body.description || smartContract.get('description');
+    const smartContractPath = smartContract.get('path');
+    const name = ctx.request.body.name || smartContract.get('name');
     const smartContractCodePath = `${smartContractPath}/${version}`;
-    if (smartContractCodePath !== smartContractCode.path) {
+    if (smartContractCodePath !== smartContractCode.get('path')) {
       fs.ensureDirSync(smartContractCodePath);
-      await shell.cp('-R', `${smartContractCode.path}/*`, smartContractCodePath);
-      rimraf(smartContractCode.path, function() {
-        ctx.logger.debug(`delete smart contract path ${smartContractCode.path}`);
+      await shell.cp('-R', `${smartContractCode.get('path')}/*`, smartContractCodePath);
+      rimraf(smartContractCode.get('path'), function() {
+        ctx.logger.debug(`delete smart contract path ${smartContractCode.get('path')}`);
       });
     }
-    smartContractCode.path = smartContractCodePath;
-    smartContractCode.version = version;
+    smartContractCode.set('path', smartContractCodePath);
+    smartContractCode.set('version', version);
     await smartContractCode.save();
-    smartContract.name = name;
-    smartContract.description = description;
+
+    smartContract.set('name', name);
+    smartContract.set('description', description);
     await smartContract.save();
-    await ctx.model.SmartContractOperateHistory.create({
+    const smartContractOperateHistory = new ctx.parse.SmartContractOperateHistory();
+
+    await smartContractOperateHistory.save({
       user: smartContract.user,
       smartContract,
       smartContractCode,
@@ -137,24 +156,33 @@ class SmartContractService extends Service {
   }
   async deleteSmartContract(id) {
     const { ctx } = this;
-    const smartContract = await ctx.model.SmartContract.findOne({ _id: id });
-    const codes = await ctx.model.SmartContractCode.find({ smartContract });
-    for (const idx in codes) {
-      await codes[idx].remove();
-    }
-    await smartContract.remove();
+    const smartContractQuery = new ctx.Parse.Query(ctx.parse.SmartContract);
+    const smartContract = await smartContractQuery.get(id);
+    await smartContract.destroy();
   }
   async querySmartContract(id) {
     const { ctx } = this;
-    const smartContract = await ctx.model.SmartContract.findOne({ _id: id }, '_id description name createTime default');
+    const smartContractQuery = new ctx.Parse.Query(ctx.parse.SmartContract);
+    const smartContract = await smartContractQuery.get(id);
     if (!smartContract) {
       return {
         success: false,
       };
     }
-    const codes = await ctx.model.SmartContractCode.find({ smartContract }, '_id version createTime').sort('-createTime');
-    const newOperations = await ctx.model.SmartContractOperateHistory.find({ smartContract }, '_id operateTime status').populate('smartContractCode', 'version').sort('-operateTime');
-    const deploys = await ctx.model.SmartContractDeploy.find({ smartContract }, '_id name status deployTime').populate('smartContractCode chain', '_id version name chainId type size').sort('-deployTime');
+    const smartContractCodeQuery = new ctx.Parse.Query(ctx.parse.SmartContractCode);
+    smartContractCodeQuery.equalTo('smartContract', smartContract);
+    smartContractCodeQuery.descending('createdAt');
+    const codes = await smartContractCodeQuery.find();
+    const operationQuery = new ctx.Parse.Query(ctx.parse.SmartContractOperateHistory);
+    operationQuery.equalTo('smartContract', smartContract);
+    operationQuery.include(['smartContractCode']);
+    operationQuery.descending('createdAt');
+    const newOperations = await operationQuery.find();
+    const deployQuery = new ctx.Parse.Query(ctx.parse.SmartContractDeploy);
+    deployQuery.equalTo('smartContract', smartContract);
+    deployQuery.include(['chain', 'smartContractCode']);
+    deployQuery.descending('createdAt');
+    const deploys = await deployQuery.find();
     return {
       success: true,
       info: smartContract,
@@ -169,10 +197,11 @@ class SmartContractService extends Service {
     const { functionName, args, deployId } = ctx.request.body;
     const chainRootDir = `${config.dataDir}/${ctx.user.id}/chains/${chainId}`;
     const keyValueStorePath = `${chainRootDir}/client-kvs`;
-    const chain = await ctx.model.Chain.findOne({ _id: chainId });
-    const network = await ctx.service.chain.generateNetwork(chainId, chain.type);
+    const chainQuery = new ctx.Parse.Query(ctx.parse.Chain);
+    const chain = await chainQuery.get(chainId);
+    const network = await chain.generateNetwork();
     let peers = ['peer1', 'peer2'];
-    switch (chain.type) {
+    switch (chain.get('type')) {
       case 'fabric-1.2':
         peers = ['peer0.org1.example.com', 'peer1.org1.example.com'];
         break;
@@ -181,15 +210,19 @@ class SmartContractService extends Service {
     }
     switch (operation) {
       case 'install':
-        return await ctx.installSmartContract(network, keyValueStorePath, peers, ctx.user.id, id, chainId, 'org1', chain.type, ctx.user.username);
+        return await ctx.installSmartContract(network, keyValueStorePath, peers, ctx.user.id, id, chainId, 'org1', chain.get('type'), ctx.user.username);
       case 'instantiate': {
-        const deploy = await ctx.model.SmartContractDeploy.findOne({ _id: deployId }).populate('chain smartContract smartContractCode');
-        const result = await ctx.instantiateSmartContract(network, keyValueStorePath, config.default.channelName, deployId, functionName, args, 'org1', chain.type, peers, ctx.user.username);
+        const deployQuery = new ctx.Parse.Query(ctx.parse.SmartContractDeploy);
+        deployQuery.include(['chain', 'smartContract', 'smartContractCode']);
+        const deploy = await deployQuery.get(deployId);
+        const smartContract = deploy.get('smartContract');
+        const smartContractCode = deploy.get('smartContractCode');
+        const result = await ctx.instantiateSmartContract(network, keyValueStorePath, config.default.channelName, deployId, functionName, args, 'org1', chain.get('type'), peers, ctx.user.username);
         const nsp = app.io.of('/');
         const msg = ctx.helper.parseMsg('instantiate-done', result, {
-          chainName: deploy.chain.name,
-          codeName: deploy.smartContract.name,
-          codeVersion: deploy.smartContractCode.version,
+          chainName: chain.get('name'),
+          codeName: smartContract.get('name'),
+          codeVersion: smartContractCode.get('version'),
           chainId,
           deployId,
         });

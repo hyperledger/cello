@@ -85,8 +85,6 @@ services:
     container_name: cello-user-dashboard
     hostname: cello-user-dashboard
     links:
-      - mongo:dashboard_mongo
-      - dashboard_mongo
       - operator-dashboard
       - keycloak
       - parse
@@ -103,8 +101,6 @@ services:
       - SMTP_PORT=$SMTP_PORT
       - SMTP_AUTH_USERNAME=$SMTP_AUTH_USERNAME
       - SMTP_AUTH_PASSWORD=$SMTP_AUTH_PASSWORD
-      - MONGO_HOST=dashboard_mongo
-      - MONGO_DB=user_dashboard
       - FROM_EMAIL=$FROM_EMAIL
       - WEBROOT=$USER_DASHBOARD_WEBROOT
       - FABRIC_CFG_PATH=/etc/hyperledger/fabric
@@ -170,25 +166,10 @@ services:
         reservations:
           cpus: '0.10'
           memory: 256M
-    ports:
-      #- "27017:27017"  # use follow line instead in production env
-      - "127.0.0.1:27017:27017"
-      - "127.0.0.1:27018:27018"
     environment:
       - NO_USED=0
     volumes:
       - /opt/cello/mongo:/data/db
-
-  # TODO: we may use one mongo instance, that should be enough
-  dashboard_mongo:
-    image: mongo:3.4.10
-    hostname: cello-dashboard_mongo
-    container_name: cello-dashboard_mongo
-    restart: unless-stopped
-    environment:
-      - NO_USED=0
-    volumes:
-      - /opt/cello/dashboard_mongo:/data/db
 
   mysql:
     image: mariadb:10.3.10
@@ -231,3 +212,8 @@ services:
     - PARSE_SERVER_REST_API_KEY=$PARSE_SERVER_REST_API_KEY
     - PARSE_SERVER_DATABASE_URI=$PARSE_SERVER_DATABASE_URI
     - PARSE_SERVER_OBJECT_ID_SIZE=32
+    - PARSE_SERVER_JAVASCRIPT_KEY=$PARSE_SERVER_JAVASCRIPT_KEY
+    - PARSE_SERVER_CLOUD=cloud/main.js
+    - SILENT=true
+    volumes:
+    - /opt/cello/baas:/opt/data

@@ -260,14 +260,17 @@ module.exports = app => {
     const ctx = app.createAnonymousContext();
     // let tx_id = null;
     app.logger.debug('\n\n============ Install chain code on organizations ============\n');
-    const smartContractCode = await ctx.model.SmartContractCode.findOne({ _id: smartContractCodeId });
-    const chain = await ctx.model.Chain.findOne({ _id: chainId });
-    const chainCodeName = `${chain.chainId}-${smartContractCodeId}`;
+    const smartContractCodeQuery = new ctx.Parse.Query(ctx.parse.SmartContractCode);
+    const smartContractCode = await smartContractCodeQuery.get(smartContractCodeId);
+    const chainQuery = new ctx.Parse.Query(ctx.parse.Chain);
+    const chain = await chainQuery.get(chainId);
+    const chainCodeName = `${chain.get('chainId')}-${smartContractCodeId}`;
     const smartContractSourcePath = `github.com/${smartContractCodeId}`;
     const chainRootPath = `/opt/data/${userId}/chains/${chainId}`;
+    const operation = new ctx.parse.Operation();
     process.env.GOPATH = chainRootPath;
     fs.ensureDirSync(`${chainRootPath}/src/github.com`);
-    fs.copySync(smartContractCode.path, `${chainRootPath}/src/${smartContractSourcePath}`);
+    fs.copySync(smartContractCode.get('path'), `${chainRootPath}/src/${smartContractSourcePath}`);
     let error_message = null;
     try {
       app.logger.info('Calling peers in organization "%s" to join the channel', org);
@@ -283,7 +286,7 @@ module.exports = app => {
         chaincodeType: chainCodeType,
         chaincodePath: smartContractSourcePath,
         chaincodeId: chainCodeName,
-        chaincodeVersion: smartContractCode.version,
+        chaincodeVersion: smartContractCode.get('version'),
       };
       const results = await client.installChaincode(request);
       // the returned object has both the endorsement results
@@ -322,25 +325,37 @@ module.exports = app => {
       const message = util.format('Successfully install chaincode');
       app.logger.info(message);
       // build a response to send back to the REST caller
-      const deploy = await ctx.model.SmartContractDeploy.findOneAndUpdate({
+      const deployQuery = new ctx.Parse.Query(ctx.parse.SmartContractDeploy);
+      deployQuery.equalTo('smartContractCode', smartContractCode);
+      deployQuery.equalTo('smartContract', smartContractCode.get('smartContract'));
+      deployQuery.equalTo('name', chainCodeName);
+      deployQuery.equalTo('chain', chain);
+      let deploy = await deployQuery.first();
+      if (!deploy) {
+        deploy = new ctx.parse.SmartContractDeploy();
+        await deploy.save({
+          smartContractCode,
+          smartContract: smartContractCode.get('smartContract'),
+          name: chainCodeName,
+          chain,
+          status: 'installed',
+          user: userId,
+        });
+      } else {
+        deploy.set('status', 'installed');
+        await deploy.save();
+      }
+      await operation.save({
         smartContractCode,
-        smartContract: smartContractCode.smartContract,
-        name: chainCodeName,
-        chain: chainId,
-        // user: userId,
-      }, {
-        status: 'installed',
-      }, { upsert: true, new: true });
-      await ctx.model.Operation.create({
-        smartContractCode,
-        smartContract: smartContractCode.smartContract,
-        chain: chainId,
+        smartContract: smartContractCode.get('smartContract'),
+        chain,
         user: userId,
         operate: app.config.operations.InstallCode.key,
+        success: true,
       });
       return {
         success: true,
-        deployId: deploy._id.toString(),
+        deployId: deploy.id,
         message: 'Successfully Installed chaincode on organization ' + org,
       };
     }
@@ -357,9 +372,12 @@ module.exports = app => {
     app.logger.debug('\n\n============ Instantiate chaincode on channel ' + channelName +
       ' ============\n');
     let error_message = null;
-    const deploy = await ctx.model.SmartContractDeploy.findOne({ _id: deployId }).populate('smartContractCode smartContract chain');
-    deploy.status = 'instantiating';
-    deploy.save();
+    const deployQuery = new ctx.Parse.Query(ctx.parse.SmartContractDeploy);
+    deployQuery.include(['smartContractCode', 'smartContract', 'chain']);
+    const deploy = await deployQuery.get(deployId);
+    const operation = new ctx.parse.Operation();
+    deploy.set('status', 'instantiating');
+    await deploy.save();
 
     try {
       // first setup the client for this org
@@ -383,8 +401,8 @@ module.exports = app => {
       const request = {
         targets: peers,
         chaincodeType: chainCodeType,
-        chaincodeId: deploy.name,
-        chaincodeVersion: deploy.smartContractCode.version,
+        chaincodeId: deploy.get('name'),
+        chaincodeVersion: deploy.get('smartContractCode').get('version'),
         args,
         txId: tx_id,
       };
@@ -513,30 +531,33 @@ module.exports = app => {
         'Successfully instantiate chaingcode in organization %s to the channel \'%s\'',
         org, channelName);
       app.logger.info(message);
-      await ctx.model.Operation.create({
-        smartContractCode: deploy.smartContractCode,
-        smartContract: deploy.smartContract,
-        chain: deploy.chain,
-        user: deploy.user,
+      await operation.save({
+        smartContractCode: deploy.get('smartContractCode'),
+        smartContract: deploy.get('smartContract'),
+        chain: deploy.get('chain'),
+        user: deploy.get('user'),
         operate: app.config.operations.InstantiateCode.key,
+        success: true,
       });
-      deploy.status = 'instantiated';
-      deploy.deployTime = Date.now();
-      deploy.save();
+      deploy.set('status', 'instantiated');
+      deploy.set('deployTime', Date.now());
+      await deploy.save();
       return {
         success: true,
       };
     }
     const message = util.format('Failed to instantiate. cause:%s', error_message);
-    await ctx.model.Operation.create({
-      smartContractCode: deploy.smartContractCode,
-      smartContract: deploy.smartContract,
-      chain: deploy.chain,
-      user: deploy.user,
+    await operation.save({
+      smartContractCode: deploy.get('smartContractCode'),
+      smartContract: deploy.get('smartContract'),
+      chain: deploy.get('chain'),
+      user: deploy.get('user'),
+      operate: app.config.operations.InstantiateCode.key,
       success: false,
       error: message,
-      operate: app.config.operations.InstantiateCode.key,
     });
+    deploy.set('status', 'error');
+    await deploy.save();
     app.logger.error(message);
     return {
       success: false,

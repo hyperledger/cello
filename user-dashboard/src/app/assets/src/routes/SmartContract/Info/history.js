@@ -26,8 +26,8 @@ const newOperationColumns = [
   },
   {
     title: 'Operate Time',
-    dataIndex: 'operateTime',
-    key: 'operateTime',
+    dataIndex: 'createdAt',
+    key: 'createdAt',
     render: text => moment(text).format('YYYY-MM-DD HH:mm:ss'),
   },
   {

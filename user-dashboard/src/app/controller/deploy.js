@@ -15,7 +15,6 @@ class DeployController extends Controller {
   async query() {
     const { ctx } = this;
     const id = ctx.params.id;
-    ctx.logger.debug('in deploy query ', id);
     ctx.body = await ctx.service.deploy.query(id);
   }
   async operate() {

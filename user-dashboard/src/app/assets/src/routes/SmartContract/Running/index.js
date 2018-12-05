@@ -46,7 +46,7 @@ export default class BasicList extends PureComponent {
   };
   invokeQuery = (deploy) => {
     this.props.dispatch(routerRedux.push({
-      pathname: `/smart-contract/invoke-query/${deploy._id}`,
+      pathname: `/smart-contract/invoke-query/${deploy.objectId}`,
     }));
   };
 
@@ -137,7 +137,7 @@ export default class BasicList extends PureComponent {
           >
             <List
               size="large"
-              rowKey="_id"
+              rowKey="objectId"
               loading={loadingDeploys}
               pagination={paginationProps}
               dataSource={deploys}
@@ -145,7 +145,7 @@ export default class BasicList extends PureComponent {
                 <List.Item actions={[<Button onClick={() => this.invokeQuery(item)} disabled={item.status !== 'instantiated'} size="small" icon="api" type="primary">Invoke/Query</Button>]}>
                   <List.Item.Meta
                     avatar={<Avatar style={{color: '#40a9ff'}} icon="api" shape="square" size="large" />}
-                    title={<span><Link to={`/smart-contract/info/${item.smartContract._id}`}>{item.smartContract.name}</Link> / {item.smartContractCode.version}</span>}
+                    title={<span><Link to={`/smart-contract/info/${item.smartContract.objectId}`}>{item.smartContract.name}</Link> / {item.smartContractCode.version}</span>}
                   />
                   <ListContent data={item} />
                 </List.Item>

@@ -61,4 +61,10 @@ module.exports = {
   get getRegisteredUserV1_2() {
     return this.app.getRegisteredUserV1_2;
   },
+  get parse() {
+    return this.app.parse;
+  },
+  get Parse() {
+    return this.app.Parse;
+  },
 };

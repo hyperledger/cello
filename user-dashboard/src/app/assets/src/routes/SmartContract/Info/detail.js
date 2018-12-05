@@ -25,8 +25,8 @@ export default class Detail extends Component {
       },
       {
         title: 'Create Time',
-        dataIndex: 'createTime',
-        key: 'createTime',
+        dataIndex: 'createdAt',
+        key: 'createdAt',
         render: text => moment(text).format('YYYY-MM-DD HH:mm:ss'),
       },
       {
@@ -79,8 +79,8 @@ export default class Detail extends Component {
       },
       {
         title: 'Deploy Time',
-        dataIndex: 'deployTime',
-        key: 'deployTime',
+        dataIndex: 'createdAt',
+        key: 'createdAt',
         render: text => moment(text).format("YYYY-MM-DD HH:mm:ss"),
       },
       {
