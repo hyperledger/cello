@@ -1,0 +1,5 @@
+FROM parseplatform/parse-server:3.1.2
+
+COPY parse-server/cloud $WORDDIR/cloud
+
+RUN cd $WORDDIR/cloud && npm install

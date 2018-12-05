@@ -1,0 +1,10 @@
+{
+  "name": "parse-server",
+  "description": "Cello Parse Server",
+  "private": true,
+  "dependencies": {
+    "rimraf": "^2.6.2"
+  },
+  "author": "hightall",
+  "license": "MIT"
+}
