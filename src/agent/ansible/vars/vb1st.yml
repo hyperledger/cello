@@ -31,6 +31,22 @@ fabric: {
     cpu_req: "0.1",
     cpu_limit: "0.2"
   },
+  orderersettings: {
+    BatchTimeout: 2s,
+    BatchSize: {
+      MaxMessageCount: 500,
+      AbsoluteMaxBytes: "98 MB",
+      PreferredMaxBytes: "512 KB"
+    }
+  },
+  kafkasettings: {
+    MESSAGE_MAX_BYTES: "103809024",
+    MAX_REQUEST_SIZE: "104857600",
+    REPLICA_FETCH_MAX_BYTES: "103809024",
+    UNCLEAN_LEADER_ELECTION_ENABLE: "true",
+    MIN_INSYNC_REPLICAS: "2",
+    DEFAULT_REPLICATION_FACTOR: "3"
+  },
 
   # The following section defines how the fabric network is going to be made up
   # cas indicates certificate authority containers

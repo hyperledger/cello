@@ -76,11 +76,9 @@ Orderer: &OrdererDefaults
 {%   for orderer in allorderers %}
     - {{ orderer.name }}:7050
 {%   endfor %}
-  BatchTimeout: 2s
-  BatchSize:
-    MaxMessageCount: 10
-    AbsoluteMaxBytes: 98 MB
-    PreferredMaxBytes: 512 KB
+{% if fabric.orderersettings is defined %}
+  {{ fabric.orderersettings | to_nice_yaml | indent(2, False) -}}
+{% endif %}
 {% if kafkals | length > 0 %}
   Kafka:
     Brokers:
