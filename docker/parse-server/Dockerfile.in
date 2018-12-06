@@ -1,5 +1,0 @@
-FROM parseplatform/parse-server:3.1.2
-
-COPY parse-server/cloud /parse-server/cloud
-
-RUN cd cloud && npm install

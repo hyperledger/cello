@@ -1,0 +1,22 @@
+# Copyright IBM Corp., All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+version: '2'
+services:
+  check-js:
+    build:
+      context: $ROOT_PATH/src/operator-dashboard/static
+      dockerfile: Dockerfile-check-js
+    container_name: cello-check-admin-js
+    volumes:
+      - $ROOT_PATH/src/operator-dashboard/static:/var/www
+
+  check-user-dashboard:
+    build:
+      context: $ROOT_PATH/src/user-dashboard
+      dockerfile: Dockerfile-check-js
+    container_name: cello-check-user-dashboard-js
+    volumes:
+      - $ROOT_PATH/src/user-dashboard/src:/var/www

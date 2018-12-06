@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Theme name for admin dashboard basic/vue/react
-export THEME?=basic
 # npm registry repo
 export NPM_REGISTRY?=https://registry.npmjs.org
 # service running dev/production mode
@@ -16,10 +15,10 @@ NPM_REGISTRY_REPLACE=$(subst $(SLASH),$(REPLACE_SLASH),$(NPM_REGISTRY))
 
 ifeq (${DEV}, True)
     export LOG_LEVEL:=DEBUG
-    DEPLOY_COMPOSE_FILE:=docker-compose-files/docker-compose-dev.yml
+    DEPLOY_COMPOSE_FILE:=bootup/docker-compose-files/docker-compose-dev.yml
 else
     export LOG_LEVEL:=INFO
-    DEPLOY_COMPOSE_FILE:=docker-compose-files/docker-compose.yml
+    DEPLOY_COMPOSE_FILE:=bootup/docker-compose-files/docker-compose.yml
 endif
 
 export OPERATOR_DASHBOARD_SSO_KEY?=cello-operator-dashboard

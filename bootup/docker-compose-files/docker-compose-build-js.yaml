@@ -1,0 +1,20 @@
+# This compose file will deploy the services, and bootup a mongo server.
+
+# Copyright IBM Corp., All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+# Local `/opt/cello/mongo` will be used for the db storage.
+#  dashboard: dashboard service of cello, listen on 8080
+#  app: app service of cello, listen on 80
+#  nginx: front end
+#  mongo: mongo db
+
+version: '2'
+services:
+  build-admin-js:
+    build:
+      context: $ROOT_PATH/src/operator-dashboard/static
+    volumes:
+      - $ROOT_PATH/src/operator-dashboard/static:/var/www
+      - $ROOT_PATH/src/operator-dashboard/templates:/templates
