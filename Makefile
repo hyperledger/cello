@@ -211,7 +211,8 @@ initial-keycloak:
 
 check-environment:
 	if [ "$(SERVER_PUBLIC_IP)" = "" ]; then \
-		echo "Environment variable SERVICE_PUBLIC_IP not set"; \
+		echo "Environment variable SERVER_PUBLIC_IP not set"; \
+		echo "Please refer docs/setup_master.md for more details"; \
 		exit 1; \
 	fi
 

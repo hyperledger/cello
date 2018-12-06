@@ -51,15 +51,16 @@ $ [environment variables] make start
 ```
 Environment variables which you can use in the command:
 
-* `THEME`: Theme name for operator dashboard basic/vue/react, default is basic
-* `NPM_REGISTRY`: npm registry for install node packages
-* `DEV`: Start service in dev/product mode, options is True/False, default is False
-* `ENABLE_EMAIL_ACTIVE`: Whether register user in user-dashboard need to active manually
-* `SMTP_SERVER`: smtp server address for send active email to user
-* `SMTP_PORT`: smtp server port
-* `SMTP_AUTH_USERNAME`: Username for authenticate of smtp server
-* `SMTP_AUTH_PASSWORD`: Password for authenticate of smtp server
-* `FROM_EMAIL`: Email address display to user
+* `SERVER_PUBLIC_IP`(required): Master node IP address
+* `THEME`(optional): Theme name for operator dashboard basic/vue/react, default is basic
+* `NPM_REGISTRY`(optional):: npm registry for install node packages
+* `DEV`(optional):: Start service in dev/product mode, options is True/False, default is False
+* `ENABLE_EMAIL_ACTIVE`(optional):: Whether register user in user-dashboard need to active manually
+* `SMTP_SERVER`(optional):: smtp server address for send active email to user
+* `SMTP_PORT`(optional):: smtp server port
+* `SMTP_AUTH_USERNAME`(optional):: Username for authenticate of smtp server
+* `SMTP_AUTH_PASSWORD`(optional):: Password for authenticate of smtp server
+* `FROM_EMAIL`(optional):: Email address display to user
 
 
 To stop or restart the whole services, please run
