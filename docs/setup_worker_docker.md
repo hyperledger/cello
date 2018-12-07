@@ -26,7 +26,7 @@ ExecStart=/usr/bin/dockerd -H fd:// -H unix:///var/run/docker.sock -H tcp://0.0.
 ```
 
 #### Ubuntu 16.04
-Edit systemd service config file `usr/lib/systemd/system/docker.service`, update the `ExecStart` line under section `[Service]`, as the following:
+Edit systemd service config file `/lib/systemd/system/docker.service`, update the `ExecStart` line under section `[Service]`, as the following:
 
 ```
 [Service]
