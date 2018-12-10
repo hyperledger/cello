@@ -52,13 +52,13 @@
         "ssl-target-name-override": "{{ orderer.name }}"
       },
       "tlsCACerts": {
-        "pem": "{{ fabricworkdir+'/run/keyfiles/'+orderer.org+'/orderers/'+orderer.name+'.'+orderer.org+'/tls/ca.crt' }}"
+        "pem": "{{ '/fabric/keyfiles/'+orderer.org+'/orderers/'+orderer.name+'.'+orderer.org+'/tls/ca.crt' }}"
       }
     }{{ '' if loop.last else ',' }}
 {% endfor %}
   },
   "peers": {
-{% for peer in allpeers|selectattr('org', 'equalto', item)|list %}
+{% for peer in allpeers %}
     "{{ peer.name }}": {
       "url": "{{ tls|ternary('grpcs','grpc') }}://{{ peer.name }}:7051",
       "eventUrl": "{{ tls|ternary('grpcs','grpc') }}://{{ peer.name }}:7053",
@@ -66,7 +66,7 @@
         "ssl-target-name-override": "{{ peer.name }}"
       },
       "tlsCACerts": {
-        "pem": "{{ fabricworkdir+'/run/keyfiles/'+peer.org+'/tlsca/tlsca.'+peer.org+'-cert.pem' }}"
+        "pem": "{{ '/fabric/keyfiles/'+peer.org+'/tlsca/tlsca.'+peer.org+'-cert.pem' }}"
       }
     }{{ '' if loop.last else ',' }}
 {% endfor %}
@@ -76,7 +76,10 @@
     "{{ ca.name }}": {
       "url": "{{ tls|ternary('https','http') }}://{{ca.name}}:7054",
       "caName": "{{ ca.name }}",
-      "httpOptions": {"verify": false}
+      "httpOptions": {"verify": false},
+      "tlsCACerts": {
+         "path": "{{ '/fabric/keyfiles/'+ca.org+'/tlsca/tlsca.'+ca.org+'-cert.pem' }}"
+      }
     }{{ '' if loop.last else ',' }}
 {% endfor %}
   }
