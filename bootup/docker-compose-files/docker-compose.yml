@@ -202,7 +202,7 @@ services:
       - $KEYCLOAK_SERVER_HTTPS_PORT:8443
 
   parse:
-    image: parseplatform/parse-server:3.1.2
+    image: hyperledger/cello-parse-server
     container_name: cello-parse-server
     links:
     - mongo
