@@ -17,7 +17,7 @@ This dashboard is a web based application for blockchain developers. It is espec
 	```
 	$ docker-compose build
 	```
-	
+
 3. Start dashboard
 
 	```

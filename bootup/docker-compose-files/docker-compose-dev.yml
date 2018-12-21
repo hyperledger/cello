@@ -15,29 +15,29 @@
 version: '3.2'
 services:
   # nginx as front end for the services, disable now
-  #nginx:
-  #  image: hyperledger/cello-nginx
-  #  hostname: cello-nginx
-  #  container_name: cello-nginx
-  #  restart: always
-  #  deploy:
-  #    resources:
-  #      limits:
-  #        cpus: '0.50'
-  #        memory: 2048M
-  #      reservations:
-  #        cpus: '0.10'
-  #        memory: 256M
-  #  ports:
-  #    - "80:80"
-  #    - "8080:8080"
-  #  environment:
-  #    - BACKEND=cello-operator-dashboard
-  #    - PORT=8080
-  #    - USERNAME=admin
-  #    - PASSWORD=pass
-#  redis:
-#    image: redis
+  # if want to test api engine service, please uncomment lines after
+#  nginx:
+#    image: hyperledger/cello-nginx
+#    hostname: cello-nginx
+#    container_name: cello-nginx
+#    restart: always
+#    links:
+#      - api-engine
+#    ports:
+#      - "8085:80"
+#    environment:
+#      - UWSGI_SERVER_HOST=api-engine
+#      - URL_PREFIX=/engine
+#  api-engine:
+#    image: hyperledger/cello-api-engine
+#    hostname: cello-api-engine
+#    container_name: cello-api-engine
+#    restart: always
+#    environment:
+#      - WEBROOT=/engine
+#      - DEBUG=True
+#    volumes:
+#      - $ROOT_PATH/src/api-engine/src:/var/www/server
   rabbitmq:
     image: rabbitmq
     restart: unless-stopped
