@@ -131,6 +131,7 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.MultiPartParser',
         'rest_framework.parsers.JSONParser',
     ],
+    'EXCEPTION_HANDLER': 'api.utils.custom_exception_handler'
 }
 
 SWAGGER_SETTINGS = {

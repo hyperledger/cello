@@ -3,28 +3,22 @@
 #
 from enum import Enum, unique, EnumMeta
 import inspect
-from rest_framework import serializers
 
 
-@unique
-class NetworkStatus(Enum):
-    Stopped = 0
-    Running = 1
-    Error = 2
-
+class ExtraEnum(Enum):
     @classmethod
-    def get_info(cls):
-        task_status_str = """
-        Status of network:
+    def get_info(cls, title=""):
+        str_info = """
         """
+        str_info += title
         for name, member in cls.__members__.items():
-            task_status_str += """
+            str_info += """
             %s: %s
             """ % (
                 member.value,
                 name,
             )
-        return task_status_str
+        return str_info
 
     @classmethod
     def to_choices(cls):
@@ -33,6 +27,27 @@ class NetworkStatus(Enum):
         ]
 
         return choices
+
+
+@unique
+class NetworkStatus(ExtraEnum):
+    Stopped = 0
+    Running = 1
+    Error = 2
+
+
+@unique
+class LogLevel(ExtraEnum):
+    Info = 0
+    Warning = 1
+    Debug = 2
+    Error = 3
+
+
+@unique
+class HostType(ExtraEnum):
+    Docker = 0
+    Kubernetes = 1
 
 
 class EnumWithDisplayMeta(EnumMeta):
@@ -53,14 +68,14 @@ class EnumWithDisplayMeta(EnumMeta):
 
 @unique
 class ErrorCode(Enum, metaclass=EnumWithDisplayMeta):
-    ResourceExists = 20001
-    NoAvailableResource = 20002
-    ServiceBusy = 20003
+    UnknownError = 20000
+    ValidationError = 20001
+    ParseError = 20002
 
     class DisplayStrings:
-        ResourceExists = "Resource already exists."
-        NoAvailableResource = "No available resource can be used."
-        ServiceBusy = "Service is busy."
+        UnknownError = "Unknown Error"
+        ValidationError = "Validation parameter error"
+        ParseError = "Parse error"
 
     @classmethod
     def get_info(cls):
@@ -76,10 +91,3 @@ class ErrorCode(Enum, metaclass=EnumWithDisplayMeta):
             )
 
         return error_code_str
-
-
-class BadResponseSerializer(serializers.Serializer):
-    code = serializers.IntegerField(help_text=ErrorCode.get_info())
-    message = serializers.CharField(
-        required=False, help_text="Error Messages", allow_blank=True
-    )
