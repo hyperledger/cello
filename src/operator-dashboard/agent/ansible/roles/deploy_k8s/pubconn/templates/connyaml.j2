@@ -46,8 +46,8 @@ orderers:
     url: "{{ tls|ternary('grpcs','grpc') }}://{{ allips|random }}:{{ k8sports[orderer.name+':7050'] }}"
     grpcOptions:
       ssl-target-name-override: "{{ orderer.name }}"
-      tlsCACerts:
-        path: "{{ '/fabric/keyfiles/'+orderer.org+'/orderers/'+orderer.name+'.'+orderer.org+'/tls/ca.crt' }}"
+    tlsCACerts:
+      path: "{{ '/fabric/keyfiles/'+orderer.org+'/orderers/'+orderer.name+'.'+orderer.org+'/tls/ca.crt' }}"
 {% endfor %}
 peers:
 {% for peer in allpeers %}
