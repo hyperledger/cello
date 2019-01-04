@@ -299,9 +299,10 @@ class K8sClusterOperation():
 
     def _delete_service(self, name, namespace, data, **kwargs):
         try:
-            # delete_namespaced_service does not need data actually.
+            delete_data = client.V1DeleteOptions()
             resp = self.corev1client.delete_namespaced_service(name,
                                                                namespace,
+                                                               delete_data,
                                                                **kwargs)
             logger.debug(resp)
         except client.rest.ApiException as e:
