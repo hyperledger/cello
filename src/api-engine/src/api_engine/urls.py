@@ -24,6 +24,7 @@ from rest_framework.routers import DefaultRouter
 from api.routes.network.views import NetworkViewSet
 from api.routes.host.views import HostViewSet
 from api.routes.node.views import NodeViewSet
+from api.routes.cluster.views import ClusterViewSet
 
 
 swagger_info = openapi.Info(
@@ -40,10 +41,11 @@ SchemaView = get_schema_view(
     permission_classes=(permissions.AllowAny,),
 )
 
-router = DefaultRouter()
+router = DefaultRouter(trailing_slash=False)
 router.register("networks", NetworkViewSet, base_name="network")
 router.register("hosts", HostViewSet, base_name="host")
 router.register("nodes", NodeViewSet, base_name="node")
+router.register("clusters", ClusterViewSet, base_name="cluster")
 
 urlpatterns = router.urls
 

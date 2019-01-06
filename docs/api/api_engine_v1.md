@@ -15,7 +15,99 @@ Cello API Engine Service
 |In|header|
 |Name|Authorization|
 
-### /hosts/
+### /clusters
+---
+##### ***GET***
+**Summary:** List Clusters
+
+**Description:** Filter clusters with query parameters.
+
+**Parameters**
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| page | query | Page of filter | No | integer |
+| per_page | query | Per Page of filter | No | integer |
+
+**Responses**
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 200 |  | [NetworkListResponse](#networklistresponse) |
+| 400 |  | [BadResponse](#badresponse) |
+| 401 | Permission denied |  |
+| 403 | Authentication credentials were not provided. |  |
+| 500 | Internal Error |  |
+
+##### ***POST***
+**Summary:** Create Cluster
+
+**Description:** Create new cluster
+
+**Parameters**
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| data | body |  | Yes | [ClusterCreateBody](#clustercreatebody) |
+
+**Responses**
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 201 |  | [ClusterID](#clusterid) |
+| 400 |  | [BadResponse](#badresponse) |
+| 401 | Permission denied |  |
+| 403 | Authentication credentials were not provided. |  |
+| 500 | Internal Error |  |
+
+### /clusters/{id}
+---
+##### ***DELETE***
+**Summary:** Delete Cluster
+
+**Description:** Delete cluster
+
+**Parameters**
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| id | path |  | Yes | string |
+
+**Responses**
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 204 | No Content |  |
+| 400 |  | [BadResponse](#badresponse) |
+| 401 | Permission denied |  |
+| 403 | Authentication credentials were not provided. |  |
+| 500 | Internal Error |  |
+
+### /clusters/{id}/operations
+---
+##### ***POST***
+**Summary:** Operate Cluster
+
+**Description:** Operate cluster start/stop/restart
+
+**Parameters**
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| id | path |  | Yes | string |
+| action | query |          Operation for cluster:             start                          stop                          restart              | Yes | string |
+
+**Responses**
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 202 | Accepted |  |
+| 400 |  | [BadResponse](#badresponse) |
+| 401 | Permission denied |  |
+| 403 | Authentication credentials were not provided. |  |
+| 500 | Internal Error |  |
+
+### /hosts
 ---
 ##### ***GET***
 **Summary:** List Hosts
@@ -37,6 +129,7 @@ Cello API Engine Service
 | 200 |  | [HostListResponse](#hostlistresponse) |
 | 400 |  | [BadResponse](#badresponse) |
 | 401 | Permission denied |  |
+| 403 | Authentication credentials were not provided. |  |
 | 500 | Internal Error |  |
 
 ##### ***POST***
@@ -57,9 +150,10 @@ Cello API Engine Service
 | 201 |  | [HostID](#hostid) |
 | 400 |  | [BadResponse](#badresponse) |
 | 401 | Permission denied |  |
+| 403 | Authentication credentials were not provided. |  |
 | 500 | Internal Error |  |
 
-### /hosts/{id}/
+### /hosts/{id}
 ---
 ##### ***PUT***
 **Summary:** Update Host
@@ -80,6 +174,7 @@ Cello API Engine Service
 | 202 | Accepted |  |
 | 400 |  | [BadResponse](#badresponse) |
 | 401 | Permission denied |  |
+| 403 | Authentication credentials were not provided. |  |
 | 500 | Internal Error |  |
 
 ##### ***PATCH***
@@ -101,6 +196,7 @@ Cello API Engine Service
 | 202 | Accepted |  |
 | 400 |  | [BadResponse](#badresponse) |
 | 401 | Permission denied |  |
+| 403 | Authentication credentials were not provided. |  |
 | 500 | Internal Error |  |
 
 ##### ***DELETE***
@@ -121,10 +217,11 @@ Cello API Engine Service
 | 204 | No Content |  |
 | 400 |  | [BadResponse](#badresponse) |
 | 401 | Permission denied |  |
+| 403 | Authentication credentials were not provided. |  |
 | 404 | Not Found |  |
 | 500 | Internal Error |  |
 
-### /networks/
+### /networks
 ---
 ##### ***GET***
 **Summary:** List Networks
@@ -146,14 +243,15 @@ Cello API Engine Service
 | 200 |  | [NetworkListResponse](#networklistresponse) |
 | 400 |  | [BadResponse](#badresponse) |
 | 401 | Permission denied |  |
+| 403 | Authentication credentials were not provided. |  |
 | 500 | Internal Error |  |
 
-### /nodes/
+### /nodes
 ---
 ##### ***GET***
-**Summary:** List Hosts
+**Summary:** List Nodes
 
-**Description:** Filter hosts with query parameters.
+**Description:** Filter nodes with query parameters.
 
 **Parameters**
 
@@ -161,7 +259,6 @@ Cello API Engine Service
 | ---- | ---------- | ----------- | -------- | ---- |
 | page | query | Page of filter | No | integer |
 | per_page | query | Per Page of filter | No | integer |
-| status | query |                       0: Stopped                          1: Running                          2: Error              | No | string |
 
 **Responses**
 
@@ -170,10 +267,142 @@ Cello API Engine Service
 | 200 |  | [NetworkListResponse](#networklistresponse) |
 | 400 |  | [BadResponse](#badresponse) |
 | 401 | Permission denied |  |
+| 403 | Authentication credentials were not provided. |  |
+| 500 | Internal Error |  |
+
+##### ***POST***
+**Summary:** Create Node
+
+**Description:** Create new node
+
+**Parameters**
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| data | body |  | Yes | [NodeCreateBody](#nodecreatebody) |
+
+**Responses**
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 201 |  | [NodeID](#nodeid) |
+| 400 |  | [BadResponse](#badresponse) |
+| 401 | Permission denied |  |
+| 403 | Authentication credentials were not provided. |  |
+| 500 | Internal Error |  |
+
+### /nodes/{id}
+---
+##### ***DELETE***
+**Summary:** Delete Node
+
+**Description:** Delete node
+
+**Parameters**
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| id | path |  | Yes | string |
+
+**Responses**
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 204 | No Content |  |
+| 400 |  | [BadResponse](#badresponse) |
+| 401 | Permission denied |  |
+| 403 | Authentication credentials were not provided. |  |
+| 500 | Internal Error |  |
+
+### /nodes/{id}/operations
+---
+##### ***POST***
+**Summary:** Operate Node
+
+**Description:** Do some operation on node, start/stop/restart
+
+**Parameters**
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| id | path |  | Yes | string |
+| action | query |          Operation for node:             start                          stop                          restart              | Yes | string |
+
+**Responses**
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 202 | Accepted |  |
+| 400 |  | [BadResponse](#badresponse) |
+| 401 | Permission denied |  |
+| 403 | Authentication credentials were not provided. |  |
 | 500 | Internal Error |  |
 
 ### Models
 ---
+
+### NetworkResponse
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| status | string |
+
+            0: Stopped
+
+            1: Running
+
+            2: Error
+             | Yes |
+
+### NetworkListResponse
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| total | integer | Total number of networks | Yes |
+| data | [ [NetworkResponse](#networkresponse) ] |  | Yes |
+
+### BadResponse
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| code | integer |
+        Error Codes:
+
+            20000: Unknown Error
+
+            20001: Validation parameter error
+
+            20002: Parse error
+
+            20003: Resource is inuse
+             | Yes |
+| detail | string | Error Messages | No |
+
+### ClusterCreateBody
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| name | string | Name of Cluster | Yes |
+| host_id | string | Host ID | Yes |
+| network_type | string |
+        Network Types:
+            fabric1.3
+
+            fabric1.4
+             | Yes |
+| size | integer | Size of cluster | Yes |
+| consensus_plugin | string |
+        Consensus Plugin:
+            solo
+
+            kafka
+             | Yes |
+
+### ClusterID
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| id | string | ID of cluster | Yes |
 
 ### HostResponse
 
@@ -218,21 +447,6 @@ Hosts data
 | ---- | ---- | ----------- | -------- |
 | total | integer | Total number of data | Yes |
 | data | [ [HostResponse](#hostresponse) ] | Hosts data | Yes |
-
-### BadResponse
-
-| Name | Type | Description | Required |
-| ---- | ---- | ----------- | -------- |
-| code | integer |
-        Error Codes:
-
-            20000: Unknown Error
-
-            20001: Validation parameter error
-
-            20002: Parse error
-             | Yes |
-| message | string | Error Messages | No |
 
 ### HostCreateBody
 
@@ -306,22 +520,27 @@ Hosts data
             3: Error
              | No |
 
-### NetworkResponse
+### NodeCreateBody
 
 | Name | Type | Description | Required |
 | ---- | ---- | ----------- | -------- |
-| status | string |
+| network_type | string |
+        Network types:
+            fabric1.3
 
-            0: Stopped
+            fabric1.4
+             | Yes |
+| type | string |
+        Node Types:
+            ca
 
-            1: Running
+            orderer
 
-            2: Error
+            peer
              | Yes |
 
-### NetworkListResponse
+### NodeID
 
 | Name | Type | Description | Required |
 | ---- | ---- | ----------- | -------- |
-| total | integer | Total number of networks | Yes |
-| data | [ [NetworkResponse](#networkresponse) ] |  | Yes |
+| id | string | ID of node | Yes |

@@ -13,7 +13,7 @@ class PageQuerySerializer(serializers.Serializer):
 
 class BadResponseSerializer(serializers.Serializer):
     code = serializers.IntegerField(help_text=ErrorCode.get_info())
-    message = serializers.CharField(
+    detail = serializers.CharField(
         required=False, help_text="Error Messages", allow_blank=True
     )
 

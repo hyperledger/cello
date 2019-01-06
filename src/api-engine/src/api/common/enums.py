@@ -7,24 +7,38 @@ import inspect
 
 class ExtraEnum(Enum):
     @classmethod
-    def get_info(cls, title=""):
+    def get_info(cls, title="", list_str=False):
         str_info = """
         """
         str_info += title
-        for name, member in cls.__members__.items():
-            str_info += """
+        if list_str:
+            for name, member in cls.__members__.items():
+                str_info += """
+            %s
+            """ % (
+                    name.lower().replace("_", "."),
+                )
+        else:
+            for name, member in cls.__members__.items():
+                str_info += """
             %s: %s
             """ % (
-                member.value,
-                name,
-            )
+                    member.value,
+                    name,
+                )
         return str_info
 
     @classmethod
-    def to_choices(cls):
-        choices = [
-            (member.value, name) for name, member in cls.__members__.items()
-        ]
+    def to_choices(cls, string_as_value=False):
+        if string_as_value:
+            choices = [
+                (name.lower().replace("_", "."), name)
+                for name, member in cls.__members__.items()
+            ]
+        else:
+            choices = [
+                (member.value, name) for name, member in cls.__members__.items()
+            ]
 
         return choices
 
@@ -45,9 +59,35 @@ class LogLevel(ExtraEnum):
 
 
 @unique
+class Operation(ExtraEnum):
+    Start = 0
+    Stop = 1
+    Restart = 2
+
+
+@unique
 class HostType(ExtraEnum):
     Docker = 0
     Kubernetes = 1
+
+
+@unique
+class NetworkType(ExtraEnum):
+    Fabric1_3 = 0
+    Fabric1_4 = 1
+
+
+@unique
+class NodeType(ExtraEnum):
+    Ca = 0
+    Orderer = 1
+    Peer = 2
+
+
+@unique
+class ConsensusPlugin(ExtraEnum):
+    Solo = 0
+    Kafka = 1
 
 
 class EnumWithDisplayMeta(EnumMeta):
@@ -71,11 +111,13 @@ class ErrorCode(Enum, metaclass=EnumWithDisplayMeta):
     UnknownError = 20000
     ValidationError = 20001
     ParseError = 20002
+    InUse = 20003
 
     class DisplayStrings:
         UnknownError = "Unknown Error"
         ValidationError = "Validation parameter error"
         ParseError = "Parse error"
+        InUse = "Resource is inuse"
 
     @classmethod
     def get_info(cls):

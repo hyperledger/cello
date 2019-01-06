@@ -22,11 +22,11 @@ def custom_exception_handler(exc, context):
             if isinstance(exc, ValidationError):
                 response.data["code"] = ErrorCode.ValidationError.value
                 response.data[
-                    "message"
+                    "detail"
                 ] = ErrorCode.ValidationError.display_string
             elif isinstance(exc, ParseError):
                 response.data["code"] = ErrorCode.ParseError.value
-                response.data["message"] = ErrorCode.ParseError.display_string
+                response.data["detail"] = ErrorCode.ParseError.display_string
             else:
                 response.data["code"] = ErrorCode.Unknown.value
-                response.data["message"] = ErrorCode.Unknown.display_string
+                response.data["detail"] = ErrorCode.Unknown.display_string

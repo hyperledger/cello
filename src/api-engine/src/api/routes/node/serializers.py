@@ -2,32 +2,31 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 from rest_framework import serializers
-from api.common.enums import NetworkStatus
+from api.common.enums import Operation, NetworkType, NodeType
+from api.common.serializers import PageQuerySerializer
 
 
-class NetworkQuery(serializers.Serializer):
-    page = serializers.IntegerField(
-        required=False, help_text="Page of filter", default=1, min_value=1
+class NodeQuery(PageQuerySerializer):
+    pass
+
+
+class NodeCreateBody(serializers.Serializer):
+    network_type = serializers.ChoiceField(
+        help_text=NetworkType.get_info("Network types:", list_str=True),
+        choices=NetworkType.to_choices(True),
     )
-    per_page = serializers.IntegerField(
-        required=False,
-        help_text="Per Page of filter",
-        default=10,
-        max_value=100,
-    )
-    status = serializers.ChoiceField(
-        required=False,
-        help_text=NetworkStatus.get_info(),
-        choices=NetworkStatus.to_choices(),
-    )
-
-
-class NetworkResponse(serializers.Serializer):
-    status = serializers.ChoiceField(
-        help_text=NetworkStatus.get_info(), choices=NetworkStatus.to_choices()
+    type = serializers.ChoiceField(
+        help_text=NodeType.get_info("Node Types:", list_str=True),
+        choices=NodeType.to_choices(True),
     )
 
 
-class NetworkListResponse(serializers.Serializer):
-    total = serializers.IntegerField(help_text="Total number of networks")
-    data = NetworkResponse(many=True)
+class NodeIDSerializer(serializers.Serializer):
+    id = serializers.CharField(help_text="ID of node")
+
+
+class NodeOperationSerializer(serializers.Serializer):
+    action = serializers.ChoiceField(
+        help_text=Operation.get_info("Operation for node:", list_str=True),
+        choices=Operation.to_choices(True),
+    )
