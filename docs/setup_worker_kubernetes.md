@@ -2,6 +2,10 @@
 
 TLDR: setup a miniKube env: `WORKDER_TYPE=k8s  MASTER_NODE=x.x.x.x make setup-worker`.
 
+## Kubernetes server version requirement
+
+kubernetes <= 1.12
+
 ## Prepare Kubernetes environment
 
 1. Get started with Kubernetes: [Kubernetes Guide](https://kubernetes.io/docs/user-journeys/users/application-developer/foundational/)
