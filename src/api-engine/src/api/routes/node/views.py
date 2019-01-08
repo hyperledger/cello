@@ -60,7 +60,6 @@ class NodeViewSet(viewsets.ViewSet):
 
         Do some operation on node, start/stop/restart
         """
-        return Response(status=status.HTTP_202_ACCEPTED)
         pass
 
     @swagger_auto_schema(

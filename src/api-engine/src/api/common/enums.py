@@ -66,9 +66,21 @@ class Operation(ExtraEnum):
 
 
 @unique
+class NetworkOperation(ExtraEnum):
+    Join = 0
+    Leave = 1
+
+
+@unique
 class HostType(ExtraEnum):
     Docker = 0
     Kubernetes = 1
+
+
+@unique
+class ChannelType(ExtraEnum):
+    System = 0
+    Normal = 1
 
 
 @unique

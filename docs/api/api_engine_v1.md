@@ -15,98 +15,6 @@ Cello API Engine Service
 |In|header|
 |Name|Authorization|
 
-### /clusters
----
-##### ***GET***
-**Summary:** List Clusters
-
-**Description:** Filter clusters with query parameters.
-
-**Parameters**
-
-| Name | Located in | Description | Required | Schema |
-| ---- | ---------- | ----------- | -------- | ---- |
-| page | query | Page of filter | No | integer |
-| per_page | query | Per Page of filter | No | integer |
-
-**Responses**
-
-| Code | Description | Schema |
-| ---- | ----------- | ------ |
-| 200 |  | [NetworkListResponse](#networklistresponse) |
-| 400 |  | [BadResponse](#badresponse) |
-| 401 | Permission denied |  |
-| 403 | Authentication credentials were not provided. |  |
-| 500 | Internal Error |  |
-
-##### ***POST***
-**Summary:** Create Cluster
-
-**Description:** Create new cluster
-
-**Parameters**
-
-| Name | Located in | Description | Required | Schema |
-| ---- | ---------- | ----------- | -------- | ---- |
-| data | body |  | Yes | [ClusterCreateBody](#clustercreatebody) |
-
-**Responses**
-
-| Code | Description | Schema |
-| ---- | ----------- | ------ |
-| 201 |  | [ClusterID](#clusterid) |
-| 400 |  | [BadResponse](#badresponse) |
-| 401 | Permission denied |  |
-| 403 | Authentication credentials were not provided. |  |
-| 500 | Internal Error |  |
-
-### /clusters/{id}
----
-##### ***DELETE***
-**Summary:** Delete Cluster
-
-**Description:** Delete cluster
-
-**Parameters**
-
-| Name | Located in | Description | Required | Schema |
-| ---- | ---------- | ----------- | -------- | ---- |
-| id | path |  | Yes | string |
-
-**Responses**
-
-| Code | Description | Schema |
-| ---- | ----------- | ------ |
-| 204 | No Content |  |
-| 400 |  | [BadResponse](#badresponse) |
-| 401 | Permission denied |  |
-| 403 | Authentication credentials were not provided. |  |
-| 500 | Internal Error |  |
-
-### /clusters/{id}/operations
----
-##### ***POST***
-**Summary:** Operate Cluster
-
-**Description:** Operate cluster start/stop/restart
-
-**Parameters**
-
-| Name | Located in | Description | Required | Schema |
-| ---- | ---------- | ----------- | -------- | ---- |
-| id | path |  | Yes | string |
-| action | query |          Operation for cluster:             start                          stop                          restart              | Yes | string |
-
-**Responses**
-
-| Code | Description | Schema |
-| ---- | ----------- | ------ |
-| 202 | Accepted |  |
-| 400 |  | [BadResponse](#badresponse) |
-| 401 | Permission denied |  |
-| 403 | Authentication credentials were not provided. |  |
-| 500 | Internal Error |  |
-
 ### /hosts
 ---
 ##### ***GET***
@@ -246,6 +154,185 @@ Cello API Engine Service
 | 403 | Authentication credentials were not provided. |  |
 | 500 | Internal Error |  |
 
+##### ***POST***
+**Summary:** New Network
+
+**Description:** Create new network through internal nodes,
+or import exists network outside
+
+**Parameters**
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+
+**Responses**
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 201 | Created |  |
+| 400 |  | [BadResponse](#badresponse) |
+| 401 | Permission denied |  |
+| 403 | Authentication credentials were not provided. |  |
+| 500 | Internal Error |  |
+
+### /networks/{id}/channels
+---
+##### ***POST***
+**Summary:** Create Channel
+
+**Description:** Create new channel in network
+
+**Parameters**
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| id | path |  | Yes | string |
+| data | body |  | Yes | [ChannelCreateBody](#channelcreatebody) |
+
+**Responses**
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 201 |  | [ChannelID](#channelid) |
+| 400 |  | [BadResponse](#badresponse) |
+| 401 | Permission denied |  |
+| 403 | Authentication credentials were not provided. |  |
+| 500 | Internal Error |  |
+
+### /networks/{id}/channels/{channel_id}
+---
+##### ***PUT***
+**Summary:** Update Channel
+
+**Description:** Update channel in network
+
+**Parameters**
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| channel_id | path |  | Yes | string |
+| id | path |  | Yes | string |
+| data | body |  | Yes | [ChannelBody](#channelbody) |
+
+**Responses**
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 202 | Accepted |  |
+| 400 |  | [BadResponse](#badresponse) |
+| 401 | Permission denied |  |
+| 403 | Authentication credentials were not provided. |  |
+| 500 | Internal Error |  |
+
+### /networks/{id}/channels/{channel_id}/members
+---
+##### ***GET***
+**Description:** Get members of channel
+
+**Parameters**
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| channel_id | path |  | Yes | string |
+| id | path |  | Yes | string |
+
+**Responses**
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 200 |  |  |
+| 400 |  | [BadResponse](#badresponse) |
+| 401 | Permission denied |  |
+| 403 | Authentication credentials were not provided. |  |
+| 500 | Internal Error |  |
+
+##### ***POST***
+**Description:** Join peer node into channel
+
+**Parameters**
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| channel_id | path |  | Yes | string |
+| id | path |  | Yes | string |
+
+**Responses**
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 201 |  |  |
+| 400 |  | [BadResponse](#badresponse) |
+| 401 | Permission denied |  |
+| 403 | Authentication credentials were not provided. |  |
+| 500 | Internal Error |  |
+
+##### ***DELETE***
+**Description:** Remove peer from channel
+
+**Parameters**
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| channel_id | path |  | Yes | string |
+| id | path |  | Yes | string |
+
+**Responses**
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 204 |  |  |
+| 400 |  | [BadResponse](#badresponse) |
+| 401 | Permission denied |  |
+| 403 | Authentication credentials were not provided. |  |
+| 500 | Internal Error |  |
+
+### /networks/{id}/members
+---
+##### ***GET***
+**Summary:** Get Consortium Members
+
+**Description:** Get consortium members of network.
+
+**Parameters**
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| id | path |  | Yes | string |
+
+**Responses**
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 200 |  |  |
+| 400 |  | [BadResponse](#badresponse) |
+| 401 | Permission denied |  |
+| 403 | Authentication credentials were not provided. |  |
+| 500 | Internal Error |  |
+
+### /networks/{id}/operations
+---
+##### ***POST***
+**Summary:** Operate Network
+
+**Description:** Operate on network
+
+**Parameters**
+
+| Name | Located in | Description | Required | Schema |
+| ---- | ---------- | ----------- | -------- | ---- |
+| id | path |  | Yes | string |
+| data | body |  | Yes | [NetworkOperationBody](#networkoperationbody) |
+
+**Responses**
+
+| Code | Description | Schema |
+| ---- | ----------- | ------ |
+| 202 | Accepted |  |
+| 400 |  | [BadResponse](#badresponse) |
+| 401 | Permission denied |  |
+| 403 | Authentication credentials were not provided. |  |
+| 500 | Internal Error |  |
+
 ### /nodes
 ---
 ##### ***GET***
@@ -341,69 +428,6 @@ Cello API Engine Service
 ### Models
 ---
 
-### NetworkResponse
-
-| Name | Type | Description | Required |
-| ---- | ---- | ----------- | -------- |
-| status | string |
-
-            0: Stopped
-
-            1: Running
-
-            2: Error
-             | Yes |
-
-### NetworkListResponse
-
-| Name | Type | Description | Required |
-| ---- | ---- | ----------- | -------- |
-| total | integer | Total number of networks | Yes |
-| data | [ [NetworkResponse](#networkresponse) ] |  | Yes |
-
-### BadResponse
-
-| Name | Type | Description | Required |
-| ---- | ---- | ----------- | -------- |
-| code | integer |
-        Error Codes:
-
-            20000: Unknown Error
-
-            20001: Validation parameter error
-
-            20002: Parse error
-
-            20003: Resource is inuse
-             | Yes |
-| detail | string | Error Messages | No |
-
-### ClusterCreateBody
-
-| Name | Type | Description | Required |
-| ---- | ---- | ----------- | -------- |
-| name | string | Name of Cluster | Yes |
-| host_id | string | Host ID | Yes |
-| network_type | string |
-        Network Types:
-            fabric1.3
-
-            fabric1.4
-             | Yes |
-| size | integer | Size of cluster | Yes |
-| consensus_plugin | string |
-        Consensus Plugin:
-            solo
-
-            kafka
-             | Yes |
-
-### ClusterID
-
-| Name | Type | Description | Required |
-| ---- | ---- | ----------- | -------- |
-| id | string | ID of cluster | Yes |
-
 ### HostResponse
 
 Hosts data
@@ -447,6 +471,23 @@ Hosts data
 | ---- | ---- | ----------- | -------- |
 | total | integer | Total number of data | Yes |
 | data | [ [HostResponse](#hostresponse) ] | Hosts data | Yes |
+
+### BadResponse
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| code | integer |
+        Error Codes:
+
+            20000: Unknown Error
+
+            20001: Validation parameter error
+
+            20002: Parse error
+
+            20003: Resource is inuse
+             | Yes |
+| detail | string | Error Messages | No |
 
 ### HostCreateBody
 
@@ -519,6 +560,62 @@ Hosts data
 
             3: Error
              | No |
+
+### NetworkResponse
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| status | string |
+
+            0: Stopped
+
+            1: Running
+
+            2: Error
+             | Yes |
+
+### NetworkListResponse
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| total | integer | Total number of networks | Yes |
+| data | [ [NetworkResponse](#networkresponse) ] |  | Yes |
+
+### ChannelCreateBody
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| name | string | Channel Name | Yes |
+| type | string |
+        Channel Types:
+            system
+
+            normal
+             | Yes |
+
+### ChannelID
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| id | string | Channel ID | Yes |
+
+### ChannelBody
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| name | string | Channel Name | Yes |
+
+### NetworkOperationBody
+
+| Name | Type | Description | Required |
+| ---- | ---- | ----------- | -------- |
+| action | string |
+        Network Operations:
+            join
+
+            leave
+             | Yes |
+| nodes | [ string ] | Nodes ID values | Yes |
 
 ### NodeCreateBody
 

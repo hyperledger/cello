@@ -45,7 +45,7 @@ router = DefaultRouter(trailing_slash=False)
 router.register("networks", NetworkViewSet, base_name="network")
 router.register("hosts", HostViewSet, base_name="host")
 router.register("nodes", NodeViewSet, base_name="node")
-router.register("clusters", ClusterViewSet, base_name="cluster")
+# router.register("clusters", ClusterViewSet, base_name="cluster")
 
 urlpatterns = router.urls
 
