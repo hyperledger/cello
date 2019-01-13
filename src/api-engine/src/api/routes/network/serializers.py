@@ -2,7 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 from rest_framework import serializers
-from api.common.enums import NetworkStatus, NetworkOperation, ChannelType
+from api.common.enums import (
+    NetworkStatus,
+    NetworkOperation,
+    ChannelType,
+    NodeType,
+    NetworkCreateType,
+)
 
 
 CHANNEL_NAME_MIN_LEN = 4
@@ -21,15 +27,44 @@ class NetworkQuery(serializers.Serializer):
     )
     status = serializers.ChoiceField(
         required=False,
-        help_text=NetworkStatus.get_info(),
-        choices=NetworkStatus.to_choices(),
+        help_text=NetworkStatus.get_info("Network Status:", list_str=True),
+        choices=NetworkStatus.to_choices(True),
     )
 
 
-class NetworkResponse(serializers.Serializer):
+class NetworkIDSerializer(serializers.Serializer):
+    id = serializers.CharField(help_text="Network ID")
+
+
+class NetworkResponse(NetworkIDSerializer):
     status = serializers.ChoiceField(
-        help_text=NetworkStatus.get_info(), choices=NetworkStatus.to_choices()
+        help_text=NetworkStatus.get_info("Network Status:", list_str=True),
+        choices=NetworkStatus.to_choices(True),
     )
+    created_at = serializers.DateTimeField(help_text="Network create time")
+    updated_at = serializers.DateTimeField(help_text="Network update time")
+
+
+class NetworkMemberSerializer(serializers.Serializer):
+    id = serializers.CharField(help_text="Network member id")
+    type = serializers.ChoiceField(
+        help_text=NodeType.get_info("Node Types:", list_str=True),
+        choices=NodeType.to_choices(True),
+    )
+    url = serializers.CharField(help_text="URL of member")
+
+
+class NetworkCreateBody(serializers.Serializer):
+    create_type = serializers.ChoiceField(
+        help_text=NetworkCreateType.get_info(
+            "Network Create Types:", list_str=True
+        ),
+        choices=NetworkCreateType.to_choices(True),
+    )
+
+
+class NetworkMemberResponse(serializers.Serializer):
+    data = NetworkMemberSerializer(many=True)
 
 
 class NetworkListResponse(serializers.Serializer):

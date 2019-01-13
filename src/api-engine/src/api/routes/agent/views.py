@@ -6,69 +6,69 @@ import logging
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
-from api.routes.host.serializers import (
-    HostQuery,
-    HostListResponse,
-    HostCreateBody,
-    HostIDSerializer,
-    HostPatchBody,
-    HostUpdateBody,
+from api.routes.agent.serializers import (
+    AgentQuery,
+    AgentListResponse,
+    AgentCreateBody,
+    AgentIDSerializer,
+    AgentPatchBody,
+    AgentUpdateBody,
 )
 from api.utils.common import with_common_response
 
 LOG = logging.getLogger(__name__)
 
 
-class HostViewSet(viewsets.ViewSet):
+class AgentViewSet(viewsets.ViewSet):
     @swagger_auto_schema(
-        query_serializer=HostQuery,
+        query_serializer=AgentQuery,
         responses=with_common_response(
-            with_common_response({status.HTTP_200_OK: HostListResponse})
+            with_common_response({status.HTTP_200_OK: AgentListResponse})
         ),
     )
     def list(self, request, *args, **kwargs):
         """
-        List Hosts
+        List Agents
 
-        Filter hosts with query parameters.
+        Filter agents with query parameters.
         """
         return Response(data=[], status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
-        request_body=HostCreateBody,
+        request_body=AgentCreateBody,
         responses=with_common_response(
-            {status.HTTP_201_CREATED: HostIDSerializer}
+            {status.HTTP_201_CREATED: AgentIDSerializer}
         ),
     )
     def create(self, request):
         """
-        Create Host
+        Create Agent
 
-        Create new host
+        Create new agent
         """
         pass
 
     @swagger_auto_schema(
-        request_body=HostUpdateBody,
+        request_body=AgentUpdateBody,
         responses=with_common_response({status.HTTP_202_ACCEPTED: "Accepted"}),
     )
     def update(self, request, pk=None):
         """
-        Update Host
+        Update Agent
 
-        Update special host with id.
+        Update special agent with id.
         """
         pass
 
     @swagger_auto_schema(
-        request_body=HostPatchBody,
+        request_body=AgentPatchBody,
         responses=with_common_response({status.HTTP_202_ACCEPTED: "Accepted"}),
     )
     def partial_update(self, request, pk=None):
         """
-        Partial Update Host
+        Partial Update Agent
 
-        Partial update special host with id.
+        Partial update special agent with id.
         """
         pass
 
@@ -82,8 +82,8 @@ class HostViewSet(viewsets.ViewSet):
     )
     def destroy(self, request, pk=None):
         """
-        Delete Host
+        Delete Agent
 
-        Delete host
+        Delete agent
         """
         pass

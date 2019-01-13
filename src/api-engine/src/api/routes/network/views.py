@@ -14,6 +14,9 @@ from api.routes.network.serializers import (
     ChannelBody,
     ChannelID,
     ChannelCreateBody,
+    NetworkMemberResponse,
+    NetworkCreateBody,
+    NetworkIDSerializer,
 )
 from api.utils.common import with_common_response
 
@@ -36,7 +39,10 @@ class NetworkViewSet(viewsets.ViewSet):
         return Response(data=[], status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
-        responses=with_common_response({status.HTTP_201_CREATED: "Created"})
+        request_body=NetworkCreateBody,
+        responses=with_common_response(
+            {status.HTTP_201_CREATED: NetworkIDSerializer}
+        ),
     )
     def create(self, request):
         """
@@ -47,90 +53,53 @@ class NetworkViewSet(viewsets.ViewSet):
         """
         pass
 
+    @swagger_auto_schema(responses=with_common_response())
+    def retrieve(self, request, pk=None):
+        """
+        Get Network
+
+        Get network information
+        """
+        pass
+
+    @swagger_auto_schema(
+        methods=["get"],
+        responses=with_common_response(
+            {status.HTTP_200_OK: NetworkMemberResponse}
+        ),
+    )
     @swagger_auto_schema(
         methods=["post"],
-        request_body=NetworkOperationBody,
-        responses=with_common_response({status.HTTP_202_ACCEPTED: "Accepted"}),
+        responses=with_common_response(
+            {status.HTTP_200_OK: NetworkMemberResponse}
+        ),
     )
-    @action(methods=["post"], detail=True, url_path="operations")
-    def operate(self, request, pk=None):
+    @action(methods=["get", "post"], detail=True, url_path="peers")
+    def peers(self, request, pk=None):
         """
-        Operate Network
+        get:
+        Get Peers
 
-        Operate on network
-        """
-        pass
+        Get peers of network.
+        post:
+        Add New Peer
 
-    @swagger_auto_schema(
-        methods=["post"],
-        request_body=ChannelCreateBody,
-        responses=with_common_response({status.HTTP_201_CREATED: ChannelID}),
-    )
-    @action(
-        methods=["post"],
-        detail=True,
-        url_path="channels",
-        url_name="create_channel",
-    )
-    def create_channel(self, request, pk=None):
-        """
-        Create Channel
-
-        Create new channel in network
+        Add peer into network
         """
         pass
 
     @swagger_auto_schema(
-        methods=["put"],
-        request_body=ChannelBody,
-        responses=with_common_response({status.HTTP_202_ACCEPTED: "Accepted"}),
+        methods=["delete"],
+        responses=with_common_response(
+            {status.HTTP_200_OK: NetworkMemberResponse}
+        ),
     )
-    @action(
-        methods=["put"],
-        detail=True,
-        url_path="channels/<str:channel_id>",
-        url_name="update_channel",
-    )
-    def update_channel(self, request, pk=None, channel_id=None):
+    @action(methods=["delete"], detail=True, url_path="peers/<str:peer_id>")
+    def delete_peer(self, request, pk=None, peer_id=None):
         """
-        Update Channel
+        delete:
+        Delete Peer
 
-        Update channel in network
+        Delete peer in network
         """
-        pass
-
-    @swagger_auto_schema(methods=["get"], responses=with_common_response())
-    @action(methods=["get"], detail=True, url_path="members")
-    def members(self, request, pk=None):
-        """
-        Get Consortium Members
-
-        Get consortium members of network.
-        """
-        pass
-
-    @swagger_auto_schema(
-        method="get",
-        operation_id="Get Channel Members",
-        operation_description="Get members of channel",
-        responses=with_common_response(),
-    )
-    @swagger_auto_schema(
-        method="post",
-        operation_id="Join Node Into Channel",
-        operation_description="Join peer node into channel",
-        responses=with_common_response(),
-    )
-    @swagger_auto_schema(
-        method="delete",
-        operation_id="Remove Node From Channel",
-        operation_description="Remove peer from channel",
-        responses=with_common_response(),
-    )
-    @action(
-        methods=["get", "post", "delete"],
-        detail=True,
-        url_path="channels/<str:channel_id>/members",
-    )
-    def channel_members(self, request, pk=None, channel_id=None):
         pass

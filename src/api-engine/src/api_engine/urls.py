@@ -22,9 +22,10 @@ from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework.routers import DefaultRouter
 from api.routes.network.views import NetworkViewSet
-from api.routes.host.views import HostViewSet
+from api.routes.agent.views import AgentViewSet
 from api.routes.node.views import NodeViewSet
-from api.routes.cluster.views import ClusterViewSet
+from api.routes.company.views import CompanyViewSet
+from api.routes.user.views import UserViewSet
 
 
 swagger_info = openapi.Info(
@@ -43,8 +44,10 @@ SchemaView = get_schema_view(
 
 router = DefaultRouter(trailing_slash=False)
 router.register("networks", NetworkViewSet, base_name="network")
-router.register("hosts", HostViewSet, base_name="host")
+router.register("agents", AgentViewSet, base_name="agent")
 router.register("nodes", NodeViewSet, base_name="node")
+router.register("companies", CompanyViewSet, base_name="company")
+router.register("users", UserViewSet, base_name="user")
 # router.register("clusters", ClusterViewSet, base_name="cluster")
 
 urlpatterns = router.urls

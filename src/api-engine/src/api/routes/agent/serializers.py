@@ -5,10 +5,10 @@ from rest_framework import serializers
 from api.common.enums import NetworkStatus, LogLevel, HostType
 from api.common.serializers import PageQuerySerializer, ListResponseSerializer
 
-NameHelpText = "Name of Host"
+NameHelpText = "Name of Agent"
 WorkerApiHelpText = "API address of worker"
-IDHelpText = "ID of Host"
-CapacityHelpText = "Capacity of Host"
+IDHelpText = "ID of Agent"
+CapacityHelpText = "Capacity of Agent"
 
 NameMinLen = 4
 NameMaxLen = 36
@@ -17,7 +17,7 @@ WorkerAPIMaxLen = 128
 CapacityMinValue = 1
 
 
-class HostQuery(PageQuerySerializer):
+class AgentQuery(PageQuerySerializer):
     status = serializers.ChoiceField(
         required=False,
         help_text=NetworkStatus.get_info(),
@@ -25,11 +25,11 @@ class HostQuery(PageQuerySerializer):
     )
 
 
-class HostIDSerializer(serializers.Serializer):
+class AgentIDSerializer(serializers.Serializer):
     id = serializers.CharField(help_text=IDHelpText)
 
 
-class HostCreateBody(serializers.Serializer):
+class AgentCreateBody(serializers.Serializer):
     name = serializers.CharField(
         min_length=NameMinLen, max_length=NameMaxLen, help_text=NameHelpText
     )
@@ -47,11 +47,11 @@ class HostCreateBody(serializers.Serializer):
     )
     type = serializers.ChoiceField(
         choices=HostType.to_choices(),
-        help_text=HostType.get_info("Host types:"),
+        help_text=HostType.get_info("Agent types:"),
     )
 
 
-class HostPatchBody(serializers.Serializer):
+class AgentPatchBody(serializers.Serializer):
     name = serializers.CharField(
         min_length=NameMinLen,
         max_length=NameMaxLen,
@@ -73,7 +73,7 @@ class HostPatchBody(serializers.Serializer):
     )
 
 
-class HostUpdateBody(HostPatchBody):
+class AgentUpdateBody(AgentPatchBody):
     status = serializers.ChoiceField(
         required=False,
         allow_null=True,
@@ -82,15 +82,15 @@ class HostUpdateBody(HostPatchBody):
     )
 
 
-class HostResponse(HostIDSerializer, HostCreateBody):
+class AgentResponse(AgentIDSerializer, AgentCreateBody):
     status = serializers.ChoiceField(
         help_text=NetworkStatus.get_info(), choices=NetworkStatus.to_choices()
     )
     created_at = serializers.DateTimeField(help_text="Create time")
     schedulable = serializers.BooleanField(
-        help_text="Whether hos can be schedulable"
+        help_text="Whether agent can be schedulable"
     )
 
 
-class HostListResponse(ListResponseSerializer):
-    data = HostResponse(many=True, help_text="Hosts data")
+class AgentListResponse(ListResponseSerializer):
+    data = AgentResponse(many=True, help_text="Agents data")

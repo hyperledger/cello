@@ -97,6 +97,12 @@ class NodeType(ExtraEnum):
 
 
 @unique
+class NetworkCreateType(ExtraEnum):
+    New = 0
+    Import = 1
+
+
+@unique
 class ConsensusPlugin(ExtraEnum):
     Solo = 0
     Kafka = 1
