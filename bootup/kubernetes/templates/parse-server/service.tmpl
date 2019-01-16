@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${SERVICE_PARSE_SERVER_NAME}
+  labels:
+    app: ${SERVICE_PARSE_SERVER_NAME}
+spec:
+  ports:
+  - port: 1337
+    targetPort: 1337
+    protocol: TCP
+    name: parse-server
+  selector:
+    app: ${DEPLOY_PARSE_SERVER_NAME}

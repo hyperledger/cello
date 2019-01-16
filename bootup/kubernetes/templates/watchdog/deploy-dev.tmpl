@@ -1,0 +1,24 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ${DEPLOY_WATCHDOG_NAME}
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ${DEPLOY_WATCHDOG_NAME}
+    spec:
+      containers:
+      - name: watch-dog
+        image: hyperledger/cello-watchdog
+        envFrom:
+        - configMapRef:
+            name: ${CONFIG_WATCHDOG_NAME}
+        volumeMounts:
+        - name: source-code
+          mountPath: /app
+      volumes:
+      - name: source-code
+        hostPath:
+          path: $ROOT_PATH/src/operator-dashboard

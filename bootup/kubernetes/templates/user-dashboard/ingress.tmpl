@@ -1,0 +1,12 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ${INGRESS_USER_DASHBOARD_NAME}
+spec:
+  rules:
+  - http:
+      paths:
+      - path: $USER_DASHBOARD_WEBROOT
+        backend:
+          serviceName: ${SERVICE_USER_DASHBOARD_NAME}
+          servicePort: 8081

@@ -1,0 +1,34 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ${DEPLOY_OPERATOR_DASHBOARD_NAME}
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ${DEPLOY_OPERATOR_DASHBOARD_NAME}
+    spec:
+      containers:
+      - name: operator-dashboard
+        image: hyperledger/cello-operator-dashboard
+        ports:
+        - containerPort: 8080
+        envFrom:
+        - configMapRef:
+            name: ${CONFIG_OPERATOR_DASHBOARD_NAME}
+        env:
+        - name: DEBUG
+          value: "True"
+        volumeMounts:
+        - name: operator-source-code
+          mountPath: /app
+        - name: operator-compose-files
+          mountPath: /cello
+      volumes:
+      - name: operator-source-code
+        hostPath:
+          path: $ROOT_PATH/src/operator-dashboard
+      - name: operator-compose-files
+        hostPath:
+          path: $ROOT_PATH/src/operator-dashboard/agent/docker/_compose_files

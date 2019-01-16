@@ -1,0 +1,31 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ${DEPLOY_PARSE_SERVER_NAME}
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ${DEPLOY_PARSE_SERVER_NAME}
+    spec:
+      containers:
+      - name: parse
+        image: hyperledger/cello-parse-server
+        ports:
+        - containerPort: 1337
+        envFrom:
+        - configMapRef:
+            name: ${CONFIG_PARSE_SERVER_NAME}
+        volumeMounts:
+        - name: cloud-code
+          mountPath: /parse-server/cloud
+        - name: baas-data
+          mountPath: /opt/data
+      volumes:
+      - name: cloud-code
+        hostPath:
+          path: $ROOT_PATH/src/parse-server/cloud
+      - name: baas-data
+        hostPath:
+          path: /opt/cello/baas

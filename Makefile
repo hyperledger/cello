@@ -72,6 +72,8 @@ REPLACE_SLASH:=\/
 -include .makerc/worker-node
 -include .makerc/keycloak
 -include .makerc/parse-server
+-include .makerc/kubernetes
+-include .makerc/api-engine
 
 export ROOT_PATH = ${PWD}
 ROOT_PATH_REPLACE=$(subst $(SLASH),$(REPLACE_SLASH),$(ROOT_PATH))
@@ -99,8 +101,12 @@ WORKER_TYPE ?= docker
 MODE ?= prod
 ifeq ($(MODE),prod)
 	COMPOSE_FILE=bootup/docker-compose-files/docker-compose.yml
+	export DEPLOY_TEMPLATE_NAME=deploy.tmpl
+	export DEBUG?=False
 else
 	COMPOSE_FILE=bootup/docker-compose-files/docker-compose-dev.yml
+	export DEPLOY_TEMPLATE_NAME=deploy-dev.tmpl
+	export DEBUG?=True
 endif
 
 
@@ -225,6 +231,13 @@ start: ##@Service Start service
 	fi
 	echo "Now you can visit operator-dashboard at localhost:8080, or user-dashboard at localhost:8081"
 	@$(MAKE) start-nfs
+
+start-k8s:
+	@$(MAKE) -C bootup/kubernetes init-yaml
+	@$(MAKE) -C bootup/kubernetes start
+
+stop-k8s:
+	@$(MAKE) -C bootup/kubernetes stop
 
 stop: ##@Service Stop service
 	echo "Stop all services with ${COMPOSE_FILE}..."
