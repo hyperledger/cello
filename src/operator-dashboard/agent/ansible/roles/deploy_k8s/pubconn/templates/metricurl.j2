@@ -1,0 +1,15 @@
+---
+file_sd_configs:
+{% for orderer in allorderers %}
+  - targets:
+    - "http://{{ allips|random }}:{{ k8sports[orderer.name+':8443'] }}"
+    labels:
+      hostname: "{{ orderer.name }}"
+{% endfor %}
+{% for peer in allpeers %}
+  - targets:
+    - "http://{{ allips|random }}:{{ k8sports[peer.name+':9443'] }}"
+    labels:
+      hostname: "{{ peer.name }}"
+{% endfor %}
+

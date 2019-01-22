@@ -41,6 +41,12 @@
     dest: "{{ fabricworkdir }}/keyfiles/{{ item }}/connection.yml"
   with_items: "{{ allorgs }}"
 
+- name: Create metric config file
+  template:
+    src: "{{ playbook_dir }}/../deploy_compose/certsetup/templates/metricurl.j2"
+    dest: "{{ fabricworkdir }}/keyfiles/metriccfg.yml"
+  when: (fabric.metrics|default(False)) == True
+
 - name: Create endorsement policy file
   template:
     src: "{{ playbook_dir }}/../deploy_compose/certsetup/templates/policy.j2"

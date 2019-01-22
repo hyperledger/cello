@@ -60,6 +60,12 @@
     dest: "{{ fabricworkdir }}/keyfiles/{{ item }}/connection.json"
   with_items: "{{ allorgs }}"
 
+- name: Create metric config file
+  template:
+    src: "{{ playbook_dir }}/../deploy_k8s/pubconn/templates/metricurl.j2"
+    dest: "{{ fabricworkdir }}/keyfiles/metriccfg.yml"
+  when: (fabric.metrics|default(False)) == True
+
 - name: Create yaml connection profiles
   template:
     src: "{{ playbook_dir }}/../deploy_k8s/pubconn/templates/connyaml.j2"

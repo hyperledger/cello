@@ -1,0 +1,4 @@
+# Ansible modules
+run/*
+vars/*
+*.retry

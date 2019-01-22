@@ -14,6 +14,7 @@ fabric: {
   tls: true,
   generate_certs: true,
   logging_level: "ERROR",
+  metrics: false,
   k8s: {
     exposeserviceport: False,
     storageclass: "default",
