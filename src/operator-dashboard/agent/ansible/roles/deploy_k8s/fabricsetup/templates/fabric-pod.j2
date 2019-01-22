@@ -315,6 +315,11 @@ spec:
         - { name: "CORE_OPERATIONS_TLS_ENABLED", value: "false" }
         - { name: "CORE_METRICS_PROVIDER", value: "prometheus" }
 {% endif %}
+{% if fabric.peersettings is defined %}
+{% for pkey, pvalue in fabric.peersettings.items() %}
+        - { name: "{{ pkey }}", value: "{{ pvalue }}" }
+{% endfor %}
+{% endif %}
 {% include './resource.j2' %}
       volumeMounts:
         - { mountPath: "/etc/hyperledger/fabric/artifacts", name: "task-pv-storage" }
@@ -425,6 +430,11 @@ spec:
         - { name: "ORDERER_OPERATIONS_LISTENADDRESS", value: ":8443" }
         - { name: "ORDERER_OPERATIONS_TLS_ENABLED", value: "false" }
         - { name: "ORDERER_METRICS_PROVIDER", value: "prometheus" }
+{% endif %}
+{% if fabric.orderersettings is defined and fabric.orderersettings.ordererenv is defined %}
+{% for pkey, pvalue in fabric.orderersettings.ordererenv.items() %}
+        - { name: "{{ pkey }}", value: "{{ pvalue }}" }
+{% endfor %}
 {% endif %}
 {% include './resource.j2' %}
       volumeMounts:

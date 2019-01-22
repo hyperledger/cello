@@ -23,7 +23,7 @@ fabric: {
   logging_level: "ERROR",
   metrics: false,
   k8s: {
-    exposeserviceport: false,
+    exposeserviceport: False,
     storageclass: "default",
     storagecapacity: "2Gi",
     shared_storage: false,
@@ -32,12 +32,24 @@ fabric: {
     cpu_req: "0.1",
     cpu_limit: "0.2"
   },
+  # Peer environment variables to override core.yaml values
+  # variables should be in the peer readable format like shown below
+  peersettings: {
+    CORE_LEDGER_STATE_COUCHDBCONFIG_WARMINDEXESAFTERNBLOCKS: "10"
+  },
+  # Orderer configuration and environment variables to override
+  # configtx.yaml and orderer.yaml values. ordererenv will take the
+  # environment variables in the orderer readable format for example:
+  # ORDERER_GENERAL_TLS_ENABLED=true
   orderersettings: {
-    BatchTimeout: 2s,
-    BatchSize: {
-      MaxMessageCount: 500,
-      AbsoluteMaxBytes: "98 MB",
-      PreferredMaxBytes: "512 KB"
+    config: {
+      BatchTimeout: 2s,
+      BatchSize: {
+        MaxMessageCount: 500,
+        AbsoluteMaxBytes: "98 MB",
+        PreferredMaxBytes: "512 KB"
+    },
+    ordererenv: {
     }
   },
   kafkasettings: {

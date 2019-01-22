@@ -76,8 +76,8 @@ Orderer: &OrdererDefaults
 {%   for orderer in allorderers %}
     - {{ orderer.name }}:7050
 {%   endfor %}
-{% if fabric.orderersettings is defined %}
-  {{ fabric.orderersettings | to_nice_yaml | indent(2, False) -}}
+{% if fabric.orderersettings.config is defined %}
+  {{ fabric.orderersettings.config | to_nice_yaml | indent(2, False) -}}
 {% endif %}
 {% if kafkals | length > 0 %}
   Kafka:
