@@ -5,6 +5,7 @@ import logging
 
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from api.routes.network.serializers import NetworkListResponse
@@ -15,11 +16,15 @@ from api.routes.company.serializers import (
     CompanyCreateBody,
     CompanyIDSerializer,
 )
+from api.auth import CustomAuthenticate
 
 LOG = logging.getLogger(__name__)
 
 
 class UserViewSet(viewsets.ViewSet):
+    authentication_classes = (CustomAuthenticate,)
+    permission_classes = (IsAuthenticated,)
+
     @swagger_auto_schema(
         query_serializer=CompanyQuery,
         responses=with_common_response(
@@ -32,6 +37,7 @@ class UserViewSet(viewsets.ViewSet):
 
         List user through query parameter
         """
+        LOG.info("user %s", request.user.role)
         return Response(data=[], status=status.HTTP_200_OK)
 
     @swagger_auto_schema(

@@ -1,26 +1,26 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: ${DEPLOY_MYSQL_NAME}
+  name: ${DEPLOY_POSTGRES_NAME}
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: ${DEPLOY_MYSQL_NAME}
+        app: ${DEPLOY_POSTGRES_NAME}
     spec:
       containers:
-      - name: mariadb
-        image: mariadb:10.3.10
+      - name: postgres
+        image: postgres:11.1
         ports:
-        - containerPort: 3306
+        - containerPort: 5432
         envFrom:
         - configMapRef:
-            name: ${CONFIG_MYSQL_NAME}
+            name: ${CONFIG_POSTGRES_NAME}
         volumeMounts:
         - name: db-path
-          mountPath: /var/lib/mysql
+          mountPath: /var/lib/postgresql/data
       volumes:
       - name: db-path
         hostPath:
-          path: /opt/cello/keycloak-mysql
+          path: /opt/cello/postgres

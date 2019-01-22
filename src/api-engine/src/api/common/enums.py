@@ -37,7 +37,8 @@ class ExtraEnum(Enum):
             ]
         else:
             choices = [
-                (member.value, name) for name, member in cls.__members__.items()
+                (member.value, name)
+                for name, member in cls.__members__.items()
             ]
 
         return choices
@@ -106,6 +107,13 @@ class NetworkCreateType(ExtraEnum):
 class ConsensusPlugin(ExtraEnum):
     Solo = 0
     Kafka = 1
+
+
+@unique
+class UserRole(ExtraEnum):
+    Administrator = 0
+    Operator = 1
+    User = 2
 
 
 class EnumWithDisplayMeta(EnumMeta):
