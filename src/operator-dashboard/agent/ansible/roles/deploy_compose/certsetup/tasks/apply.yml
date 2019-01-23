@@ -43,7 +43,7 @@
 
 - name: Create metric config file
   template:
-    src: "{{ playbook_dir }}/../deploy_compose/certsetup/templates/metricurl.j2"
+    src: "{{ playbook_dir }}/../deploy_compose/certsetup/templates/metriccfg.j2"
     dest: "{{ fabricworkdir }}/keyfiles/metriccfg.yml"
   when: (fabric.metrics|default(False)) == True
 
