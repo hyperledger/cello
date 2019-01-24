@@ -9,9 +9,10 @@ RUN	cd / && \
 COPY src/api-engine/src /var/www/server
 COPY src/api-engine/uwsgi/server.ini /etc/uwsgi/apps-enabled/
 COPY src/api-engine/scripts /scripts
+COPY build_image/docker/api-engine/entrypoint.sh /
 
 RUN cd /var/www/server/api_engine && cp settings.py.initial settings.py && cd .. && python manage.py collectstatic --noinput
 
 WORKDIR /var/www/server
 
-CMD bash -c 'sh /scripts/initial.sh && uwsgi --ini /etc/uwsgi/apps-enabled/server.ini';
+CMD bash /entrypoint.sh

@@ -77,8 +77,12 @@ WSGI_APPLICATION = 'api_engine.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': '$DB_NAME',
+        'USER': '$DB_USER',
+        'PASSWORD': '$DB_PASSWORD',
+        'HOST': '$DB_HOST',
+        'PORT': '$DB_PORT',
     }
 }
 
@@ -140,9 +144,67 @@ SWAGGER_SETTINGS = {
     'DEFAULT_INFO': 'api_engine.urls.swagger_info',
     'SECURITY_DEFINITIONS': {
       'Bearer': {
-            'type': 'apiKey',
-            'name': 'Authorization',
-            'in': 'header'
+         'type': 'apiKey',
+         'name': 'Authorization',
+         'in': 'header'
+      },
+      'Cello API - Swagger': {
+         'type': 'oauth2',
+         'authorizationUrl': '${SSO_AUTH_URL}realms/${SSO_REALM}/protocol/openid-connect/auth',
+         'tokenUrl': '${SSO_AUTH_URL}realms/${SSO_REALM}/protocol/openid-connect/token',
+         'flow': 'accessCode',
+         'scopes': {
+          'read:groups': 'read groups',
+         }
       }
-   }
+   },
+   'OAUTH2_CONFIG': {
+      'clientId': '${SSO_ID}',
+      'clientSecret': '${SSO_SECRET}',
+      'appName': '${SSO_ID}'
+   },
+   'USE_SESSION_AUTH': False
+}
+
+AUTH_USER_MODEL = "api.User"
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+    'handlers': {
+        'null': {
+            'level': 'DEBUG',
+            'class': 'logging.NullHandler',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        }
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['null'],
+            'propagate': True,
+            'level': 'INFO',
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'api': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    }
 }

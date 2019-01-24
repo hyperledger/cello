@@ -1,1 +1,6 @@
 export API_ENGINE_WEBROOT?=/engine
+export POSTGRES_USER?=admin
+export POSTGRES_PASSWORD?=password
+export API_ENGINE_SSO_KEY?=api-engine
+export API_ENGINE_SSO_SECRET?=
+export API_ENGINE_SSO_AUTH_URL?=http://${SERVER_PUBLIC_IP}/auth/

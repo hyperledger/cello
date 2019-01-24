@@ -3,6 +3,11 @@
 #
 from rest_framework import status
 from api.common.serializers import BadResponseSerializer
+import uuid
+
+
+def make_uuid():
+    return str(uuid.uuid4())
 
 
 def with_common_response(responses=None):

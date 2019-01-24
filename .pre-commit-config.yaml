@@ -3,5 +3,5 @@ repos:
     rev: stable
     hooks:
     - id: black
-      entry: black -l 80 src/api-engine
+      entry: black -l 79 src/api-engine
       language_version: python3.7

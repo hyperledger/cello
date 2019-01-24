@@ -47,6 +47,12 @@ init-mysql-yaml:
 	@envsubst < templates/mysql/deploy.tmpl > mysql/deploy.yml
 	@envsubst < templates/mysql/service.tmpl > mysql/service.yml
 
+init-postgres-yaml:
+	mkdir -p ${ROOT_PATH}/bootup/kubernetes/postgres
+	@envsubst < templates/postgres/config.tmpl > postgres/config.yml
+	@envsubst < templates/postgres/deploy.tmpl > postgres/deploy.yml
+	@envsubst < templates/postgres/service.tmpl > postgres/service.yml
+
 init-watchdog-yaml:
 	mkdir -p ${ROOT_PATH}/bootup/kubernetes/watchdog
 	@envsubst < templates/watchdog/config.tmpl > watchdog/config.yml
@@ -65,6 +71,7 @@ init-yaml:
 	@$(MAKE) init-rabbitmq-yaml
 	@$(MAKE) init-mongo-yaml
 	@$(MAKE) init-mysql-yaml
+	@$(MAKE) init-postgres-yaml
 	@$(MAKE) init-operator-dashboard-yaml
 	@$(MAKE) init-user-dashboard-yaml
 	@$(MAKE) init-parse-server-yaml
@@ -75,6 +82,7 @@ start:
 	@kubectl apply --force -f rabbitmq/ -n ${K8S_DEPLOY_NAMESPACE}
 	@kubectl apply --force -f mongo/ -n ${K8S_DEPLOY_NAMESPACE}
 	@kubectl apply --force -f mysql/ -n ${K8S_DEPLOY_NAMESPACE}
+	@kubectl apply --force -f postgres/ -n ${K8S_DEPLOY_NAMESPACE}
 	@kubectl apply --force -f watchdog/ -n ${K8S_DEPLOY_NAMESPACE}
 	@kubectl apply --force -f parse-server/ -n ${K8S_DEPLOY_NAMESPACE}
 	@kubectl apply --force -f api-engine/ -n ${K8S_DEPLOY_NAMESPACE}
@@ -87,6 +95,7 @@ stop:
 	@kubectl delete -f rabbitmq/ -n ${K8S_DEPLOY_NAMESPACE}
 	@kubectl delete -f mongo/ -n ${K8S_DEPLOY_NAMESPACE}
 	@kubectl delete -f mysql/ -n ${K8S_DEPLOY_NAMESPACE}
+	@kubectl delete -f postgres/ -n ${K8S_DEPLOY_NAMESPACE}
 	@kubectl delete -f watchdog/ -n ${K8S_DEPLOY_NAMESPACE}
 	@kubectl delete -f parse-server/ -n ${K8S_DEPLOY_NAMESPACE}
 	@kubectl delete -f api-engine/ -n ${K8S_DEPLOY_NAMESPACE}
