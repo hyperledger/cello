@@ -12,6 +12,33 @@
     - cli-k8s
     - chainep
 
+- name: Initialize profileNode
+  set_fact:
+    profilenodes: []
+
+- name: Add orderer profile nodes
+  set_fact:
+    profilenodes: "{{ allorderers|map(attribute='name')|list }}"
+  when: >-
+    fabric.orderersettings is defined and
+    fabric.orderersettings.ordererenv is defined and
+    fabric.orderersettings.ordererenv.ORDERER_GENERAL_PROFILE_ENABLED is defined and
+    fabric.orderersettings.ordererenv.ORDERER_GENERAL_PROFILE_ENABLED
+
+- name: Add peer profile nodes
+  set_fact:
+    profilenodes: "{{ profilenodes + (allpeers|map(attribute='name')|list) }}"
+  when: >-
+    fabric.peersettings is defined and
+    fabric.peersettings.CORE_PEER_PROFILE_ENABLED is defined and
+    fabric.peersettings.CORE_PEER_PROFILE_ENABLED
+
+- name: Create profile configuration file
+  template:
+    src: "{{ playbook_dir }}/../deploy_k8s/fabricsetup/templates/bndsamplerconfig.j2"
+    dest: "{{ fabricworkdir }}/keyfiles/bndsamplerconfig.json"
+  when: profilenodes | length > 0
+
 - name: Create peer org member string
   set_fact:
     orgmembers: >-
@@ -121,6 +148,26 @@
   when: (allorderers | length > 0) and (allpeers | length > 0) and fabric.generate_certs == true
   tags: "placecerts"
 
+- name: Create directory for profiling configuration file on persistent volume
+  command: >-
+    ./kubectl --kubeconfig kubeconfig exec fabriccertspod -c task-pv-container
+    -- mkdir -p /fabriccerts/bndprofiles/config
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+  when: profilenodes | length > 0
+  tags: "profiling"
+
+- name: Copy profiling configuration file onto persistent volume
+  command: >-
+    ./kubectl --kubeconfig kubeconfig cp {{ item }}
+    fabriccertspod:/fabriccerts/bndprofiles/config/config.json
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+  with_items:
+    - "{{ fabricworkdir }}/keyfiles/bndsamplerconfig.json"
+  when: profilenodes | length > 0
+  tags: "profiling"
+
 - name: Untar certs.tgz in the Persistent volume
   command: >-
     ./kubectl --kubeconfig kubeconfig exec fabriccertspod -c task-pv-container
@@ -153,6 +200,24 @@
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
   tags: "doendpointdaemonset"
+
+- name: Set orderer profile flag
+  set_fact:
+    ordererprofile: True
+  when: >-
+    fabric.orderersettings is defined and
+    fabric.orderersettings.ordererenv is defined and
+    fabric.orderersettings.ordererenv.ORDERER_GENERAL_PROFILE_ENABLED is defined and
+    fabric.orderersettings.ordererenv.ORDERER_GENERAL_PROFILE_ENABLED == True
+
+- name: Set peer profile flag
+  set_fact:
+    peerprofile: True
+  when: >-
+    fabric.peersettings is defined and
+    fabric.peersettings.CORE_PEER_PROFILE_ENABLED is defined and
+    fabric.peersettings.CORE_PEER_PROFILE_ENABLED is defined and
+    fabric.peersettings.CORE_PEER_PROFILE_ENABLED == True
 
 - name: Create k8s deployment files
   template:

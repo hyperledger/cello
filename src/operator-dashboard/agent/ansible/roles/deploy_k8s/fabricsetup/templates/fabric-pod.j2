@@ -2,7 +2,7 @@
 #
 # Example usage: kubectl create -f <this_file>
 
-{% if 'stable' in fabric.baseimage_tag or fabric.baseimage_tag == 'latest' %}
+{% if 'stable' in fabric.baseimage_tag or 'latest' in fabric.baseimage_tag %}
 {% set project_version = fabric.baseimage_tag %}
 {% else %}
 {% set tag = fabric.baseimage_tag.split('-') %}
@@ -43,7 +43,7 @@ spec:
   containers:
     - name: {{ zookeeper }}
       image: {{ fabric.repo.url }}fabric-zookeeper:{{ fabric.helper_tag }}
-{% if fabric.helper_tag == 'latest' or 'stable' in fabric.helper_tag %}
+{% if 'latest' in fabric.helper_tag or 'stable' in fabric.helper_tag %}
       imagePullPolicy: Always
 {% else %}
       imagePullPolicy: IfNotPresent
@@ -101,7 +101,7 @@ spec:
   containers:
     - name: {{ kafka }}
       image: {{ fabric.repo.url }}fabric-kafka:{{ fabric.helper_tag }}
-{% if fabric.helper_tag == 'latest' or 'stable' in fabric.helper_tag %}
+{% if 'latest' in fabric.helper_tag or 'stable' in fabric.helper_tag %}
       imagePullPolicy: Always
 {% else %}
       imagePullPolicy: IfNotPresent
@@ -166,7 +166,7 @@ spec:
   containers:
     - name: {{ ca.name }}
       image: {{ fabric.repo.url }}fabric-ca:{{ fabric.ca.image_tag }}
-{% if fabric.ca.image_tag == 'latest' or 'stable' in fabric.ca.image_tag %}
+{% if 'latest' in fabric.ca.image_tag or 'stable' in fabric.ca.image_tag %}
       imagePullPolicy: Always
 {% else %}
       imagePullPolicy: IfNotPresent
@@ -216,7 +216,7 @@ metadata:
   labels:
     k8s-app: {{ peer.name }}
     type: peer
-{% if (project_version is version_compare('1.4.0','>=') or 'stable' in project_version or project_version == 'latest') and fabric.metrics is defined and fabric.metrics %}
+{% if (project_version is version('1.4.0','>=') or 'stable' in project_version or 'latest' in project_version) and fabric.metrics is defined and fabric.metrics %}
   annotations:
     prometheus.io/scrape: 'true'
     prometheus.io/path: /metrics
@@ -252,7 +252,7 @@ spec:
 {% if fabric.peer_db == 'CouchDB' %}
     - name: couchdb-{{ peer.name }}
       image: {{ fabric.repo.url }}fabric-couchdb:{{ fabric.helper_tag }}
-{% if fabric.helper_tag == 'latest' or 'stable' in fabric.helper_tag %}
+{% if 'latest' in fabric.helper_tag or 'stable' in fabric.helper_tag %}
       imagePullPolicy: Always
 {% else %}
       imagePullPolicy: IfNotPresent
@@ -263,7 +263,7 @@ spec:
 {% endif %}
     - name: {{ peer.name }}
       image: {{ fabric.repo.url }}fabric-peer:{{ fabric.baseimage_tag }}
-{% if project_version == 'latest' or 'stable' in project_version %}
+{% if 'latest' in project_version or 'stable' in project_version %}
       imagePullPolicy: Always
 {% else %}
       imagePullPolicy: IfNotPresent
@@ -273,15 +273,14 @@ spec:
       env:
         - { name: "CORE_VM_ENDPOINT", value: "unix:///var/run/docker.sock" }
         - { name: "FABRIC_CFG_PATH", value: "/etc/hyperledger/fabric/artifacts/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}" }
-{% if project_version | version_compare('1.3.0','<') %}
+{% if project_version is version('1.3.0','<') %}
         - { name: "CORE_LOGGING_LEVEL", value: "{{ fabric.logging_level | default('ERROR') }}" }
-{% elif project_version is version_compare('1.4.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+{% elif project_version is version('1.4.0','>=') or 'stable' in project_version or 'latest' in project_version %}
         - { name: "FABRIC_LOGGING_SPEC", value: "{{ fabric.logging_level | default('ERROR') | lower }}" }
 {% endif %}
         - { name: "CORE_PEER_GOSSIP_USELEADERELECTION",
             value: "{{ allpeers|selectattr('org','equalto',peer.org)|list|selectattr('role','equalto','leader')|list|length|int==0 }}" }
         - { name: "CORE_PEER_GOSSIP_ORGLEADER", value: "{{ (peer.role == "leader") | ternary('true','false') }}" }
-        - { name: "CORE_PEER_PROFILE_ENABLED", value: "true" }
         - { name: "CORE_PEER_TLS_ENABLED", value: "{{ tls | lower }}" }
 {% if tls %}
         - { name: "CORE_PEER_TLS_CERT_FILE", value: "/etc/hyperledger/fabric/artifacts/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}/tls/server.crt" }
@@ -292,7 +291,7 @@ spec:
         - { name: "CORE_PEER_GOSSIP_EXTERNALENDPOINT", value: "{{ peer.name }}:7051" }
         - { name: "CORE_PEER_ADDRESS", value: "{{ peer.name }}:7051" }
         - { name: "CORE_PEER_LISTENADDRESS", value: "0.0.0.0:7051" }
-{% if project_version is version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+{% if project_version is version('1.1.0','>=') or 'stable' in project_version or 'latest' in project_version %}
         - { name: "CORE_PEER_CHAINCODEADDRESS", value: "{{ peer.name }}:7052" }
         - { name: "CORE_PEER_CHAINCODELISTENADDRESS", value: "0.0.0.0:7052" }
 {% if mutualtls %}
@@ -310,7 +309,7 @@ spec:
         - { name: "CORE_LEDGER_STATE_STATEDATABASE", value: "CouchDB" }
         - { name: "CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS", value: "localhost:5984" }
 {% endif %}
-{% if (project_version is version_compare('1.4.0','>=') or 'stable' in project_version or project_version == 'latest') and fabric.metrics is defined and fabric.metrics %}
+{% if (project_version is version('1.4.0','>=') or 'stable' in project_version or 'latest' in project_version) and fabric.metrics is defined and fabric.metrics %}
         - { name: "CORE_OPERATIONS_LISTENADDRESS", value: ":9443" }
         - { name: "CORE_OPERATIONS_TLS_ENABLED", value: "false" }
         - { name: "CORE_METRICS_PROVIDER", value: "prometheus" }
@@ -346,8 +345,25 @@ spec:
     port: 7052
   - name: port3
     port: 7053
+{% if fabric.metrics is defined and fabric.metrics %}
   - name: scrapeport
     port: 9443
+{% endif %}
+{% if peerprofile is defined and peerprofile %}
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    k8s-app: {{ peer.name }}-profile
+  name: {{ peer.name }}-profile
+spec:
+  selector:
+    k8s-app: {{ peer.name }}
+  ports:
+  - name: profileport
+    port: 6060
+{% endif %}
 {% endfor %}
 {% endif %}
 
@@ -361,7 +377,7 @@ metadata:
   labels:
     k8s-app: {{ orderer.name }}
     type: orderer
-{% if (project_version is version_compare('1.4.0','>=') or 'stable' in project_version or project_version == 'latest') and fabric.metrics is defined and fabric.metrics %}
+{% if (project_version is version('1.4.0','>=') or 'stable' in project_version or 'latest' in project_version) and fabric.metrics is defined and fabric.metrics %}
   annotations:
     prometheus.io/scrape: 'true'
     prometheus.io/path: /metrics
@@ -393,15 +409,15 @@ spec:
   containers:
     - name: {{ orderer.name }}
       image: {{ fabric.repo.url }}fabric-orderer:{{ fabric.baseimage_tag }}
-{% if project_version == 'latest' or 'stable' in project_version %}
+{% if 'latest' in project_version or 'stable' in project_version %}
       imagePullPolicy: Always
 {% else %}
       imagePullPolicy: IfNotPresent
 {% endif %}
       env:
-{% if project_version | version_compare('1.3.0','<') %}
+{% if project_version is version('1.3.0','<') %}
         - { name: "ORDERER_GENERAL_LOGLEVEL", value: "{{ fabric.logging_level | default('ERROR') | lower }}" }
-{% elif project_version is version_compare('1.4.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+{% elif project_version is version('1.4.0','>=') or 'stable' in project_version or 'latest' in project_version %}
         - { name: "FABRIC_LOGGING_SPEC", value: "{{ fabric.logging_level | default('ERROR') | lower }}" }
 {% endif %}
         - { name: "ORDERER_GENERAL_LISTENADDRESS", value: "0.0.0.0" }
@@ -419,14 +435,14 @@ spec:
         - { name: "ORDERER_KAFKA_RETRY_SHORTTOTAL", value: "30s" }
         - { name: "ORDERER_KAFKA_VERBOSE", value: "true" }
 {% if mutualtls %}
-{% if project_version | version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+{% if project_version is version('1.1.0','>=') or 'stable' in project_version or 'latest' in project_version %}
         - { name: "ORDERER_GENERAL_TLS_CLIENTAUTHREQUIRED", value: "true" }
 {% else %}
         - { name: "ORDERER_GENERAL_TLS_CLIENTAUTHENABLED", value: "true" }
 {% endif %}
         - { name: "ORDERER_GENERAL_TLS_CLIENTROOTCAS", value: "[{{ rootca | list | join (", ")}}]" }
 {% endif %}
-{% if (project_version is version_compare('1.4.0','>=') or 'stable' in project_version or project_version == 'latest') and fabric.metrics is defined and fabric.metrics %}
+{% if (project_version is version('1.4.0','>=') or 'stable' in project_version or 'latest' in project_version) and fabric.metrics is defined and fabric.metrics %}
         - { name: "ORDERER_OPERATIONS_LISTENADDRESS", value: ":8443" }
         - { name: "ORDERER_OPERATIONS_TLS_ENABLED", value: "false" }
         - { name: "ORDERER_METRICS_PROVIDER", value: "prometheus" }
@@ -456,7 +472,49 @@ spec:
   ports:
     - name: port1
       port: 7050
+{% if fabric.metrics is defined and fabric.metrics %}
     - name: scrapeport
       port: 8443
+{% endif %}
+{% if ordererprofile is defined and ordererprofile %}
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    k8s-app: {{ orderer.name }}-profile
+  name: {{ orderer.name }}-profile
+spec:
+  selector:
+    k8s-app: {{ orderer.name }}
+  ports:
+    - name: profileport
+      port: 6060
+{% endif %}
 {% endfor %}
+{% endif %}
+
+{% if profilenodes|default([])|length > 0 %}
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  name: "bndsampler"
+  labels:
+    k8s-app: "bndsampler"
+spec:
+  volumes:
+    - name: task-pv-storage
+      persistentVolumeClaim:
+        claimName: fabriccerts
+  containers:
+  - name: sampler
+    image: hfrd/pprof-sampler:bnd-latest
+    imagePullPolicy: IfNotPresent
+    env:
+    - { name: "SAMPLING_RATE", value: "10s" }
+    volumeMounts:
+    - mountPath: "/profiles/pprof"
+      name: "task-pv-storage"
+      subPath: "bndprofiles"
 {% endif %}

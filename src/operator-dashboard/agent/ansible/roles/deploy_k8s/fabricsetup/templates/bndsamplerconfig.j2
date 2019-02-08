@@ -1,0 +1,12 @@
+{
+  "addresses": [
+{% for anode in profilenodes %}
+     "{{ anode }}-profile:6060"{{ '' if loop.last else ',' }}
+{% endfor %}
+  ],
+  "paths": {
+    "pprof": "/debug/pprof/goroutine?debug=2",
+    "wakeup": "/debug/pprof/wakeup?debug=2&rate=1000",
+    "block": "/debug/pprof/block?debug=1"
+  }
+}
