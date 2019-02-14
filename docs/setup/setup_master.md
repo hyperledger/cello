@@ -1,12 +1,12 @@
 ## Master Node Setup
-The [Master Node](terminology.md) includes several services:
+The [Master Node](../terminology.md) includes several services:
 
 * `operator dashboard`: Provide Web UI for operators.
 * `user dashboard`: Provide Web UI for users.
 * `engine`: Provide RESTful APIs for chain consumers.
 * `watchdog`: Watch for health checking.
 
-*More details can be found at the [Architecture Design](./arch.md).*
+*More details can be found at the [Architecture Design](../arch.md).*
 
 ### System Requirement
 
@@ -15,7 +15,7 @@ The [Master Node](terminology.md) includes several services:
 * Docker engine: 1.10.0+ (Docker 17.0+ support is experimental)
 * docker-compose: 1.10.0+
 
-The [Master Node](terminology.md) can be deployed by in 2 steps:
+The [Master Node](../terminology.md) can be deployed by in 2 steps:
 
 * Clone code
 * Run setup script
@@ -73,7 +73,7 @@ $ make restart
 ```
 
 #### Start/Stop/Restart in Development mode
-As a developer, you can start/stop/restart services in development mode. In development mode, [user dashboard](./dashboard_user.md) will watch and restart service if files change. And [operator dashboard](./dashboard_operator.md) will enalbe flask debug.
+As a developer, you can start/stop/restart services in development mode. In development mode, [user dashboard](../dashboard_user.md) will watch and restart service if files change. And [operator dashboard](../dashboard_operator.md) will enalbe flask debug.
 
 To start the whole services in developer mode, please run
 ```bash
@@ -103,7 +103,7 @@ To check the logs for one specific service, please run
 $ make log service=watchdog
 ```
 
-Now you can access the `MASTER_NODE_IP:8080` to open the Web-based [operation dashboard](./dashboard_operator.md).
+Now you can access the `MASTER_NODE_IP:8080` to open the Web-based [operation dashboard](../dashboard_operator.md).
 
 ### Configuration
 The application configuration can be imported from file named `CELLO_CONFIG_FILE`.
@@ -135,7 +135,7 @@ $ echo 'export PATH="/usr/local/opt/gettext/bin:$PATH"' >> ~/.bash_profile
 
 ## More Commands using make
 
-To know more what the following make commands does please refer [make_support](./make_support.md) page.
+To know more what the following make commands does please refer [make_support](../make_support.md) page.
 
 ## Cello Docker Images
 

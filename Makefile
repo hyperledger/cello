@@ -4,12 +4,12 @@
 #
 #
 # -------------------------------------------------------------
-# This makefile defines the following targets
+# This makefile defines the following targets, feel free to run "make help" to see help info
 #
 #   - all (default):  Builds all targets and runs all tests/checks
 #   - check:          Setup as master node, and runs all tests/checks, will be triggered by CI
 #   - clean:          Cleans the build area
-#   - doc:            Start a local web service to explore the documentation
+#   - doc|docs:            Start a local web service to explore the documentation
 #   - docker[-clean]: Build/clean docker images locally
 #   - dockerhub:      Build using dockerhub materials, to verify them
 #   - dockerhub-pull: Pulling service images from dockerhub
@@ -142,7 +142,7 @@ docker-clean: stop image-clean ##@Clean all existing images
 
 DOCKERHUB_IMAGES = baseimage engine operator-dashboard user-dashboard watchdog ansible-agent parse-server
 
-dockerhub: $(patsubst %,dockerhub-%,$(DOCKERHUB_IMAGES))  ##@Building latest images with dockerhub materials, to valid them
+dockerhub: $(patsubst %,dockerhub-%,$(DOCKERHUB_IMAGES))  ##@Building latest docker images as hosted in dockerhub
 
 dockerhub-%: ##@Building latest images with dockerhub materials, to valid them
 	dir=$*; \
@@ -186,9 +186,10 @@ changelog: ##@Update the changelog.md file in the root folder
 	#bash scripts/changelog.sh bd0c6db v$(PREV_VERSION)
 	bash scripts/changelog.sh v$(PREV_VERSION) HEAD
 
+docs: doc
 doc: ##@Create local online documentation and start serve
-	pip install mkdocs
-	mkdocs serve -f configs/mkdocs.yml
+	command -v mkdocs >/dev/null 2>&1 || pip install mkdocs
+	mkdocs serve -f mkdocs.yml
 
 # Use like "make log service=dashboard"
 log: ##@Log tail special service log, Use like "make log service=dashboard"

@@ -6,7 +6,7 @@ Have a look at the [terminology](terminology.md) to understand the basic concept
 
 ## Setup a Cello Cluster
 
-Following the [setup guideline](setup.md) to start a Cello cluster.
+Following the [setup guideline](setup/setup.md) to start a Cello cluster.
 
 After that, operators can interact with Cello through the operator dashboard.
 
@@ -35,9 +35,9 @@ Suppose to import a native Docker server, you may need to input those fields
 
 After successful adding, you can find the `docker_host` shown in the Host page, with 0 chains and Cap is 5.
 
-If you are going to create vSphere type host, you can take the steps at the [vSphere type host creation guide](./setup_worker_vsphere.md).
+If you are going to create vSphere type host, you can take the steps at the [vSphere type host creation guide](setup/setup_worker_vsphere.md).
 
-If you are going to create Kubernetes type host, you can take the steps at the [Kubernetes type host creation guide](./setup_worker_kubernetes.md).
+If you are going to create Kubernetes type host, you can take the steps at the [Kubernetes type host creation guide](setup/setup_worker_kubernetes.md).
 
 ## Create a Chain
 

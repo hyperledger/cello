@@ -71,7 +71,7 @@ setup fabric network on one clean ubuntu 16.04 server.
 
 ## More Usage
 
-Please refer to [ansible worker how to](./worker_ansible_howto.md).
+Please refer to [ansible worker how to](../worker_ansible_howto.md).
 
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">
 <img alt="Creative Commons License" style="border-width:0"

@@ -25,15 +25,15 @@ Using Cello, blockchain developers can:
 
 ## Operation Guidelines
 * [Terminologies and Concepts](terminology.md)
-* [How to setup Cello](setup.md)
+* [How to setup Cello](setup/setup.md)
 * [Example Adoption Scenarios](scenario.md)
 * [Manage Cello services](service_management.md)
 * [Use the Operator Dashboard](dashboard_operator.md)
 * [Use the User Dashboard](dashboard_user.md)
 * [Configuration for Production](production_config.md)
 
-## [Contribute to the Project](CONTRIBUTING.md)
-* [How to Contribute](CONTRIBUTING.md)
+## [Contribute to the Project](contributing.md)
+* [How to Contribute](contributing.md)
 * [Code Style Guide](https://www.python.org/dev/peps/pep-0008/)
 * [Develop Front-end with React-Js](reactjs.md)
 
@@ -50,8 +50,8 @@ For additional helps, feel free to take the following channels:
 * [Wikipage](https://wiki.hyperledger.org/projects/cello): Lots of information and documentation about the project, e.g., meeting schedule, design doc.
 * [Mail List](mailto:hyperledger-cello@lists.hyperledger.org): General technical topics with Cello project.
 * [RocketChat Room](https://chat.hyperledger.org/channel/cello): Real-time online discussions.
-* [Jira Board](https://jira.hyperledger.org/projects/CE/issues): Find development status, report bug, or help [contribute code](CONTRIBUTING.md).
-* [Gerrit](https://gerrit.hyperledger.org/r/#/q/project:cello): Development related code and patchsets, welcome to [contribute](CONTRIBUTING.md).
+* [Jira Board](https://jira.hyperledger.org/projects/CE/issues): Find development status, report bug, or help [contribute code](contributing.md).
+* [Gerrit](https://gerrit.hyperledger.org/r/#/q/project:cello): Development related code and patchsets, welcome to [contribute](contributing.md).
 * [Stack Overflow](https://stackoverflow.com/questions/tagged/hyperledger-cello): Stack overflow discussion questions about cello.
 
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
