@@ -137,13 +137,17 @@ class ErrorCode(Enum, metaclass=EnumWithDisplayMeta):
     UnknownError = 20000
     ValidationError = 20001
     ParseError = 20002
-    InUse = 20003
+    ResourceInUse = 20003
+    ResourceExists = 20004
+    ResourceNotFound = 20005
 
     class DisplayStrings:
         UnknownError = "Unknown Error"
         ValidationError = "Validation parameter error"
         ParseError = "Parse error"
-        InUse = "Resource is inuse"
+        ResourceInUse = "Resource is inuse"
+        ResourceExists = "Resource already exists."
+        ResourceNotFound = "Request Resource Not found."
 
     @classmethod
     def get_info(cls):
