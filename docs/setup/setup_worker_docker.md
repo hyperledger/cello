@@ -54,10 +54,20 @@ At last, run the follow test at Master node and get OK response, to make sure it
 ```
 
 ### Setup
-Run the following cmd to pull the necessary images and copy required artifacts.
+Run the following cmd to setup the worker node by
+
+* Install necessary software;
+* Pull the necessary images;
+* Use NFS to mount the storage path at Master.
 
 ```bash
 $ MASTER_NODE=xx.xx.xx.xx make setup-worker
+```
+
+If run in standalone server (master and worker are together), then NFS is not necessary, just run
+
+```bash
+$ make setup-worker
 ```
 
 ### Firewall Setup

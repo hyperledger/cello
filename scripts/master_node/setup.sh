@@ -6,7 +6,10 @@
 #
 # This script will try setup as Cello  master node.
 # It should be triggered by the `make setup-master`, and safe to repeat.
-
+# 1) Install docker stuffs;
+# 2) Download Cello images from Dockerhub;
+# 3) Create local storage path to be mounted to Workers.
+# ./setup.sh
 
 # Detecting whether can import the header file to render colorful cli output
 # Need add choice option
@@ -28,7 +31,7 @@ fi
 
 
 # collect ID from /etc/os-release as distribution name
-# tested on debian,ubuntu,mint , centos,fedora  ,opensuse
+# tested on debian, ubuntu, mint, centos, fedora, opensuse
 get_distribution() {
 	distribution="Unknown"
 	while read -r line
@@ -47,6 +50,7 @@ DISTRO=$(get_distribution)
 DB_DIR=/opt/${PROJECT}/mongo
 
 echo_b "user: ${USER}, distro: ${DISTRO}, db_dir: ${DB_DIR}"
+echo_b "It is recommended to use Ubuntu 18.04 OS."
 
 # Install necessary software including curl, python-pip, tox, docker
 install_software() {
@@ -108,7 +112,6 @@ install_software() {
 	sudo usermod -aG docker ${USER}
 }
 
-
 echo_b "Make sure have installed: python-pip, tox, curl and docker-engine"
 install_list=()
 for software in pip tox curl docker docker-compose; do
@@ -116,17 +119,16 @@ for software in pip tox curl docker docker-compose; do
 done
 [ -z "$install_list" ] || install_software $install_list
 
-
-echo_b "Checking existing containers"
+echo_b "Checking if existing containers"
 if [ `sudo docker ps -qa|wc -l` -gt 0 ]; then
-	echo_r "Warn: existing containers may cause unpredictable failure, suggest to clean them (docker rm)"
+	echo_r "Warn: existing containers may cause unpredictable failure, suggest to clean them using docker rm"
 	docker ps -a
 fi
 
 echo_b "Download required Docker images for Cello Services..."
 bash ./download_images.sh
 
-echo_b "Checking local mounted database path ${DB_DIR}..."
+echo_b "Checking local storage path ${DB_DIR}, which will be mounted to Workers later..."
 [ ! -d ${DB_DIR} ] \
 	&& echo_r "Local database path ${DB_DIR} not existed, creating one" \
 	&& sudo mkdir -p ${DB_DIR} \

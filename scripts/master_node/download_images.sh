@@ -34,7 +34,7 @@ echo_b "Check node:9.2 image."
 
 # docker image
 
-for IMG in baseimage engine mongo operator-dashboard user-dashboard watchdog ; do
+for IMG in baseimage engine mongo operator-dashboard user-dashboard watchdog parse-server ; do
 	HLC_IMG=hyperledger/cello-${IMG}
 	#if [ -z "$(docker images -q ${HLC_IMG}:${ARCH}-${VERSION} 2> /dev/null)" ]; then  # not exist
 	echo_b "Pulling ${HLC_IMG}:${ARCH}-${VERSION} from dockerhub"
@@ -50,5 +50,11 @@ docker pull mongo:3.4.10
 
 # NFS service
 docker pull itsthenetwork/nfs-server-alpine:9
+
+# Database server
+docker pull mariadb:10.3.10
+
+# Keycloak is help access the database
+docker pull jboss/keycloak:4.5.0.Final
 
 echo_g "All Image downloaded "

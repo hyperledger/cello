@@ -12,7 +12,7 @@ The [Master Node](../terminology.md) includes several services:
 
 * Hardware: 8c16g100g
 * Linux Kernel >= 3.0.0
-* Docker engine: 1.10.0+ (Docker 17.0+ support is experimental)
+* Docker engine: 1.10.0+ (Docker 18.0+ support is experimental)
 * docker-compose: 1.10.0+
 
 The [Master Node](../terminology.md) can be deployed by in 2 steps:

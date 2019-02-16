@@ -24,7 +24,8 @@ else
 	}
 fi
 
-MASTER_NODE=${MASTER_NODE:-"127.0.0.1"}
+# Empty string means no need to setup NFS
+MASTER_NODE=""
 
 echo_b "Make sure docker and docker-compose are installed"
 command -v docker >/dev/null 2>&1 || { echo_r >&2 "No docker-engine found, try installing"; curl -sSL https://get.docker.com/ | sh; sudo dockerd -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock --api-cors-header='*' --default-ulimit=nofile=8192:16384 --default-ulimit=nproc=8192:16384 -D & }
@@ -42,7 +43,7 @@ echo_b "Checking local artifacts path ${ARTIFACTS_DIR}..."
 	&& sudo chown -R ${USER}:${USERGROUP} ${ARTIFACTS_DIR}
 
 if [ -z "$MASTER_NODE" ]; then
-	echo_r "No master node addr is provided, will ignore nfs setup"
+	echo_r "No master node addr is provided, will ignore nfs setup in standalone mode"
 else
 	echo_b "Mount NFS Server ${MASTER_NODE}"
 	sudo mount -t nfs -o vers=4,loud ${MASTER_NODE}:/ ${ARTIFACTS_DIR}

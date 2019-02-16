@@ -4,11 +4,11 @@
 
 Have a look at the [terminology](terminology.md) to understand the basic concepts first.
 
-## Setup a Cello Cluster
+## Setup Cello
 
-Following the [setup guideline](setup/setup.md) to start a Cello cluster.
+Following the [setup guideline](setup/setup.md) to start Cello.
 
-After that, operators can interact with Cello through the operator dashboard.
+After that, operators can interact with Cello through the [operator dashboard](http://localhost:8080).
 
 By default, the operator dashboard will listen on port `8080` at the Master Node, with default administrator account of `admin:pass`.
 

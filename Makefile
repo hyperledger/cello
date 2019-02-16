@@ -9,11 +9,11 @@
 #   - all (default):  Builds all targets and runs all tests/checks
 #   - check:          Setup as master node, and runs all tests/checks, will be triggered by CI
 #   - clean:          Cleans the build area
-#   - doc|docs:            Start a local web service to explore the documentation
+#   - doc|docs:       Start a local web service to explore the documentation
 #   - docker[-clean]: Build/clean docker images locally
 #   - dockerhub:      Build using dockerhub materials, to verify them
 #   - dockerhub-pull: Pulling service images from dockerhub
-#   - license:		    Checks sourrce files for Apache license header
+#   - license:		  Checks sourrce files for Apache license header
 #   - help:           Output the help instructions for each command
 #   - log:            Check the recent log output of given service
 #   - logs:           Check the recent log output of all services
@@ -52,6 +52,9 @@ ifeq ($(IS_RELEASE),false)
 else
 	IMG_TAG=$(BASE_VERSION)
 endif
+
+# The Cello service listen interface, only use 127.0.0.1 if run in standalone mode
+SERVER_PUBLIC_IP ?= 127.0.0.1
 
 # Docker images needed to run cello services
 DOCKER_IMAGES = baseimage engine operator-dashboard ansible-agent watchdog user-dashboard parse-server api-engine nginx
@@ -164,8 +167,7 @@ install: $(patsubst %,build/docker/%/.push,$(DOCKER_IMAGES))
 check-js: ##@Code Check check js code format
 	docker-compose -f bootup/docker-compose-files/docker-compose-check-js.yaml up
 
-check:
-#setup-master docker-operator-dashboard ##@Code Check code format
+check: ##@Code Check code format
 	@$(MAKE) license
 	find ./docs -type f -name "*.md" -exec egrep -l " +$$" {} \;
 	cd src/operator-dashboard && tox && cd ${ROOT_PATH}

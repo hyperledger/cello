@@ -5,7 +5,11 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # This script will try setup a valid environment for the docker-compose running.
-# It should be triggered at the upper directory, and safe to repeat.
+# It should be triggered by the `make setup-worker`, and safe to repeat.
+# 1) Install required softwares;
+# 2) Download blockchain images.
+
+# ./setup.sh docker|swarm|k8s
 
 # Detecting whether can import the header file to render colorful cli output
 # Need add choice option
@@ -26,13 +30,15 @@ else
 fi
 
 
+worker_type="docker"
 # TODO: detect env to choose which script to run
 
 if [ $# -ne 1 ]; then
-	echo "Should pass me the worker node type to setup: docker, swarm or k8s|kubernetes"
+	echo_r "Should pass me the worker node type to setup: docker, swarm or k8s|kubernetes"
+	echo_b "Will use Docker by default"
+else
+	worker_type=$1
 fi
-
-worker_type=$1
 
 echo_b "Set up worker node as type $worker_type"
 
