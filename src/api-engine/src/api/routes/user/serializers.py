@@ -2,8 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 from rest_framework import serializers
-from api.common.enums import Operation, NetworkType, NodeType
+from api.common.enums import Operation, NetworkType, NodeType, UserRole
 from api.common.serializers import PageQuerySerializer
+from api.models import UserModel
 
 
 class NodeQuery(PageQuerySerializer):
@@ -30,3 +31,28 @@ class NodeOperationSerializer(serializers.Serializer):
         help_text=Operation.get_info("Operation for node:", list_str=True),
         choices=Operation.to_choices(True),
     )
+
+
+class UserCreateBody(serializers.ModelSerializer):
+    role = serializers.ChoiceField(
+        help_text=UserRole.get_info("User roles:", list_str=True),
+        choices=UserRole.to_choices(string_as_value=True),
+    )
+    password = serializers.CharField(
+        help_text="Password for new user", min_length=6, max_length=32
+    )
+
+    class Meta:
+        model = UserModel
+        fields = ("name", "role", "govern", "password")
+        extra_kwargs = {
+            "name": {"required": True},
+            "role": {"required": True},
+            "password": {"required": True},
+        }
+
+
+class UserIDSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserModel
+        fields = ("id",)

@@ -24,7 +24,7 @@ from rest_framework.routers import DefaultRouter
 from api.routes.network.views import NetworkViewSet
 from api.routes.agent.views import AgentViewSet
 from api.routes.node.views import NodeViewSet
-from api.routes.company.views import CompanyViewSet
+from api.routes.govern.views import GovernViewSet
 from api.routes.user.views import UserViewSet
 
 
@@ -46,7 +46,7 @@ router = DefaultRouter(trailing_slash=False)
 router.register("networks", NetworkViewSet, base_name="network")
 router.register("agents", AgentViewSet, base_name="agent")
 router.register("nodes", NodeViewSet, base_name="node")
-router.register("companies", CompanyViewSet, base_name="company")
+router.register("governs", GovernViewSet, base_name="govern")
 router.register("users", UserViewSet, base_name="user")
 # router.register("clusters", ClusterViewSet, base_name="cluster")
 

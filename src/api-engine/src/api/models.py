@@ -11,10 +11,38 @@ from api.utils.common import make_uuid
 SUPER_USER_TOKEN = getattr(settings, "ADMIN_TOKEN", "")
 
 
+class Govern(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        help_text="ID of govern",
+        default=make_uuid,
+        editable=True,
+    )
+    name = models.CharField(
+        default="", max_length=64, help_text="Name of govern"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
 class UserModel(models.Model):
-    id = models.UUIDField(primary_key=True, default=make_uuid, editable=True)
-    name = models.CharField(default="", max_length=128)
-    role = models.CharField(default="", max_length=64)
+    id = models.UUIDField(
+        primary_key=True,
+        help_text="ID of user",
+        default=make_uuid,
+        editable=True,
+    )
+    name = models.CharField(
+        default="", help_text="Name of user", max_length=128
+    )
+    role = models.CharField(
+        default="", help_text="Role of User", max_length=64
+    )
+    govern = models.ForeignKey(
+        "Govern",
+        null=True,
+        on_delete=models.CASCADE,
+        help_text="Govern of user",
+    )
 
 
 class Token(models.Model):

@@ -61,8 +61,10 @@ class CustomAuthenticate(authentication.BaseAuthentication):
                     LOG.error("exception %s", str(exc))
                     return None
                 user_model, _ = UserModel.objects.get_or_create(
-                    id=sub, name=username, role=role
+                    id=sub, name=username
                 )
+                user_model.role = role
+                user_model.save()
                 token_model = Token(
                     token=token, user=user_model, expire_date=exp_time
                 )
@@ -70,6 +72,7 @@ class CustomAuthenticate(authentication.BaseAuthentication):
             else:
                 username = token_model.user.name
                 user_model = token_model.user
+                role = user_model.role
         user = User()
         user.username = username
         user.token = token
@@ -87,8 +90,7 @@ class IsAdminAuthenticated(BasePermission):
     def has_permission(self, request, view):
         return (
             request.user
-            and request.user.is_authenticated
-            and request.user.is_admin
+            and request.user.role == UserRole.Administrator.name.lower()
         )
 
 
