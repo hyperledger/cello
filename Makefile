@@ -17,6 +17,7 @@
 #   - help:           Output the help instructions for each command
 #   - log:            Check the recent log output of given service
 #   - logs:           Check the recent log output of all services
+#   - reset:          Clean up and remove local storage (only use for development)
 #   - restart:        Stop the cello service and then start
 #   - setup-master:   Setup the host as a master node, install pkg and download docker images
 #   - setup-worker:   Setup the host as a worker node, install pkg and download docker images
@@ -53,8 +54,10 @@ else
 	IMG_TAG=$(BASE_VERSION)
 endif
 
-# The Cello service listen interface, only use 127.0.0.1 if run in standalone mode
+# The Cello service listen interface, please use the public available IP.
 SERVER_PUBLIC_IP ?= 127.0.0.1
+
+LOCAL_STORAGE_PATH=/opt/cello
 
 # Docker images needed to run cello services
 DOCKER_IMAGES = baseimage engine operator-dashboard ansible-agent watchdog user-dashboard parse-server api-engine nginx
@@ -247,6 +250,11 @@ stop: ##@Service Stop service
 	docker-compose -f ${COMPOSE_FILE} stop
 	echo "Remove all services with ${COMPOSE_FILE}..."
 	docker-compose -f ${COMPOSE_FILE} rm -f -a
+
+reset: clean ##@Environment clean up and remove local storage (only use for development)
+	echo "Clean up and remove all local storage..."
+	rm -rf ${LOCAL_STORAGE_PATH}/*
+
 
 restart: stop start ##@Service Restart service
 

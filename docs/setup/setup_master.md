@@ -47,11 +47,14 @@ Make sure there is no error during the setup. Otherwise, please check the log ms
 To start the whole services, please run
 
 ```bash
-$ [environment variables] make start
+$ SERVER_PUBLIC_IP=x.x.x.x make start
 ```
+
+This may take 1+ min till all services are up.
+
 Environment variables which you can use in the command:
 
-* `SERVER_PUBLIC_IP`(required): Master node IP address
+* `SERVER_PUBLIC_IP`(required): Master node's public IP address
 * `THEME`(optional): Theme name for operator dashboard basic/vue/react, default is basic
 * `NPM_REGISTRY`(optional):: npm registry for install node packages
 * `DEV`(optional):: Start service in dev/product mode, options is True/False, default is False

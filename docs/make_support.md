@@ -76,6 +76,9 @@ Starts all services, include nfs server. Runs following command for you.
 $ docker-compose up -d --no-recreate
 ```
 
+### reset
+Clean up (i.e., make clean) and remove all local storage, please only use for development purpose.
+
 ### restart
 Restarts all services.
 
