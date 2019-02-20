@@ -15,6 +15,9 @@ fabric: {
   # The user to connect to the server
   ssh_user: "ubuntu",
 
+  # options are "solo", "kafka", "etcdraft" (etcdraft support from 2.0.0)
+  # for consensus_type, default is kafka
+  consensus_type: "kafka",
   # options are "goleveldb", "CouchDB", default is goleveldb
   peer_db: "CouchDB",
   # options are "true", "false", "client" default is true

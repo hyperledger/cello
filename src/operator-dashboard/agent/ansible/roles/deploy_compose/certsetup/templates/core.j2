@@ -229,21 +229,34 @@ chaincode:
         name:
 
     builder: {{ fabric.repo.url }}fabric-ccenv:{{ fabric.baseimage_tag }}
-{% if project_version is version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+{% if (project_version is version_compare('1.1.0','>=') and project_version is version_compare('2.0.0','<')) or 'latest' in project_version %}
     pull: false
-{% endif %}
     golang:
         runtime: $(BASE_DOCKER_NS)/fabric-baseos:$(ARCH)-$(BASE_VERSION)
-{% if project_version is version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
         dynamicLink: false
     node:
         runtime: $(BASE_DOCKER_NS)/fabric-baseimage:$(ARCH)-$(BASE_VERSION)
-{% endif %}
     car:
         runtime: $(BASE_DOCKER_NS)/fabric-baseos:$(ARCH)-$(BASE_VERSION)
     java:
         Dockerfile:  |
             from $(DOCKER_NS)/fabric-javaenv:$(ARCH)-$(PROJECT_VERSION)
+{% elif project_version is version_compare('2.0.0','>=') or 'stable' in project_version %}
+    pull: false
+
+    golang:
+        runtime: {{ fabric.repo.url }}fabric-baseos:{{ fabric.baseimage_tag }}
+        dynamicLink: false
+
+    car:
+        runtime: {{ fabric.repo.url }}fabric-baseos:{{ fabric.baseimage_tag }}
+
+    java:
+        runtime: {{ fabric.repo.url }}fabric-javaenv:{{ fabric.baseimage_tag }}
+
+    node:
+        runtime: {{ fabric.repo.url }}fabric-nodeenv:{{ fabric.baseimage_tag }}
+{% endif %}
     startuptimeout: 300s
     executetimeout: 30s
     mode: net

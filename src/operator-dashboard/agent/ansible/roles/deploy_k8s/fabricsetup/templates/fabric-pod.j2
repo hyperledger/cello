@@ -13,6 +13,7 @@
 {% else %}
 {% set creds = False %}
 {% endif %}
+{% if fabric.consensus_type | default('kafka') =='kafka' %}
 {% for zookeeper in zookeeperls %}
 ---
 apiVersion: v1
@@ -130,7 +131,7 @@ spec:
     - { name: "port1", port: 9092 }
     - { name: "port2", port: 9093 }
 {% endfor %}
-
+{% endif %}
 {% if allcas is defined and (allcas | length > 0) %}
 {% for ca in allcas %}
 ---
@@ -431,9 +432,15 @@ spec:
         - { name: "ORDERER_GENERAL_TLS_CERTIFICATE", value: "/etc/hyperledger/fabric/artifacts/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}/tls/server.crt" }
         - { name: "ORDERER_GENERAL_TLS_ROOTCAS", value: "[/etc/hyperledger/fabric/artifacts/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}/tls/ca.crt]" }
 {% endif %}
+{% if (project_version is version_compare('2.0.0','>=') or ('stable' in project_version or 'latest' in project_version)) and fabric.consensus_type is defined and fabric.consensus_type == 'etcdraft' %}
+        - { name: "ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY", value: "/etc/hyperledger/fabric/artifacts/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}/tls/server.key" }
+        - { name: "ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE", value: "/etc/hyperledger/fabric/artifacts/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}/tls/server.crt" }
+        - { name: "ORDERER_GENERAL_CLUSTER_ROOTCAS", value: "[/etc/hyperledger/fabric/artifacts/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}/tls/ca.crt]" }
+{% elif fabric.consensus_type | default('kafka') == 'kafka' %}
         - { name: "ORDERER_KAFKA_RETRY_SHORTINTERVAL", value: "1s" }
         - { name: "ORDERER_KAFKA_RETRY_SHORTTOTAL", value: "30s" }
         - { name: "ORDERER_KAFKA_VERBOSE", value: "true" }
+{% endif %}
 {% if mutualtls %}
 {% if project_version is version('1.1.0','>=') or 'stable' in project_version or 'latest' in project_version %}
         - { name: "ORDERER_GENERAL_TLS_CLIENTAUTHREQUIRED", value: "true" }

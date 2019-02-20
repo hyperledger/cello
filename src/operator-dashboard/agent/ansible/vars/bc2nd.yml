@@ -10,6 +10,7 @@ GERRIT_REFSPEC: ""
 fabric: {
 
   ssh_user: "ubuntu",
+  consensus_type: "kafka",
   peer_db: "goleveldb",
   tls: true,
   generate_certs: true,
