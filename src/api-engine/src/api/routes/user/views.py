@@ -13,6 +13,7 @@ from api.routes.user.serializers import UserCreateBody, UserIDSerializer
 from api.auth import CustomAuthenticate, IsAdminAuthenticated
 from api.utils.keycloak_client import KeyCloakClient
 from api.exceptions import ResourceExists
+from api.models import UserModel
 
 LOG = logging.getLogger(__name__)
 
@@ -73,7 +74,15 @@ class UserViewSet(viewsets.ViewSet):
             keycloak_client.update_user(
                 user_id, body={"attributes": user_attr}
             )
-            return Response(status=status.HTTP_201_CREATED)
+
+            user, _ = UserModel.objects.get_or_create(
+                id=user_id, name=name, role=role, govern=govern
+            )
+            response = UserIDSerializer(data={"id": user_id})
+            if response.is_valid(raise_exception=True):
+                return Response(
+                    response.validated_data, status=status.HTTP_201_CREATED
+                )
 
     @swagger_auto_schema(
         responses=with_common_response(
