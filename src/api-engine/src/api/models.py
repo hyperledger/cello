@@ -43,6 +43,12 @@ class UserModel(models.Model):
         on_delete=models.CASCADE,
         help_text="Govern of user",
     )
+    created_at = models.DateTimeField(
+        auto_now_add=True, help_text="Create time of user"
+    )
+
+    class Meta:
+        ordering = ("-created_at",)
 
 
 class Token(models.Model):

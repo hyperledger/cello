@@ -52,7 +52,25 @@ class UserCreateBody(serializers.ModelSerializer):
         }
 
 
-class UserIDSerializer(serializers.ModelSerializer):
+class UserIDSerializer(serializers.Serializer):
+    id = serializers.UUIDField(help_text="ID of user")
+
+
+class UserQuerySerializer(PageQuerySerializer, serializers.ModelSerializer):
     class Meta:
         model = UserModel
-        fields = ("id",)
+        fields = ("name", "page", "per_page")
+
+
+class UserInfoSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(help_text="ID of user")
+
+    class Meta:
+        model = UserModel
+        fields = ("id", "name", "role")
+        extra_kwargs = {"id": {"read_only": False}}
+
+
+class UserListSerializer(serializers.Serializer):
+    total = serializers.IntegerField(help_text="Total number of users")
+    data = UserInfoSerializer(many=True, help_text="Users list")
