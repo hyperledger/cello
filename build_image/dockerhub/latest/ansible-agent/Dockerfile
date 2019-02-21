@@ -7,7 +7,7 @@ FROM alpine/git AS BUILD
 RUN cd /tmp && git init cello && cd cello                          && \
     git remote add origin https://github.com/hyperledger/cello.git && \
     git config core.sparsecheckout true                            && \
-    echo "src/agent/ansible/*" >> .git/info/sparse-checkout        && \
+    echo "src/operator-dashboard/agent/ansible/*" >> .git/info/sparse-checkout        && \
     git pull --depth=1 origin master
 
 FROM ubuntu:xenial
