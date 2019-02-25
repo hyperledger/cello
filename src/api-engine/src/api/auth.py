@@ -94,6 +94,19 @@ class IsAdminAuthenticated(BasePermission):
         )
 
 
+class IsOperatorAuthenticated(BasePermission):
+    """
+    Allows access only to operators.
+    """
+
+    def has_permission(self, request, view):
+        allowed_roles = [
+            UserRole.Administrator.name.lower(),
+            UserRole.Operator.name.lower(),
+        ]
+        return request.user and request.user.role in allowed_roles
+
+
 class IsSuperUserAuthenticated(BasePermission):
     """
     Allows access only to authenticated users.

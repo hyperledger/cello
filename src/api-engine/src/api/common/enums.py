@@ -5,6 +5,18 @@ from enum import Enum, unique, EnumMeta
 import inspect
 
 
+def separate_upper_class(class_name):
+    x = ""
+    i = 0
+    for c in class_name:
+        if c.isupper() and not class_name[i - 1].isupper():
+            x += " %s" % c.lower()
+        else:
+            x += c
+        i += 1
+    return "_".join(x.strip().split(" "))
+
+
 class ExtraEnum(Enum):
     @classmethod
     def get_info(cls, title="", list_str=False):
@@ -29,10 +41,15 @@ class ExtraEnum(Enum):
         return str_info
 
     @classmethod
-    def to_choices(cls, string_as_value=False):
+    def to_choices(cls, string_as_value=False, separate_class_name=False):
         if string_as_value:
             choices = [
                 (name.lower().replace("_", "."), name)
+                for name, member in cls.__members__.items()
+            ]
+        elif separate_class_name:
+            choices = [
+                (separate_upper_class(name), name)
                 for name, member in cls.__members__.items()
             ]
         else:
@@ -42,6 +59,12 @@ class ExtraEnum(Enum):
             ]
 
         return choices
+
+
+@unique
+class HostStatus(ExtraEnum):
+    Inactive = 0
+    Active = 1
 
 
 @unique
@@ -57,6 +80,7 @@ class LogLevel(ExtraEnum):
     Warning = 1
     Debug = 2
     Error = 3
+    Critical = 4
 
 
 @unique
@@ -104,6 +128,13 @@ class NetworkCreateType(ExtraEnum):
 
 
 @unique
+class K8SCredentialType(ExtraEnum):
+    CertKey = 0
+    Config = 1
+    UsernamePassword = 2
+
+
+@unique
 class ConsensusPlugin(ExtraEnum):
     Solo = 0
     Kafka = 1
@@ -140,14 +171,16 @@ class ErrorCode(Enum, metaclass=EnumWithDisplayMeta):
     ResourceInUse = 20003
     ResourceExists = 20004
     ResourceNotFound = 20005
+    PermissionError = 20006
 
     class DisplayStrings:
-        UnknownError = "Unknown Error"
-        ValidationError = "Validation parameter error"
-        ParseError = "Parse error"
-        ResourceInUse = "Resource is inuse"
+        UnknownError = "Unknown Error."
+        ValidationError = "Validation parameter error."
+        ParseError = "Parse error."
+        ResourceInUse = "Resource is inuse."
         ResourceExists = "Resource already exists."
         ResourceNotFound = "Request Resource Not found."
+        PermissionError = "Permission Error."
 
     @classmethod
     def get_info(cls):

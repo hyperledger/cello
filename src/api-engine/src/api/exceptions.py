@@ -20,3 +20,8 @@ class ResourceNotFound(BadException):
 class ResourceInUse(BadException):
     default_detail = ErrorCode.ResourceInUse.display_string
     default_code = ErrorCode.ResourceInUse.value
+
+
+class CustomPermissionError(BadException):
+    default_detail = ErrorCode.PermissionError.display_string
+    default_code = ErrorCode.PermissionError.value

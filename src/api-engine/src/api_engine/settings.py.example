@@ -208,3 +208,8 @@ LOGGING = {
         },
     }
 }
+
+MAX_AGENT_CAPACITY = 100
+
+MEDIA_ROOT = '/var/www/media'
+MEDIA_URL = '$WEBROOT/media/'

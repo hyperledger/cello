@@ -1,9 +1,23 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
+import logging
+
+from django.core.validators import URLValidator, RegexValidator
 from rest_framework import serializers
-from api.common.enums import NetworkStatus, LogLevel, HostType
+
+from api.common.enums import (
+    NetworkStatus,
+    LogLevel,
+    HostType,
+    K8SCredentialType,
+    separate_upper_class,
+)
 from api.common.serializers import PageQuerySerializer, ListResponseSerializer
+from api.models import Agent, KubernetesConfig
+from api.utils.common import to_form_paras
+
+LOG = logging.getLogger(__name__)
 
 NameHelpText = "Name of Agent"
 WorkerApiHelpText = "API address of worker"
@@ -17,38 +31,125 @@ WorkerAPIMaxLen = 128
 CapacityMinValue = 1
 
 
-class AgentQuery(PageQuerySerializer):
-    status = serializers.ChoiceField(
+class AgentQuery(PageQuerySerializer, serializers.ModelSerializer):
+    govern = serializers.CharField(
+        help_text="Govern name to filter, "
+        "only administrator can filter with govern",
+        min_length=1,
+        max_length=64,
         required=False,
-        help_text=NetworkStatus.get_info(),
-        choices=NetworkStatus.to_choices(),
     )
+
+    class Meta:
+        model = Agent
+        fields = ("status", "name", "type", "page", "per_page", "govern")
 
 
 class AgentIDSerializer(serializers.Serializer):
-    id = serializers.CharField(help_text=IDHelpText)
+    id = serializers.UUIDField(help_text=IDHelpText)
 
 
-class AgentCreateBody(serializers.Serializer):
-    name = serializers.CharField(
-        min_length=NameMinLen, max_length=NameMaxLen, help_text=NameHelpText
+class K8SParameterSerializer(serializers.ModelSerializer):
+    parameters = serializers.DictField(
+        help_text="Extra parameters", required=False
     )
-    worker_api = serializers.CharField(
-        min_length=WorkerAPIMinLen,
-        max_length=WorkerAPIMaxLen,
-        help_text=WorkerApiHelpText,
+
+    class Meta:
+        model = KubernetesConfig
+        fields = (
+            "credential_type",
+            "enable_ssl",
+            "ssl_ca",
+            "nfs_server",
+            "parameters",
+            "cert",
+            "key",
+            "username",
+            "password",
+        )
+        extra_kwargs = {
+            "credential_type": {"required": True},
+            "enable_ssl": {"required": True},
+            "nfs_server": {
+                "validators": [
+                    RegexValidator(
+                        regex="^\d{1,3}\.\d{1,3}\.\d{1,3}"
+                        "\.\d{1,3}:(\/+\w{0,}){0,}$",
+                        message="Enter a valid nfs url.",
+                    )
+                ]
+            },
+        }
+
+    def validate(self, attrs):
+        credential_type = attrs.get("credential_type")
+        if credential_type == separate_upper_class(
+            K8SCredentialType.CertKey.name
+        ):
+            cert = attrs.get("cert")
+            key = attrs.get("key")
+            if not cert or not key:
+                raise serializers.ValidationError("Need cert and key content")
+            else:
+                attrs["username"] = ""
+                attrs["password"] = ""
+        elif credential_type == separate_upper_class(
+            K8SCredentialType.UsernamePassword.name
+        ):
+            username = attrs.get("username")
+            password = attrs.get("password")
+            if not username or not password:
+                raise serializers.ValidationError("Need username and password")
+            else:
+                attrs["cert"] = ""
+                attrs["key"] = ""
+        elif credential_type == separate_upper_class(
+            K8SCredentialType.Config.name
+        ):
+            # TODO: Add config type validation
+            pass
+
+        return attrs
+
+
+class AgentCreateBody(serializers.ModelSerializer):
+    k8s_config = K8SParameterSerializer(
+        help_text="Config of agent which is for kubernetes", required=False
     )
-    capacity = serializers.IntegerField(
-        min_value=CapacityMinValue, help_text=CapacityHelpText
-    )
-    log_level = serializers.ChoiceField(
-        choices=LogLevel.to_choices(),
-        help_text=LogLevel.get_info("Log levels:"),
-    )
-    type = serializers.ChoiceField(
-        choices=HostType.to_choices(),
-        help_text=HostType.get_info("Agent types:"),
-    )
+
+    def to_form_paras(self):
+        custom_paras = to_form_paras(self)
+
+        return custom_paras
+
+    class Meta:
+        model = Agent
+        fields = (
+            "name",
+            "worker_api",
+            "capacity",
+            "log_level",
+            "type",
+            "schedulable",
+            "k8s_config",
+        )
+        extra_kwargs = {
+            "worker_api": {
+                "required": True,
+                "validators": [URLValidator(schemes=("http", "https", "tcp"))],
+            },
+            "capacity": {"required": True},
+            "type": {"required": True},
+        }
+
+    def validate(self, attrs):
+        agent_type = attrs.get("type")
+        if agent_type == HostType.Kubernetes.name.lower():
+            k8s_config = attrs.get("k8s_config")
+            if k8s_config is None:
+                raise serializers.ValidationError("Need input k8s config")
+
+        return attrs
 
 
 class AgentPatchBody(serializers.Serializer):
@@ -82,15 +183,64 @@ class AgentUpdateBody(AgentPatchBody):
     )
 
 
-class AgentResponse(AgentIDSerializer, AgentCreateBody):
-    status = serializers.ChoiceField(
-        help_text=NetworkStatus.get_info(), choices=NetworkStatus.to_choices()
+class AgentResponseSerializer(AgentIDSerializer, serializers.ModelSerializer):
+    class Meta:
+        model = Agent
+        fields = (
+            "id",
+            "name",
+            "worker_api",
+            "capacity",
+            "status",
+            "created_at",
+            "log_level",
+            "type",
+            "schedulable",
+        )
+        extra_kwargs = {
+            "id": {"required": True},
+            "name": {"required": True},
+            "worker_api": {"required": True},
+            "status": {"required": True},
+            "capacity": {"required": True},
+            "created_at": {"required": True, "read_only": False},
+            "type": {"required": True},
+            "log_level": {"required": True},
+            "schedulable": {"required": True},
+        }
+
+
+class AgentInfoSerializer(AgentIDSerializer, serializers.ModelSerializer):
+    k8s_config = K8SParameterSerializer(
+        help_text="Config of agent which is for kubernetes", required=False
     )
-    created_at = serializers.DateTimeField(help_text="Create time")
-    schedulable = serializers.BooleanField(
-        help_text="Whether agent can be schedulable"
-    )
+
+    class Meta:
+        model = Agent
+        fields = (
+            "id",
+            "name",
+            "worker_api",
+            "capacity",
+            "status",
+            "created_at",
+            "log_level",
+            "type",
+            "schedulable",
+            "k8s_config",
+        )
+        extra_kwargs = {
+            "id": {"required": True},
+            "name": {"required": True},
+            "worker_api": {"required": True},
+            "status": {"required": True},
+            "capacity": {"required": True},
+            "created_at": {"required": True, "read_only": False},
+            "type": {"required": True},
+            "log_level": {"required": True},
+            "schedulable": {"required": True},
+        }
 
 
 class AgentListResponse(ListResponseSerializer):
-    data = AgentResponse(many=True, help_text="Agents data")
+    data = AgentResponseSerializer(many=True, help_text="Agents data")
