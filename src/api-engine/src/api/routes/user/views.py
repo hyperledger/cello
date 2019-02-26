@@ -9,18 +9,31 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from api.utils.common import with_common_response
-from api.routes.user.serializers import UserCreateBody, UserIDSerializer
+from api.routes.user.serializers import (
+    UserCreateBody,
+    UserIDSerializer,
+    UserAuthSerializer,
+    UserAuthResponseSerializer,
+)
 from api.auth import CustomAuthenticate, IsAdminAuthenticated
 from api.utils.keycloak_client import KeyCloakClient
-from api.exceptions import ResourceExists
+from api.exceptions import ResourceExists, CustomError
 from api.models import UserModel
+from api.auth import keycloak_openid
 
 LOG = logging.getLogger(__name__)
 
 
 class UserViewSet(viewsets.ViewSet):
     authentication_classes = (CustomAuthenticate,)
-    permission_classes = (IsAuthenticated, IsAdminAuthenticated)
+
+    def get_permissions(self):
+        permission_classes = []
+
+        if self.action not in ["auth"]:
+            permission_classes = (IsAuthenticated, IsAdminAuthenticated)
+
+        return [permission() for permission in permission_classes]
 
     @swagger_auto_schema(
         responses=with_common_response(with_common_response())
@@ -95,7 +108,14 @@ class UserViewSet(viewsets.ViewSet):
 
         Delete user
         """
-        pass
+        try:
+            keycloak_client = KeyCloakClient()
+            keycloak_client.delete_user(pk)
+            UserModel.objects.get(id=pk).delete()
+        except Exception as e:
+            raise CustomError(detail=str(e))
+        else:
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         methods=["get", "post", "put", "delete"],
@@ -133,3 +153,29 @@ class UserViewSet(viewsets.ViewSet):
         Update/Reset password for user
         """
         pass
+
+    @swagger_auto_schema(
+        method="post",
+        request_body=UserAuthSerializer,
+        responses=with_common_response(
+            {status.HTTP_200_OK: UserAuthResponseSerializer}
+        ),
+    )
+    @action(methods=["post"], detail=False, url_path="auth")
+    def auth(self, request):
+        """
+        Authenticate user with username & password
+
+        Authenticate user with username & password
+        """
+        serializer = UserAuthSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            username = serializer.validated_data.get("username")
+            password = serializer.validated_data.get("password")
+            token = keycloak_openid.token(username, password)
+
+            response = UserAuthResponseSerializer(data=token)
+            if response.is_valid(raise_exception=True):
+                return Response(
+                    response.validated_data, status=status.HTTP_200_OK
+                )

@@ -25,3 +25,8 @@ class ResourceInUse(BadException):
 class CustomPermissionError(BadException):
     default_detail = ErrorCode.PermissionError.display_string
     default_code = ErrorCode.PermissionError.value
+
+
+class CustomError(BadException):
+    default_detail = ErrorCode.CustomError.display_string
+    default_code = ErrorCode.CustomError.value

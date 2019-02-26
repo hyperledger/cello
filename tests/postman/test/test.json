@@ -1,0 +1,558 @@
+{
+	"info": {
+		"_postman_id": "ec98c130-1347-480e-8908-1f00d906ab06",
+		"name": "Hyperledger Cello Api Engine",
+		"description": "Hyperledger Cello Api Engine",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "List Agents",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "2493c5e9-eaf2-4689-a6ec-59080e571783",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{apiServer}}{{webRoot}}/agents",
+					"host": [
+						"{{apiServer}}{{webRoot}}"
+					],
+					"path": [
+						"agents"
+					]
+				},
+				"description": "List Agents"
+			},
+			"response": []
+		},
+		{
+			"name": "Create Govern",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "a0f5e8df-9ce8-44e6-ad23-2f0899ce594a",
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"var jsonData = pm.response.json();",
+							"pm.environment.set(\"governID\", jsonData.id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"name\": \"{{governName}}\"\n}"
+				},
+				"url": {
+					"raw": "{{apiServer}}{{webRoot}}/governs",
+					"host": [
+						"{{apiServer}}{{webRoot}}"
+					],
+					"path": [
+						"governs"
+					]
+				},
+				"description": "Create Govern"
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieve Govern",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "a0f5e8df-9ce8-44e6-ad23-2f0899ce594a",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Test is right govern\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var governName = pm.environment.get(\"governName\");",
+							"",
+							"    tests[\"Name is right\"] = jsonData.name === governName;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"name\": \"{{governName}}\"\n}"
+				},
+				"url": {
+					"raw": "{{apiServer}}{{webRoot}}/governs/{{governID}}",
+					"host": [
+						"{{apiServer}}{{webRoot}}"
+					],
+					"path": [
+						"governs",
+						"{{governID}}"
+					]
+				},
+				"description": "Retrieve Govern"
+			},
+			"response": []
+		},
+		{
+			"name": "Create Operator with govern",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "a0f5e8df-9ce8-44e6-ad23-2f0899ce594a",
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"var jsonData = pm.response.json();",
+							"pm.environment.set(\"operatorID\", jsonData.id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"name\": \"{{operatorName}}\",\n\t\"govern\": \"{{governID}}\",\n\t\"role\": \"operator\",\n\t\"password\": \"{{operatorPassword}}\"\n}"
+				},
+				"url": {
+					"raw": "{{apiServer}}{{webRoot}}/users",
+					"host": [
+						"{{apiServer}}{{webRoot}}"
+					],
+					"path": [
+						"users"
+					]
+				},
+				"description": "Create Operator with govern"
+			},
+			"response": []
+		},
+		{
+			"name": "Auth Operator",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "62366c1c-74bf-4f81-ae81-f5da3c17eabb",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"var jsonData = pm.response.json();",
+							"pm.environment.set(\"operatorToken\", jsonData.access_token);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"username\": \"{{operatorName}}\",\n\t\"password\": \"{{operatorPassword}}\"\n}"
+				},
+				"url": {
+					"raw": "{{apiServer}}{{webRoot}}/users/auth",
+					"host": [
+						"{{apiServer}}{{webRoot}}"
+					],
+					"path": [
+						"users",
+						"auth"
+					]
+				},
+				"description": "Auth Operator"
+			},
+			"response": []
+		},
+		{
+			"name": "Create Agent with operator",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "5fb7881e-27c4-4420-bebb-9c9a604ef129",
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"var jsonData = pm.response.json();",
+							"pm.environment.set(\"agentID\", jsonData.id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{operatorToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"name\": \"{{k8sAgentName}}\",\n\t\"worker_api\": \"{{k8sAgentWorkerApi}}\",\n\t\"capacity\": {{agentCapacity}},\n\t\"log_level\": \"info\",\n\t\"type\": \"kubernetes\",\n\t\"schedulable\": true,\n\t\"k8s_config\": {\n\t\t\"credential_type\": \"cert_key\",\n\t\t\"enable_ssl\": false,\n\t\t\"nfs_server\": \"{{k8sNfsServer}}\",\n\t\t\"cert\": \"cert\",\n\t\t\"key\": \"key\"\n\t}\n}"
+				},
+				"url": {
+					"raw": "{{apiServer}}{{webRoot}}/agents",
+					"host": [
+						"{{apiServer}}{{webRoot}}"
+					],
+					"path": [
+						"agents"
+					]
+				},
+				"description": "Create Agent with operator"
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieve Agent",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "269f857f-7e26-417d-a4b0-dec87aac3853",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Test is right agent\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var agentName = pm.environment.get(\"k8sAgentName\");",
+							"    var agentCapacity = parseInt(pm.environment.get(\"agentCapacity\"));",
+							"    var k8sAgentWorkerApi = pm.environment.get(\"k8sAgentWorkerApi\");",
+							"",
+							"    tests[\"Name is right\"] = jsonData.name === agentName;",
+							"    tests[\"Capacity is right\"] = jsonData.capacity === agentCapacity;",
+							"    tests[\"Worker api is right\"] = jsonData.worker_api === k8sAgentWorkerApi;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{operatorToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{apiServer}}{{webRoot}}/agents/{{agentID}}",
+					"host": [
+						"{{apiServer}}{{webRoot}}"
+					],
+					"path": [
+						"agents",
+						"{{agentID}}"
+					]
+				},
+				"description": "Retrieve Agent"
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Agent",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "269f857f-7e26-417d-a4b0-dec87aac3853",
+						"exec": [
+							"pm.test(\"Status code is 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{operatorToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{apiServer}}{{webRoot}}/agents/{{agentID}}",
+					"host": [
+						"{{apiServer}}{{webRoot}}"
+					],
+					"path": [
+						"agents",
+						"{{agentID}}"
+					]
+				},
+				"description": "Delete Agent"
+			},
+			"response": []
+		},
+		{
+			"name": "Delete User",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "a0f5e8df-9ce8-44e6-ad23-2f0899ce594a",
+						"exec": [
+							"pm.test(\"Status code is 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{apiServer}}{{webRoot}}/users/{{operatorID}}",
+					"host": [
+						"{{apiServer}}{{webRoot}}"
+					],
+					"path": [
+						"users",
+						"{{operatorID}}"
+					]
+				},
+				"description": "Delete User"
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Govern",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "a0f5e8df-9ce8-44e6-ad23-2f0899ce594a",
+						"exec": [
+							"pm.test(\"Status code is 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{apiServer}}{{webRoot}}/governs/{{governID}}",
+					"host": [
+						"{{apiServer}}{{webRoot}}"
+					],
+					"path": [
+						"governs",
+						"{{governID}}"
+					]
+				},
+				"description": "Delete Govern"
+			},
+			"response": []
+		}
+	]
+}

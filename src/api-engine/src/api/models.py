@@ -46,7 +46,10 @@ class UserModel(models.Model):
         default="", help_text="Name of user", max_length=128
     )
     role = models.CharField(
-        default="", help_text="Role of User", max_length=64
+        choices=UserRole.to_choices(True),
+        default=UserRole.User.name.lower(),
+        help_text="Role of User",
+        max_length=64,
     )
     govern = models.ForeignKey(
         "Govern",

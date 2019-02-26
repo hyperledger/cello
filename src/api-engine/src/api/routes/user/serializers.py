@@ -74,3 +74,19 @@ class UserInfoSerializer(serializers.ModelSerializer):
 class UserListSerializer(serializers.Serializer):
     total = serializers.IntegerField(help_text="Total number of users")
     data = UserInfoSerializer(many=True, help_text="Users list")
+
+
+class UserAuthSerializer(serializers.Serializer):
+    username = serializers.CharField(
+        help_text="Username for login", max_length=64
+    )
+    password = serializers.CharField(
+        help_text="Password for login", max_length=64
+    )
+
+
+class UserAuthResponseSerializer(serializers.Serializer):
+    access_token = serializers.CharField(help_text="Access token")
+    expires_in = serializers.IntegerField(help_text="Expires time")
+    scope = serializers.CharField(help_text="Scopes for token")
+    token_type = serializers.CharField(help_text="Type of token")

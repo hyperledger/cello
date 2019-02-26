@@ -172,6 +172,7 @@ class ErrorCode(Enum, metaclass=EnumWithDisplayMeta):
     ResourceExists = 20004
     ResourceNotFound = 20005
     PermissionError = 20006
+    CustomError = 20007
 
     class DisplayStrings:
         UnknownError = "Unknown Error."
@@ -181,6 +182,7 @@ class ErrorCode(Enum, metaclass=EnumWithDisplayMeta):
         ResourceExists = "Resource already exists."
         ResourceNotFound = "Request Resource Not found."
         PermissionError = "Permission Error."
+        CustomError = "Custom Error."
 
     @classmethod
     def get_info(cls):

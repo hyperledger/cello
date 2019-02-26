@@ -188,6 +188,7 @@ class KeyCloakClient(object):
             "enabled": True,
             "redirectUris": [url],
             "serviceAccountsEnabled": True,
+            "directAccessGrantsEnabled": True,
             "defaultClientScopes": default_client_scopes,
         }
         ret = requests.post(

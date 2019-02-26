@@ -60,7 +60,7 @@ SERVER_PUBLIC_IP ?= 127.0.0.1
 LOCAL_STORAGE_PATH=/opt/cello
 
 # Docker images needed to run cello services
-DOCKER_IMAGES = baseimage engine operator-dashboard ansible-agent watchdog user-dashboard parse-server api-engine nginx
+DOCKER_IMAGES = ansible-agent api-engine nginx
 DUMMY = .$(IMG_TAG)
 
 ifeq ($(DOCKER_BASE), )
@@ -182,9 +182,11 @@ check: ##@Code Check code format
 	@$(MAKE) license
 	find ./docs -type f -name "*.md" -exec egrep -l " +$$" {} \;
 	cd src/api-engine/src && tox && cd ${ROOT_PATH}
-	@$(MAKE) check-js
-	@$(MAKE) test-case
-	MODE=dev SERVER_PUBLIC_IP=0.0.0.0 make start && sleep 60 && MODE=dev make stop
+	make docker
+	API_ENGINE_SSO_AUTH_URL=http://keycloak:8080/auth/ NEXT_VERSION=True SERVER_PUBLIC_IP=127.0.0.1 MODE=dev make start
+	sleep 10
+	make test-api
+	NEXT_VERSION=True MODE=dev make stop
 
 test-case: ##@Code Run test case for flask server
 	@$(MAKE) -C src/operator-dashboard/test/ all
@@ -287,8 +289,18 @@ stop-next:
 	fi
 
 start-k8s:
-	@$(MAKE) -C bootup/kubernetes init-yaml
+	$(INITIAL_CMD)
+	if [ "$(INITIAL_KEYCLOAK)" = "true" ]; then \
+		API_ENGINE_DOCKER_SECRET=`sed -n '/export API_ENGINE_DOCKER_SECRET?=/ {s///p;q;}' .makerc/api-engine` \
+		API_ENGINE_K8S_SSO_SECRET=`sed -n '/export API_ENGINE_K8S_SSO_SECRET?=/ {s///p;q;}' .makerc/api-engine` \
+		make -C bootup/kubernetes init-yaml; \
+	else \
+		make -C bootup/kubernetes init-yaml; \
+	fi
 	@$(MAKE) -C bootup/kubernetes start
+
+test-api:
+	@$(MAKE) -C tests/postman/ test-api
 
 stop-k8s:
 	@$(MAKE) -C bootup/kubernetes stop

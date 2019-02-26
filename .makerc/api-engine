@@ -6,6 +6,7 @@ export API_ENGINE_DOCKER_KEY?=api-engine-docker
 export API_ENGINE_DOCKER_SECRET?=
 export API_ENGINE_K8S_SSO_KEY?=api-engine-k8s
 export API_ENGINE_K8S_SSO_SECRET?=
+export API_ENGINE_ADMIN_TOKEN?=administrator
 
 ifeq ($(DEPLOY_METHOD), docker-compose)
     export API_ENGINE_SSO_AUTH_URL?=http://${SERVER_PUBLIC_IP}:${KEYCLOAK_SERVER_PORT}/auth/

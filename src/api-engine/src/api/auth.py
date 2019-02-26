@@ -13,7 +13,7 @@ from api.common.enums import UserRole
 
 LOG = logging.getLogger(__name__)
 TOKEN_INFO_URL = getattr(settings, "TOKEN_INFO_URL", "")
-SUPER_USER_TOKEN = getattr(settings, "ADMIN_TOKEN", "")
+SUPER_USER_TOKEN = os.environ.get("ADMIN_TOKEN", "")
 ADMIN_NAME = getattr(settings, "ADMIN_NAME", "Administrator")
 
 SSO_ID = os.environ.get("SSO_ID", "api-service")
@@ -36,10 +36,12 @@ class CustomAuthenticate(authentication.BaseAuthentication):
         if not authorization or not authorization.startswith("Bearer"):
             return None
         token = authorization.split(" ")[-1]
-        role = UserRole.User.name.lower()
         if token == SUPER_USER_TOKEN:
             username = ADMIN_NAME
-            user_model, _ = UserModel.objects.get_or_create(name=username)
+            user_model, _ = UserModel.objects.get_or_create(
+                name=username, role=UserRole.Administrator.name.lower()
+            )
+            role = UserRole.Administrator.name.lower()
         else:
             try:
                 token_model = Token.objects.get(
