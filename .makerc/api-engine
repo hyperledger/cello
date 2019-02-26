@@ -1,6 +1,14 @@
 export API_ENGINE_WEBROOT?=/engine
 export POSTGRES_USER?=admin
 export POSTGRES_PASSWORD?=password
-export API_ENGINE_SSO_KEY?=api-engine
-export API_ENGINE_SSO_SECRET?=
-export API_ENGINE_SSO_AUTH_URL?=http://${SERVER_PUBLIC_IP}/auth/
+export API_ENGINE_SERVICE_PORT?=8085
+export API_ENGINE_DOCKER_KEY?=api-engine-docker
+export API_ENGINE_DOCKER_SECRET?=
+export API_ENGINE_K8S_SSO_KEY?=api-engine-k8s
+export API_ENGINE_K8S_SSO_SECRET?=
+
+ifeq ($(DEPLOY_METHOD), docker-compose)
+    export API_ENGINE_SSO_AUTH_URL?=http://${SERVER_PUBLIC_IP}:${KEYCLOAK_SERVER_PORT}/auth/
+else
+    export API_ENGINE_SSO_AUTH_URL?=http://${SERVER_PUBLIC_IP}/auth/
+endif

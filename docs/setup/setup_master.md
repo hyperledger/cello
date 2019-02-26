@@ -64,6 +64,8 @@ Environment variables which you can use in the command:
 * `SMTP_AUTH_USERNAME`(optional):: Username for authenticate of smtp server
 * `SMTP_AUTH_PASSWORD`(optional):: Password for authenticate of smtp server
 * `FROM_EMAIL`(optional):: Email address display to user
+* `NEXT_VERSION`(optional):: Whether use next version deployment files, True/False.
+* `DEPLOY_METHOD`(optional):: Deployment method, values docker-compose/k8s, default is docker-compose, only support NEXT_VERSION=True.
 
 
 To stop or restart the whole services, please run

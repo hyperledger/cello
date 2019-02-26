@@ -1,19 +1,18 @@
 import os
 import subprocess
+import sys
 
-from common import KeyCloakClient
+sys.path.append(os.path.join(os.path.dirname(__file__)))
+
+from keycloak_client import KeyCloakClient
 
 KEYCLOAK_REALM = os.environ.get("KEYCLOAK_REALM")
 SERVER_PUBLIC_IP = os.environ.get("SERVER_PUBLIC_IP")
-OPERATOR_DASHBOARD_SSO_KEY = os.environ.get("OPERATOR_DASHBOARD_SSO_KEY")
-USER_DASHBOARD_SSO_KEY = os.environ.get("USER_DASHBOARD_SSO_KEY")
 API_ENGINE_DOCKER_KEY = os.environ.get("API_ENGINE_DOCKER_KEY")
 API_ENGINE_K8S_SSO_KEY = os.environ.get("API_ENGINE_K8S_SSO_KEY")
 API_ENGINE_WEBROOT = os.environ.get("API_ENGINE_WEBROOT")
-OPERATOR_DEFAULT_ADMIN_NAME = os.environ.get("OPERATOR_DEFAULT_ADMIN_NAME")
-OPERATOR_DEFAULT_ADMIN_PASSWORD = os.environ.get(
-    "OPERATOR_DEFAULT_ADMIN_PASSWORD"
-)
+DEFAULT_ADMIN_NAME = os.environ.get("DEFAULT_ADMIN_NAME")
+DEFAULT_ADMIN_PASSWORD = os.environ.get("DEFAULT_ADMIN_PASSWORD")
 
 keycloak_client = KeyCloakClient()
 
@@ -87,14 +86,6 @@ keycloak_client.create_new_client_scopes(body=client_scope_body)
 # Create new clients
 clients = [
     {
-        "name": OPERATOR_DASHBOARD_SSO_KEY,
-        "redirectUrl": "http://%s:8080/*" % SERVER_PUBLIC_IP,
-    },
-    {
-        "name": USER_DASHBOARD_SSO_KEY,
-        "redirectUrl": "http://%s:8081/*" % SERVER_PUBLIC_IP,
-    },
-    {
         "name": API_ENGINE_K8S_SSO_KEY,
         "redirectUrl": "http://%s%s/*"
         % (SERVER_PUBLIC_IP, API_ENGINE_WEBROOT),
@@ -115,23 +106,9 @@ for client in clients:
     )
     secrets.append(secret)
 
-operator_dashboard_secret = secrets[0]
-user_dashboard_secret = secrets[1]
-api_engine_k8s_secret = secrets[2]
-api_engine_docker_secret = secrets[3]
+api_engine_k8s_secret = secrets[0]
+api_engine_docker_secret = secrets[1]
 
-command = (
-    'sed -i "s/OPERATOR_DASHBOARD_SSO_SECRET?='
-    '.*/OPERATOR_DASHBOARD_SSO_SECRET?=%s/g" '
-    "/makerc/operator-dashboard" % operator_dashboard_secret
-)
-subprocess.call([command], shell=True)
-command = (
-    'sed -i "s/USER_DASHBOARD_SSO_SECRET?='
-    '.*/USER_DASHBOARD_SSO_SECRET?=%s/g" '
-    "/makerc/user-dashboard" % user_dashboard_secret
-)
-subprocess.call([command], shell=True)
 command = (
     'sed -i "s/API_ENGINE_K8S_SSO_SECRET?='
     '.*/API_ENGINE_K8S_SSO_SECRET?=%s/g" '
@@ -146,15 +123,15 @@ command = (
 subprocess.call([command], shell=True)
 
 create_user_body = {
-    "username": OPERATOR_DEFAULT_ADMIN_NAME,
+    "username": DEFAULT_ADMIN_NAME,
     "requiredActions": [],
     "enabled": True,
 }
 
 keycloak_client.create_user(create_user_body)
 
-user_id = keycloak_client.get_user_id(username=OPERATOR_DEFAULT_ADMIN_NAME)
-keycloak_client.reset_user_password(user_id, OPERATOR_DEFAULT_ADMIN_PASSWORD)
+user_id = keycloak_client.get_user_id(username=DEFAULT_ADMIN_NAME)
+keycloak_client.reset_user_password(user_id, DEFAULT_ADMIN_PASSWORD)
 
 keycloak_client.update_user(
     user_id, body={"attributes": {"role": "administrator"}}

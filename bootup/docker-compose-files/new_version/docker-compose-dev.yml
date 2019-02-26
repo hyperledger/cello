@@ -1,0 +1,97 @@
+# This compose file will deploy the services, and bootup a mongo server.
+
+# Copyright IBM Corp., All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+# Local `/opt/cello/mongo` will be used for the db storage.
+
+#  cello-nginx: proxy to access operator dashboard service, listen on 8080
+#  cello-operator-dashboard: dashboard service for operators
+#  cello-user-dashboard: user service of cello, listen on 8081
+#  engine: engine service of cello to provide RESTful APIs, listen on 80
+#  cello-mongo: mongo db
+
+version: '3.2'
+services:
+  nginx:
+    image: hyperledger/cello-nginx
+    hostname: cello-nginx
+    container_name: cello-nginx
+    restart: always
+    links:
+      - api-engine
+    ports:
+      - "${API_ENGINE_SERVICE_PORT}:80"
+    environment:
+      - UWSGI_SERVER_HOST=api-engine
+      - URL_PREFIX=${API_ENGINE_WEBROOT}
+
+  postgres-server:
+    image: postgres:11.1
+    hostname: cello-postgres-server
+    container_name: cello-postgres-server
+    restart: always
+    environment:
+      - POSTGRES_DB=api-engine
+      - POSTGRES_USER=$POSTGRES_USER
+      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+    volumes:
+      - /opt/cello/postgres:/var/lib/postgresql/data
+
+  api-engine:
+    image: hyperledger/cello-api-engine
+    hostname: cello-api-engine
+    container_name: cello-api-engine
+    restart: always
+    links:
+      - postgres-server
+    environment:
+      - WEBROOT=${API_ENGINE_WEBROOT}
+      - DEBUG=True
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_NAME=api-engine
+      - DB_HOST=postgres-server
+      - DB_PORT=5432
+      - SSO_ID=${API_ENGINE_SSO_KEY}
+      - SSO_SECRET=${API_ENGINE_SSO_SECRET}
+      - SSO_AUTH_URL=${API_ENGINE_SSO_AUTH_URL}
+      - SSO_REALM=${KEYCLOAK_REALM}
+      - KEYCLOAK_REALM=$KEYCLOAK_REALM
+      - KEYCLOAK_SERVER=$SERVICE_KEYCLOAK_NAME
+      - KEYCLOAK_ADMIN_NAME=$KEYCLOAK_ADMIN_NAME
+      - KEYCLOAK_ADMIN_PASSWORD=$KEYCLOAK_ADMIN_PASSWORD
+    volumes:
+      - $ROOT_PATH/src/api-engine/src:/var/www/server
+
+  mysql:
+    image: mariadb:10.3.10
+    container_name: cello-keycloak-mysql
+    environment:
+    - MYSQL_DATABASE=keycloak
+    - MYSQL_USER=$KEYCLOAK_DB_USERNAME
+    - MYSQL_PASSWORD=$KEYCLOAK_DB_PASSWORD
+    - MYSQL_ROOT_PASSWORD=$KEYCLOAK_MYSQL_ROOT_PASSWORD
+    volumes:
+    - /opt/cello/keycloak-mysql:/var/lib/mysql
+
+  keycloak:
+    image: jboss/keycloak:4.5.0.Final
+    container_name: cello-keycloak-server
+    environment:
+      - KEYCLOAK_USER=$KEYCLOAK_ADMIN_NAME
+      - KEYCLOAK_PASSWORD=$KEYCLOAK_ADMIN_PASSWORD
+      - DB_ADDR=mysql
+      - DB_USER=$KEYCLOAK_DB_USERNAME
+      - DB_PASSWORD=$KEYCLOAK_DB_PASSWORD
+      - KEYCLOAK_HTTPS_PORT=$KEYCLOAK_SERVER_HTTPS_PORT
+      - DB_VENDOR=mysql
+    volumes:
+      - $ROOT_PATH/thirdparty/keycloak/resources/img/keycloak-bg.png:/opt/jboss/keycloak/themes/keycloak/login/resources/img/keycloak-bg.png
+      - $ROOT_PATH/thirdparty/keycloak/resources/img/keycloak-logo-text.png:/opt/jboss/keycloak/themes/keycloak/login/resources/img/keycloak-logo-text.png
+    links:
+      - mysql
+    ports:
+      - $KEYCLOAK_SERVER_PORT:8080
+      - $KEYCLOAK_SERVER_HTTPS_PORT:8443

@@ -71,6 +71,10 @@ endif
 SLASH:=/
 REPLACE_SLASH:=\/
 
+# deploy method docker-compose/k8s
+export DEPLOY_METHOD?=docker-compose
+export NEXT_VERSION?=False
+
 -include .makerc/service
 -include .makerc/email
 -include .makerc/operator-dashboard
@@ -96,7 +100,11 @@ ifneq ($(wildcard /opt/cello/keycloak-mysql),)
 	INITIAL_CMD =
 	INITIAL_KEYCLOAK=false
 else
-	INITIAL_CMD = make initial-keycloak
+	ifeq ($(NEXT_VERSION),False)
+		INITIAL_CMD = make initial-keycloak
+	else
+		INITIAL_CMD = make initial-keycloak-next
+	endif
 	INITIAL_KEYCLOAK=true
 endif
 
@@ -106,11 +114,11 @@ WORKER_TYPE ?= docker
 # Specify the running mode, prod or dev
 MODE ?= prod
 ifeq ($(MODE),prod)
-	COMPOSE_FILE=bootup/docker-compose-files/docker-compose.yml
+	COMPOSE_FILE=docker-compose.yml
 	export DEPLOY_TEMPLATE_NAME=deploy.tmpl
 	export DEBUG?=False
 else
-	COMPOSE_FILE=bootup/docker-compose-files/docker-compose-dev.yml
+	COMPOSE_FILE=docker-compose-dev.yml
 	export DEPLOY_TEMPLATE_NAME=deploy-dev.tmpl
 	export DEBUG?=True
 endif
@@ -173,7 +181,7 @@ check-js: ##@Code Check check js code format
 check: ##@Code Check code format
 	@$(MAKE) license
 	find ./docs -type f -name "*.md" -exec egrep -l " +$$" {} \;
-	cd src/operator-dashboard && tox && cd ${ROOT_PATH}
+	cd src/api-engine/src && tox && cd ${ROOT_PATH}
 	@$(MAKE) check-js
 	@$(MAKE) test-case
 	MODE=dev SERVER_PUBLIC_IP=0.0.0.0 make start && sleep 60 && MODE=dev make stop
@@ -198,10 +206,10 @@ doc: ##@Create local online documentation and start serve
 
 # Use like "make log service=dashboard"
 log: ##@Log tail special service log, Use like "make log service=dashboard"
-	docker-compose -f ${COMPOSE_FILE} logs --tail=200 -f ${service}
+	docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} logs --tail=200 -f ${service}
 
 logs: ##@Log tail for all service log
-	docker-compose -f ${COMPOSE_FILE} logs -f --tail=200
+	docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} logs -f --tail=200
 
 image-clean: clean ##@Clean all existing images to rebuild
 	echo "Clean all cello related images, may need to remove all containers before"
@@ -213,6 +221,9 @@ initial-env: ##@Configuration Initial Configuration for dashboard
 initial-keycloak:
 	docker-compose -f bootup/docker-compose-files/docker-compose-initial.yml up --abort-on-container-exit
 
+initial-keycloak-next:
+	docker-compose -f bootup/docker-compose-files/new_version/docker-compose-initial.yml up --abort-on-container-exit
+
 check-environment:
 	if [ "$(SERVER_PUBLIC_IP)" = "" ]; then \
 		echo "Environment variable SERVER_PUBLIC_IP not set"; \
@@ -220,10 +231,8 @@ check-environment:
 		exit 1; \
 	fi
 
-start: ##@Service Start service
-	@$(MAKE) check-environment
-	make initial-env
-	echo "Start all services with ${COMPOSE_FILE}... docker images must exist local now, otherwise, run 'make setup-master first' !"
+start-old:
+	echo "Start all services with bootup/docker-compose-files/${COMPOSE_FILE}... docker images must exist local now, otherwise, run 'make setup-master first' !"
 	if [ "$(MODE)" = "dev" ]; then \
 		make build-admin-js; \
 	fi
@@ -231,12 +240,51 @@ start: ##@Service Start service
 	if [ "$(INITIAL_KEYCLOAK)" = "true" ]; then \
 		OPERATOR_DASHBOARD_SSO_SECRET=`sed -n '/export OPERATOR_DASHBOARD_SSO_SECRET?=/ {s///p;q;}' .makerc/operator-dashboard` \
 		USER_DASHBOARD_SSO_SECRET=`sed -n '/export USER_DASHBOARD_SSO_SECRET?=/ {s///p;q;}' .makerc/user-dashboard` \
-		docker-compose -f ${COMPOSE_FILE} up -d --force-recreate; \
+		docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} up -d --force-recreate; \
 	else \
-		docker-compose -f ${COMPOSE_FILE} up -d --force-recreate; \
+		docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} up -d --force-recreate; \
 	fi
 	echo "Now you can visit operator-dashboard at localhost:8080, or user-dashboard at localhost:8081"
 	@$(MAKE) start-nfs
+
+start: ##@Service Start service
+	@$(MAKE) check-environment
+	make initial-env
+	if [ "$(NEXT_VERSION)" = "False" ]; then \
+		make start-old; \
+	else \
+		make start-next; \
+	fi
+
+start-next-docker:
+	$(INITIAL_CMD)
+	if [ "$(INITIAL_KEYCLOAK)" = "true" ]; then \
+		API_ENGINE_DOCKER_SECRET=`sed -n '/export API_ENGINE_DOCKER_SECRET?=/ {s///p;q;}' .makerc/api-engine` \
+		API_ENGINE_K8S_SSO_SECRET=`sed -n '/export API_ENGINE_K8S_SSO_SECRET?=/ {s///p;q;}' .makerc/api-engine` \
+		docker-compose -f bootup/docker-compose-files/new_version/${COMPOSE_FILE} up -d --force-recreate; \
+	else \
+		docker-compose -f bootup/docker-compose-files/new_version/${COMPOSE_FILE} up -d --force-recreate; \
+	fi
+
+start-next:
+	if [ "$(DEPLOY_METHOD)" = "docker-compose" ]; then \
+		make start-next-docker; \
+	else \
+		make start-k8s; \
+	fi
+
+stop-next-docker:
+	echo "Stop all services with bootup/docker-compose-files/${COMPOSE_FILE}..."
+	docker-compose -f bootup/docker-compose-files/new_version/${COMPOSE_FILE} stop
+	echo "Remove all services with ${COMPOSE_FILE}..."
+	docker-compose -f bootup/docker-compose-files/new_version/${COMPOSE_FILE} rm -f -a
+
+stop-next:
+	if [ "$(DEPLOY_METHOD)" = "docker-compose" ]; then \
+		make stop-next-docker; \
+	else \
+		make stop-k8s; \
+	fi
 
 start-k8s:
 	@$(MAKE) -C bootup/kubernetes init-yaml
@@ -245,11 +293,18 @@ start-k8s:
 stop-k8s:
 	@$(MAKE) -C bootup/kubernetes stop
 
-stop: ##@Service Stop service
-	echo "Stop all services with ${COMPOSE_FILE}..."
-	docker-compose -f ${COMPOSE_FILE} stop
+stop-old:
+	echo "Stop all services with bootup/docker-compose-files/${COMPOSE_FILE}..."
+	docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} stop
 	echo "Remove all services with ${COMPOSE_FILE}..."
-	docker-compose -f ${COMPOSE_FILE} rm -f -a
+	docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} rm -f -a
+
+stop: ##@Service Stop service
+	if [ "$(NEXT_VERSION)" = "False" ]; then \
+		make stop-old; \
+	else \
+		make stop-next; \
+	fi
 
 reset: clean ##@Environment clean up and remove local storage (only use for development)
 	echo "Clean up and remove all local storage..."
