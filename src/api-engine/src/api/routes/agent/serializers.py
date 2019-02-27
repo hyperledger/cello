@@ -32,14 +32,6 @@ CapacityMinValue = 1
 
 
 class AgentQuery(PageQuerySerializer, serializers.ModelSerializer):
-    govern = serializers.CharField(
-        help_text="Govern name to filter, "
-        "only administrator can filter with govern",
-        min_length=1,
-        max_length=64,
-        required=False,
-    )
-
     class Meta:
         model = Agent
         fields = ("status", "name", "type", "page", "per_page", "govern")

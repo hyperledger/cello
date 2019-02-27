@@ -14,8 +14,14 @@ from api.common.enums import (
     HostType,
     K8SCredentialType,
     separate_upper_class,
+    NodeStatus,
 )
-from api.common.enums import UserRole
+from api.common.enums import (
+    UserRole,
+    NetworkType,
+    FabricNodeType,
+    FabricVersions,
+)
 from api.utils.common import make_uuid, random_name
 
 SUPER_USER_TOKEN = getattr(settings, "ADMIN_TOKEN", "")
@@ -114,9 +120,9 @@ class Agent(models.Model):
     worker_api = models.CharField(
         help_text="Worker api of agent", max_length=128, default=""
     )
-    user = models.ForeignKey(
-        UserModel,
-        help_text="User of agent",
+    govern = models.ForeignKey(
+        Govern,
+        help_text="Govern of agent",
         null=True,
         on_delete=models.CASCADE,
     )
@@ -203,3 +209,83 @@ class KubernetesConfig(models.Model):
         on_delete=models.CASCADE,
         null=True,
     )
+
+
+class Network(models.Model):
+    govern = models.ForeignKey(
+        Govern, help_text="Govern of node", null=True, on_delete=models.CASCADE
+    )
+    version = models.CharField(
+        help_text="""
+    Version of network.
+    Fabric supported versions: %s
+    """
+        % (FabricVersions.values()),
+        max_length=64,
+        default="",
+    )
+    created_at = models.DateTimeField(
+        help_text="Create time of network", auto_now_add=True
+    )
+
+    class Meta:
+        ordering = ("-created_at",)
+
+
+class Node(models.Model):
+    network_type = models.CharField(
+        help_text="Network type of node",
+        choices=NetworkType.to_choices(True),
+        default=NetworkType.Fabric.name.lower(),
+        max_length=64,
+    )
+    network_version = models.CharField(
+        help_text="""
+    Version of network for node.
+    Fabric supported versions: %s
+    """
+        % (FabricVersions.values()),
+        max_length=64,
+        default="",
+    )
+    type = models.CharField(
+        help_text="""
+    Node type defined for network.
+    Fabric available types: %s
+    """
+        % (FabricNodeType.names()),
+        max_length=64,
+    )
+    urls = JSONField(
+        help_text="URL configurations for node",
+        null=True,
+        blank=True,
+        default=dict,
+    )
+    user = models.ForeignKey(
+        UserModel,
+        help_text="User of node",
+        null=True,
+        on_delete=models.CASCADE,
+    )
+    agent = models.ForeignKey(
+        Agent, help_text="Agent of node", null=True, on_delete=models.CASCADE
+    )
+    network = models.ForeignKey(
+        Network,
+        help_text="Network which node joined.",
+        on_delete=models.CASCADE,
+        null=True,
+    )
+    created_at = models.DateTimeField(
+        help_text="Create time of network", auto_now_add=True
+    )
+    status = models.CharField(
+        help_text="Status of node",
+        choices=NodeStatus.to_choices(True),
+        max_length=64,
+        default=NodeStatus.Deploying.name.lower(),
+    )
+
+    class Meta:
+        ordering = ("-created_at",)

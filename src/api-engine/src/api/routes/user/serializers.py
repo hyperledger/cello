@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 from rest_framework import serializers
-from api.common.enums import Operation, NetworkType, NodeType, UserRole
+from api.common.enums import Operation, NetworkType, FabricNodeType, UserRole
 from api.common.serializers import PageQuerySerializer
 from api.models import UserModel
 
@@ -17,8 +17,8 @@ class NodeCreateBody(serializers.Serializer):
         choices=NetworkType.to_choices(True),
     )
     type = serializers.ChoiceField(
-        help_text=NodeType.get_info("Node Types:", list_str=True),
-        choices=NodeType.to_choices(True),
+        help_text=FabricNodeType.get_info("Node Types:", list_str=True),
+        choices=FabricNodeType.to_choices(True),
     )
 
 

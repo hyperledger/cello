@@ -30,3 +30,8 @@ class CustomPermissionError(BadException):
 class CustomError(BadException):
     default_detail = ErrorCode.CustomError.display_string
     default_code = ErrorCode.CustomError.value
+
+
+class NoResource(BadException):
+    default_detail = ErrorCode.NoResource.display_string
+    default_code = ErrorCode.NoResource.value

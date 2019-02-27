@@ -6,7 +6,7 @@ from api.common.enums import (
     NetworkStatus,
     NetworkOperation,
     ChannelType,
-    NodeType,
+    FabricNodeType,
     NetworkCreateType,
 )
 
@@ -48,8 +48,8 @@ class NetworkResponse(NetworkIDSerializer):
 class NetworkMemberSerializer(serializers.Serializer):
     id = serializers.CharField(help_text="Network member id")
     type = serializers.ChoiceField(
-        help_text=NodeType.get_info("Node Types:", list_str=True),
-        choices=NodeType.to_choices(True),
+        help_text=FabricNodeType.get_info("Node Types:", list_str=True),
+        choices=FabricNodeType.to_choices(True),
     )
     url = serializers.CharField(help_text="URL of member")
 

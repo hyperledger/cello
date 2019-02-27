@@ -60,6 +60,14 @@ class ExtraEnum(Enum):
 
         return choices
 
+    @classmethod
+    def values(cls):
+        return list(map(lambda c: c.value, cls.__members__.values()))
+
+    @classmethod
+    def names(cls):
+        return [name.lower() for name, _ in cls.__members__.items()]
+
 
 @unique
 class HostStatus(ExtraEnum):
@@ -110,15 +118,29 @@ class ChannelType(ExtraEnum):
 
 @unique
 class NetworkType(ExtraEnum):
-    Fabric1_3 = 0
-    Fabric1_4 = 1
+    Fabric = 0
 
 
 @unique
-class NodeType(ExtraEnum):
+class FabricVersions(ExtraEnum):
+    V1_4 = "1.4"
+    V1_5 = "1.5"
+
+
+@unique
+class FabricNodeType(ExtraEnum):
     Ca = 0
     Orderer = 1
     Peer = 2
+
+
+@unique
+class NodeStatus(ExtraEnum):
+    Deploying = 0
+    Running = 1
+    Stopped = 2
+    Deleting = 3
+    Error = 4
 
 
 @unique
@@ -173,6 +195,7 @@ class ErrorCode(Enum, metaclass=EnumWithDisplayMeta):
     ResourceNotFound = 20005
     PermissionError = 20006
     CustomError = 20007
+    NoResource = 20008
 
     class DisplayStrings:
         UnknownError = "Unknown Error."
@@ -183,6 +206,7 @@ class ErrorCode(Enum, metaclass=EnumWithDisplayMeta):
         ResourceNotFound = "Request Resource Not found."
         PermissionError = "Permission Error."
         CustomError = "Custom Error."
+        NoResource = "Have no available resource."
 
     @classmethod
     def get_info(cls):

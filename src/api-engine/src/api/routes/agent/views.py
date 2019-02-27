@@ -13,7 +13,7 @@ from rest_framework.response import Response
 
 from api.auth import CustomAuthenticate, IsOperatorAuthenticated
 from api.common.enums import HostType
-from api.exceptions import ResourceNotFound, ResourceExists
+from api.exceptions import ResourceNotFound, ResourceExists, CustomError
 from api.models import Agent, KubernetesConfig
 from api.routes.agent.serializers import (
     AgentQuery,
@@ -58,12 +58,12 @@ class AgentViewSet(viewsets.ViewSet):
             if govern:
                 if not request.user.is_administrator:
                     raise PermissionDenied()
-                query_filters.update({"user__govern__name__icontains": govern})
+                query_filters.update({"govern": govern})
             else:
                 if request.user.is_operator:
                     query_filters.update(
                         {
-                            "user__govern__name": request.user.user_model.govern.name
+                            "govern__name": request.user.user_model.govern.name
                             if request.user.user_model.govern
                             else ""
                         }
@@ -71,7 +71,7 @@ class AgentViewSet(viewsets.ViewSet):
             if name:
                 query_filters.update({"name__icontains": name})
             if agent_status:
-                query_filters.update({"status": status})
+                query_filters.update({"status": agent_status})
             if agent_type:
                 query_filters.update({"type": agent_type})
 
@@ -113,16 +113,19 @@ class AgentViewSet(viewsets.ViewSet):
             parameters = serializer.validated_data.get("parameters")
             k8s_config = serializer.validated_data.get("k8s_config")
 
+            if request.user.user_model.govern is None:
+                raise CustomError(detail="User not joined any govern.")
+
             body = {
                 "worker_api": worker_api,
                 "capacity": capacity,
                 "type": agent_type,
-                "user": request.user.user_model,
+                "govern": request.user.user_model.govern,
             }
             if worker_api:
                 agent_count = Agent.objects.filter(
                     worker_api=worker_api,
-                    user__govern=request.user.user_model.govern,
+                    govern=request.user.user_model.govern,
                 ).count()
                 if agent_count > 0:
                     raise ResourceExists(
@@ -130,7 +133,7 @@ class AgentViewSet(viewsets.ViewSet):
                     )
             if name:
                 agent_count = Agent.objects.filter(
-                    name=name, user__govern=request.user.user_model.govern
+                    name=name, govern=request.user.user_model.govern
                 ).count()
                 if agent_count > 0:
                     raise ResourceExists(
@@ -175,7 +178,7 @@ class AgentViewSet(viewsets.ViewSet):
                 agent = Agent.objects.get(id=pk)
             else:
                 agent = Agent.objects.get(
-                    id=pk, user__govern=request.user.user_model.govern
+                    id=pk, govern=request.user.user_model.govern
                 )
             k8s_config = None
             if agent.type == HostType.Kubernetes.name.lower():
@@ -235,7 +238,7 @@ class AgentViewSet(viewsets.ViewSet):
                 agent = Agent.objects.get(id=pk)
             else:
                 agent = Agent.objects.get(
-                    id=pk, user__govern=request.user.user_model.govern
+                    id=pk, govern=request.user.user_model.govern
                 )
         except ObjectDoesNotExist:
             raise ResourceNotFound
