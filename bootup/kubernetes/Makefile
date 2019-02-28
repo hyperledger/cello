@@ -11,6 +11,10 @@ init-api-engine-yaml:
 	@envsubst < templates/api-engine/${DEPLOY_TEMPLATE_NAME} > api-engine/deploy.yml
 	@envsubst < templates/api-engine/service.tmpl > api-engine/service.yml
 
+init-api-engine-tasks-yaml:
+	mkdir -p ${ROOT_PATH}/bootup/kubernetes/api-engine-tasks
+	@envsubst < templates/api-engine-tasks/deploy.tmpl > api-engine-tasks/deploy.yml
+
 init-rabbitmq-yaml:
 	mkdir -p ${ROOT_PATH}/bootup/kubernetes/rabbitmq
 	@envsubst < templates/rabbitmq/config.tmpl > rabbitmq/config.yml
@@ -21,6 +25,11 @@ init-mongo-yaml:
 	mkdir -p ${ROOT_PATH}/bootup/kubernetes/mongo
 	@envsubst < templates/mongo/deploy.tmpl > mongo/deploy.yml
 	@envsubst < templates/mongo/service.tmpl > mongo/service.yml
+
+init-redis-yaml:
+	mkdir -p ${ROOT_PATH}/bootup/kubernetes/redis
+	@envsubst < templates/redis/deploy.tmpl > redis/deploy.yml
+	@envsubst < templates/redis/service.tmpl > redis/service.yml
 
 init-operator-dashboard-yaml:
 	mkdir -p ${ROOT_PATH}/bootup/kubernetes/operator-dashboard
@@ -68,8 +77,10 @@ init-keycloak-yaml:
 init-yaml:
 	@$(MAKE) init-nginx-yaml
 	@$(MAKE) init-api-engine-yaml
+	@$(MAKE) init-api-engine-tasks-yaml
 #	@$(MAKE) init-rabbitmq-yaml
 #	@$(MAKE) init-mongo-yaml
+	@$(MAKE) init-redis-yaml
 	@$(MAKE) init-mysql-yaml
 	@$(MAKE) init-postgres-yaml
 #	@$(MAKE) init-operator-dashboard-yaml
@@ -83,8 +94,10 @@ start:
 #	@kubectl apply --force -f mongo/ -n ${K8S_DEPLOY_NAMESPACE}
 	@kubectl apply --force -f mysql/ -n ${K8S_DEPLOY_NAMESPACE}
 	@kubectl apply --force -f postgres/ -n ${K8S_DEPLOY_NAMESPACE}
+	@kubectl apply --force -f redis/ -n ${K8S_DEPLOY_NAMESPACE}
 #	@kubectl apply --force -f watchdog/ -n ${K8S_DEPLOY_NAMESPACE}
 #	@kubectl apply --force -f parse-server/ -n ${K8S_DEPLOY_NAMESPACE}
+	@kubectl apply --force -f api-engine-tasks/ -n ${K8S_DEPLOY_NAMESPACE}
 	@kubectl apply --force -f api-engine/ -n ${K8S_DEPLOY_NAMESPACE}
 #	@kubectl apply --force -f operator-dashboard/ -n ${K8S_DEPLOY_NAMESPACE}
 #	@kubectl apply --force -f user-dashboard/ -n ${K8S_DEPLOY_NAMESPACE}
@@ -96,8 +109,10 @@ stop:
 #	@kubectl delete -f mongo/ -n ${K8S_DEPLOY_NAMESPACE}
 	@kubectl delete -f mysql/ -n ${K8S_DEPLOY_NAMESPACE}
 	@kubectl delete -f postgres/ -n ${K8S_DEPLOY_NAMESPACE}
+	@kubectl delete -f redis/ -n ${K8S_DEPLOY_NAMESPACE}
 #	@kubectl delete -f watchdog/ -n ${K8S_DEPLOY_NAMESPACE}
 #	@kubectl delete -f parse-server/ -n ${K8S_DEPLOY_NAMESPACE}
+	@kubectl delete -f api-engine-tasks/ -n ${K8S_DEPLOY_NAMESPACE}
 	@kubectl delete -f api-engine/ -n ${K8S_DEPLOY_NAMESPACE}
 #	@kubectl delete -f operator-dashboard/ -n ${K8S_DEPLOY_NAMESPACE}
 #	@kubectl delete -f user-dashboard/ -n ${K8S_DEPLOY_NAMESPACE}

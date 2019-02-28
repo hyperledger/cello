@@ -88,8 +88,6 @@ class AgentViewSet(viewsets.ViewSet):
                     response.validated_data, status=status.HTTP_200_OK
                 )
 
-        return Response(data=[], status=status.HTTP_200_OK)
-
     @swagger_auto_schema(
         request_body=AgentCreateBody,
         responses=with_common_response(

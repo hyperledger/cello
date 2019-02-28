@@ -39,6 +39,13 @@ services:
     volumes:
       - /opt/cello/postgres:/var/lib/postgresql/data
 
+  redis:
+    image: redis:4.0.13
+    hostname: cello-redis
+    container_name: cello-redis
+    volumes:
+      - /opt/cello/redis:/data
+
   api-engine:
     image: hyperledger/cello-api-engine
     hostname: cello-api-engine
@@ -46,6 +53,7 @@ services:
     restart: always
     links:
       - postgres-server
+      - redis
     environment:
       - WEBROOT=${API_ENGINE_WEBROOT}
       - DEBUG=True
@@ -63,8 +71,39 @@ services:
       - KEYCLOAK_ADMIN_NAME=$KEYCLOAK_ADMIN_NAME
       - KEYCLOAK_ADMIN_PASSWORD=$KEYCLOAK_ADMIN_PASSWORD
       - ADMIN_TOKEN=$API_ENGINE_ADMIN_TOKEN
+      - CELERY_BROKER_URL=redis://redis
     volumes:
       - $ROOT_PATH/src/api-engine/src:/var/www/server
+
+  api-engine-tasks:
+    image: hyperledger/cello-api-engine
+    hostname: cello-api-engine-tasks
+    container_name: cello-api-engine-tasks
+    restart: always
+    links:
+    - postgres-server
+    - redis
+    environment:
+    - WEBROOT=${API_ENGINE_WEBROOT}
+    - DEBUG=True
+    - DB_USER=${POSTGRES_USER}
+    - DB_PASSWORD=${POSTGRES_PASSWORD}
+    - DB_NAME=api-engine
+    - DB_HOST=postgres-server
+    - DB_PORT=5432
+    - SSO_ID=${API_ENGINE_DOCKER_KEY}
+    - SSO_SECRET=${API_ENGINE_DOCKER_SECRET}
+    - SSO_AUTH_URL=${API_ENGINE_SSO_AUTH_URL}
+    - SSO_REALM=${KEYCLOAK_REALM}
+    - KEYCLOAK_REALM=$KEYCLOAK_REALM
+    - KEYCLOAK_SERVER=$SERVICE_KEYCLOAK_NAME
+    - KEYCLOAK_ADMIN_NAME=$KEYCLOAK_ADMIN_NAME
+    - KEYCLOAK_ADMIN_PASSWORD=$KEYCLOAK_ADMIN_PASSWORD
+    - ADMIN_TOKEN=$API_ENGINE_ADMIN_TOKEN
+    - CELERY_BROKER_URL=redis://redis
+    volumes:
+    - $ROOT_PATH/src/api-engine/src:/var/www/server
+    command: bash -c "celery -A api_engine worker -l info"
 
   mysql:
     image: mariadb:10.3.10
