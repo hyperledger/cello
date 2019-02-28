@@ -1,6 +1,6 @@
 FROM python:3.6
 
-RUN apt-get update && apt-get install -y gettext-base && \
+RUN apt-get update && apt-get install -y gettext-base graphviz && \
 	apt-get autoclean && apt-get clean && apt-get autoremove && rm -rf /var/cache/apt/
 COPY src/api-engine/src/requirements.txt /
 RUN	cd / && \

@@ -8,3 +8,5 @@ swagger_spec_validator<=2.4.1
 python-keycloak<=0.14.4
 psycopg2<=2.7.6.1
 holdup>1.5.0,<=1.6.0
+django-extensions<=2.1.6
+pygraphviz<=1.5
