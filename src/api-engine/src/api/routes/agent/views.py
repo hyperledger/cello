@@ -105,6 +105,7 @@ class AgentViewSet(viewsets.ViewSet):
             name = serializer.validated_data.get("name")
             worker_api = serializer.validated_data.get("worker_api")
             capacity = serializer.validated_data.get("capacity")
+            node_capacity = serializer.validated_data.get("node_capacity")
             log_level = serializer.validated_data.get("log_level")
             agent_type = serializer.validated_data.get("type")
             schedulable = serializer.validated_data.get("schedulable")
@@ -117,6 +118,7 @@ class AgentViewSet(viewsets.ViewSet):
             body = {
                 "worker_api": worker_api,
                 "capacity": capacity,
+                "node_capacity": node_capacity,
                 "type": agent_type,
                 "govern": request.user.user_model.govern,
             }

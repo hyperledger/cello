@@ -24,7 +24,12 @@ spec:
         volumeMounts:
         - name: api-engine
           mountPath: /var/www/server
+        - name: media
+          mountPath: /var/www/media
       volumes:
       - name: api-engine
         hostPath:
           path: ${ROOT_PATH}/src/api-engine/src
+      - name: media
+        hostPath:
+          path: /opt/cello/api-engine/media

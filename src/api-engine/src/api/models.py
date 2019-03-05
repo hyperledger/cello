@@ -1,6 +1,9 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
+import os
+import shutil
+from pathlib import Path
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
@@ -26,6 +29,8 @@ from api.utils.common import make_uuid, random_name
 
 SUPER_USER_TOKEN = getattr(settings, "ADMIN_TOKEN", "")
 MAX_CAPACITY = getattr(settings, "MAX_AGENT_CAPACITY", 100)
+MAX_NODE_CAPACITY = getattr(settings, "MAX_NODE_CAPACITY", 600)
+MEDIA_ROOT = getattr(settings, "MEDIA_ROOT")
 
 
 class Govern(models.Model):
@@ -152,6 +157,14 @@ class Agent(models.Model):
         default=1,
         validators=[MinValueValidator(1), MaxValueValidator(MAX_CAPACITY)],
     )
+    node_capacity = models.IntegerField(
+        help_text="Capacity of node",
+        default=6,
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(MAX_NODE_CAPACITY),
+        ],
+    )
     created_at = models.DateTimeField(
         help_text="Create time of agent", auto_now_add=True
     )
@@ -212,6 +225,12 @@ class KubernetesConfig(models.Model):
 
 
 class Network(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        help_text="ID of network",
+        default=make_uuid,
+        editable=True,
+    )
     govern = models.ForeignKey(
         Govern, help_text="Govern of node", null=True, on_delete=models.CASCADE
     )
@@ -232,7 +251,22 @@ class Network(models.Model):
         ordering = ("-created_at",)
 
 
+def get_compose_file_path(instance, file):
+    return os.path.join(
+        "govern/%s/agent/docker/compose_files/%s"
+        % (str(instance.govern.id), str(instance.id)),
+        "docker-compose.yml",
+    )
+
+
 class Node(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        help_text="ID of node",
+        default=make_uuid,
+        editable=True,
+    )
+    name = models.CharField(help_text="Node name", max_length=64, default="")
     network_type = models.CharField(
         help_text="Network type of node",
         choices=NetworkType.to_choices(True),
@@ -268,6 +302,9 @@ class Node(models.Model):
         null=True,
         on_delete=models.CASCADE,
     )
+    govern = models.ForeignKey(
+        Govern, help_text="Govern of node", null=True, on_delete=models.CASCADE
+    )
     agent = models.ForeignKey(
         Agent, help_text="Agent of node", null=True, on_delete=models.CASCADE
     )
@@ -286,6 +323,51 @@ class Node(models.Model):
         max_length=64,
         default=NodeStatus.Deploying.name.lower(),
     )
+    compose_file = models.FileField(
+        help_text="Compose file for node, if agent type is docker.",
+        max_length=256,
+        upload_to=get_compose_file_path,
+        blank=True,
+        null=True,
+    )
 
     class Meta:
         ordering = ("-created_at",)
+
+    def get_compose_file_path(self):
+        return (
+            "%s/govern/%s/agent/docker/compose_files/%s/docker-compose.yml"
+            % (MEDIA_ROOT, str(self.govern.id), str(self.id))
+        )
+
+    def save(
+        self,
+        force_insert=False,
+        force_update=False,
+        using=None,
+        update_fields=None,
+    ):
+        if self.name == "":
+            self.name = random_name(self.type)
+        super(Node, self).save(
+            force_insert, force_update, using, update_fields
+        )
+
+    def delete(self, using=None, keep_parents=False):
+        if self.compose_file:
+            compose_file_path = Path(self.compose_file.path)
+            if os.path.isdir(os.path.dirname(compose_file_path)):
+                shutil.rmtree(os.path.dirname(compose_file_path))
+
+        super(Node, self).delete(using, keep_parents)
+
+
+class Port(models.Model):
+    node = models.ForeignKey(
+        Node, help_text="Node of port", on_delete=models.CASCADE, null=True
+    )
+    external = models.IntegerField(help_text="External port", default=0)
+    internal = models.IntegerField(help_text="Internal port", default=0)
+
+    class Meta:
+        ordering = ("external",)

@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import logging
+import json
 
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -20,6 +21,7 @@ from api.utils.keycloak_client import KeyCloakClient
 from api.exceptions import ResourceExists, CustomError
 from api.models import UserModel
 from api.auth import keycloak_openid
+from keycloak.exceptions import KeycloakAuthenticationError
 
 LOG = logging.getLogger(__name__)
 
@@ -172,7 +174,13 @@ class UserViewSet(viewsets.ViewSet):
         if serializer.is_valid(raise_exception=True):
             username = serializer.validated_data.get("username")
             password = serializer.validated_data.get("password")
-            token = keycloak_openid.token(username, password)
+            try:
+                token = keycloak_openid.token(username, password)
+            except KeycloakAuthenticationError as e:
+                error_msg = json.loads(e.error_message)
+                raise CustomError(
+                    detail=error_msg.get("error_description", "")
+                )
 
             response = UserAuthResponseSerializer(data=token)
             if response.is_valid(raise_exception=True):

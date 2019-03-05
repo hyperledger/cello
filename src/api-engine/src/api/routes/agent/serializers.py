@@ -120,6 +120,7 @@ class AgentCreateBody(serializers.ModelSerializer):
             "name",
             "worker_api",
             "capacity",
+            "node_capacity",
             "log_level",
             "type",
             "schedulable",
@@ -131,15 +132,22 @@ class AgentCreateBody(serializers.ModelSerializer):
                 "validators": [URLValidator(schemes=("http", "https", "tcp"))],
             },
             "capacity": {"required": True},
+            "node_capacity": {"required": True},
             "type": {"required": True},
         }
 
     def validate(self, attrs):
         agent_type = attrs.get("type")
+        capacity = attrs.get("capacity")
+        node_capacity = attrs.get("node_capacity")
         if agent_type == HostType.Kubernetes.name.lower():
             k8s_config = attrs.get("k8s_config")
             if k8s_config is None:
                 raise serializers.ValidationError("Need input k8s config")
+        if node_capacity < capacity:
+            raise serializers.ValidationError(
+                "Node capacity must larger than capacity"
+            )
 
         return attrs
 
@@ -183,6 +191,7 @@ class AgentResponseSerializer(AgentIDSerializer, serializers.ModelSerializer):
             "name",
             "worker_api",
             "capacity",
+            "node_capacity",
             "status",
             "created_at",
             "log_level",
@@ -195,6 +204,7 @@ class AgentResponseSerializer(AgentIDSerializer, serializers.ModelSerializer):
             "worker_api": {"required": True},
             "status": {"required": True},
             "capacity": {"required": True},
+            "node_capacity": {"required": True},
             "created_at": {"required": True, "read_only": False},
             "type": {"required": True},
             "log_level": {"required": True},

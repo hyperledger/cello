@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: ${DEPLOY_API_ENGINE_TASKS_NAME}
 spec:
-  replicas: 2
+  replicas: 1
   template:
     metadata:
       labels:
@@ -14,7 +14,7 @@ spec:
         image: hyperledger/cello-api-engine
         imagePullPolicy: IfNotPresent
         command: ["celery"]
-        args: ["-A", "api_engine", "worker", "-l", "info"]
+        args: ["-A", "api_engine", "worker", "--autoscale=20,6", "-l", "info"]
         envFrom:
         - configMapRef:
             name: ${CONFIG_API_ENGINE_NAME}
@@ -24,7 +24,12 @@ spec:
         volumeMounts:
         - name: api-engine
           mountPath: /var/www/server
+        - name: media
+          mountPath: /var/www/media
       volumes:
       - name: api-engine
         hostPath:
           path: ${ROOT_PATH}/src/api-engine/src
+      - name: media
+        hostPath:
+          path: /opt/cello/api-engine/media
