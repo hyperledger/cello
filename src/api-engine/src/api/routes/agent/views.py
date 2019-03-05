@@ -7,13 +7,24 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from api.auth import CustomAuthenticate, IsOperatorAuthenticated
+from api.auth import (
+    CustomAuthenticate,
+    IsOperatorAuthenticated,
+    IsAdminAuthenticated,
+)
 from api.common.enums import HostType
-from api.exceptions import ResourceNotFound, ResourceExists, CustomError
+from api.exceptions import (
+    ResourceNotFound,
+    ResourceExists,
+    CustomError,
+    NoResource,
+    ResourceInUse,
+)
 from api.models import Agent, KubernetesConfig
 from api.routes.agent.serializers import (
     AgentQuery,
@@ -23,15 +34,26 @@ from api.routes.agent.serializers import (
     AgentPatchBody,
     AgentUpdateBody,
     AgentInfoSerializer,
+    AgentApplySerializer,
 )
-from api.utils.common import with_common_response
+from api.utils.common import with_common_response, any_of
 
 LOG = logging.getLogger(__name__)
 
 
 class AgentViewSet(viewsets.ViewSet):
     authentication_classes = (CustomAuthenticate,)
-    permission_classes = (IsAuthenticated, IsOperatorAuthenticated)
+
+    def get_permissions(self):
+        if self.action in ["apply", "list", "release", "retrieve"]:
+            permission_classes = (
+                IsAuthenticated,
+                any_of(IsAdminAuthenticated, IsOperatorAuthenticated),
+            )
+        else:
+            permission_classes = (IsAuthenticated, IsOperatorAuthenticated)
+
+        return [permission() for permission in permission_classes]
 
     @swagger_auto_schema(
         query_serializer=AgentQuery,
@@ -52,22 +74,21 @@ class AgentViewSet(viewsets.ViewSet):
             agent_status = serializer.validated_data.get("status")
             name = serializer.validated_data.get("name")
             agent_type = serializer.validated_data.get("type")
-            govern = serializer.validated_data.get("govern")
+            organization = serializer.validated_data.get("organization")
 
             query_filters = {}
-            if govern:
-                if not request.user.is_administrator:
+            if organization:
+                if not request.user.is_operator:
                     raise PermissionDenied()
-                query_filters.update({"govern": govern})
+                query_filters.update({"organization": organization})
             else:
-                if request.user.is_operator:
-                    query_filters.update(
-                        {
-                            "govern__name": request.user.user_model.govern.name
-                            if request.user.user_model.govern
-                            else ""
-                        }
-                    )
+                org_name = (
+                    request.user.user_model.organization.name
+                    if request.user.user_model.organization
+                    else ""
+                )
+                if request.user.is_administrator:
+                    query_filters.update({"organization__name": org_name})
             if name:
                 query_filters.update({"name__icontains": name})
             if agent_status:
@@ -112,15 +133,11 @@ class AgentViewSet(viewsets.ViewSet):
             parameters = serializer.validated_data.get("parameters")
             k8s_config = serializer.validated_data.get("k8s_config")
 
-            if request.user.user_model.govern is None:
-                raise CustomError(detail="User not joined any govern.")
-
             body = {
                 "worker_api": worker_api,
                 "capacity": capacity,
                 "node_capacity": node_capacity,
                 "type": agent_type,
-                "govern": request.user.user_model.govern,
             }
             if worker_api:
                 agent_count = Agent.objects.filter(
@@ -174,11 +191,11 @@ class AgentViewSet(viewsets.ViewSet):
         Retrieve agent
         """
         try:
-            if request.user.is_administrator:
+            if request.user.is_operator:
                 agent = Agent.objects.get(id=pk)
             else:
                 agent = Agent.objects.get(
-                    id=pk, govern=request.user.user_model.govern
+                    id=pk, organization=request.user.user_model.organization
                 )
             k8s_config = None
             if agent.type == HostType.Kubernetes.name.lower():
@@ -234,15 +251,88 @@ class AgentViewSet(viewsets.ViewSet):
         Delete agent
         """
         try:
-            if request.user.is_administrator:
+            agent = Agent.objects.get(id=pk)
+        except ObjectDoesNotExist:
+            raise ResourceNotFound
+        else:
+            if agent.organization is not None:
+                raise ResourceInUse
+            agent.delete()
+
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @swagger_auto_schema(
+        method="post",
+        request_body=AgentApplySerializer,
+        responses=with_common_response(
+            {status.HTTP_200_OK: AgentIDSerializer}
+        ),
+    )
+    @action(methods=["post"], detail=False, url_path="organization")
+    def apply(self, request):
+        """
+        Apply Agent
+
+        Apply Agent
+        """
+        serializer = AgentApplySerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            agent_type = serializer.validated_data.get("type")
+            capacity = serializer.validated_data.get("capacity")
+
+            if request.user.user_model.organization is None:
+                raise CustomError(detail="Need join in organization")
+            agent_count = Agent.objects.filter(
+                organization=request.user.user_model.organization
+            ).count()
+            if agent_count > 0:
+                raise CustomError(detail="Already applied agent.")
+
+            agents = Agent.objects.filter(
+                organization__isnull=True,
+                type=agent_type,
+                capacity__gte=capacity,
+                schedulable=True,
+            ).order_by("capacity")
+            if len(agents) == 0:
+                raise NoResource
+
+            agent = agents[0]
+            agent.organization = request.user.user_model.organization
+            agent.save()
+
+            response = AgentIDSerializer(data=agent.__dict__)
+            if response.is_valid(raise_exception=True):
+                return Response(
+                    response.validated_data, status=status.HTTP_200_OK
+                )
+
+    @swagger_auto_schema(
+        method="delete",
+        responses=with_common_response(
+            {status.HTTP_204_NO_CONTENT: "No Content"}
+        ),
+    )
+    @action(methods=["delete"], detail=True, url_path="organization")
+    def release(self, request, pk=None):
+        """
+        Release Agent
+
+        Release Agent
+        """
+        try:
+            if request.user.is_operator:
                 agent = Agent.objects.get(id=pk)
             else:
+                if request.user.user_model.organization is None:
+                    raise CustomError("Need join in organization")
                 agent = Agent.objects.get(
-                    id=pk, govern=request.user.user_model.govern
+                    id=pk, organization=request.user.user_model.organization
                 )
         except ObjectDoesNotExist:
             raise ResourceNotFound
         else:
-            agent.delete()
+            agent.organization = None
+            agent.save()
 
             return Response(status=status.HTTP_204_NO_CONTENT)

@@ -5,31 +5,28 @@ from rest_framework import serializers
 
 from api.common.enums import Operation
 from api.common.serializers import PageQuerySerializer
-from api.models import Govern
-
-COMPANY_NAME_MIN_LEN = 4
-COMPANY_NAME_MAX_LEN = 64
+from api.models import Organization
 
 
-class GovernQuery(PageQuerySerializer, serializers.ModelSerializer):
+class OrganizationQuery(PageQuerySerializer, serializers.ModelSerializer):
     class Meta:
-        model = Govern
+        model = Organization
         fields = ("page", "per_page", "name")
         extra_kwargs = {"name": {"required": False}}
 
 
-class GovernCreateBody(serializers.ModelSerializer):
+class OrganizationCreateBody(serializers.ModelSerializer):
     class Meta:
-        model = Govern
+        model = Organization
         fields = ("name",)
         extra_kwargs = {"name": {"required": True}}
 
 
-class GovernResponse(serializers.ModelSerializer):
-    id = serializers.UUIDField(help_text="ID of govern")
+class OrganizationResponse(serializers.ModelSerializer):
+    id = serializers.UUIDField(help_text="ID of Organization")
 
     class Meta:
-        model = Govern
+        model = Organization
         fields = ("id", "name", "created_at")
         extra_kwargs = {
             "name": {"required": True},
@@ -38,15 +35,15 @@ class GovernResponse(serializers.ModelSerializer):
         }
 
 
-class GovernList(serializers.Serializer):
+class OrganizationList(serializers.Serializer):
     total = serializers.IntegerField(
-        help_text="Total number of governs", default=0
+        help_text="Total number of Organizations", default=0
     )
-    data = GovernResponse(many=True, help_text="Governs list")
+    data = OrganizationResponse(many=True, help_text="Organizations list")
 
 
-class GovernIDSerializer(serializers.Serializer):
-    id = serializers.UUIDField(help_text="ID of govern")
+class OrganizationIDSerializer(serializers.Serializer):
+    id = serializers.UUIDField(help_text="ID of Organization")
 
 
 class NodeOperationSerializer(serializers.Serializer):

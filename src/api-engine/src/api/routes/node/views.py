@@ -10,6 +10,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from django.core.exceptions import PermissionDenied
 
 from api.auth import CustomAuthenticate
 from api.common.enums import NodeStatus
@@ -33,9 +34,10 @@ class NodeViewSet(viewsets.ViewSet):
     authentication_classes = (CustomAuthenticate,)
     permission_classes = (IsAuthenticated,)
 
-    def _validate_govern(self, request):
-        if request.user.user_model.govern is None:
-            raise CustomError(detail="Not joined in any govern.")
+    @staticmethod
+    def _validate_organization(request):
+        if request.user.user_model.organization is None:
+            raise CustomError(detail="Need join in organization.")
 
     @swagger_auto_schema(
         query_serializer=NodeQuery,
@@ -65,7 +67,7 @@ class NodeViewSet(viewsets.ViewSet):
         """
         serializer = NodeCreateBody(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            self._validate_govern(request)
+            self._validate_organization(request)
             agent_type = serializer.validated_data.get("agent_type")
             network_type = serializer.validated_data.get("network_type")
             network_version = serializer.validated_data.get("network_version")
@@ -80,6 +82,7 @@ class NodeViewSet(viewsets.ViewSet):
                         type=agent_type,
                         network_num__lt=F("capacity"),
                         node_num__lt=F("node_capacity"),
+                        organization=request.user.user_model.organization,
                     )
                     .order_by("node_num")
                 )
@@ -88,6 +91,8 @@ class NodeViewSet(viewsets.ViewSet):
                 else:
                     raise NoResource
             else:
+                if not request.user.is_operator:
+                    raise PermissionDenied
                 node_count = Node.objects.filter(agent=agent).count()
                 if node_count >= agent.node_capacity or not agent.schedulable:
                     raise NoResource
@@ -96,7 +101,7 @@ class NodeViewSet(viewsets.ViewSet):
                 agent=agent,
                 network_version=network_version,
                 user=request.user.user_model,
-                govern=request.user.user_model.govern,
+                organization=request.user.user_model.organization,
                 type=node_type,
             )
             node.save()

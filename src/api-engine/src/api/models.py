@@ -46,6 +46,19 @@ class Govern(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
+class Organization(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        help_text="ID of organization",
+        default=make_uuid,
+        editable=True,
+    )
+    name = models.CharField(
+        default="", max_length=64, help_text="Name of organization"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
 class UserModel(models.Model):
     id = models.UUIDField(
         primary_key=True,
@@ -67,6 +80,12 @@ class UserModel(models.Model):
         null=True,
         on_delete=models.CASCADE,
         help_text="Govern of user",
+    )
+    organization = models.ForeignKey(
+        "Organization",
+        null=True,
+        on_delete=models.CASCADE,
+        help_text="Organization of user",
     )
     created_at = models.DateTimeField(
         auto_now_add=True, help_text="Create time of user"
@@ -130,6 +149,12 @@ class Agent(models.Model):
         help_text="Govern of agent",
         null=True,
         on_delete=models.CASCADE,
+    )
+    organization = models.ForeignKey(
+        "Organization",
+        null=True,
+        on_delete=models.CASCADE,
+        help_text="Organization of agent",
     )
     status = models.CharField(
         help_text="Status of agent",
@@ -253,8 +278,8 @@ class Network(models.Model):
 
 def get_compose_file_path(instance, file):
     return os.path.join(
-        "govern/%s/agent/docker/compose_files/%s"
-        % (str(instance.govern.id), str(instance.id)),
+        "org/%s/agent/docker/compose_files/%s"
+        % (str(instance.organization.id), str(instance.id)),
         "docker-compose.yml",
     )
 
@@ -305,6 +330,12 @@ class Node(models.Model):
     govern = models.ForeignKey(
         Govern, help_text="Govern of node", null=True, on_delete=models.CASCADE
     )
+    organization = models.ForeignKey(
+        Organization,
+        help_text="Organization of node",
+        null=True,
+        on_delete=models.CASCADE,
+    )
     agent = models.ForeignKey(
         Agent, help_text="Agent of node", null=True, on_delete=models.CASCADE
     )
@@ -335,9 +366,10 @@ class Node(models.Model):
         ordering = ("-created_at",)
 
     def get_compose_file_path(self):
-        return (
-            "%s/govern/%s/agent/docker/compose_files/%s/docker-compose.yml"
-            % (MEDIA_ROOT, str(self.govern.id), str(self.id))
+        return "%s/org/%s/agent/docker/compose_files/%s/docker-compose.yml" % (
+            MEDIA_ROOT,
+            str(self.organization.id),
+            str(self.id),
         )
 
     def save(

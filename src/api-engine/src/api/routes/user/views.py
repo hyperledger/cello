@@ -16,11 +16,16 @@ from api.routes.user.serializers import (
     UserAuthSerializer,
     UserAuthResponseSerializer,
 )
-from api.auth import CustomAuthenticate, IsAdminAuthenticated
+from api.auth import (
+    CustomAuthenticate,
+    IsAdminAuthenticated,
+    IsOperatorAuthenticated,
+)
 from api.utils.keycloak_client import KeyCloakClient
 from api.exceptions import ResourceExists, CustomError
 from api.models import UserModel
 from api.auth import keycloak_openid
+from api.utils.common import any_of
 from keycloak.exceptions import KeycloakAuthenticationError
 
 LOG = logging.getLogger(__name__)
@@ -33,7 +38,10 @@ class UserViewSet(viewsets.ViewSet):
         permission_classes = []
 
         if self.action not in ["auth"]:
-            permission_classes = (IsAuthenticated, IsAdminAuthenticated)
+            permission_classes = (
+                IsAuthenticated,
+                any_of(IsAdminAuthenticated, IsOperatorAuthenticated),
+            )
 
         return [permission() for permission in permission_classes]
 
@@ -64,7 +72,7 @@ class UserViewSet(viewsets.ViewSet):
         if serializer.is_valid(raise_exception=True):
             name = serializer.validated_data.get("name")
             role = serializer.validated_data.get("role")
-            govern = serializer.validated_data.get("govern")
+            organization = serializer.validated_data.get("organization")
             password = serializer.validated_data.get("password")
 
             keycloak_client = KeyCloakClient()
@@ -83,15 +91,15 @@ class UserViewSet(viewsets.ViewSet):
             user_id = keycloak_client.get_user_id(username=name)
             keycloak_client.reset_user_password(user_id, password)
             user_attr = {"role": role}
-            if govern:
-                user_attr.update({"govern": str(govern.id)})
+            if organization:
+                user_attr.update({"organization": str(organization.id)})
 
             keycloak_client.update_user(
                 user_id, body={"attributes": user_attr}
             )
 
             user, _ = UserModel.objects.get_or_create(
-                id=user_id, name=name, role=role, govern=govern
+                id=user_id, name=name, role=role, organization=organization
             )
             response = UserIDSerializer(data={"id": user_id})
             if response.is_valid(raise_exception=True):

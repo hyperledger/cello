@@ -39,9 +39,9 @@ class CustomAuthenticate(authentication.BaseAuthentication):
         if token == SUPER_USER_TOKEN:
             username = ADMIN_NAME
             user_model, _ = UserModel.objects.get_or_create(
-                name=username, role=UserRole.Administrator.name.lower()
+                name=username, role=UserRole.Operator.name.lower()
             )
-            role = UserRole.Administrator.name.lower()
+            role = UserRole.Operator.name.lower()
         else:
             try:
                 token_model = Token.objects.get(
@@ -102,11 +102,10 @@ class IsOperatorAuthenticated(BasePermission):
     """
 
     def has_permission(self, request, view):
-        allowed_roles = [
-            UserRole.Administrator.name.lower(),
-            UserRole.Operator.name.lower(),
-        ]
-        return request.user and request.user.role in allowed_roles
+        return (
+            request.user
+            and request.user.role == UserRole.Operator.name.lower()
+        )
 
 
 class IsSuperUserAuthenticated(BasePermission):

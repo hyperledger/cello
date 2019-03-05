@@ -44,7 +44,7 @@ class UserCreateBody(serializers.ModelSerializer):
 
     class Meta:
         model = UserModel
-        fields = ("name", "role", "govern", "password")
+        fields = ("name", "role", "organization", "password")
         extra_kwargs = {
             "name": {"required": True},
             "role": {"required": True},

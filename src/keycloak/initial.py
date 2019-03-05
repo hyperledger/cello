@@ -133,6 +133,4 @@ keycloak_client.create_user(create_user_body)
 user_id = keycloak_client.get_user_id(username=DEFAULT_ADMIN_NAME)
 keycloak_client.reset_user_password(user_id, DEFAULT_ADMIN_PASSWORD)
 
-keycloak_client.update_user(
-    user_id, body={"attributes": {"role": "administrator"}}
-)
+keycloak_client.update_user(user_id, body={"attributes": {"role": "operator"}})
