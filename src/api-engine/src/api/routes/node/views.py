@@ -4,25 +4,26 @@
 import logging
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import PermissionDenied
+from django.core.paginator import Paginator
 from django.db.models import Count, F
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from django.core.exceptions import PermissionDenied
 
 from api.auth import CustomAuthenticate
 from api.common.enums import NodeStatus
 from api.exceptions import CustomError, NoResource
 from api.exceptions import ResourceNotFound
 from api.models import Agent, Node
-from api.routes.network.serializers import NetworkListResponse
 from api.routes.node.serializers import (
     NodeOperationSerializer,
     NodeQuery,
     NodeCreateBody,
     NodeIDSerializer,
+    NodeListSerializer,
 )
 from api.tasks import create_node, delete_node
 from api.utils.common import with_common_response
@@ -42,7 +43,7 @@ class NodeViewSet(viewsets.ViewSet):
     @swagger_auto_schema(
         query_serializer=NodeQuery,
         responses=with_common_response(
-            with_common_response({status.HTTP_200_OK: NetworkListResponse})
+            with_common_response({status.HTTP_200_OK: NodeListSerializer})
         ),
     )
     def list(self, request, *args, **kwargs):
@@ -51,7 +52,48 @@ class NodeViewSet(viewsets.ViewSet):
 
         Filter nodes with query parameters.
         """
-        return Response(data=[], status=status.HTTP_200_OK)
+        serializer = NodeQuery(data=request.GET)
+        if serializer.is_valid(raise_exception=True):
+            page = serializer.validated_data.get("page")
+            per_page = serializer.validated_data.get("per_page")
+            node_type = serializer.validated_data.get("type")
+            name = serializer.validated_data.get("name")
+            network_type = serializer.validated_data.get("network_type")
+            network_version = serializer.validated_data.get("network_version")
+            agent_id = serializer.validated_data.get("agent_id")
+
+            if agent_id is not None and not request.user.is_operator:
+                raise PermissionDenied
+            query_filter = {}
+
+            if node_type:
+                query_filter.update({"type": node_type})
+            if name:
+                query_filter.update({"name__icontains": name})
+            if network_type:
+                query_filter.update({"network_type": network_type})
+            if network_version:
+                query_filter.update({"network_version": network_version})
+            if request.user.is_administrator:
+                query_filter.update(
+                    {"organization": request.user.user_model.organization}
+                )
+            elif request.user.is_common_user:
+                query_filter.update({"user": request.user.user_model})
+            if agent_id:
+                query_filter.update({"agent__id": agent_id})
+            nodes = Node.objects.filter(**query_filter)
+            p = Paginator(nodes, per_page)
+            nodes = p.page(page)
+            nodes = [node.__dict__ for node in nodes]
+
+            response = NodeListSerializer(
+                data={"total": p.count, "data": nodes}
+            )
+            if response.is_valid(raise_exception=True):
+                return Response(
+                    data=response.validated_data, status=status.HTTP_200_OK
+                )
 
     @swagger_auto_schema(
         request_body=NodeCreateBody,

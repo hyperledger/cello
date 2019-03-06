@@ -125,6 +125,10 @@ class User(AbstractUser):
         return self.role == UserRole.Operator.name.lower()
 
     @property
+    def is_common_user(self):
+        return self.role == UserRole.User.name.lower()
+
+    @property
     def user_id(self):
         return self.user_model.id
 
