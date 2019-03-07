@@ -73,7 +73,7 @@ services:
       - ADMIN_TOKEN=$API_ENGINE_ADMIN_TOKEN
       - CELERY_BROKER_URL=redis://redis
     volumes:
-      - $ROOT_PATH/src/api-engine/src:/var/www/server
+      - $ROOT_PATH/src/api-engine:/var/www/server
 
   api-engine-tasks:
     image: hyperledger/cello-api-engine
@@ -102,7 +102,7 @@ services:
     - ADMIN_TOKEN=$API_ENGINE_ADMIN_TOKEN
     - CELERY_BROKER_URL=redis://redis
     volumes:
-    - $ROOT_PATH/src/api-engine/src:/var/www/server
+    - $ROOT_PATH/src/api-engine:/var/www/server
     command: bash -c "celery -A api_engine worker -l info"
 
   mysql:
@@ -117,7 +117,7 @@ services:
     - /opt/cello/keycloak-mysql:/var/lib/mysql
 
   keycloak:
-    image: jboss/keycloak:4.5.0.Final
+    image: jboss/keycloak:4.8.0.Final
     container_name: cello-keycloak-server
     environment:
       - KEYCLOAK_USER=$KEYCLOAK_ADMIN_NAME

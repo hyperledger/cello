@@ -181,7 +181,7 @@ check-js: ##@Code Check check js code format
 check: ##@Code Check code format
 	@$(MAKE) license
 	find ./docs -type f -name "*.md" -exec egrep -l " +$$" {} \;
-	cd src/api-engine/src && tox && cd ${ROOT_PATH}
+	cd src/api-engine && tox && cd ${ROOT_PATH}
 	make docker
 	API_ENGINE_SSO_AUTH_URL=http://keycloak:8080/auth/ NEXT_VERSION=True SERVER_PUBLIC_IP=127.0.0.1 MODE=dev make start
 	sleep 10

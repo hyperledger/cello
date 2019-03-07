@@ -38,7 +38,7 @@ services:
       - /opt/cello/keycloak-mysql:/var/lib/mysql
 
   keycloak:
-    image: jboss/keycloak:4.5.0.Final
+    image: jboss/keycloak:4.8.0.Final
     container_name: cello-initial-keycloak-server
     environment:
       - KEYCLOAK_USER=$KEYCLOAK_ADMIN_NAME
