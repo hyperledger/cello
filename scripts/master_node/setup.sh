@@ -41,7 +41,7 @@ get_distribution() {
 		then
 			distribution=$(echo $line | cut -f2 -d=)
 		fi
-		done < "/etc/os-release"
+	done < "/etc/os-release"
 	echo "${distribution//\"}"
 }
 

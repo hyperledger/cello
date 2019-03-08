@@ -67,12 +67,14 @@ Environment variables which you can use in the command:
 * `NEXT_VERSION`(optional):: Whether use next version deployment files, True/False.
 * `DEPLOY_METHOD`(optional):: Deployment method, values docker-compose/k8s, default is docker-compose, only support NEXT_VERSION=True.
 
-
 To stop or restart the whole services, please run
+
 ```bash
 $ make stop
 ```
+
 To restart the whole services, please run
+
 ```bash
 $ make restart
 ```
@@ -81,19 +83,18 @@ $ make restart
 As a developer, you can start/stop/restart services in development mode. In development mode, [user dashboard](../dashboard_user.md) will watch and restart service if files change. And [operator dashboard](../dashboard_operator.md) will enalbe flask debug.
 
 To start the whole services in developer mode, please run
+
 ```bash
-$ DEV=True make start
+$ SERVER_PUBLIC_IP=x.x.x.x MODE=dev make start
 ```
-
-
-
 To stop or restart the whole services, please run
+
 ```bash
-$ DEV=True make stop
+$ MODE=dev make stop
 ```
 To restart the whole services, please run
 ```bash
-$ DEV=True make restart
+$ SERVER_PUBLIC_IP=x.x.x.x MODE=dev make restart
 ```
 
 #### Check Logs

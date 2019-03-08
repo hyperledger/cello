@@ -193,6 +193,7 @@ services:
   keycloak:
     image: jboss/keycloak:4.5.0.Final
     container_name: cello-keycloak-server
+    restart: always
     environment:
       - KEYCLOAK_USER=$KEYCLOAK_ADMIN_NAME
       - KEYCLOAK_PASSWORD=$KEYCLOAK_ADMIN_PASSWORD

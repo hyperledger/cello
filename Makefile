@@ -257,6 +257,8 @@ start: ##@Service Start service
 	else \
 		make start-next; \
 	fi
+	sleep 15 # keycloak takes long time to start
+	make logs
 
 start-next-docker:
 	$(INITIAL_CMD)
