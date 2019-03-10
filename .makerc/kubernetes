@@ -37,5 +37,6 @@ export SERVICE_POSTGRES_NAME?=postgres-server
 export SERVICE_KEYCLOAK_NAME?=keycloak
 export SERVICE_REDIS_NAME?=redis-server
 export INGRESS_NGINX_NAME?=ingress-nginx
+export INGRESS_API_ENGINE_NAME?=ingress-api-engine
 export INGRESS_USER_DASHBOARD_NAME?=ingress-user-dashboard
 export INGRESS_KEYCLOAK_NAME?=ingress-keycloak

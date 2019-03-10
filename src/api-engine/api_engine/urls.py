@@ -16,6 +16,9 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+import os
+
+from django.conf import settings
 from django.urls import path, include
 from rest_framework import permissions
 from drf_yasg import openapi
@@ -26,6 +29,10 @@ from api.routes.agent.views import AgentViewSet
 from api.routes.node.views import NodeViewSet
 from api.routes.organization.views import OrganizationViewSet
 from api.routes.user.views import UserViewSet
+
+DEBUG = getattr(settings, "DEBUG")
+WEBROOT = os.getenv("WEBROOT")
+WEBROOT = "/".join(WEBROOT.split("/")[1:]) + "/"
 
 
 swagger_info = openapi.Info(
@@ -57,3 +64,6 @@ urlpatterns += [
     path("docs/", SchemaView.with_ui("swagger", cache_timeout=0), name="docs"),
     path("redoc/", SchemaView.with_ui("redoc", cache_timeout=0), name="redoc"),
 ]
+
+if DEBUG:
+    urlpatterns = [path(WEBROOT, include(urlpatterns))]

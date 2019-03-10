@@ -227,7 +227,7 @@ initial-keycloak-next:
 	docker-compose -f bootup/docker-compose-files/new_version/docker-compose-initial.yml up --abort-on-container-exit
 
 check-environment:
-	if [ "$(SERVER_PUBLIC_IP)" = "" ]; then \
+	if [ "$(SERVER_PUBLIC_IP)" = "" ] && [ "$(NEXT_VERSION)" = "False" ]; then \
 		echo "Environment variable SERVER_PUBLIC_IP not set"; \
 		echo "Please refer docs/setup_master.md for more details"; \
 		exit 1; \

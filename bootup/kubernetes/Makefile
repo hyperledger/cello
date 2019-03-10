@@ -6,10 +6,14 @@ init-nginx-yaml:
 	@envsubst < templates/nginx/ingress.tmpl > nginx/ingress.yml
 
 init-api-engine-yaml:
+	rm -rf ${ROOT_PATH}/bootup/kubernetes/api-engine
 	mkdir -p ${ROOT_PATH}/bootup/kubernetes/api-engine
 	@envsubst < templates/api-engine/config.tmpl > api-engine/config.yml
 	@envsubst < templates/api-engine/${DEPLOY_TEMPLATE_NAME} > api-engine/deploy.yml
 	@envsubst < templates/api-engine/service.tmpl > api-engine/service.yml
+	if [ "$(MODE)" = "dev" ]; then \
+		envsubst < templates/api-engine/ingress.tmpl > api-engine/ingress.yml; \
+	fi
 
 init-api-engine-tasks-yaml:
 	mkdir -p ${ROOT_PATH}/bootup/kubernetes/api-engine-tasks
@@ -78,43 +82,23 @@ init-yaml:
 	@$(MAKE) init-nginx-yaml
 	@$(MAKE) init-api-engine-yaml
 	@$(MAKE) init-api-engine-tasks-yaml
-#	@$(MAKE) init-rabbitmq-yaml
-#	@$(MAKE) init-mongo-yaml
 	@$(MAKE) init-redis-yaml
-#	@$(MAKE) init-mysql-yaml
 	@$(MAKE) init-postgres-yaml
-#	@$(MAKE) init-operator-dashboard-yaml
-#	@$(MAKE) init-user-dashboard-yaml
-#	@$(MAKE) init-parse-server-yaml
-#	@$(MAKE) init-watchdog-yaml
-#	@$(MAKE) init-keycloak-yaml
 
 start:
-#	@kubectl apply --force -f rabbitmq/ -n ${K8S_DEPLOY_NAMESPACE}
-#	@kubectl apply --force -f mongo/ -n ${K8S_DEPLOY_NAMESPACE}
-#	@kubectl apply --force -f mysql/ -n ${K8S_DEPLOY_NAMESPACE}
 	@kubectl apply --force -f postgres/ -n ${K8S_DEPLOY_NAMESPACE}
 	@kubectl apply --force -f redis/ -n ${K8S_DEPLOY_NAMESPACE}
-#	@kubectl apply --force -f watchdog/ -n ${K8S_DEPLOY_NAMESPACE}
-#	@kubectl apply --force -f parse-server/ -n ${K8S_DEPLOY_NAMESPACE}
 	@kubectl apply --force -f api-engine-tasks/ -n ${K8S_DEPLOY_NAMESPACE}
 	@kubectl apply --force -f api-engine/ -n ${K8S_DEPLOY_NAMESPACE}
-#	@kubectl apply --force -f operator-dashboard/ -n ${K8S_DEPLOY_NAMESPACE}
-#	@kubectl apply --force -f user-dashboard/ -n ${K8S_DEPLOY_NAMESPACE}
-	@kubectl apply --force -f nginx/ -n ${K8S_DEPLOY_NAMESPACE}
-#	@kubectl apply --force -f keycloak/ -n ${K8S_DEPLOY_NAMESPACE}
+	if [ "$(MODE)" != "dev" ]; then \
+		kubectl apply --force -f nginx/ -n ${K8S_DEPLOY_NAMESPACE}; \
+	fi
 
 stop:
-#	@kubectl delete -f rabbitmq/ -n ${K8S_DEPLOY_NAMESPACE}
-#	@kubectl delete -f mongo/ -n ${K8S_DEPLOY_NAMESPACE}
-#	@kubectl delete -f mysql/ -n ${K8S_DEPLOY_NAMESPACE}
 	@kubectl delete -f postgres/ -n ${K8S_DEPLOY_NAMESPACE}
 	@kubectl delete -f redis/ -n ${K8S_DEPLOY_NAMESPACE}
-#	@kubectl delete -f watchdog/ -n ${K8S_DEPLOY_NAMESPACE}
-#	@kubectl delete -f parse-server/ -n ${K8S_DEPLOY_NAMESPACE}
 	@kubectl delete -f api-engine-tasks/ -n ${K8S_DEPLOY_NAMESPACE}
 	@kubectl delete -f api-engine/ -n ${K8S_DEPLOY_NAMESPACE}
-#	@kubectl delete -f operator-dashboard/ -n ${K8S_DEPLOY_NAMESPACE}
-#	@kubectl delete -f user-dashboard/ -n ${K8S_DEPLOY_NAMESPACE}
-	@kubectl delete -f nginx/ -n ${K8S_DEPLOY_NAMESPACE}
-#	@kubectl delete -f keycloak/ -n ${K8S_DEPLOY_NAMESPACE}
+	if [ "$(MODE)" != "dev" ]; then \
+		kubectl delete -f nginx/ -n ${K8S_DEPLOY_NAMESPACE}; \
+	fi

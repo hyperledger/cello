@@ -72,6 +72,9 @@ services:
     - KEYCLOAK_ADMIN_PASSWORD=$KEYCLOAK_ADMIN_PASSWORD
     - ADMIN_TOKEN=$API_ENGINE_ADMIN_TOKEN
     - CELERY_BROKER_URL=redis://redis
+    - ADMIN_USERNAME=$API_ENGINE_ADMIN_USERNAME
+    - ADMIN_PASSWORD=$API_ENGINE_ADMIN_PASSWORD
+    - ADMIN_EMAIL=$API_ENGINE_ADMIN_EMAIL
 
   api-engine-tasks:
     image: hyperledger/cello-api-engine
@@ -100,34 +103,3 @@ services:
     - ADMIN_TOKEN=$API_ENGINE_ADMIN_TOKEN
     - CELERY_BROKER_URL=redis://redis
     command: bash -c "celery -A api_engine worker -l info"
-
-  mysql:
-    image: mariadb:10.3.10
-    container_name: cello-keycloak-mysql
-    environment:
-    - MYSQL_DATABASE=keycloak
-    - MYSQL_USER=$KEYCLOAK_DB_USERNAME
-    - MYSQL_PASSWORD=$KEYCLOAK_DB_PASSWORD
-    - MYSQL_ROOT_PASSWORD=$KEYCLOAK_MYSQL_ROOT_PASSWORD
-    volumes:
-    - /opt/cello/keycloak-mysql:/var/lib/mysql
-
-  keycloak:
-    image: jboss/keycloak:4.5.0.Final
-    container_name: cello-keycloak-server
-    environment:
-    - KEYCLOAK_USER=$KEYCLOAK_ADMIN_NAME
-    - KEYCLOAK_PASSWORD=$KEYCLOAK_ADMIN_PASSWORD
-    - DB_ADDR=mysql
-    - DB_USER=$KEYCLOAK_DB_USERNAME
-    - DB_PASSWORD=$KEYCLOAK_DB_PASSWORD
-    - KEYCLOAK_HTTPS_PORT=$KEYCLOAK_SERVER_HTTPS_PORT
-    - DB_VENDOR=mysql
-    volumes:
-    - $ROOT_PATH/thirdparty/keycloak/resources/img/keycloak-bg.png:/opt/jboss/keycloak/themes/keycloak/login/resources/img/keycloak-bg.png
-    - $ROOT_PATH/thirdparty/keycloak/resources/img/keycloak-logo-text.png:/opt/jboss/keycloak/themes/keycloak/login/resources/img/keycloak-logo-text.png
-    links:
-    - mysql
-    ports:
-    - $KEYCLOAK_SERVER_PORT:8080
-    - $KEYCLOAK_SERVER_HTTPS_PORT:8443
