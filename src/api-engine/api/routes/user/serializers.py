@@ -4,7 +4,7 @@
 from rest_framework import serializers
 from api.common.enums import Operation, NetworkType, FabricNodeType, UserRole
 from api.common.serializers import PageQuerySerializer
-from api.models import UserModel
+from api.models import UserProfile
 
 
 class NodeQuery(PageQuerySerializer):
@@ -38,17 +38,15 @@ class UserCreateBody(serializers.ModelSerializer):
         help_text=UserRole.get_info("User roles:", list_str=True),
         choices=UserRole.to_choices(string_as_value=True),
     )
-    password = serializers.CharField(
-        help_text="Password for new user", min_length=6, max_length=32
-    )
 
     class Meta:
-        model = UserModel
-        fields = ("name", "role", "organization", "password")
+        model = UserProfile
+        fields = ("username", "role", "organization", "password", "email")
         extra_kwargs = {
-            "name": {"required": True},
+            "username": {"required": True},
             "role": {"required": True},
             "password": {"required": True},
+            "email": {"required": True},
         }
 
 
@@ -58,16 +56,16 @@ class UserIDSerializer(serializers.Serializer):
 
 class UserQuerySerializer(PageQuerySerializer, serializers.ModelSerializer):
     class Meta:
-        model = UserModel
-        fields = ("name", "page", "per_page")
+        model = UserProfile
+        fields = ("username", "page", "per_page")
 
 
 class UserInfoSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(help_text="ID of user")
 
     class Meta:
-        model = UserModel
-        fields = ("id", "name", "role")
+        model = UserProfile
+        fields = ("id", "username", "role")
         extra_kwargs = {"id": {"read_only": False}}
 
 

@@ -81,18 +81,18 @@ init-yaml:
 #	@$(MAKE) init-rabbitmq-yaml
 #	@$(MAKE) init-mongo-yaml
 	@$(MAKE) init-redis-yaml
-	@$(MAKE) init-mysql-yaml
+#	@$(MAKE) init-mysql-yaml
 	@$(MAKE) init-postgres-yaml
 #	@$(MAKE) init-operator-dashboard-yaml
 #	@$(MAKE) init-user-dashboard-yaml
 #	@$(MAKE) init-parse-server-yaml
 #	@$(MAKE) init-watchdog-yaml
-	@$(MAKE) init-keycloak-yaml
+#	@$(MAKE) init-keycloak-yaml
 
 start:
 #	@kubectl apply --force -f rabbitmq/ -n ${K8S_DEPLOY_NAMESPACE}
 #	@kubectl apply --force -f mongo/ -n ${K8S_DEPLOY_NAMESPACE}
-	@kubectl apply --force -f mysql/ -n ${K8S_DEPLOY_NAMESPACE}
+#	@kubectl apply --force -f mysql/ -n ${K8S_DEPLOY_NAMESPACE}
 	@kubectl apply --force -f postgres/ -n ${K8S_DEPLOY_NAMESPACE}
 	@kubectl apply --force -f redis/ -n ${K8S_DEPLOY_NAMESPACE}
 #	@kubectl apply --force -f watchdog/ -n ${K8S_DEPLOY_NAMESPACE}
@@ -102,12 +102,12 @@ start:
 #	@kubectl apply --force -f operator-dashboard/ -n ${K8S_DEPLOY_NAMESPACE}
 #	@kubectl apply --force -f user-dashboard/ -n ${K8S_DEPLOY_NAMESPACE}
 	@kubectl apply --force -f nginx/ -n ${K8S_DEPLOY_NAMESPACE}
-	@kubectl apply --force -f keycloak/ -n ${K8S_DEPLOY_NAMESPACE}
+#	@kubectl apply --force -f keycloak/ -n ${K8S_DEPLOY_NAMESPACE}
 
 stop:
 #	@kubectl delete -f rabbitmq/ -n ${K8S_DEPLOY_NAMESPACE}
 #	@kubectl delete -f mongo/ -n ${K8S_DEPLOY_NAMESPACE}
-	@kubectl delete -f mysql/ -n ${K8S_DEPLOY_NAMESPACE}
+#	@kubectl delete -f mysql/ -n ${K8S_DEPLOY_NAMESPACE}
 	@kubectl delete -f postgres/ -n ${K8S_DEPLOY_NAMESPACE}
 	@kubectl delete -f redis/ -n ${K8S_DEPLOY_NAMESPACE}
 #	@kubectl delete -f watchdog/ -n ${K8S_DEPLOY_NAMESPACE}
@@ -117,4 +117,4 @@ stop:
 #	@kubectl delete -f operator-dashboard/ -n ${K8S_DEPLOY_NAMESPACE}
 #	@kubectl delete -f user-dashboard/ -n ${K8S_DEPLOY_NAMESPACE}
 	@kubectl delete -f nginx/ -n ${K8S_DEPLOY_NAMESPACE}
-	@kubectl delete -f keycloak/ -n ${K8S_DEPLOY_NAMESPACE}
+#	@kubectl delete -f keycloak/ -n ${K8S_DEPLOY_NAMESPACE}

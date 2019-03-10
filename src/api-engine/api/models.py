@@ -59,62 +59,29 @@ class Organization(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
-class UserModel(models.Model):
+class UserProfile(AbstractUser):
     id = models.UUIDField(
         primary_key=True,
         help_text="ID of user",
         default=make_uuid,
         editable=True,
     )
-    name = models.CharField(
-        default="", help_text="Name of user", max_length=128
-    )
     role = models.CharField(
-        choices=UserRole.to_choices(True),
-        default=UserRole.User.name.lower(),
-        help_text="Role of User",
+        choices=UserRole.to_choices(),
+        default=UserRole.User.value,
         max_length=64,
     )
-    govern = models.ForeignKey(
-        "Govern",
-        null=True,
-        on_delete=models.CASCADE,
-        help_text="Govern of user",
-    )
-    organization = models.ForeignKey(
-        "Organization",
-        null=True,
-        on_delete=models.CASCADE,
-        help_text="Organization of user",
-    )
-    created_at = models.DateTimeField(
-        auto_now_add=True, help_text="Create time of user"
+    organization = models.OneToOneField(
+        Organization, null=True, on_delete=models.CASCADE
     )
 
     class Meta:
-        ordering = ("-created_at",)
-
-
-class Token(models.Model):
-    token = models.TextField(default="")
-    user = models.ForeignKey(UserModel, on_delete=models.CASCADE)
-    expire_date = models.DateTimeField(null=True)
-
-
-class User(AbstractUser):
-    username = models.CharField(default="", max_length=128, unique=True)
-    token = models.CharField(default="", max_length=128)
-    role = models.CharField(default="", max_length=64)
-    user_model = UserModel()
+        verbose_name = "User Info"
+        verbose_name_plural = verbose_name
+        ordering = ["-date_joined"]
 
     def __str__(self):
         return self.username
-
-    def has_perm(self, perm, obj=None):
-        return True
-
-    def has_module_perms(self, app_label):
-        return True
 
     @property
     def is_administrator(self):
@@ -127,10 +94,6 @@ class User(AbstractUser):
     @property
     def is_common_user(self):
         return self.role == UserRole.User.name.lower()
-
-    @property
-    def user_id(self):
-        return self.user_model.id
 
 
 class Agent(models.Model):
@@ -325,8 +288,8 @@ class Node(models.Model):
         blank=True,
         default=dict,
     )
-    user = models.ForeignKey(
-        UserModel,
+    user = models.OneToOneField(
+        UserProfile,
         help_text="User of node",
         null=True,
         on_delete=models.CASCADE,

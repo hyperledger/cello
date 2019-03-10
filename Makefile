@@ -257,18 +257,9 @@ start: ##@Service Start service
 	else \
 		make start-next; \
 	fi
-	sleep 15 # keycloak takes long time to start
-	make logs
 
 start-next-docker:
-	$(INITIAL_CMD)
-	if [ "$(INITIAL_KEYCLOAK)" = "true" ]; then \
-		API_ENGINE_DOCKER_SECRET=`sed -n '/export API_ENGINE_DOCKER_SECRET?=/ {s///p;q;}' .makerc/api-engine` \
-		API_ENGINE_K8S_SSO_SECRET=`sed -n '/export API_ENGINE_K8S_SSO_SECRET?=/ {s///p;q;}' .makerc/api-engine` \
-		docker-compose -f bootup/docker-compose-files/new_version/${COMPOSE_FILE} up -d --force-recreate; \
-	else \
-		docker-compose -f bootup/docker-compose-files/new_version/${COMPOSE_FILE} up -d --force-recreate; \
-	fi
+	docker-compose -f bootup/docker-compose-files/new_version/${COMPOSE_FILE} up -d --force-recreate
 
 start-next:
 	if [ "$(DEPLOY_METHOD)" = "docker-compose" ]; then \
@@ -291,14 +282,7 @@ stop-next:
 	fi
 
 start-k8s:
-	$(INITIAL_CMD)
-	if [ "$(INITIAL_KEYCLOAK)" = "true" ]; then \
-		API_ENGINE_DOCKER_SECRET=`sed -n '/export API_ENGINE_DOCKER_SECRET?=/ {s///p;q;}' .makerc/api-engine` \
-		API_ENGINE_K8S_SSO_SECRET=`sed -n '/export API_ENGINE_K8S_SSO_SECRET?=/ {s///p;q;}' .makerc/api-engine` \
-		make -C bootup/kubernetes init-yaml; \
-	else \
-		make -C bootup/kubernetes init-yaml; \
-	fi
+	@$(MAKE) -C bootup/kubernetes init-yaml
 	@$(MAKE) -C bootup/kubernetes start
 
 test-api:

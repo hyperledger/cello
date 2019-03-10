@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
+from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
 from api.auth import CustomAuthenticate, IsOperatorAuthenticated
 from api.utils.common import with_common_response
@@ -23,14 +24,14 @@ from api.routes.organization.serializers import (
     OrganizationIDSerializer,
 )
 from api.routes.user.serializers import UserIDSerializer
-from api.models import UserModel, Organization
+from api.models import UserProfile, Organization
 from api.routes.user.serializers import UserListSerializer, UserQuerySerializer
 
 LOG = logging.getLogger(__name__)
 
 
 class OrganizationViewSet(viewsets.ViewSet):
-    authentication_classes = (CustomAuthenticate,)
+    authentication_classes = (JSONWebTokenAuthentication,)
     permission_classes = (IsAuthenticated, IsOperatorAuthenticated)
 
     @swagger_auto_schema(
@@ -115,7 +116,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         """
         try:
             organization = Organization.objects.get(id=pk)
-            user_count = UserModel.objects.filter(
+            user_count = UserProfile.objects.filter(
                 organization=organization
             ).count()
             if user_count > 0:
@@ -162,7 +163,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             parameter = {"organization": organization}
             if name:
                 parameter.update({"name__icontains": name})
-            users = UserModel.objects.filter(**parameter)
+            users = UserProfile.objects.filter(**parameter)
             p = Paginator(users, per_page)
             users = p.page(page)
             users = [
@@ -184,7 +185,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             user_id = serializer.validated_data.get("id")
             try:
                 organization = Organization.objects.get(id=pk)
-                user = UserModel.objects.get(id=user_id)
+                user = UserProfile.objects.get(id=user_id)
                 if user.govern:
                     raise ResourceInUse
             except ObjectDoesNotExist:
@@ -248,7 +249,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         Remove user from Organization
         """
         try:
-            user = UserModel.objects.get(id=user_id, organization__id=pk)
+            user = UserProfile.objects.get(id=user_id, organization__id=pk)
         except ObjectDoesNotExist:
             raise ResourceNotFound
         else:

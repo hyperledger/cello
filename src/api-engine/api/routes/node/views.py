@@ -37,7 +37,7 @@ class NodeViewSet(viewsets.ViewSet):
 
     @staticmethod
     def _validate_organization(request):
-        if request.user.user_model.organization is None:
+        if request.user.organization is None:
             raise CustomError(detail="Need join in organization.")
 
     @swagger_auto_schema(
@@ -76,10 +76,10 @@ class NodeViewSet(viewsets.ViewSet):
                 query_filter.update({"network_version": network_version})
             if request.user.is_administrator:
                 query_filter.update(
-                    {"organization": request.user.user_model.organization}
+                    {"organization": request.user.organization}
                 )
             elif request.user.is_common_user:
-                query_filter.update({"user": request.user.user_model})
+                query_filter.update({"user": request.user})
             if agent_id:
                 query_filter.update({"agent__id": agent_id})
             nodes = Node.objects.filter(**query_filter)
@@ -124,7 +124,7 @@ class NodeViewSet(viewsets.ViewSet):
                         type=agent_type,
                         network_num__lt=F("capacity"),
                         node_num__lt=F("node_capacity"),
-                        organization=request.user.user_model.organization,
+                        organization=request.user.organization,
                     )
                     .order_by("node_num")
                 )
@@ -142,8 +142,8 @@ class NodeViewSet(viewsets.ViewSet):
                 network_type=network_type,
                 agent=agent,
                 network_version=network_version,
-                user=request.user.user_model,
-                organization=request.user.user_model.organization,
+                user=request.user,
+                organization=request.user.organization,
                 type=node_type,
             )
             node.save()
@@ -184,7 +184,7 @@ class NodeViewSet(viewsets.ViewSet):
                 node = Node.objects.get(id=pk)
             else:
                 node = Node.objects.get(
-                    id=pk, govern=request.user.user_model.govern
+                    id=pk, organization=request.user.organization
                 )
         except ObjectDoesNotExist:
             raise ResourceNotFound

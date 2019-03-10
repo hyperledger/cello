@@ -4,11 +4,15 @@
 import logging
 import json
 
+from django.db.models import Q
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework_jwt.authentication import JSONWebTokenAuthentication
+
 from api.utils.common import with_common_response
 from api.routes.user.serializers import (
     UserCreateBody,
@@ -23,7 +27,7 @@ from api.auth import (
 )
 from api.utils.keycloak_client import KeyCloakClient
 from api.exceptions import ResourceExists, CustomError
-from api.models import UserModel
+from api.models import UserProfile
 from api.auth import keycloak_openid
 from api.utils.common import any_of
 from keycloak.exceptions import KeycloakAuthenticationError
@@ -32,7 +36,7 @@ LOG = logging.getLogger(__name__)
 
 
 class UserViewSet(viewsets.ViewSet):
-    authentication_classes = (CustomAuthenticate,)
+    authentication_classes = (JSONWebTokenAuthentication,)
 
     def get_permissions(self):
         permission_classes = []
@@ -70,38 +74,29 @@ class UserViewSet(viewsets.ViewSet):
         """
         serializer = UserCreateBody(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            name = serializer.validated_data.get("name")
+            username = serializer.validated_data.get("username")
             role = serializer.validated_data.get("role")
             organization = serializer.validated_data.get("organization")
             password = serializer.validated_data.get("password")
+            email = serializer.validated_data.get("email")
 
-            keycloak_client = KeyCloakClient()
-            user_exists = keycloak_client.get_user(username=name)
-            if user_exists:
-                raise ResourceExists
+            user_count = UserProfile.objects.filter(
+                Q(username=username) | Q(email=email)
+            ).count()
+            if user_count > 0:
+                raise ResourceExists(
+                    detail="User name or email already exists"
+                )
 
-            create_user_body = {
-                "username": name,
-                "requiredActions": [],
-                "enabled": True,
-            }
-
-            keycloak_client.create_user(create_user_body)
-
-            user_id = keycloak_client.get_user_id(username=name)
-            keycloak_client.reset_user_password(user_id, password)
-            user_attr = {"role": role}
-            if organization:
-                user_attr.update({"organization": str(organization.id)})
-
-            keycloak_client.update_user(
-                user_id, body={"attributes": user_attr}
+            user = UserProfile(
+                username=username,
+                role=role,
+                email=email,
+                organization=organization,
             )
-
-            user, _ = UserModel.objects.get_or_create(
-                id=user_id, name=name, role=role, organization=organization
-            )
-            response = UserIDSerializer(data={"id": user_id})
+            user.set_password(password)
+            user.save()
+            response = UserIDSerializer(data={"id": user.id})
             if response.is_valid(raise_exception=True):
                 return Response(
                     response.validated_data, status=status.HTTP_201_CREATED
@@ -119,9 +114,7 @@ class UserViewSet(viewsets.ViewSet):
         Delete user
         """
         try:
-            keycloak_client = KeyCloakClient()
-            keycloak_client.delete_user(pk)
-            UserModel.objects.get(id=pk).delete()
+            UserProfile.objects.get(id=pk).delete()
         except Exception as e:
             raise CustomError(detail=str(e))
         else:

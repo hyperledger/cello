@@ -7,6 +7,54 @@
 	},
 	"item": [
 		{
+			"name": "Login Admin",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "30bb7433-5d34-407a-9c24-8d33f080446e",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"var jsonData = pm.response.json();",
+							"pm.environment.set(\"token\", jsonData.token);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"username\": \"admin\",\n\t\"password\": \"pass\"\n}"
+				},
+				"url": {
+					"raw": "{{apiServer}}{{webRoot}}/auth/login/",
+					"host": [
+						"{{apiServer}}{{webRoot}}"
+					],
+					"path": [
+						"auth",
+						"login",
+						""
+					]
+				},
+				"description": "Login Admin"
+			},
+			"response": []
+		},
+		{
 			"name": "List Agents",
 			"event": [
 				{
@@ -24,17 +72,16 @@
 			],
 			"request": {
 				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{token}}",
-							"type": "string"
-						}
-					]
+					"type": "noauth"
 				},
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "JWT {{token}}",
+						"type": "text"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": ""
@@ -73,14 +120,7 @@
 			],
 			"request": {
 				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{token}}",
-							"type": "string"
-						}
-					]
+					"type": "noauth"
 				},
 				"method": "POST",
 				"header": [
@@ -88,6 +128,11 @@
 						"key": "Content-Type",
 						"name": "Content-Type",
 						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "JWT {{token}}",
 						"type": "text"
 					}
 				],
@@ -133,14 +178,7 @@
 			],
 			"request": {
 				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{token}}",
-							"type": "string"
-						}
-					]
+					"type": "noauth"
 				},
 				"method": "GET",
 				"header": [
@@ -149,6 +187,11 @@
 						"name": "Content-Type",
 						"type": "text",
 						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "JWT {{token}}",
+						"type": "text"
 					}
 				],
 				"body": {
@@ -170,7 +213,7 @@
 			"response": []
 		},
 		{
-			"name": "Create Operator with govern",
+			"name": "Create Admin with organization",
 			"event": [
 				{
 					"listen": "test",
@@ -190,14 +233,7 @@
 			],
 			"request": {
 				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{token}}",
-							"type": "string"
-						}
-					]
+					"type": "noauth"
 				},
 				"method": "POST",
 				"header": [
@@ -206,11 +242,16 @@
 						"name": "Content-Type",
 						"type": "text",
 						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "JWT {{token}}",
+						"type": "text"
 					}
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"name\": \"{{operatorName}}\",\n\t\"organization\": \"{{orgID}}\",\n\t\"role\": \"operator\",\n\t\"password\": \"{{operatorPassword}}\"\n}"
+					"raw": "{\n\t\"username\": \"{{operatorName}}\",\n\t\"organization\": \"{{orgID}}\",\n\t\"role\": \"administrator\",\n\t\"password\": \"{{operatorPassword}}\",\n\t\"email\": \"{{operatorEmail}}\"\n}"
 				},
 				"url": {
 					"raw": "{{apiServer}}{{webRoot}}/users",
@@ -221,7 +262,7 @@
 						"users"
 					]
 				},
-				"description": "Create Operator with govern"
+				"description": "Create Admin with organization"
 			},
 			"response": []
 		},
@@ -246,20 +287,18 @@
 			],
 			"request": {
 				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{token}}",
-							"type": "string"
-						}
-					]
+					"type": "noauth"
 				},
 				"method": "POST",
 				"header": [
 					{
 						"key": "Content-Type",
 						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "JWT {{token}}",
 						"type": "text"
 					}
 				],
@@ -309,14 +348,7 @@
 			],
 			"request": {
 				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{token}}",
-							"type": "string"
-						}
-					]
+					"type": "noauth"
 				},
 				"method": "GET",
 				"header": [
@@ -324,6 +356,11 @@
 						"key": "Content-Type",
 						"type": "text",
 						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "JWT {{token}}",
+						"type": "text"
 					}
 				],
 				"body": {
@@ -357,7 +394,7 @@
 							"});",
 							"",
 							"var jsonData = pm.response.json();",
-							"pm.environment.set(\"operatorToken\", jsonData.access_token);"
+							"pm.environment.set(\"operatorToken\", jsonData.token);"
 						],
 						"type": "text/javascript"
 					}
@@ -377,13 +414,14 @@
 					"raw": "{\n\t\"username\": \"{{operatorName}}\",\n\t\"password\": \"{{operatorPassword}}\"\n}"
 				},
 				"url": {
-					"raw": "{{apiServer}}{{webRoot}}/users/auth",
+					"raw": "{{apiServer}}{{webRoot}}/auth/login/",
 					"host": [
 						"{{apiServer}}{{webRoot}}"
 					],
 					"path": [
-						"users",
-						"auth"
+						"auth",
+						"login",
+						""
 					]
 				},
 				"description": "Auth Operator"
@@ -411,14 +449,7 @@
 			],
 			"request": {
 				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{operatorToken}}",
-							"type": "string"
-						}
-					]
+					"type": "noauth"
 				},
 				"method": "POST",
 				"header": [
@@ -426,6 +457,11 @@
 						"key": "Content-Type",
 						"type": "text",
 						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "JWT {{operatorToken}}",
+						"type": "text"
 					}
 				],
 				"body": {
@@ -471,14 +507,7 @@
 			],
 			"request": {
 				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{operatorToken}}",
-							"type": "string"
-						}
-					]
+					"type": "noauth"
 				},
 				"method": "GET",
 				"header": [
@@ -486,6 +515,11 @@
 						"key": "Content-Type",
 						"type": "text",
 						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "JWT {{operatorToken}}",
+						"type": "text"
 					}
 				],
 				"body": {
@@ -524,14 +558,7 @@
 			],
 			"request": {
 				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{operatorToken}}",
-							"type": "string"
-						}
-					]
+					"type": "noauth"
 				},
 				"method": "DELETE",
 				"header": [
@@ -539,6 +566,11 @@
 						"key": "Content-Type",
 						"type": "text",
 						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "JWT {{operatorToken}}",
+						"type": "text"
 					}
 				],
 				"body": {
@@ -578,14 +610,7 @@
 			],
 			"request": {
 				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{token}}",
-							"type": "string"
-						}
-					]
+					"type": "noauth"
 				},
 				"method": "DELETE",
 				"header": [
@@ -593,6 +618,11 @@
 						"key": "Content-Type",
 						"type": "text",
 						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "JWT {{token}}",
+						"type": "text"
 					}
 				],
 				"body": {
@@ -631,14 +661,7 @@
 			],
 			"request": {
 				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{token}}",
-							"type": "string"
-						}
-					]
+					"type": "noauth"
 				},
 				"method": "DELETE",
 				"header": [
@@ -647,6 +670,11 @@
 						"name": "Content-Type",
 						"type": "text",
 						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "JWT {{token}}",
+						"type": "text"
 					}
 				],
 				"body": {
@@ -685,14 +713,7 @@
 			],
 			"request": {
 				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{token}}",
-							"type": "string"
-						}
-					]
+					"type": "noauth"
 				},
 				"method": "DELETE",
 				"header": [
@@ -701,6 +722,11 @@
 						"name": "Content-Type",
 						"type": "text",
 						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "JWT {{token}}",
+						"type": "text"
 					}
 				],
 				"body": {

@@ -11,12 +11,9 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
-from api.auth import (
-    CustomAuthenticate,
-    IsOperatorAuthenticated,
-    IsAdminAuthenticated,
-)
+from api.auth import IsOperatorAuthenticated, IsAdminAuthenticated
 from api.common.enums import HostType
 from api.exceptions import (
     ResourceNotFound,
@@ -42,7 +39,7 @@ LOG = logging.getLogger(__name__)
 
 
 class AgentViewSet(viewsets.ViewSet):
-    authentication_classes = (CustomAuthenticate,)
+    authentication_classes = (JSONWebTokenAuthentication,)
 
     def get_permissions(self):
         if self.action in ["apply", "list", "release", "retrieve"]:
@@ -83,8 +80,8 @@ class AgentViewSet(viewsets.ViewSet):
                 query_filters.update({"organization": organization})
             else:
                 org_name = (
-                    request.user.user_model.organization.name
-                    if request.user.user_model.organization
+                    request.user.organization.name
+                    if request.user.organization
                     else ""
                 )
                 if request.user.is_administrator:
@@ -142,7 +139,7 @@ class AgentViewSet(viewsets.ViewSet):
             if worker_api:
                 agent_count = Agent.objects.filter(
                     worker_api=worker_api,
-                    govern=request.user.user_model.govern,
+                    organization=request.user.organization,
                 ).count()
                 if agent_count > 0:
                     raise ResourceExists(
@@ -150,7 +147,7 @@ class AgentViewSet(viewsets.ViewSet):
                     )
             if name:
                 agent_count = Agent.objects.filter(
-                    name=name, govern=request.user.user_model.govern
+                    name=name, organization=request.user.organization
                 ).count()
                 if agent_count > 0:
                     raise ResourceExists(
@@ -195,7 +192,7 @@ class AgentViewSet(viewsets.ViewSet):
                 agent = Agent.objects.get(id=pk)
             else:
                 agent = Agent.objects.get(
-                    id=pk, organization=request.user.user_model.organization
+                    id=pk, organization=request.user.organization
                 )
             k8s_config = None
             if agent.type == HostType.Kubernetes.name.lower():
@@ -280,10 +277,10 @@ class AgentViewSet(viewsets.ViewSet):
             agent_type = serializer.validated_data.get("type")
             capacity = serializer.validated_data.get("capacity")
 
-            if request.user.user_model.organization is None:
+            if request.user.organization is None:
                 raise CustomError(detail="Need join in organization")
             agent_count = Agent.objects.filter(
-                organization=request.user.user_model.organization
+                organization=request.user.organization
             ).count()
             if agent_count > 0:
                 raise CustomError(detail="Already applied agent.")
@@ -298,7 +295,7 @@ class AgentViewSet(viewsets.ViewSet):
                 raise NoResource
 
             agent = agents[0]
-            agent.organization = request.user.user_model.organization
+            agent.organization = request.user.organization
             agent.save()
 
             response = AgentIDSerializer(data=agent.__dict__)
@@ -324,10 +321,10 @@ class AgentViewSet(viewsets.ViewSet):
             if request.user.is_operator:
                 agent = Agent.objects.get(id=pk)
             else:
-                if request.user.user_model.organization is None:
+                if request.user.organization is None:
                     raise CustomError("Need join in organization")
                 agent = Agent.objects.get(
-                    id=pk, organization=request.user.user_model.organization
+                    id=pk, organization=request.user.organization
                 )
         except ObjectDoesNotExist:
             raise ResourceNotFound
