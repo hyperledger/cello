@@ -12,8 +12,8 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
-from api.auth import CustomAuthenticate
 from api.common.enums import NodeStatus
 from api.exceptions import CustomError, NoResource
 from api.exceptions import ResourceNotFound
@@ -32,7 +32,7 @@ LOG = logging.getLogger(__name__)
 
 
 class NodeViewSet(viewsets.ViewSet):
-    authentication_classes = (CustomAuthenticate,)
+    authentication_classes = (JSONWebTokenAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     @staticmethod

@@ -175,21 +175,7 @@ SWAGGER_SETTINGS = {
          "type": "apiKey",
          "name": "Authorization",
          "in": "header"
-      },
-      "Cello API - Swagger": {
-         "type": "oauth2",
-         "authorizationUrl": "${SSO_AUTH_URL}realms/${SSO_REALM}/protocol/openid-connect/auth",
-         "tokenUrl": "${SSO_AUTH_URL}realms/${SSO_REALM}/protocol/openid-connect/token",
-         "flow": "accessCode",
-         "scopes": {
-          "read:groups": "read groups",
-         }
       }
-   },
-   "OAUTH2_CONFIG": {
-      "clientId": "${SSO_ID}",
-      "clientSecret": "${SSO_SECRET}",
-      "appName": "${SSO_ID}"
    },
    "USE_SESSION_AUTH": False
 }
