@@ -1,0 +1,46 @@
+---
+- name: Query node public ip address
+  command: >-
+    ./kubectl --kubeconfig kubeconfig  get nodes -o
+    jsonpath={.items[*].status.addresses[?\(@.type==\'ExternalIP\'\)].address}
+  register: ips
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+
+- name: Query service ports
+  shell: >-
+    ./kubectl --kubeconfig kubeconfig get services
+    | grep NodePort | awk '{print $1, $5}'
+  register: ports
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+
+- debug:
+    var: ports.stdout_lines
+
+- set_fact:
+    allips: "{{ ips.stdout.split(' ') }}"
+    k8sports: []
+    sports: {}
+
+- set_fact:
+    k8sports: >-
+      {{ k8sports +
+      [{ 'name':item.split(' ')[0], 'value':(item.split(' ')[1]|replace('/TCP','')).split(',') }] }}
+  with_items: "{{ ports.stdout_lines }}"
+
+- set_fact:
+    sports: >-
+      {{ k8sports | subelements('value', skip_missing=True) }}
+
+- set_fact:
+    k8sports: {}
+
+- set_fact:
+    k8sports: >-
+      {{ k8sports|combine( {item[0].name+':'+item[1].split(':')[0]:item[1].split(':')[1]} ) }}
+  with_items: "{{ [sports] }}"
+
+- debug:
+    var: k8sports
+

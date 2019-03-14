@@ -219,6 +219,21 @@
     fabric.peersettings.CORE_PEER_PROFILE_ENABLED is defined and
     fabric.peersettings.CORE_PEER_PROFILE_ENABLED == True
 
+- name: Create k8s service deployment files
+  template:
+    src: "{{ playbook_dir }}/../deploy_k8s/fabricsetup/templates/fabric-services.j2"
+    dest: "{{ pjrun }}/fabric-services.yml"
+
+- name: Start fabric services
+  command: >-
+    ./kubectl --kubeconfig kubeconfig apply -f {{ pjrun }}/fabric-services.yml
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+  tags: "fabricup"
+
+- include_tasks: "{{ playbook_dir }}/../common/publicports.yml"
+  when: fabric.k8s.exposeserviceport == True
+
 - name: Create k8s deployment files
   template:
     src: "{{ playbook_dir }}/../deploy_k8s/fabricsetup/templates/fabric-pod.j2"

@@ -56,20 +56,6 @@ spec:
         - { name: "ZOO_INIT_LIMIT", value: "10" }
         - { name: "ZOO_SYNC_LIMIT", value: "2" }
 {% include './resource.j2' %}
----
-kind: Service
-apiVersion: v1
-metadata:
-  labels:
-    k8s-app: {{ zookeeper }}
-  name: {{ zookeeper }}
-spec:
-  selector:
-    k8s-app: {{ zookeeper }}
-  ports:
-    - { name: "port1", port: 2888 }
-    - { name: "port2", port: 3888 }
-    - { name: "port3", port: 2181 }
 {% endfor %}
 
 {% for kafka in kafkals %}
@@ -117,19 +103,6 @@ spec:
 {% endfor %}
 {% endif %}
 {% include './resource.j2' %}
----
-kind: Service
-apiVersion: v1
-metadata:
-  labels:
-    k8s-app: {{ kafka }}
-  name: {{ kafka }}
-spec:
-  selector:
-    k8s-app: {{ kafka }}
-  ports:
-    - { name: "port1", port: 9092 }
-    - { name: "port2", port: 9093 }
 {% endfor %}
 {% endif %}
 {% if allcas is defined and (allcas | length > 0) %}
@@ -187,22 +160,6 @@ spec:
         - { mountPath: "/etc/hyperledger/fabric-ca-server-config", name: "task-pv-storage" }
       command: ["fabric-ca-server"]
       args:  ["start", "-b", "{{ fabric.ca.admin }}:{{ fabric.ca.adminpw }}", "-d"]
----
-kind: Service
-apiVersion: v1
-metadata:
-  labels:
-    k8s-app: {{ ca.name }}
-  name: {{ ca.name }}
-spec:
-  selector:
-    k8s-app: {{ ca.name }}
-{% if fabric.k8s.exposeserviceport %}
-  type: NodePort
-{% endif %}
-  ports:
-    - name: port1
-      port: 7054
 
 {% endfor %}
 {% endif %}
@@ -289,7 +246,11 @@ spec:
         - { name: "CORE_PEER_TLS_ROOTCERT_FILE", value: "/etc/hyperledger/fabric/artifacts/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}/tls/ca.crt" }
 {% endif %}
         - { name: "CORE_PEER_ID", value: "{{ peer.name }}" }
+{% if fabric.k8s.exposeserviceport %}
+        - { name: "CORE_PEER_GOSSIP_EXTERNALENDPOINT", value: "{{ allips|random }}:{{ k8sports[peer.name+':7051'] }}" }
+{% else %}
         - { name: "CORE_PEER_GOSSIP_EXTERNALENDPOINT", value: "{{ peer.name }}:7051" }
+{% endif %}
         - { name: "CORE_PEER_ADDRESS", value: "{{ peer.name }}:7051" }
         - { name: "CORE_PEER_LISTENADDRESS", value: "0.0.0.0:7051" }
 {% if project_version is version('1.1.0','>=') or 'stable' in project_version or 'latest' in project_version %}
@@ -326,45 +287,6 @@ spec:
         - { mountPath: "/var/run", name: "rundind" }
       command: ["peer"]
       args: ["node", "start"]
----
-kind: Service
-apiVersion: v1
-metadata:
-  labels:
-    k8s-app: {{ peer.name }}
-  name: {{ peer.name }}
-spec:
-  selector:
-    k8s-app: {{ peer.name }}
-{% if fabric.k8s.exposeserviceport %}
-  type: NodePort
-{% endif %}
-  ports:
-  - name: port1
-    port: 7051
-  - name: port2
-    port: 7052
-  - name: port3
-    port: 7053
-{% if fabric.metrics is defined and fabric.metrics %}
-  - name: scrapeport
-    port: 9443
-{% endif %}
-{% if peerprofile is defined and peerprofile %}
----
-kind: Service
-apiVersion: v1
-metadata:
-  labels:
-    k8s-app: {{ peer.name }}-profile
-  name: {{ peer.name }}-profile
-spec:
-  selector:
-    k8s-app: {{ peer.name }}
-  ports:
-  - name: profileport
-    port: 6060
-{% endif %}
 {% endfor %}
 {% endif %}
 
@@ -463,41 +385,6 @@ spec:
       volumeMounts:
         - { mountPath: "/etc/hyperledger/fabric/artifacts", name: "task-pv-storage" }
       command: ["orderer"]
----
-kind: Service
-apiVersion: v1
-metadata:
-  labels:
-    k8s-app: {{ orderer.name }}
-  name: {{ orderer.name }}
-spec:
-  selector:
-    k8s-app: {{ orderer.name }}
-{% if fabric.k8s.exposeserviceport %}
-  type: NodePort
-{% endif %}
-  ports:
-    - name: port1
-      port: 7050
-{% if fabric.metrics is defined and fabric.metrics %}
-    - name: scrapeport
-      port: 8443
-{% endif %}
-{% if ordererprofile is defined and ordererprofile %}
----
-kind: Service
-apiVersion: v1
-metadata:
-  labels:
-    k8s-app: {{ orderer.name }}-profile
-  name: {{ orderer.name }}-profile
-spec:
-  selector:
-    k8s-app: {{ orderer.name }}
-  ports:
-    - name: profileport
-      port: 6060
-{% endif %}
 {% endfor %}
 {% endif %}
 
