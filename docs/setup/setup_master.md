@@ -50,11 +50,11 @@ To start the whole services, please run
 $ SERVER_PUBLIC_IP=x.x.x.x make start
 ```
 
-This may take 1+ min till all services are up.
+This may take 1+ min till all services are up. After all services containers are up, you can access the operator dashboard at x.x.x.x:8080, and user dashboard at x.x.x.x:8081.
 
 Environment variables which you can use in the command:
 
-* `SERVER_PUBLIC_IP`(required): Master node's public IP address
+* `SERVER_PUBLIC_IP`(required): Master node's public IP address, do not use `127.0.0.1`
 * `THEME`(optional): Theme name for operator dashboard basic/vue/react, default is basic
 * `NPM_REGISTRY`(optional):: npm registry for install node packages
 * `DEV`(optional):: Start service in dev/product mode, options is True/False, default is False
@@ -109,7 +109,7 @@ To check the logs for one specific service, please run
 $ make log service=watchdog
 ```
 
-Now you can access the `MASTER_NODE_IP:8080` to open the Web-based [operation dashboard](../dashboard_operator.md).
+Now you can access the `x.x.x.x:8080` to open the Web-based [operation dashboard](../dashboard_operator.md).
 
 ### Configuration
 The application configuration can be imported from file named `CELLO_CONFIG_FILE`.
