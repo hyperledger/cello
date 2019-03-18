@@ -42,6 +42,16 @@ fabric: {
     MIN_INSYNC_REPLICAS: "2",
     DEFAULT_REPLICATION_FACTOR: "3"
   },
+  raftsettings: {
+    Options: {
+      TickInterval: "500ms",
+      ElectionTick: 10,
+      HeartbeatTick: 1,
+      MaxInflightMsgs: 256,
+      MaxSizePerMsg: 1048576,
+      SnapshotInterval: "100 MB"
+    }
+  },
 
   network: {
     fabric001: {

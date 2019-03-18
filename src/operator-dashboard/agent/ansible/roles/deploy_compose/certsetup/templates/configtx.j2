@@ -86,7 +86,7 @@ Orderer: &OrdererDefaults
       - {{ item }}:9092
 {%   endfor %}
 {%  endif %}
-{% if (project_version is version_compare('2.0.0','>=') or ('stable' in project_version or 'latest' in project_version)) and fabric.consensus_type is defined and fabric.consensus_type == 'etcdraft' %}
+{% if (project_version is version_compare('1.4.1','>=') or ('stable' in project_version or 'latest' in project_version)) and fabric.consensus_type is defined and fabric.consensus_type == 'etcdraft' %}
   EtcdRaft:
     Consenters:
 {% for orderer in allorderers %}
@@ -95,13 +95,9 @@ Orderer: &OrdererDefaults
         ClientTLSCert: {{ fabricworkdir }}/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}/tls/server.crt
         ServerTLSCert: {{ fabricworkdir }}/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}/tls/server.crt
 {% endfor %}
-    Options:
-      TickInterval: 500
-      ElectionTick: 10
-      HeartbeatTick: 1
-      MaxInflightMsgs: 256
-      MaxSizePerMsg: 1048576
-      SnapshotInterval: 100 MB
+{% if fabric.raftsettings is defined and fabric.consensus_type == 'etcdraft' %}
+    {{ fabric.raftsettings | to_nice_yaml | indent(2, False) -}}
+{% endif %}
 {% endif %}
   Organizations:
 {% for org in ordererorgs %}
@@ -161,6 +157,8 @@ Channel: &ChannelDefaults
         Admins:
             Type: ImplicitMeta
             Rule: "MAJORITY Admins"
+    Capabilities:
+      <<: *ChannelCapabilities
 {% endif %}
 
 Profiles:
@@ -168,7 +166,8 @@ Profiles:
     Consortium: FabricConsortium
     Application:
       <<: *ApplicationDefaults
-{% if (project_version is version_compare('2.0.0','>=') or ('stable' in project_version or 'latest' in project_version)) and fabric.consensus_type is defined and fabric.consensus_type == 'etcdraft' %}
+{% if (project_version is version_compare('1.4.1','>=') or ('stable' in project_version or 'latest' in project_version)) and fabric.consensus_type is defined and fabric.consensus_type == 'etcdraft' %}
+    <<: *ChannelDefaults
     Orderer:
       <<: *OrdererDefaults
 {% endif %}

@@ -51,6 +51,7 @@ fabric: {
         MaxMessageCount: 500,
         AbsoluteMaxBytes: "98 MB",
         PreferredMaxBytes: "512 KB"
+      }
     },
     ordererenv: {
     }
@@ -62,6 +63,16 @@ fabric: {
     UNCLEAN_LEADER_ELECTION_ENABLE: "true",
     MIN_INSYNC_REPLICAS: "2",
     DEFAULT_REPLICATION_FACTOR: "3"
+  },
+  raftsettings: {
+    Options: {
+      TickInterval: "500ms",
+      ElectionTick: 10,
+      HeartbeatTick: 1,
+      MaxInflightMsgs: 256,
+      MaxSizePerMsg: 1048576,
+      SnapshotInterval: "100 MB"
+    }
   },
 
   # The following section defines how the fabric network is going to be made up
