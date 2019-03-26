@@ -71,7 +71,7 @@ class UserProfile(AbstractUser):
         default=UserRole.User.value,
         max_length=64,
     )
-    organization = models.OneToOneField(
+    organization = models.ForeignKey(
         Organization, null=True, on_delete=models.CASCADE
     )
 
@@ -288,7 +288,7 @@ class Node(models.Model):
         blank=True,
         default=dict,
     )
-    user = models.OneToOneField(
+    user = models.ForeignKey(
         UserProfile,
         help_text="User of node",
         null=True,
