@@ -3,7 +3,11 @@
 #
 import logging
 
-from django.core.validators import URLValidator, RegexValidator
+from django.core.validators import (
+    URLValidator,
+    RegexValidator,
+    FileExtensionValidator,
+)
 from rest_framework import serializers
 
 from api.common.enums import (
@@ -14,7 +18,7 @@ from api.common.enums import (
     separate_upper_class,
 )
 from api.common.serializers import PageQuerySerializer, ListResponseSerializer
-from api.models import Agent, KubernetesConfig
+from api.models import Agent, KubernetesConfig, validate_k8s_config_file
 from api.utils.common import to_form_paras
 
 LOG = logging.getLogger(__name__)
@@ -105,10 +109,6 @@ class K8SParameterSerializer(serializers.ModelSerializer):
 
 
 class AgentCreateBody(serializers.ModelSerializer):
-    k8s_config = K8SParameterSerializer(
-        help_text="Config of agent which is for kubernetes", required=False
-    )
-
     def to_form_paras(self):
         custom_paras = to_form_paras(self)
 
@@ -124,26 +124,39 @@ class AgentCreateBody(serializers.ModelSerializer):
             "log_level",
             "type",
             "schedulable",
-            "k8s_config",
+            "k8s_config_file",
         )
         extra_kwargs = {
             "worker_api": {
-                "required": True,
+                "required": False,
                 "validators": [URLValidator(schemes=("http", "https", "tcp"))],
             },
             "capacity": {"required": True},
             "node_capacity": {"required": True},
             "type": {"required": True},
+            "k8s_config_file": {
+                "required": False,
+                "validators": [
+                    FileExtensionValidator(allowed_extensions=["tgz", "gz"]),
+                    validate_k8s_config_file,
+                ],
+            },
         }
 
     def validate(self, attrs):
         agent_type = attrs.get("type")
         capacity = attrs.get("capacity")
         node_capacity = attrs.get("node_capacity")
+        worker_api = attrs.get("worker_api", "")
         if agent_type == HostType.Kubernetes.name.lower():
-            k8s_config = attrs.get("k8s_config")
-            if k8s_config is None:
-                raise serializers.ValidationError("Need input k8s config")
+            k8s_config_file = attrs.get("k8s_config_file")
+            if k8s_config_file is None:
+                raise serializers.ValidationError("Need input k8s config file")
+        if agent_type == HostType.Docker.name.lower():
+            if worker_api == "":
+                raise serializers.ValidationError(
+                    "Please input worker api for docker"
+                )
         if node_capacity < capacity:
             raise serializers.ValidationError(
                 "Node capacity must larger than capacity"

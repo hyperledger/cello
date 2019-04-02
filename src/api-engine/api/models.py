@@ -3,13 +3,17 @@
 #
 import os
 import shutil
+import tarfile
 from pathlib import Path
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import JSONField
+from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.dispatch import receiver
+from django.db.models.signals import post_save
 
 from api.common.enums import (
     HostStatus,
@@ -25,12 +29,13 @@ from api.common.enums import (
     FabricNodeType,
     FabricVersions,
 )
-from api.utils.common import make_uuid, random_name
+from api.utils.common import make_uuid, random_name, hash_file
 
 SUPER_USER_TOKEN = getattr(settings, "ADMIN_TOKEN", "")
 MAX_CAPACITY = getattr(settings, "MAX_AGENT_CAPACITY", 100)
 MAX_NODE_CAPACITY = getattr(settings, "MAX_NODE_CAPACITY", 600)
 MEDIA_ROOT = getattr(settings, "MEDIA_ROOT")
+LIMIT_K8S_CONFIG_FILE_MB = 100
 
 
 class Govern(models.Model):
@@ -96,6 +101,21 @@ class UserProfile(AbstractUser):
         return self.role == UserRole.User.name.lower()
 
 
+def get_k8s_config_file_path(instance, file):
+    file_ext = file.split(".")[-1]
+    filename = "%s.%s" % (hash_file(instance.k8s_config_file), file_ext)
+
+    return os.path.join("k8s_config_files/%s" % str(instance.id), filename)
+
+
+def validate_k8s_config_file(file):
+    file_size = file.size
+    if file_size > LIMIT_K8S_CONFIG_FILE_MB * 1024 * 1024:
+        raise ValidationError(
+            "Max file size is %s MB" % LIMIT_K8S_CONFIG_FILE_MB
+        )
+
+
 class Agent(models.Model):
     id = models.UUIDField(
         primary_key=True,
@@ -109,7 +129,7 @@ class Agent(models.Model):
         default=random_name("agent"),
     )
     worker_api = models.CharField(
-        help_text="Worker api of agent", max_length=128, default=""
+        help_text="Worker api of agent", max_length=128, default="", null=True
     )
     govern = models.ForeignKey(
         Govern,
@@ -157,12 +177,37 @@ class Agent(models.Model):
             MaxValueValidator(MAX_NODE_CAPACITY),
         ],
     )
+    k8s_config_file = models.FileField(
+        help_text="Kubernetes config file",
+        max_length=256,
+        blank=True,
+        upload_to=get_k8s_config_file_path,
+    )
     created_at = models.DateTimeField(
         help_text="Create time of agent", auto_now_add=True
     )
 
+    def delete(self, using=None, keep_parents=False):
+        if self.k8s_config_file:
+            if os.path.isfile(self.k8s_config_file.path):
+                os.remove(self.k8s_config_file.path)
+                shutil.rmtree(
+                    os.path.dirname(self.k8s_config_file.path),
+                    ignore_errors=True,
+                )
+
+        super(Agent, self).delete(using, keep_parents)
+
     class Meta:
         ordering = ("-created_at",)
+
+
+@receiver(post_save, sender=Agent)
+def extract_file(sender, instance, created, *args, **kwargs):
+    if created:
+        if instance.k8s_config_file:
+            tar = tarfile.open(instance.k8s_config_file.path)
+            tar.extractall(path=os.path.dirname(instance.k8s_config_file.path))
 
 
 class KubernetesConfig(models.Model):

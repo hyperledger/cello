@@ -1,11 +1,13 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
+import hashlib
+
 from drf_yasg import openapi
 from rest_framework import status
 from rest_framework import serializers
 from rest_framework.permissions import BasePermission
-from functools import reduce
+from functools import reduce, partial
 from api.common.serializers import BadResponseSerializer
 import uuid
 
@@ -89,3 +91,11 @@ def any_of(*perm_classes):
             return reduce(lambda x, y: x or y, allowed)
 
     return Or
+
+
+def hash_file(file, block_size=65536):
+    hash_func = hashlib.md5()
+    for buf in iter(partial(file.read, block_size), b""):
+        hash_func.update(buf)
+
+    return hash_func.hexdigest()

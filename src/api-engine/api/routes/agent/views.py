@@ -107,7 +107,7 @@ class AgentViewSet(viewsets.ViewSet):
                 )
 
     @swagger_auto_schema(
-        request_body=AgentCreateBody,
+        manual_parameters=AgentCreateBody().to_form_paras(),
         responses=with_common_response(
             {status.HTTP_201_CREATED: AgentIDSerializer}
         ),
@@ -128,7 +128,7 @@ class AgentViewSet(viewsets.ViewSet):
             agent_type = serializer.validated_data.get("type")
             schedulable = serializer.validated_data.get("schedulable")
             parameters = serializer.validated_data.get("parameters")
-            k8s_config = serializer.validated_data.get("k8s_config")
+            k8s_config_file = serializer.validated_data.get("k8s_config_file")
 
             body = {
                 "worker_api": worker_api,
@@ -160,15 +160,11 @@ class AgentViewSet(viewsets.ViewSet):
                 body.update({"log_level": log_level})
             if parameters is not None:
                 body.update({"parameters": parameters})
+            if k8s_config_file is not None:
+                body.update({"k8s_config_file": k8s_config_file})
 
             agent = Agent(**body)
             agent.save()
-
-            if agent_type == HostType.Kubernetes.name.lower():
-                kubernetes_config = KubernetesConfig(
-                    **dict(k8s_config), agent=agent
-                )
-                kubernetes_config.save()
 
             response = AgentIDSerializer(data=agent.__dict__)
             if response.is_valid(raise_exception=True):
