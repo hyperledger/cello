@@ -3,8 +3,13 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 FROM node:8.9 as build_js
-MAINTAINER haitao yue "hightall@me.com"
+MAINTAINER Hyperledger Cello "github.com/hyperledger/cello"
 RUN cd /tmp && git clone -b 'v0.9.0' --single-branch --depth 1 https://github.com/hyperledger/cello.git
+
+# Fix npm building problem
+COPY Fix-operator-user-dashboard-build-image-failed.patch /tmp/cello
+RUN cd /tmp/cello && git apply Fix-operator-user-dashboard-build-image-failed.patch
+
 RUN cp -r /tmp/cello/src/static /var/www
 RUN cd /var/www/dashboard && npm install && npm run build
 
