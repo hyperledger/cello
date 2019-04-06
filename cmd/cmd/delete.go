@@ -13,11 +13,14 @@ import (
 var deleteCmd = &cobra.Command{
 	Use:   "delete",
 	Short: "Delete resource in cell service",
-	Long: `Delete resource in cello service,
-			supported kind: Agent.
-		Examples:
-		# Delete a agent using agent id.
-		celloctl delete agent 1
+	Long: `
+Delete resource in cello service,
+
+supported kind: Agent,Organization,Node
+
+Examples:
+  $ Delete a agent using agent id.
+  celloctl delete agent 1
 	`,
 	Args: cobra.MinimumNArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
