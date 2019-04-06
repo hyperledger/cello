@@ -17,9 +17,16 @@ var file string
 
 var createCmd = &cobra.Command{
 	Use:   "create",
-	Short: "Create resource in cell service",
-	Long: `Create resource in cello service,
-			supported kind: Agent`,
+	Short: "Create resource in cell service from a file",
+	Long: `
+Create resource in cello service from a file,
+
+supported kind: Agent,Organization,Node.
+
+Examples:
+  $ Create a agent using the data in agent.yaml
+  celloctl create -f ./agent.yaml
+`,
 	Run: func(cmd *cobra.Command, args []string) {
 		source, err := ioutil.ReadFile(file)
 		if err != nil {

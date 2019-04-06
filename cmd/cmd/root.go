@@ -32,8 +32,11 @@ type TokenResponse struct {
 var RootCmd = &cobra.Command{
 	Use:   "celloctl",
 	Short: "Cello ctl is a tool to manage cello api service",
-	Long: `This application can manage all cello api service, to control
-Networks of hyperledger deployment `,
+	Long: `
+This application can manage all cello api service, to control Networks of hyperledger deployment.
+
+The default config store directory is, $HOME/.cello or /etc/cello, you can create config.yaml under these folders.
+`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	//	Run: func(cmd *cobra.Command, args []string) { },

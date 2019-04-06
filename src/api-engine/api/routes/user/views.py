@@ -2,35 +2,21 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import logging
-import json
 
 from django.db.models import Q
-from django.core.exceptions import ObjectDoesNotExist
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from drf_yasg.utils import swagger_auto_schema
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
-from api.utils.common import with_common_response
-from api.routes.user.serializers import (
-    UserCreateBody,
-    UserIDSerializer,
-    UserAuthSerializer,
-    UserAuthResponseSerializer,
-)
-from api.auth import (
-    CustomAuthenticate,
-    IsAdminAuthenticated,
-    IsOperatorAuthenticated,
-)
-from api.utils.keycloak_client import KeyCloakClient
+from api.auth import IsAdminAuthenticated, IsOperatorAuthenticated
 from api.exceptions import ResourceExists, CustomError
 from api.models import UserProfile
-from api.auth import keycloak_openid
+from api.routes.user.serializers import UserCreateBody, UserIDSerializer
 from api.utils.common import any_of
-from keycloak.exceptions import KeycloakAuthenticationError
+from api.utils.common import with_common_response
 
 LOG = logging.getLogger(__name__)
 
@@ -156,35 +142,3 @@ class UserViewSet(viewsets.ViewSet):
         Update/Reset password for user
         """
         pass
-
-    @swagger_auto_schema(
-        method="post",
-        request_body=UserAuthSerializer,
-        responses=with_common_response(
-            {status.HTTP_200_OK: UserAuthResponseSerializer}
-        ),
-    )
-    @action(methods=["post"], detail=False, url_path="auth")
-    def auth(self, request):
-        """
-        Authenticate user with username & password
-
-        Authenticate user with username & password
-        """
-        serializer = UserAuthSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            username = serializer.validated_data.get("username")
-            password = serializer.validated_data.get("password")
-            try:
-                token = keycloak_openid.token(username, password)
-            except KeycloakAuthenticationError as e:
-                error_msg = json.loads(e.error_message)
-                raise CustomError(
-                    detail=error_msg.get("error_description", "")
-                )
-
-            response = UserAuthResponseSerializer(data=token)
-            if response.is_valid(raise_exception=True):
-                return Response(
-                    response.validated_data, status=status.HTTP_200_OK
-                )

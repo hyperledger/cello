@@ -12,10 +12,9 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
-from api.auth import CustomAuthenticate, IsOperatorAuthenticated
+from api.auth import IsOperatorAuthenticated
 from api.utils.common import with_common_response
 from api.exceptions import ResourceExists, ResourceNotFound, ResourceInUse
-from api.utils.keycloak_client import KeyCloakClient
 from api.routes.organization.serializers import (
     OrganizationQuery,
     OrganizationCreateBody,
@@ -191,13 +190,6 @@ class OrganizationViewSet(viewsets.ViewSet):
             except ObjectDoesNotExist:
                 raise ResourceNotFound
             else:
-                keycloak_client = KeyCloakClient()
-                user_info = keycloak_client.get_user(user.name)
-                user_attr = user_info.get("attributes", {})
-                user_attr.update({"organization": pk})
-                keycloak_client.update_user(
-                    user_id, body={"attributes": user_attr}
-                )
                 user.organization = organization
                 user.save()
 
@@ -253,16 +245,6 @@ class OrganizationViewSet(viewsets.ViewSet):
         except ObjectDoesNotExist:
             raise ResourceNotFound
         else:
-            keycloak_client = KeyCloakClient()
-            user_info = keycloak_client.get_user(user.name)
-            user_attr = user_info.get("attributes", {})
-            if "organization" in user_attr:
-                del user_attr["organization"]
-
-            keycloak_client.update_user(
-                user_id, body={"attributes": user_attr}
-            )
-
             user.govern = None
             user.save()
 

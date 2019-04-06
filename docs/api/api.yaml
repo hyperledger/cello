@@ -1,0 +1,2050 @@
+swagger: '2.0'
+info:
+  title: Cello API Engine Service
+  description: "\n    This is swagger docs for Cello API engine.\n    "
+  version: v1
+basePath: /engine
+consumes:
+  - application/json
+produces:
+  - application/json
+securityDefinitions:
+  JWT:
+    in: header
+    name: Authorization
+    type: apiKey
+security:
+  - JWT: []
+paths:
+  /agents:
+    get:
+      operationId: agents_list
+      summary: List Agents
+      description: Filter agents with query parameters.
+      parameters:
+        - name: status
+          in: query
+          description: Status of agent
+          required: false
+          type: string
+          enum:
+            - inactive
+            - active
+        - name: name
+          in: query
+          description: Agent name, can be generated automatically.
+          required: false
+          type: string
+          maxLength: 64
+          minLength: 1
+        - name: type
+          in: query
+          description: Type of agent
+          required: false
+          type: string
+          enum:
+            - docker
+            - kubernetes
+        - name: page
+          in: query
+          description: Page of filter
+          required: false
+          type: integer
+          default: 1
+          minimum: 1
+        - name: per_page
+          in: query
+          description: Per Page of filter
+          required: false
+          type: integer
+          default: 10
+          maximum: 100
+          minimum: 1
+        - name: organization
+          in: query
+          description: Organization of agent
+          required: false
+          type: string
+          format: uuid
+          x-nullable: true
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/AgentListResponse'
+        '400':
+          description: ''
+          schema:
+            $ref: '#/definitions/BadResponse'
+        '401':
+          description: Permission denied
+        '500':
+          description: Internal Error
+        '403':
+          description: Authentication credentials were not provided.
+      tags:
+        - agents
+    post:
+      operationId: agents_create
+      summary: Create Agent
+      description: Create new agent
+      parameters:
+        - name: name
+          in: formData
+          description: Agent name, can be generated automatically.
+          required: false
+          type: string
+        - name: worker_api
+          in: formData
+          description: Worker api of agent
+          required: false
+          type: string
+        - name: capacity
+          in: formData
+          description: Capacity of agent
+          required: true
+          type: integer
+        - name: node_capacity
+          in: formData
+          description: Capacity of node
+          required: true
+          type: integer
+        - name: log_level
+          in: formData
+          description: Log level of agent
+          required: false
+          type: string
+        - name: type
+          in: formData
+          description: Type of agent
+          required: true
+          type: string
+        - name: schedulable
+          in: formData
+          description: Whether agent can be scheduled
+          required: false
+          type: boolean
+        - name: k8s_config_file
+          in: formData
+          description: Kubernetes config file
+          required: false
+          type: file
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/AgentID'
+        '400':
+          description: ''
+          schema:
+            $ref: '#/definitions/BadResponse'
+        '401':
+          description: Permission denied
+        '500':
+          description: Internal Error
+        '403':
+          description: Authentication credentials were not provided.
+      tags:
+        - agents
+    parameters: []
+  /agents/organization:
+    post:
+      operationId: agents_apply
+      summary: Apply Agent
+      description: Apply Agent
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/AgentApply'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/AgentID'
+        '400':
+          description: ''
+          schema:
+            $ref: '#/definitions/BadResponse'
+        '401':
+          description: Permission denied
+        '500':
+          description: Internal Error
+        '403':
+          description: Authentication credentials were not provided.
+      tags:
+        - agents
+    parameters: []
+  /agents/{id}:
+    get:
+      operationId: agents_read
+      summary: Retrieve agent
+      description: Retrieve agent
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/AgentInfo'
+        '400':
+          description: ''
+          schema:
+            $ref: '#/definitions/BadResponse'
+        '401':
+          description: Permission denied
+        '500':
+          description: Internal Error
+        '403':
+          description: Authentication credentials were not provided.
+      tags:
+        - agents
+    put:
+      operationId: agents_update
+      summary: Update Agent
+      description: Update special agent with id.
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/AgentUpdateBody'
+      responses:
+        '202':
+          description: Accepted
+        '400':
+          description: ''
+          schema:
+            $ref: '#/definitions/BadResponse'
+        '401':
+          description: Permission denied
+        '500':
+          description: Internal Error
+        '403':
+          description: Authentication credentials were not provided.
+      tags:
+        - agents
+    patch:
+      operationId: agents_partial_update
+      summary: Partial Update Agent
+      description: Partial update special agent with id.
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/AgentPatchBody'
+      responses:
+        '202':
+          description: Accepted
+        '400':
+          description: ''
+          schema:
+            $ref: '#/definitions/BadResponse'
+        '401':
+          description: Permission denied
+        '500':
+          description: Internal Error
+        '403':
+          description: Authentication credentials were not provided.
+      tags:
+        - agents
+    delete:
+      operationId: agents_delete
+      summary: Delete Agent
+      description: Delete agent
+      parameters: []
+      responses:
+        '204':
+          description: No Content
+        '404':
+          description: Not Found
+        '400':
+          description: ''
+          schema:
+            $ref: '#/definitions/BadResponse'
+        '401':
+          description: Permission denied
+        '500':
+          description: Internal Error
+        '403':
+          description: Authentication credentials were not provided.
+      tags:
+        - agents
+    parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+  /agents/{id}/organization:
+    delete:
+      operationId: agents_release
+      summary: Release Agent
+      description: Release Agent
+      parameters: []
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: ''
+          schema:
+            $ref: '#/definitions/BadResponse'
+        '401':
+          description: Permission denied
+        '500':
+          description: Internal Error
+        '403':
+          description: Authentication credentials were not provided.
+      tags:
+        - agents
+    parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+  /auth/login/:
+    post:
+      operationId: auth_login_create
+      description: "Check the credentials and return the REST Token\nif the credentials\
+        \ are valid and authenticated.\nCalls Django Auth login method to register\
+        \ User ID\nin Django session framework\n\nAccept the following POST parameters:\
+        \ username, password\nReturn the REST Framework Token Object's key."
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Login'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/Login'
+      tags:
+        - auth
+    parameters: []
+  /auth/logout/:
+    get:
+      operationId: auth_logout_list
+      summary: "Calls Django logout method and delete the Token object\nassigned to\
+        \ the current User object."
+      description: Accepts/Returns nothing.
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags:
+        - auth
+    post:
+      operationId: auth_logout_create
+      summary: "Calls Django logout method and delete the Token object\nassigned to\
+        \ the current User object."
+      description: Accepts/Returns nothing.
+      parameters: []
+      responses:
+        '201':
+          description: ''
+      tags:
+        - auth
+    parameters: []
+  /auth/password/change/:
+    post:
+      operationId: auth_password_change_create
+      summary: Calls Django Auth SetPasswordForm save method.
+      description: "Accepts the following POST parameters: new_password1, new_password2\n\
+        Returns the success/fail message."
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/PasswordChange'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/PasswordChange'
+      tags:
+        - auth
+    parameters: []
+  /auth/password/reset/:
+    post:
+      operationId: auth_password_reset_create
+      summary: Calls Django Auth PasswordResetForm save method.
+      description: "Accepts the following POST parameters: email\nReturns the success/fail\
+        \ message."
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/PasswordReset'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/PasswordReset'
+      tags:
+        - auth
+    parameters: []
+  /auth/password/reset/confirm/:
+    post:
+      operationId: auth_password_reset_confirm_create
+      summary: "Password reset e-mail link is confirmed, therefore\nthis resets the\
+        \ user's password."
+      description: "Accepts the following POST parameters: token, uid,\n    new_password1,\
+        \ new_password2\nReturns the success/fail message."
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/PasswordResetConfirm'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/PasswordResetConfirm'
+      tags:
+        - auth
+    parameters: []
+  /auth/user/:
+    get:
+      operationId: auth_user_read
+      summary: "Reads and updates UserModel fields\nAccepts GET, PUT, PATCH methods."
+      description: "Default accepted fields: username, first_name, last_name\nDefault\
+        \ display fields: pk, username, email, first_name, last_name\nRead-only fields:\
+        \ pk, email\n\nReturns UserModel fields."
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/UserDetails'
+      tags:
+        - auth
+    put:
+      operationId: auth_user_update
+      summary: "Reads and updates UserModel fields\nAccepts GET, PUT, PATCH methods."
+      description: "Default accepted fields: username, first_name, last_name\nDefault\
+        \ display fields: pk, username, email, first_name, last_name\nRead-only fields:\
+        \ pk, email\n\nReturns UserModel fields."
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/UserDetails'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/UserDetails'
+      tags:
+        - auth
+    patch:
+      operationId: auth_user_partial_update
+      summary: "Reads and updates UserModel fields\nAccepts GET, PUT, PATCH methods."
+      description: "Default accepted fields: username, first_name, last_name\nDefault\
+        \ display fields: pk, username, email, first_name, last_name\nRead-only fields:\
+        \ pk, email\n\nReturns UserModel fields."
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/UserDetails'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/UserDetails'
+      tags:
+        - auth
+    parameters: []
+  /networks:
+    get:
+      operationId: networks_list
+      summary: List Networks
+      description: Filter networks with query parameters.
+      parameters:
+        - name: page
+          in: query
+          description: Page of filter
+          required: false
+          type: integer
+          default: 1
+          minimum: 1
+        - name: per_page
+          in: query
+          description: Per Page of filter
+          required: false
+          type: integer
+          default: 10
+          maximum: 100
+        - name: status
+          in: query
+          description: "\n        Network Status:\n            stopped\n         \
+            \   \n            running\n            \n            error\n         \
+            \   "
+          required: false
+          type: string
+          enum:
+            - stopped
+            - running
+            - error
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/NetworkListResponse'
+        '400':
+          description: ''
+          schema:
+            $ref: '#/definitions/BadResponse'
+        '401':
+          description: Permission denied
+        '500':
+          description: Internal Error
+        '403':
+          description: Authentication credentials were not provided.
+      tags:
+        - networks
+    post:
+      operationId: networks_create
+      summary: New Network
+      description: "Create new network through internal nodes,\nor import exists network\
+        \ outside"
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/NetworkCreateBody'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/NetworkID'
+        '400':
+          description: ''
+          schema:
+            $ref: '#/definitions/BadResponse'
+        '401':
+          description: Permission denied
+        '500':
+          description: Internal Error
+        '403':
+          description: Authentication credentials were not provided.
+      tags:
+        - networks
+    parameters: []
+  /networks/{id}:
+    get:
+      operationId: networks_read
+      summary: Get Network
+      description: Get network information
+      parameters: []
+      responses:
+        '200':
+          description: ''
+        '400':
+          description: ''
+          schema:
+            $ref: '#/definitions/BadResponse'
+        '401':
+          description: Permission denied
+        '500':
+          description: Internal Error
+        '403':
+          description: Authentication credentials were not provided.
+      tags:
+        - networks
+    parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+  /networks/{id}/peers:
+    get:
+      operationId: networks_peers_read
+      summary: Get Peers
+      description: Get peers of network.
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/NetworkMemberResponse'
+        '400':
+          description: ''
+          schema:
+            $ref: '#/definitions/BadResponse'
+        '401':
+          description: Permission denied
+        '500':
+          description: Internal Error
+        '403':
+          description: Authentication credentials were not provided.
+      tags:
+        - networks
+    post:
+      operationId: networks_peers_create
+      summary: Add New Peer
+      description: Add peer into network
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/NetworkMemberResponse'
+        '400':
+          description: ''
+          schema:
+            $ref: '#/definitions/BadResponse'
+        '401':
+          description: Permission denied
+        '500':
+          description: Internal Error
+        '403':
+          description: Authentication credentials were not provided.
+      tags:
+        - networks
+    parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+  /networks/{id}/peers/{peer_id}:
+    delete:
+      operationId: networks_delete_peer
+      summary: Delete Peer
+      description: Delete peer in network
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/NetworkMemberResponse'
+        '400':
+          description: ''
+          schema:
+            $ref: '#/definitions/BadResponse'
+        '401':
+          description: Permission denied
+        '500':
+          description: Internal Error
+        '403':
+          description: Authentication credentials were not provided.
+      tags:
+        - networks
+    parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+      - name: peer_id
+        in: path
+        required: true
+        type: string
+  /nodes:
+    get:
+      operationId: nodes_list
+      summary: List Nodes
+      description: Filter nodes with query parameters.
+      parameters:
+        - name: page
+          in: query
+          description: Page of filter
+          required: false
+          type: integer
+          default: 1
+          minimum: 1
+        - name: per_page
+          in: query
+          description: Per Page of filter
+          required: false
+          type: integer
+          default: 10
+          maximum: 100
+          minimum: 1
+        - name: type
+          in: query
+          description: "\n    Node type defined for network.\n    Fabric available\
+            \ types: ['ca', 'orderer', 'peer']\n    "
+          required: false
+          type: string
+          maxLength: 64
+          minLength: 1
+        - name: name
+          in: query
+          description: Node name
+          required: false
+          type: string
+          maxLength: 64
+          minLength: 1
+        - name: network_type
+          in: query
+          description: Network type of node
+          required: false
+          type: string
+          enum:
+            - fabric
+        - name: network_version
+          in: query
+          description: "\n    Version of network for node.\n    Fabric supported versions:\
+            \ ['1.4', '1.5']\n    "
+          required: false
+          type: string
+          maxLength: 64
+          minLength: 1
+        - name: agent_id
+          in: query
+          description: Agent ID, only operator can use this field
+          required: false
+          type: string
+          format: uuid
+          x-nullable: true
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/NodeList'
+        '400':
+          description: ''
+          schema:
+            $ref: '#/definitions/BadResponse'
+        '401':
+          description: Permission denied
+        '500':
+          description: Internal Error
+        '403':
+          description: Authentication credentials were not provided.
+      tags:
+        - nodes
+    post:
+      operationId: nodes_create
+      summary: Create Node
+      description: Create node
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/NodeCreateBody'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/NodeID'
+        '400':
+          description: ''
+          schema:
+            $ref: '#/definitions/BadResponse'
+        '401':
+          description: Permission denied
+        '500':
+          description: Internal Error
+        '403':
+          description: Authentication credentials were not provided.
+      tags:
+        - nodes
+    parameters: []
+  /nodes/{id}:
+    delete:
+      operationId: nodes_delete
+      summary: Delete Node
+      description: Delete node
+      parameters: []
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: ''
+          schema:
+            $ref: '#/definitions/BadResponse'
+        '401':
+          description: Permission denied
+        '500':
+          description: Internal Error
+        '403':
+          description: Authentication credentials were not provided.
+      tags:
+        - nodes
+    parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+  /nodes/{id}/operations:
+    post:
+      operationId: nodes_operate
+      summary: Operate Node
+      description: Do some operation on node, start/stop/restart
+      parameters:
+        - name: action
+          in: query
+          description: "\n        Operation for node:\n            start\n       \
+            \     \n            stop\n            \n            restart\n        \
+            \    "
+          required: true
+          type: string
+          enum:
+            - start
+            - stop
+            - restart
+      responses:
+        '202':
+          description: Accepted
+        '400':
+          description: ''
+          schema:
+            $ref: '#/definitions/BadResponse'
+        '401':
+          description: Permission denied
+        '500':
+          description: Internal Error
+        '403':
+          description: Authentication credentials were not provided.
+      tags:
+        - nodes
+    parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+  /organizations:
+    get:
+      operationId: organizations_list
+      summary: List Organizations
+      description: List organizations through query parameter
+      parameters:
+        - name: page
+          in: query
+          description: Page of filter
+          required: false
+          type: integer
+          default: 1
+          minimum: 1
+        - name: per_page
+          in: query
+          description: Per Page of filter
+          required: false
+          type: integer
+          default: 10
+          maximum: 100
+          minimum: 1
+        - name: name
+          in: query
+          description: Name of organization
+          required: false
+          type: string
+          maxLength: 64
+          minLength: 1
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/OrganizationList'
+        '400':
+          description: ''
+          schema:
+            $ref: '#/definitions/BadResponse'
+        '401':
+          description: Permission denied
+        '500':
+          description: Internal Error
+        '403':
+          description: Authentication credentials were not provided.
+      tags:
+        - organizations
+    post:
+      operationId: organizations_create
+      summary: Create Organization
+      description: Create Organization
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/OrganizationCreateBody'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/OrganizationID'
+        '400':
+          description: ''
+          schema:
+            $ref: '#/definitions/BadResponse'
+        '401':
+          description: Permission denied
+        '500':
+          description: Internal Error
+        '403':
+          description: Authentication credentials were not provided.
+      tags:
+        - organizations
+    parameters: []
+  /organizations/{id}:
+    get:
+      operationId: organizations_read
+      summary: Retrieve Organization
+      description: Retrieve Organization
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/OrganizationResponse'
+        '400':
+          description: ''
+          schema:
+            $ref: '#/definitions/BadResponse'
+        '401':
+          description: Permission denied
+        '500':
+          description: Internal Error
+        '403':
+          description: Authentication credentials were not provided.
+      tags:
+        - organizations
+    delete:
+      operationId: organizations_delete
+      summary: Delete Organization
+      description: Delete Organization
+      parameters: []
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: ''
+          schema:
+            $ref: '#/definitions/BadResponse'
+        '401':
+          description: Permission denied
+        '500':
+          description: Internal Error
+        '403':
+          description: Authentication credentials were not provided.
+      tags:
+        - organizations
+    parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+  /organizations/{id}/certificates:
+    post:
+      operationId: organizations_request_certificate
+      summary: Request Certificate
+      description: Request certificate
+      parameters: []
+      responses:
+        '201':
+          description: ''
+        '400':
+          description: ''
+          schema:
+            $ref: '#/definitions/BadResponse'
+        '401':
+          description: Permission denied
+        '500':
+          description: Internal Error
+        '403':
+          description: Authentication credentials were not provided.
+      tags:
+        - organizations
+    parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+  /organizations/{id}/users:
+    get:
+      operationId: organizations_users_read
+      summary: List users
+      description: List users in Organization
+      parameters:
+        - name: username
+          in: query
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          required: true
+          type: string
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+          minLength: 1
+        - name: page
+          in: query
+          description: Page of filter
+          required: false
+          type: integer
+          default: 1
+          minimum: 1
+        - name: per_page
+          in: query
+          description: Per Page of filter
+          required: false
+          type: integer
+          default: 10
+          maximum: 100
+          minimum: 1
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/UserList'
+        '400':
+          description: ''
+          schema:
+            $ref: '#/definitions/BadResponse'
+        '401':
+          description: Permission denied
+        '500':
+          description: Internal Error
+        '403':
+          description: Authentication credentials were not provided.
+      tags:
+        - organizations
+    post:
+      operationId: organizations_users_create
+      summary: Add User
+      description: Add user into Organization
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/UserID'
+      responses:
+        '202':
+          description: Accepted
+        '400':
+          description: ''
+          schema:
+            $ref: '#/definitions/BadResponse'
+        '401':
+          description: Permission denied
+        '500':
+          description: Internal Error
+        '403':
+          description: Authentication credentials were not provided.
+      tags:
+        - organizations
+    parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+  /organizations/{id}/users/{user_id}:
+    delete:
+      operationId: organizations_remove_user_from_govern
+      summary: Remove user from Organization
+      description: Remove user from Organization
+      parameters: []
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: ''
+          schema:
+            $ref: '#/definitions/BadResponse'
+        '401':
+          description: Permission denied
+        '500':
+          description: Internal Error
+        '403':
+          description: Authentication credentials were not provided.
+      tags:
+        - organizations
+    parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+      - name: user_id
+        in: path
+        required: true
+        type: string
+  /users:
+    get:
+      operationId: users_list
+      summary: List Users
+      description: List user through query parameter
+      parameters: []
+      responses:
+        '200':
+          description: ''
+        '400':
+          description: ''
+          schema:
+            $ref: '#/definitions/BadResponse'
+        '401':
+          description: Permission denied
+        '500':
+          description: Internal Error
+        '403':
+          description: Authentication credentials were not provided.
+      tags:
+        - users
+    post:
+      operationId: users_create
+      summary: Create User
+      description: Create new user
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/UserCreateBody'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/UserID'
+        '400':
+          description: ''
+          schema:
+            $ref: '#/definitions/BadResponse'
+        '401':
+          description: Permission denied
+        '500':
+          description: Internal Error
+        '403':
+          description: Authentication credentials were not provided.
+      tags:
+        - users
+    parameters: []
+  /users/{id}:
+    delete:
+      operationId: users_delete
+      summary: Delete User
+      description: Delete user
+      parameters: []
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: ''
+          schema:
+            $ref: '#/definitions/BadResponse'
+        '401':
+          description: Permission denied
+        '500':
+          description: Internal Error
+        '403':
+          description: Authentication credentials were not provided.
+      tags:
+        - users
+    parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+  /users/{id}/attributes:
+    get:
+      operationId: users_attributes_read
+      summary: Get User Attributes
+      description: Get attributes of user
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags:
+        - users
+    post:
+      operationId: users_attributes_create
+      summary: Create Attributes
+      description: Create attribute for user
+      parameters: []
+      responses:
+        '201':
+          description: ''
+      tags:
+        - users
+    put:
+      operationId: users_attributes_update
+      summary: Update Attribute
+      description: Update attribute of user
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags:
+        - users
+    delete:
+      operationId: users_attributes_delete
+      summary: Delete Attribute
+      description: Delete attribute of user
+      parameters: []
+      responses:
+        '204':
+          description: ''
+      tags:
+        - users
+    parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+  /users/{id}/password:
+    post:
+      operationId: users_password
+      summary: Update/Reset Password
+      description: Update/Reset password for user
+      parameters: []
+      responses:
+        '201':
+          description: ''
+        '400':
+          description: ''
+          schema:
+            $ref: '#/definitions/BadResponse'
+        '401':
+          description: Permission denied
+        '500':
+          description: Internal Error
+        '403':
+          description: Authentication credentials were not provided.
+      tags:
+        - users
+    parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+definitions:
+  AgentResponse:
+    description: Agents data
+    required:
+      - id
+      - name
+      - worker_api
+      - capacity
+      - node_capacity
+      - status
+      - created_at
+      - log_level
+      - type
+      - schedulable
+    type: object
+    properties:
+      id:
+        title: Id
+        description: ID of Agent
+        type: string
+        format: uuid
+      name:
+        title: Name
+        description: Agent name, can be generated automatically.
+        type: string
+        maxLength: 64
+        minLength: 1
+      worker_api:
+        title: Worker api
+        description: Worker api of agent
+        type: string
+        maxLength: 128
+        minLength: 1
+      capacity:
+        title: Capacity
+        description: Capacity of agent
+        type: integer
+        maximum: 100
+        minimum: 1
+      node_capacity:
+        title: Node capacity
+        description: Capacity of node
+        type: integer
+        maximum: 600
+        minimum: 1
+      status:
+        title: Status
+        description: Status of agent
+        type: string
+        enum:
+          - inactive
+          - active
+      created_at:
+        title: Created at
+        description: Create time of agent
+        type: string
+        format: date-time
+      log_level:
+        title: Log level
+        description: Log level of agent
+        type: string
+        enum:
+          - info
+          - warning
+          - debug
+          - error
+          - critical
+      type:
+        title: Type
+        description: Type of agent
+        type: string
+        enum:
+          - docker
+          - kubernetes
+      schedulable:
+        title: Schedulable
+        description: Whether agent can be scheduled
+        type: boolean
+      organization_id:
+        title: Organization id
+        description: Organization ID
+        type: string
+        format: uuid
+        x-nullable: true
+  AgentListResponse:
+    required:
+      - total
+      - data
+    type: object
+    properties:
+      total:
+        title: Total
+        description: Total number of data
+        type: integer
+        minimum: 0
+      data:
+        description: Agents data
+        type: array
+        items:
+          $ref: '#/definitions/AgentResponse'
+  BadResponse:
+    required:
+      - code
+    type: object
+    properties:
+      code:
+        title: Code
+        description: "\n        Error Codes:\n        \n            20000: Unknown\
+          \ Error.\n            \n            20001: Validation parameter error.\n\
+          \            \n            20002: Parse error.\n            \n         \
+          \   20003: Resource is inuse.\n            \n            20004: Resource\
+          \ already exists.\n            \n            20005: Request Resource Not\
+          \ found.\n            \n            20006: Permission Error.\n         \
+          \   \n            20007: Custom Error.\n            \n            20008:\
+          \ Have no available resource.\n            "
+        type: integer
+      detail:
+        title: Detail
+        description: Error Messages
+        type: string
+  AgentID:
+    required:
+      - id
+    type: object
+    properties:
+      id:
+        title: Id
+        description: ID of Agent
+        type: string
+        format: uuid
+  AgentApply:
+    required:
+      - type
+      - capacity
+    type: object
+    properties:
+      type:
+        title: Type
+        description: Type of agent
+        type: string
+        enum:
+          - docker
+          - kubernetes
+      capacity:
+        title: Capacity
+        description: Capacity of agent
+        type: integer
+        maximum: 100
+        minimum: 1
+  K8SParameter:
+    title: K8s config
+    description: Config of agent which is for kubernetes
+    required:
+      - credential_type
+      - enable_ssl
+    type: object
+    properties:
+      credential_type:
+        title: Credential type
+        description: Credential type of k8s
+        type: string
+        enum:
+          - cert_key
+          - config
+          - username_password
+      enable_ssl:
+        title: Enable ssl
+        description: Whether enable ssl for api
+        type: boolean
+      ssl_ca:
+        title: Ssl ca
+        description: Ca file content for ssl
+        type: string
+      nfs_server:
+        title: Nfs server
+        description: NFS server address for k8s
+        type: string
+        pattern: ^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:(\/+\w{0,}){0,}$
+        maxLength: 256
+      parameters:
+        title: Parameters
+        description: Extra parameters
+        type: object
+        additionalProperties:
+          type: string
+      cert:
+        title: Cert
+        description: Cert content for k8s
+        type: string
+      key:
+        title: Key
+        description: Key content for k8s
+        type: string
+      username:
+        title: Username
+        description: Username for k8s credential
+        type: string
+        maxLength: 128
+      password:
+        title: Password
+        description: Password for k8s credential
+        type: string
+        maxLength: 128
+  AgentInfo:
+    required:
+      - id
+      - name
+      - worker_api
+      - capacity
+      - node_capacity
+      - status
+      - created_at
+      - log_level
+      - type
+      - schedulable
+    type: object
+    properties:
+      id:
+        title: Id
+        description: ID of Agent
+        type: string
+        format: uuid
+      name:
+        title: Name
+        description: Agent name, can be generated automatically.
+        type: string
+        maxLength: 64
+        minLength: 1
+      worker_api:
+        title: Worker api
+        description: Worker api of agent
+        type: string
+        maxLength: 128
+        minLength: 1
+      capacity:
+        title: Capacity
+        description: Capacity of agent
+        type: integer
+        maximum: 100
+        minimum: 1
+      node_capacity:
+        title: Node capacity
+        description: Capacity of node
+        type: integer
+        maximum: 600
+        minimum: 1
+      status:
+        title: Status
+        description: Status of agent
+        type: string
+        enum:
+          - inactive
+          - active
+      created_at:
+        title: Created at
+        description: Create time of agent
+        type: string
+        format: date-time
+      log_level:
+        title: Log level
+        description: Log level of agent
+        type: string
+        enum:
+          - info
+          - warning
+          - debug
+          - error
+          - critical
+      type:
+        title: Type
+        description: Type of agent
+        type: string
+        enum:
+          - docker
+          - kubernetes
+      schedulable:
+        title: Schedulable
+        description: Whether agent can be scheduled
+        type: boolean
+      k8s_config:
+        $ref: '#/definitions/K8SParameter'
+      organization_id:
+        title: Organization id
+        description: Organization ID
+        type: string
+        format: uuid
+        x-nullable: true
+  AgentUpdateBody:
+    type: object
+    properties:
+      name:
+        title: Name
+        description: Name of Agent
+        type: string
+        maxLength: 36
+        minLength: 4
+        x-nullable: true
+      capacity:
+        title: Capacity
+        description: Capacity of Agent
+        type: integer
+        minimum: 1
+        x-nullable: true
+      log_level:
+        title: Log level
+        description: "\n        Log levels:\n            0: Info\n            \n \
+          \           1: Warning\n            \n            2: Debug\n           \
+          \ \n            3: Error\n            \n            4: Critical\n      \
+          \      "
+        type: string
+        enum:
+          - 0
+          - 1
+          - 2
+          - 3
+          - 4
+        x-nullable: true
+      status:
+        title: Status
+        description: "\n        \n            0: Stopped\n            \n         \
+          \   1: Running\n            \n            2: Error\n            "
+        type: string
+        enum:
+          - 0
+          - 1
+          - 2
+        x-nullable: true
+  AgentPatchBody:
+    type: object
+    properties:
+      name:
+        title: Name
+        description: Name of Agent
+        type: string
+        maxLength: 36
+        minLength: 4
+        x-nullable: true
+      capacity:
+        title: Capacity
+        description: Capacity of Agent
+        type: integer
+        minimum: 1
+        x-nullable: true
+      log_level:
+        title: Log level
+        description: "\n        Log levels:\n            0: Info\n            \n \
+          \           1: Warning\n            \n            2: Debug\n           \
+          \ \n            3: Error\n            \n            4: Critical\n      \
+          \      "
+        type: string
+        enum:
+          - 0
+          - 1
+          - 2
+          - 3
+          - 4
+        x-nullable: true
+  Login:
+    required:
+      - password
+    type: object
+    properties:
+      username:
+        title: Username
+        type: string
+      email:
+        title: Email
+        type: string
+        format: email
+      password:
+        title: Password
+        type: string
+        minLength: 1
+  PasswordChange:
+    required:
+      - new_password1
+      - new_password2
+    type: object
+    properties:
+      new_password1:
+        title: New password1
+        type: string
+        maxLength: 128
+        minLength: 1
+      new_password2:
+        title: New password2
+        type: string
+        maxLength: 128
+        minLength: 1
+  PasswordReset:
+    required:
+      - email
+    type: object
+    properties:
+      email:
+        title: Email
+        type: string
+        format: email
+        minLength: 1
+  PasswordResetConfirm:
+    required:
+      - new_password1
+      - new_password2
+      - uid
+      - token
+    type: object
+    properties:
+      new_password1:
+        title: New password1
+        type: string
+        maxLength: 128
+        minLength: 1
+      new_password2:
+        title: New password2
+        type: string
+        maxLength: 128
+        minLength: 1
+      uid:
+        title: Uid
+        type: string
+        minLength: 1
+      token:
+        title: Token
+        type: string
+        minLength: 1
+  UserDetails:
+    required:
+      - username
+    type: object
+    properties:
+      pk:
+        title: Id
+        description: ID of user
+        type: string
+        format: uuid
+      username:
+        title: Username
+        description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+          only.
+        type: string
+        pattern: ^[\w.@+-]+$
+        maxLength: 150
+        minLength: 1
+      email:
+        title: Email address
+        type: string
+        format: email
+        readOnly: true
+        minLength: 1
+      first_name:
+        title: First name
+        type: string
+        maxLength: 30
+      last_name:
+        title: Last name
+        type: string
+        maxLength: 150
+  NetworkResponse:
+    required:
+      - id
+      - status
+      - created_at
+      - updated_at
+    type: object
+    properties:
+      id:
+        title: Id
+        description: Network ID
+        type: string
+        minLength: 1
+      status:
+        title: Status
+        description: "\n        Network Status:\n            stopped\n           \
+          \ \n            running\n            \n            error\n            "
+        type: string
+        enum:
+          - stopped
+          - running
+          - error
+      created_at:
+        title: Created at
+        description: Network create time
+        type: string
+        format: date-time
+      updated_at:
+        title: Updated at
+        description: Network update time
+        type: string
+        format: date-time
+  NetworkListResponse:
+    required:
+      - total
+      - data
+    type: object
+    properties:
+      total:
+        title: Total
+        description: Total number of networks
+        type: integer
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/NetworkResponse'
+  NetworkCreateBody:
+    required:
+      - create_type
+    type: object
+    properties:
+      create_type:
+        title: Create type
+        description: "\n        Network Create Types:\n            new\n         \
+          \   \n            import\n            "
+        type: string
+        enum:
+          - new
+          - import
+  NetworkID:
+    required:
+      - id
+    type: object
+    properties:
+      id:
+        title: Id
+        description: Network ID
+        type: string
+        minLength: 1
+  NetworkMember:
+    required:
+      - id
+      - type
+      - url
+    type: object
+    properties:
+      id:
+        title: Id
+        description: Network member id
+        type: string
+        minLength: 1
+      type:
+        title: Type
+        description: "\n        Node Types:\n            ca\n            \n      \
+          \      orderer\n            \n            peer\n            "
+        type: string
+        enum:
+          - ca
+          - orderer
+          - peer
+      url:
+        title: Url
+        description: URL of member
+        type: string
+        minLength: 1
+  NetworkMemberResponse:
+    required:
+      - data
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/NetworkMember'
+  NodeInList:
+    description: Nodes list
+    required:
+      - id
+      - type
+      - created_at
+    type: object
+    properties:
+      id:
+        title: Id
+        description: ID of node
+        type: string
+        format: uuid
+      type:
+        title: Type
+        description: "\n    Node type defined for network.\n    Fabric available types:\
+          \ ['ca', 'orderer', 'peer']\n    "
+        type: string
+        maxLength: 64
+        minLength: 1
+      name:
+        title: Name
+        description: Node name
+        type: string
+        maxLength: 64
+        minLength: 1
+      network_type:
+        title: Network type
+        description: Network type of node
+        type: string
+        enum:
+          - fabric
+      network_version:
+        title: Network version
+        description: "\n    Version of network for node.\n    Fabric supported versions:\
+          \ ['1.4', '1.5']\n    "
+        type: string
+        maxLength: 64
+        minLength: 1
+      created_at:
+        title: Created at
+        description: Create time of network
+        type: string
+        format: date-time
+      agent_id:
+        title: Agent id
+        description: Agent ID
+        type: string
+        format: uuid
+        x-nullable: true
+      network_id:
+        title: Network id
+        description: Network ID
+        type: string
+        format: uuid
+        x-nullable: true
+  NodeList:
+    required:
+      - data
+      - total
+    type: object
+    properties:
+      data:
+        description: Nodes list
+        type: array
+        items:
+          $ref: '#/definitions/NodeInList'
+      total:
+        title: Total
+        description: Total number of node
+        type: integer
+        minimum: 0
+  NodeCreateBody:
+    required:
+      - network_type
+      - network_version
+      - type
+    type: object
+    properties:
+      network_type:
+        title: Network type
+        description: Network type of node
+        type: string
+        enum:
+          - fabric
+      network_version:
+        title: Network version
+        description: "\n    Version of network for node.\n    Fabric supported versions:\
+          \ ['1.4', '1.5']\n    "
+        type: string
+        maxLength: 64
+        minLength: 1
+      type:
+        title: Type
+        description: "\n    Node type defined for network.\n    Fabric available types:\
+          \ ['ca', 'orderer', 'peer']\n    "
+        type: string
+        maxLength: 64
+        minLength: 1
+      agent_type:
+        title: Agent type
+        description: Agent type
+        type: string
+        enum:
+          - docker
+          - kubernetes
+      agent:
+        title: Agent
+        description: Agent of node
+        type: string
+        format: uuid
+        x-nullable: true
+  NodeID:
+    required:
+      - id
+    type: object
+    properties:
+      id:
+        title: Id
+        description: ID of node
+        type: string
+        format: uuid
+  OrganizationResponse:
+    description: Organizations list
+    required:
+      - id
+      - name
+      - created_at
+    type: object
+    properties:
+      id:
+        title: Id
+        description: ID of Organization
+        type: string
+        format: uuid
+      name:
+        title: Name
+        description: Name of organization
+        type: string
+        maxLength: 64
+        minLength: 1
+      created_at:
+        title: Created at
+        type: string
+        format: date-time
+  OrganizationList:
+    required:
+      - data
+    type: object
+    properties:
+      total:
+        title: Total
+        description: Total number of Organizations
+        type: integer
+        default: 0
+      data:
+        description: Organizations list
+        type: array
+        items:
+          $ref: '#/definitions/OrganizationResponse'
+  OrganizationCreateBody:
+    required:
+      - name
+    type: object
+    properties:
+      name:
+        title: Name
+        description: Name of organization
+        type: string
+        maxLength: 64
+        minLength: 1
+  OrganizationID:
+    required:
+      - id
+    type: object
+    properties:
+      id:
+        title: Id
+        description: ID of Organization
+        type: string
+        format: uuid
+  UserInfo:
+    description: Users list
+    required:
+      - id
+      - username
+    type: object
+    properties:
+      id:
+        title: Id
+        description: ID of user
+        type: string
+        format: uuid
+      username:
+        title: Username
+        description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+          only.
+        type: string
+        pattern: ^[\w.@+-]+$
+        maxLength: 150
+        minLength: 1
+      role:
+        title: Role
+        type: string
+        enum:
+          - 0
+          - 1
+          - 2
+  UserList:
+    required:
+      - total
+      - data
+    type: object
+    properties:
+      total:
+        title: Total
+        description: Total number of users
+        type: integer
+      data:
+        description: Users list
+        type: array
+        items:
+          $ref: '#/definitions/UserInfo'
+  UserID:
+    required:
+      - id
+    type: object
+    properties:
+      id:
+        title: Id
+        description: ID of user
+        type: string
+        format: uuid
+  UserCreateBody:
+    required:
+      - username
+      - role
+      - password
+      - email
+    type: object
+    properties:
+      username:
+        title: Username
+        description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+          only.
+        type: string
+        pattern: ^[\w.@+-]+$
+        maxLength: 150
+        minLength: 1
+      role:
+        title: Role
+        description: "\n        User roles:\n            administrator\n         \
+          \   \n            operator\n            \n            user\n            "
+        type: string
+        enum:
+          - administrator
+          - operator
+          - user
+      organization:
+        title: Organization
+        type: string
+        format: uuid
+        x-nullable: true
+      password:
+        title: Password
+        type: string
+        maxLength: 128
+        minLength: 1
+      email:
+        title: Email address
+        type: string
+        format: email
+        maxLength: 254
