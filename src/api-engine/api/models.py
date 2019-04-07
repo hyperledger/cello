@@ -4,6 +4,7 @@
 import os
 import shutil
 import tarfile
+from zipfile import ZipFile
 from pathlib import Path
 
 from django.conf import settings
@@ -206,8 +207,17 @@ class Agent(models.Model):
 def extract_file(sender, instance, created, *args, **kwargs):
     if created:
         if instance.k8s_config_file:
-            tar = tarfile.open(instance.k8s_config_file.path)
-            tar.extractall(path=os.path.dirname(instance.k8s_config_file.path))
+            file_format = instance.k8s_config_file.name.split(".")[-1]
+            if file_format in ["tgz", "gz"]:
+                tar = tarfile.open(instance.k8s_config_file.path)
+                tar.extractall(
+                    path=os.path.dirname(instance.k8s_config_file.path)
+                )
+            elif file_format == "zip":
+                with ZipFile(instance.k8s_config_file.path, "r") as zip_file:
+                    zip_file.extractall(
+                        path=os.path.dirname(instance.k8s_config_file.path)
+                    )
 
 
 class KubernetesConfig(models.Model):

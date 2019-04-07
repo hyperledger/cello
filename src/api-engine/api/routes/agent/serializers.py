@@ -137,7 +137,9 @@ class AgentCreateBody(serializers.ModelSerializer):
             "k8s_config_file": {
                 "required": False,
                 "validators": [
-                    FileExtensionValidator(allowed_extensions=["tgz", "gz"]),
+                    FileExtensionValidator(
+                        allowed_extensions=["tgz", "gz", "zip"]
+                    ),
                     validate_k8s_config_file,
                 ],
             },
