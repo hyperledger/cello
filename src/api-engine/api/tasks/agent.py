@@ -20,11 +20,12 @@ def create_node(self, node_id=None):
     if node_id is None:
         return False
 
+    node = None
     try:
         node = Node.objects.get(id=node_id)
         agent_handler = AgentHandler(node)
         if node.agent.type == HostType.Docker.name.lower():
-            compose_config = agent_handler.compose_config
+            compose_config = agent_handler.config
             if compose_config:
                 node.compose_file.save(
                     "docker-compose.yml",
@@ -38,11 +39,16 @@ def create_node(self, node_id=None):
                 node.status = NodeStatus.Error.name.lower()
                 node.save()
                 return False
+        # elif node.agent.type == HostType.Kubernetes.name.lower():
+        #     config = agent_handler.config
         agent_handler.create_node()
     except ObjectDoesNotExist:
         return False
     except Exception as e:
         Port.objects.filter(node__id=node_id).delete()
+        if node:
+            node.status = NodeStatus.Error.name.lower()
+            node.save()
         raise self.retry(exc=e)
 
     node.status = NodeStatus.Running.name.lower()

@@ -190,9 +190,12 @@ class NodeViewSet(viewsets.ViewSet):
             raise ResourceNotFound
         else:
             if node.status != NodeStatus.Deleting.name.lower():
-                node.status = NodeStatus.Deleting.name.lower()
-                node.save()
+                if node.status != NodeStatus.Error.name.lower():
+                    node.status = NodeStatus.Deleting.name.lower()
+                    node.save()
 
-                delete_node.delay(str(node.id))
+                    delete_node.delay(str(node.id))
+                else:
+                    node.delete()
 
             return Response(status=status.HTTP_204_NO_CONTENT)

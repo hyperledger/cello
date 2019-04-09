@@ -77,8 +77,8 @@ class DockerAgent(AgentBase):
         except Exception as e:
             LOG.error(str(e))
 
-    def generate_compose_yaml(self):
-        return self._network.generate_compose_yaml()
+    def generate_config(self):
+        return self._network.generate_config()
 
     def start(self, *args, **kwargs):
         pass

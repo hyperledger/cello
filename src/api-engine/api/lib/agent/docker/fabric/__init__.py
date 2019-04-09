@@ -3,7 +3,7 @@
 #
 import logging
 
-from api.lib.agent.docker.network_base import NetworkBase
+from api.lib.agent.network_base import NetworkBase
 from api.common.enums import FabricNodeType
 from api.utils.port_picker import find_available_ports, set_ports_mapping
 
@@ -59,6 +59,6 @@ class FabricNetwork(NetworkBase):
 
         return self._template
 
-    def generate_compose_yaml(self, *args, **kwargs):
+    def generate_config(self, *args, **kwargs):
         if self._type == FabricNodeType.Ca.name.lower():
             return self._generate_ca_compose_yaml()

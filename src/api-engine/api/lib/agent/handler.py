@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import logging
+import os
 
 from django.conf import settings
 
@@ -25,13 +26,20 @@ class AgentHandler(object):
                 "worker_api": node.agent.worker_api,
                 "agent_id": str(node.agent.id),
                 "compose_file": node.get_compose_file_path(),
+                "k8s_config_file": os.path.join(
+                    os.path.dirname(node.agent.k8s_config_file.path),
+                    ".kube/config",
+                )
+                if node.agent.k8s_config_file
+                else "",
             }
         )
-        self._agent = DockerAgent(node_dict)
         self._worker_api = node.agent.worker_api
         self._node = node
 
-        if self._agent_type == HostType.Kubernetes.name.lower():
+        if self._agent_type == HostType.Docker.name.lower():
+            self._agent = DockerAgent(node_dict)
+        elif self._agent_type == HostType.Kubernetes.name.lower():
             self._agent = KubernetesAgent(node_dict)
 
     @property
@@ -43,12 +51,8 @@ class AgentHandler(object):
         self._node = value
 
     @property
-    def compose_config(self):
-        return (
-            self._agent.generate_compose_yaml()
-            if self._agent_type == HostType.Docker.name.lower()
-            else None
-        )
+    def config(self):
+        return self._agent.generate_config()
 
     def create_node(self):
         self._agent.create()

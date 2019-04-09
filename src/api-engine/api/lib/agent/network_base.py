@@ -11,5 +11,5 @@ class NetworkBase(object):
         pass
 
     @abc.abstractmethod
-    def generate_compose_yaml(self, *args, **kwargs):
+    def generate_config(self, *args, **kwargs):
         pass
