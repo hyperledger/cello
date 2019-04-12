@@ -354,7 +354,7 @@ spec:
         - { name: "ORDERER_GENERAL_TLS_CERTIFICATE", value: "/etc/hyperledger/fabric/artifacts/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}/tls/server.crt" }
         - { name: "ORDERER_GENERAL_TLS_ROOTCAS", value: "[/etc/hyperledger/fabric/artifacts/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}/tls/ca.crt]" }
 {% endif %}
-{% if (project_version is version_compare('2.0.0','>=') or ('stable' in project_version or 'latest' in project_version)) and fabric.consensus_type is defined and fabric.consensus_type == 'etcdraft' %}
+{% if (project_version is version_compare('1.4.1','>=') or ('stable' in project_version or 'latest' in project_version)) and fabric.consensus_type is defined and fabric.consensus_type == 'etcdraft' %}
         - { name: "ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY", value: "/etc/hyperledger/fabric/artifacts/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}/tls/server.key" }
         - { name: "ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE", value: "/etc/hyperledger/fabric/artifacts/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}/tls/server.crt" }
         - { name: "ORDERER_GENERAL_CLUSTER_ROOTCAS", value: "[/etc/hyperledger/fabric/artifacts/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}/tls/ca.crt]" }
