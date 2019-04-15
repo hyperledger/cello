@@ -30,6 +30,7 @@ type AgentSpecInfo struct {
 	LogLevel string `yaml:"log_level"`
 	Type string `yaml:"type"`
 	Schedulable bool `yaml:"schedulable"`
+	K8sConfigFile string `yaml:"k8s_config"`
 }
 
 type AgentSpec struct {

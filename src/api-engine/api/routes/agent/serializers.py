@@ -129,6 +129,7 @@ class AgentCreateBody(serializers.ModelSerializer):
         extra_kwargs = {
             "worker_api": {
                 "required": False,
+                "allow_blank": True,
                 "validators": [URLValidator(schemes=("http", "https", "tcp"))],
             },
             "capacity": {"required": True},

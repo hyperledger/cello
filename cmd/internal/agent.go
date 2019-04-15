@@ -8,8 +8,8 @@ package internal
 import (
 	"errors"
 	"fmt"
-	"github.com/hyperledger/cello/cmd/model"
 	ghYaml "github.com/ghodss/yaml"
+	"github.com/hyperledger/cello/cmd/model"
 	"github.com/levigross/grequests"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v2"
@@ -68,14 +68,51 @@ func CreateAgent(source []byte) error {
 
 	url := fmt.Sprintf("%s/%s", viper.GetString("server.url"), agentBaseUrl)
 	token := fmt.Sprintf("JWT %s", viper.GetString("auth.token"))
-	resp, err := grequests.Post(url, &grequests.RequestOptions{JSON: jsonOuts, Headers: map[string] string {
-		"Authorization": token,
-	}})
-	if err != nil {
-		fmt.Printf("Create agent failed")
-		return err
-	} else {
-		fmt.Printf(resp.String())
+
+	switch agentSpec.Spec.Type {
+	case "docker":
+		resp, err := grequests.Post(url, &grequests.RequestOptions{JSON: jsonOuts, Headers: map[string] string {
+			"Authorization": token,
+		}})
+		if err != nil {
+			fmt.Printf("Create agent failed")
+			return err
+		} else {
+			fmt.Printf(resp.String())
+		}
+		break
+	case "kubernetes":
+		fd, err := grequests.FileUploadFromDisk(agentSpec.Spec.K8sConfigFile)
+		if err != nil {
+			panic(err)
+		}
+		fd[0].FieldName = "k8s_config_file"
+		x := map[string] string {
+			"name": agentSpec.Spec.Name,
+			"type": agentSpec.Spec.Type,
+			"capacity": fmt.Sprint(agentSpec.Spec.Capacity),
+			"log_level": agentSpec.Spec.LogLevel,
+			"node_capacity": fmt.Sprint(agentSpec.Spec.NodeCapacity),
+			"schedulable": fmt.Sprint(agentSpec.Spec.Schedulable),
+		}
+		resp, err := grequests.Post(url,
+			&grequests.RequestOptions{
+				Files: fd,
+				Data: x,
+				Headers: map[string] string {
+					"Authorization": token,
+				},
+			})
+		if err != nil {
+			fmt.Printf("Create agent failed")
+			return err
+		} else {
+			fmt.Printf(resp.String())
+		}
+		break
+	default:
+		fmt.Printf("Unknow type for agent")
+		return nil
 	}
 	return nil
 }
