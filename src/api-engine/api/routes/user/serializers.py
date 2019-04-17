@@ -54,10 +54,10 @@ class UserIDSerializer(serializers.Serializer):
     id = serializers.UUIDField(help_text="ID of user")
 
 
-class UserQuerySerializer(PageQuerySerializer, serializers.ModelSerializer):
-    class Meta:
-        model = UserProfile
-        fields = ("username", "page", "per_page")
+class UserQuerySerializer(PageQuerySerializer, serializers.Serializer):
+    username = serializers.CharField(
+        help_text="Username to filter", required=False, max_length=64
+    )
 
 
 class UserInfoSerializer(serializers.ModelSerializer):
@@ -66,7 +66,10 @@ class UserInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = ("id", "username", "role")
-        extra_kwargs = {"id": {"read_only": False}}
+        extra_kwargs = {
+            "id": {"read_only": False},
+            "username": {"validators": []},
+        }
 
 
 class UserListSerializer(serializers.Serializer):

@@ -56,6 +56,12 @@ Examples:
 				panic(err)
 			}
 			break
+		case "User":
+			err := internal.CreateUser(source)
+			if err != nil {
+				panic(err)
+			}
+			break
 		default:
 			break
 		}

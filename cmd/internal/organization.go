@@ -8,8 +8,8 @@ package internal
 import (
 	"errors"
 	"fmt"
-	"github.com/hyperledger/cello/cmd/model"
 	ghYaml "github.com/ghodss/yaml"
+	"github.com/hyperledger/cello/cmd/model"
 	"github.com/levigross/grequests"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v2"

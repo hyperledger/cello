@@ -15,6 +15,9 @@ import (
 	"strings"
 )
 
+var page int
+var pageSize int
+
 var getCmd = &cobra.Command{
 	Use:   "get",
 	Short: "Get resource in cell service",
@@ -38,11 +41,11 @@ var getCmd = &cobra.Command{
 				} else {
 					t := table.NewWriter()
 					t.SetOutputMirror(os.Stdout)
-					t.AppendHeader(table.Row{"#", "Name", "Worker API", "Capacity", "Node Capacity", "Status", "Create Time", "Organization"})
+					t.AppendHeader(table.Row{"#", "Name", "Type", "Worker API", "Capacity", "Node Capacity", "Status", "Create Time", "Organization"})
 					for _, value := range agentListResponse.Agents {
-						t.AppendRow([]interface{}{value.ID, value.Name, value.WorkerAPI, value.Capacity, value.NodeCapacity, value.Status, value.CreateTime, value.OrgID})
+						t.AppendRow([]interface{}{value.ID, value.Name, value.Type, value.WorkerAPI, value.Capacity, value.NodeCapacity, value.Status, value.CreateTime, value.OrgID})
 					}
-					t.AppendFooter(table.Row{"", "", "", "", "", "", "Total", agentListResponse.Total})
+					t.AppendFooter(table.Row{"", "", "", "", "", "", "", "Total", agentListResponse.Total})
 					fmt.Println("Agent")
 					t.Render()
 				}
@@ -79,6 +82,22 @@ var getCmd = &cobra.Command{
 					fmt.Println("Node")
 					t.Render()
 				}
+				break
+			case "user":
+				userListResponse, err := internal.ListUsers(page, pageSize)
+				if err != nil {
+					panic(err)
+				} else {
+					t := table.NewWriter()
+					t.SetOutputMirror(os.Stdout)
+					t.AppendHeader(table.Row{"#", "Username", "Role"})
+					for _, value := range userListResponse.Users {
+						t.AppendRow([]interface{}{value.ID, value.Username, value.Role})
+					}
+					t.AppendFooter(table.Row{"", "Total", userListResponse.Total})
+					fmt.Println("User")
+					t.Render()
+				}
 			default:
 				break
 			}
@@ -88,4 +107,7 @@ var getCmd = &cobra.Command{
 
 func init() {
 	RootCmd.AddCommand(getCmd)
+
+	getCmd.Flags().IntVarP(&page, "page", "p", 1, "page to query")
+	getCmd.Flags().IntVarP(&pageSize, "pageSize", "s", 10, "page size to query")
 }

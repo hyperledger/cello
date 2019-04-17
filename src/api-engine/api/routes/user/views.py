@@ -2,7 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import logging
+import os
 
+from django.core.paginator import Paginator
 from django.db.models import Q
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status
@@ -14,11 +16,18 @@ from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from api.auth import IsAdminAuthenticated, IsOperatorAuthenticated
 from api.exceptions import ResourceExists, CustomError
 from api.models import UserProfile
-from api.routes.user.serializers import UserCreateBody, UserIDSerializer
+from api.routes.user.serializers import (
+    UserCreateBody,
+    UserIDSerializer,
+    UserQuerySerializer,
+    UserListSerializer,
+)
 from api.utils.common import any_of
 from api.utils.common import with_common_response
 
 LOG = logging.getLogger(__name__)
+
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
 
 
 class UserViewSet(viewsets.ViewSet):
@@ -36,7 +45,10 @@ class UserViewSet(viewsets.ViewSet):
         return [permission() for permission in permission_classes]
 
     @swagger_auto_schema(
-        responses=with_common_response(with_common_response())
+        query_serializer=UserQuerySerializer,
+        responses=with_common_response(
+            {status.HTTP_200_OK: UserListSerializer}
+        ),
     )
     def list(self, request, *args, **kwargs):
         """
@@ -44,7 +56,29 @@ class UserViewSet(viewsets.ViewSet):
 
         List user through query parameter
         """
-        return Response(data=[], status=status.HTTP_200_OK)
+        serializer = UserQuerySerializer(data=request.GET)
+        if serializer.is_valid(raise_exception=True):
+            username = serializer.validated_data.get("username")
+            page = serializer.validated_data.get("page")
+            per_page = serializer.validated_data.get("per_page")
+            query_params = {}
+            if username:
+                query_params.update({"username__icontains": username})
+
+            users = UserProfile.objects.filter(**query_params).exclude(
+                username=ADMIN_USERNAME
+            )
+            p = Paginator(users, per_page)
+            users = p.page(page)
+            users = [user.__dict__ for user in users]
+
+            response = UserListSerializer(
+                data={"total": p.count, "data": users}
+            )
+            if response.is_valid(raise_exception=True):
+                return Response(
+                    data=response.validated_data, status=status.HTTP_200_OK
+                )
 
     @swagger_auto_schema(
         request_body=UserCreateBody,

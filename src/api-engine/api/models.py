@@ -73,7 +73,7 @@ class UserProfile(AbstractUser):
         editable=True,
     )
     role = models.CharField(
-        choices=UserRole.to_choices(),
+        choices=UserRole.to_choices(True),
         default=UserRole.User.value,
         max_length=64,
     )

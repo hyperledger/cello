@@ -161,12 +161,16 @@ class OrganizationViewSet(viewsets.ViewSet):
             name = serializer.validated_data.get("name")
             parameter = {"organization": organization}
             if name:
-                parameter.update({"name__icontains": name})
+                parameter.update({"username__icontains": name})
             users = UserProfile.objects.filter(**parameter)
             p = Paginator(users, per_page)
             users = p.page(page)
             users = [
-                {"id": str(user.id), "name": user.name, "role": user.role}
+                {
+                    "id": str(user.id),
+                    "username": user.username,
+                    "role": user.role,
+                }
                 for user in users
             ]
             response = UserListSerializer(
@@ -185,7 +189,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             try:
                 organization = Organization.objects.get(id=pk)
                 user = UserProfile.objects.get(id=user_id)
-                if user.govern:
+                if user.organization:
                     raise ResourceInUse
             except ObjectDoesNotExist:
                 raise ResourceNotFound
@@ -245,7 +249,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         except ObjectDoesNotExist:
             raise ResourceNotFound
         else:
-            user.govern = None
+            user.organization = None
             user.save()
 
             return Response(status=status.HTTP_204_NO_CONTENT)
