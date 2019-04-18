@@ -84,11 +84,27 @@ def find_available_ports(
     return ports
 
 
-def set_ports_mapping(node_id=None, mapping=None):
+def set_ports_mapping(node_id=None, mapping=None, new=False):
     if mapping is None:
         mapping = []
 
-    for port in mapping:
-        Port.objects.filter(
-            node__id=node_id, external=port.get("external")
-        ).update(internal=port.get("internal"))
+    if new:
+        try:
+            node = Node.objects.get(id=node_id)
+        except ObjectDoesNotExist:
+            LOG.error("Node not found")
+        else:
+            port_objects = [
+                Port(
+                    external=port.get("external"),
+                    internal=port.get("internal"),
+                    node=node,
+                )
+                for port in mapping
+            ]
+            Port.objects.bulk_create(port_objects)
+    else:
+        for port in mapping:
+            Port.objects.filter(
+                node__id=node_id, external=port.get("external")
+            ).update(internal=port.get("internal"))

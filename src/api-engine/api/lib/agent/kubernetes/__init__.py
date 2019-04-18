@@ -6,6 +6,7 @@ import logging
 from api.lib.agent.base import AgentBase
 from api.lib.agent.kubernetes.common import KubernetesClient
 from api.lib.agent.kubernetes.fabric import FabricNetwork
+from api.utils.port_picker import set_ports_mapping
 
 
 LOG = logging.getLogger(__name__)
@@ -30,7 +31,7 @@ class KubernetesAgent(AgentBase):
             agent_id=self._agent_id,
             node_id=self._node_id,
         )
-        self._client.get_or_create_namespace(name="cello")
+        self._client.get_or_create_namespace(name=self._agent_id)
         self._config = self._network.generate_config()
 
     def create(self, *args, **kwargs):
@@ -39,11 +40,20 @@ class KubernetesAgent(AgentBase):
         ingress = self._config.get("ingress")
 
         if deployment:
-            self._client.create_deployment(**deployment)
+            self._client.create_deployment(self._agent_id, **deployment)
         if service:
-            self._client.create_service(**service)
+            success, service_response = self._client.create_service(
+                self._agent_id, **service
+            )
+            if service.get("service_type") == "NodePort" and success:
+                ports = service_response.spec.ports
+                ports = [
+                    {"external": port.node_port, "internal": port.port}
+                    for port in ports
+                ]
+                set_ports_mapping(self._node_id, ports, True)
         if ingress:
-            self._client.create_ingress(**ingress)
+            self._client.create_ingress(self._agent_id, **ingress)
 
     def start(self, *args, **kwargs):
         pass
@@ -57,11 +67,17 @@ class KubernetesAgent(AgentBase):
         ingress = self._config.get("ingress")
 
         if ingress:
-            self._client.delete_ingress(name=ingress.get("name"))
+            self._client.delete_ingress(
+                namespace=self._agent_id, name=ingress.get("name")
+            )
         if service:
-            self._client.delete_service(name=service.get("name"))
+            self._client.delete_service(
+                namespace=self._agent_id, name=service.get("name")
+            )
         if deployment:
-            self._client.delete_deployment(name=deployment.get("name"))
+            self._client.delete_deployment(
+                namespace=self._agent_id, name=deployment.get("name")
+            )
 
     def generate_config(self, *args, **kwargs):
         return self._config

@@ -35,7 +35,7 @@ class KubernetesClient(object):
                 body = client.V1Namespace(
                     kind="Namespace",
                     api_version="v1",
-                    metadata=client.V1ObjectMeta(name="cello"),
+                    metadata=client.V1ObjectMeta(name=name),
                 )
                 try:
                     v1.create_namespace(body=body)
@@ -104,7 +104,12 @@ class KubernetesClient(object):
         return True
 
     def create_service(
-        self, namespace=K8S_NAMESPACE, name=None, selector=None, ports=None
+        self,
+        namespace=K8S_NAMESPACE,
+        name=None,
+        selector=None,
+        ports=None,
+        service_type="ClusterIP",
     ):
         if selector is None:
             selector = {}
@@ -113,19 +118,21 @@ class KubernetesClient(object):
 
         metadata = client.V1ObjectMeta(name=name, labels={"app": name})
         ports = [client.V1ServicePort(port=port) for port in ports]
-        spec = client.V1ServiceSpec(ports=ports, selector=selector)
+        spec = client.V1ServiceSpec(
+            ports=ports, selector=selector, type=service_type
+        )
         body = client.V1Service(
             metadata=metadata, spec=spec, kind="Service", api_version="v1"
         )
 
         api_instance = client.CoreV1Api()
         try:
-            api_instance.create_namespaced_service(namespace, body)
+            response = api_instance.create_namespaced_service(namespace, body)
         except ApiException as e:
             LOG.error("Exception when call CoreV1Api: %s", e)
             raise e
 
-        return True
+        return True, response
 
     def create_ingress(
         self,

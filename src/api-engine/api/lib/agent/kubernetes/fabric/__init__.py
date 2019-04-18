@@ -60,6 +60,7 @@ class FabricNetwork(NetworkBase):
             "name": service_name,
             "ports": ports,
             "selector": {"app": deploy_name},
+            "service_type": "NodePort",
         }
 
     def _generate_ingress(self):
@@ -82,7 +83,7 @@ class FabricNetwork(NetworkBase):
         config = {
             "deployment": self._generate_deployment(),
             "service": self._generate_service(),
-            "ingress": self._generate_ingress(),
+            # "ingress": self._generate_ingress(),
         }
 
         return config
