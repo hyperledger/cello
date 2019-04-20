@@ -29,6 +29,7 @@ from api.routes.agent.views import AgentViewSet
 from api.routes.node.views import NodeViewSet
 from api.routes.organization.views import OrganizationViewSet
 from api.routes.user.views import UserViewSet
+from api.routes.file.views import FileViewSet
 
 DEBUG = getattr(settings, "DEBUG")
 WEBROOT = os.getenv("WEBROOT")
@@ -49,12 +50,14 @@ SchemaView = get_schema_view(
     permission_classes=(permissions.AllowAny,),
 )
 
+# define and register routers of api
 router = DefaultRouter(trailing_slash=False)
 router.register("networks", NetworkViewSet, base_name="network")
 router.register("agents", AgentViewSet, base_name="agent")
 router.register("nodes", NodeViewSet, base_name="node")
 router.register("organizations", OrganizationViewSet, base_name="organization")
 router.register("users", UserViewSet, base_name="user")
+router.register("files", FileViewSet, base_name="file")
 # router.register("clusters", ClusterViewSet, base_name="cluster")
 
 urlpatterns = router.urls

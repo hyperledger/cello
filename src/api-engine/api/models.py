@@ -23,6 +23,7 @@ from api.common.enums import (
     K8SCredentialType,
     separate_upper_class,
     NodeStatus,
+    FileType,
 )
 from api.common.enums import (
     UserRole,
@@ -37,6 +38,8 @@ MAX_CAPACITY = getattr(settings, "MAX_AGENT_CAPACITY", 100)
 MAX_NODE_CAPACITY = getattr(settings, "MAX_NODE_CAPACITY", 600)
 MEDIA_ROOT = getattr(settings, "MEDIA_ROOT")
 LIMIT_K8S_CONFIG_FILE_MB = 100
+# Limit file upload size less than 100Mb
+LIMIT_FILE_MB = 100
 
 
 class Govern(models.Model):
@@ -425,3 +428,61 @@ class Port(models.Model):
 
     class Meta:
         ordering = ("external",)
+
+
+def get_file_path(instance, file):
+    """
+    Get the file path where will be stored in
+    :param instance: database object of this db record
+    :param file: file object.
+    :return: path of file system which will store the file.
+    """
+    file_ext = file.split(".")[-1]
+    filename = "%s.%s" % (hash_file(instance.file), file_ext)
+
+    return os.path.join(
+        "files/%s/%s" % (str(instance.organization.id), str(instance.id)),
+        filename,
+    )
+
+
+def validate_file(file):
+    """
+    Validate file of upload
+    :param file: file object
+    :return: raise exception if validate failed
+    """
+    file_size = file.size
+    if file_size > LIMIT_FILE_MB * 1024 * 1024:
+        raise ValidationError("Max file size is %s MB" % LIMIT_FILE_MB)
+
+
+class File(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        help_text="ID of file",
+        default=make_uuid,
+        editable=True,
+    )
+    organization = models.ForeignKey(
+        Organization,
+        help_text="Organization of file",
+        null=True,
+        on_delete=models.CASCADE,
+    )
+    name = models.CharField(help_text="File name", max_length=64, default="")
+    file = models.FileField(
+        help_text="File", max_length=256, blank=True, upload_to=get_file_path
+    )
+    created_at = models.DateTimeField(
+        help_text="Create time of agent", auto_now_add=True
+    )
+    type = models.CharField(
+        choices=FileType.to_choices(True),
+        max_length=32,
+        help_text="File type",
+        default=FileType.Certificate.name.lower(),
+    )
+
+    class Meta:
+        ordering = ("-created_at",)

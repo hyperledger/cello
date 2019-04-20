@@ -169,6 +169,11 @@ class UserRole(ExtraEnum):
     User = 2
 
 
+@unique
+class FileType(ExtraEnum):
+    Certificate = 0
+
+
 class EnumWithDisplayMeta(EnumMeta):
     def __new__(mcs, name, bases, attrs):
         display_strings = attrs.get("DisplayStrings")
