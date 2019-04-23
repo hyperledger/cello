@@ -74,34 +74,13 @@
   "certificateAuthorities": {
 {% for ca in allcas|selectattr('org', 'equalto', item)|list %}
     "{{ ca.name }}": {
-      "url": "{{ tls|ternary('https','http') }}://{{ k8shosts[ca.name] }}:{{ k8sports[ca.name+':7054'] }}",
+      "url": "{{ca.name}}:7054",
       "caName": "{{ ca.name }}",
       "httpOptions": {"verify": false},
       "tlsCACerts": {
-        "path": "{{ '/fabric/keyfiles/'+ca.org+'/tlsca/tlsca.'+ca.org+'-cert.pem' }}"
+         "path": "{{ '/fabric/keyfiles/'+ca.org+'/tlsca/tlsca.'+ca.org+'-cert.pem' }}"
       }
     }{{ '' if loop.last else ',' }}
 {% endfor %}
-  },
-  "entityMatchers": {
-    "orderer": [
-{% for orderer in allorderers %}
-      { "mappedHost": "{{ orderer.name }}",
-        "pattern": "(\\w*){{ orderer.name }}(\\w*)",
-        "sslTargetOverrideUrlSubstitutionExp": "{{ orderer.name }}",
-        "urlSubstitutionExp": "{{ k8shosts[orderer.name] }}:{{ k8sports[orderer.name+':7050'] }}"
-      }{{ '' if loop.last else ',' }}
-{% endfor %}
-    ],
-    "peer": [
-{% for peer in allpeers %}
-      { "mappedHost": "{{ peer.name }}",
-        "pattern": "(\\w*){{ peer.name }}(\\w*)",
-        "sslTargetOverrideUrlSubstitutionExp": "{{ peer.name }}",
-        "urlSubstitutionExp": "{{ k8shosts[peer.name] }}:{{ k8sports[peer.name+':7051'] }}",
-        "eventUrlSubstitutionExp": "{{ k8shosts[peer.name] }}:{{ k8sports[peer.name+':7053'] }}"
-      }{{ '' if loop.last else ',' }}
-{% endfor %}
-    ]
   }
 }

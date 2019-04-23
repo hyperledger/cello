@@ -1,7 +1,4 @@
 ---
-- name: Reuse common code
-  include_tasks: "{{ playbook_dir }}/../common/config_apply.yml"
-
 - name: Ensure certificate directory exist
   file:
     path: "{{ fabricworkdir }}/keyfiles"
@@ -26,8 +23,3 @@
     src: "{{ playbook_dir }}/../deploy_k8s/pubconn/templates/connyaml.j2"
     dest: "{{ fabricworkdir }}/keyfiles/{{ item }}/connection.yml"
   with_items: "{{ allorgs }}"
-
-- name: Create a zip file of all certificates
-  archive:
-    path: "{{ fabricworkdir }}/keyfiles"
-    dest: "{{ fabricworkdir }}/certs.tgz"

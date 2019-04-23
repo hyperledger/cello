@@ -1,0 +1,326 @@
+---
+logging:
+{% if project_version is version_compare('1.4.0','<') %}
+{% if project_version is version_compare('1.1.0','>=') %}
+    level:      info
+{% else %}
+    peer:       info
+{% endif %}
+    cauthdsl:   warning
+    gossip:     warning
+    ledger:     info
+    msp:        warning
+    policies:   warning
+    grpc:       error
+{% if project_version is version_compare('1.1.0','>=') %}
+    peer:
+        gossip: warning
+{% endif %}
+
+    format: '%{color}%{time:2006-01-02 15:04:05.000 MST} [%{module}] %{shortfunc} -> %{level:.4s} %{id:03x}%{color:reset} %{message}'
+{% endif %}
+
+peer:
+{% if project_version is version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+    id: jdoe
+    address: 0.0.0.0:7051
+{% endif %}
+    networkId: dev
+    listenAddress: 0.0.0.0:7051
+    addressAutoDetect: false
+    gomaxprocs: -1
+{% if project_version is version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+    keepalive:
+        minInterval: 60s
+        client:
+            interval: 60s
+            timeout: 20s
+        deliveryClient:
+            interval: 60s
+            timeout: 20s
+{% endif %}
+    gossip:
+        bootstrap: 127.0.0.1:7051
+
+        endpoint:
+        maxBlockCountToStore: 100
+        maxPropagationBurstLatency: 10ms
+        maxPropagationBurstSize: 10
+        propagateIterations: 1
+        propagatePeerNum: 3
+        pullInterval: 4s
+        pullPeerNum: 3
+        requestStateInfoInterval: 4s
+        publishStateInfoInterval: 4s
+        stateInfoRetentionInterval:
+        publishCertPeriod: 10s
+        skipBlockVerification: false
+        dialTimeout: 3s
+        connTimeout: 2s
+        recvBuffSize: 20
+{% if project_version is version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+        sendBuffSize: 200
+{% else %}
+        sendBuffSize: 20
+{% endif %}
+        digestWaitTime: 1s
+        requestWaitTime: 1500ms
+        responseWaitTime: 2s
+        aliveTimeInterval: 5s
+        aliveExpirationTimeout: 25s
+        reconnectInterval: 25s
+        externalEndpoint:
+        election:
+            startupGracePeriod: 15s
+            membershipSampleInterval: 1s
+            leaderAliveThreshold: 10s
+            leaderElectionDuration: 5s
+
+{% if project_version is version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+        pvtData:
+            pullRetryThreshold: 60s
+            transientstoreMaxBlockRetention: 1000
+            pushAckTimeout: 3s
+{% if project_version is version_compare('1.4.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+            btlPullMargin: 10
+            reconcileBatchSize: 10
+            reconcileSleepInterval: 1m
+            reconciliationEnabled: true
+{% endif %}
+{% endif %}
+
+    events:
+        address: 0.0.0.0:7053
+        buffersize: 100
+        timeout: 10ms
+{% if project_version is version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+        timewindow: 15m
+        keepalive:
+            minInterval: 60s
+{% endif %}
+
+    tls:
+        enabled:  false
+        cert:
+            file: tls/server.crt
+        key:
+            file: tls/server.key
+        rootcert:
+            file: tls/ca.crt
+{% if project_version is version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+        clientAuthRequired: false
+        clientRootCAs:
+            files:
+              - tls/ca.crt
+        clientKey:
+            file:
+        clientCert:
+            file:
+{% else %}
+        serverhostoverride:
+{% endif %}
+    fileSystemPath: /var/hyperledger/production
+
+    BCCSP:
+        Default: SW
+        SW:
+            Hash: SHA2
+            Security: 256
+            FileKeyStore:
+                KeyStore:
+
+    mspConfigPath: msp
+
+{% if project_version is version_compare('1.1.0','>=') and project_version is version_compare('1.2.0','<') %}
+    localMspId: DEFAULT
+{% if project_version is version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+    localMspId: {{ item.org }}
+    client:
+        connTimeout: 3s
+{% endif %}
+
+    deliveryclient:
+{% if project_version is version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+        connTimeout: 3s
+        reConnectBackoffThreshold: 3600s
+{% endif %}
+        reconnectTotalTimeThreshold: 3600s
+
+    localMspType: bccsp
+{% endif %}
+{% if project_version is version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+    adminService:
+        #listenAddress: 0.0.0.0:7055
+{% endif %}
+    profile:
+        enabled:     false
+        listenAddress: 0.0.0.0:6060
+
+{% if project_version is version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+    handlers:
+        authFilters:
+          -
+            name: DefaultAuth
+          -
+            name: ExpirationCheck
+        decorators:
+          -
+            name: DefaultDecorator
+{% if project_version is version_compare('1.2.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+        endorsers:
+          escc:
+            name: DefaultEndorsement
+            library:
+        validators:
+          vscc:
+            name: DefaultValidation
+            library:
+    discovery:
+        enabled: true
+        authCacheEnabled: true
+        authCacheMaxSize: 1000
+        authCachePurgeRetentionRatio: 0.75
+        orgMembersAllowedAccess: false
+{% endif %}
+    validatorPoolSize:
+{% endif %}
+
+vm:
+    endpoint: unix:///var/run/docker.sock
+    docker:
+        tls:
+            enabled: false
+            ca:
+                file: docker/ca.crt
+            cert:
+                file: docker/tls.crt
+            key:
+                file: docker/tls.key
+
+        attachStdout: false
+
+        hostConfig:
+{% if project_version is version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+            NetworkMode: host
+{% else %}
+            NetworkMode: bridge
+{% endif %}
+            Dns:
+            LogConfig:
+                Type: json-file
+                Config:
+                    max-size: "50m"
+                    max-file: "5"
+            Memory: 2147483648
+
+chaincode:
+{% if project_version is version_compare('1.1.0','<') %}
+    peerAddress:
+{% endif %}
+
+    id:
+        path:
+        name:
+
+    builder: {{ fabric.repo.url }}fabric-ccenv:{{ fabric.baseimage_tag }}
+{% if (project_version is version_compare('1.1.0','>=') and project_version is version_compare('2.0.0','<')) or 'latest' in project_version %}
+    pull: false
+    golang:
+        runtime: $(BASE_DOCKER_NS)/fabric-baseos:$(ARCH)-$(BASE_VERSION)
+        dynamicLink: false
+    node:
+        runtime: $(BASE_DOCKER_NS)/fabric-baseimage:$(ARCH)-$(BASE_VERSION)
+    car:
+        runtime: $(BASE_DOCKER_NS)/fabric-baseos:$(ARCH)-$(BASE_VERSION)
+    java:
+        Dockerfile:  |
+            from $(DOCKER_NS)/fabric-javaenv:$(ARCH)-$(PROJECT_VERSION)
+{% elif project_version is version_compare('2.0.0','>=') or 'stable' in project_version %}
+    pull: false
+
+    golang:
+        runtime: {{ fabric.repo.url }}fabric-baseos:{{ fabric.baseimage_tag }}
+        dynamicLink: false
+
+    car:
+        runtime: {{ fabric.repo.url }}fabric-baseos:{{ fabric.baseimage_tag }}
+
+    java:
+        runtime: {{ fabric.repo.url }}fabric-javaenv:{{ fabric.baseimage_tag }}
+
+    node:
+        runtime: {{ fabric.repo.url }}fabric-nodeenv:{{ fabric.baseimage_tag }}
+{% endif %}
+    startuptimeout: 300s
+    executetimeout: 30s
+    mode: net
+    keepalive: 0
+
+    system:
+        cscc: enable
+        lscc: enable
+        escc: enable
+        vscc: enable
+        qscc: enable
+
+{% if project_version is version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+    systemPlugins:
+{% endif %}
+    logging:
+      level:  info
+      shim:   warning
+      format: '%{color}%{time:2006-01-02 15:04:05.000 MST} [%{module}] %{shortfunc} -> %{level:.4s} %{id:03x}%{color:reset} %{message}'
+
+ledger:
+
+  blockchain:
+
+  state:
+    stateDatabase: goleveldb
+    totalQueryLimit: 100000
+    couchDBConfig:
+       couchDBAddress: 127.0.0.1:5984
+       username:
+       password:
+       maxRetries: 3
+       maxRetriesOnStartup: 10
+       requestTimeout: 35s
+{% if project_version is version_compare('1.3.0','<') %}
+       queryLimit: 10000
+{% endif %}
+{% if project_version is version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+       maxBatchUpdateSize: 1000
+       warmIndexesAfterNBlocks: 1
+{% if project_version is version_compare('1.3.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+       createGlobalChangesDB: false
+       internalQueryLimit: 1000
+{% endif %}
+{% endif %}
+
+  history:
+    enableHistoryDatabase: true
+
+{% if project_version is version_compare('1.4.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+operations:
+    listenAddress: 127.0.0.1:9443
+    tls:
+        enabled: false
+        cert:
+            file:
+        key:
+            file:
+        clientAuthRequired: false
+        clientRootCAs:
+            files: []
+metrics:
+{% if fabric.metrics is defined and fabric.metrics%}
+    provider: prometheus
+{% else %}
+    provider: disabled
+{% endif %}
+    statsd:
+        network: udp
+        address: 127.0.0.1:8125
+        writeInterval: 10s
+        prefix:
+{% endif %}

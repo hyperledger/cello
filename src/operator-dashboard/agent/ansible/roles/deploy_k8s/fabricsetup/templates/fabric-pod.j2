@@ -2,12 +2,6 @@
 #
 # Example usage: kubectl create -f <this_file>
 
-{% if 'stable' in fabric.baseimage_tag or 'latest' in fabric.baseimage_tag %}
-{% set project_version = fabric.baseimage_tag %}
-{% else %}
-{% set tag = fabric.baseimage_tag.split('-') %}
-{% set project_version = tag[1] %}
-{% endif %}
 {% if fabric.repo.username | default('') | length > 0 and fabric.repo.password | default('') | length > 0 %}
 {% set creds = True %}
 {% else %}
@@ -243,19 +237,19 @@ spec:
 {% if tls %}
         - { name: "CORE_PEER_TLS_CERT_FILE", value: "/etc/hyperledger/fabric/artifacts/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}/tls/server.crt" }
         - { name: "CORE_PEER_TLS_KEY_FILE", value: "/etc/hyperledger/fabric/artifacts/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}/tls/server.key" }
-        - { name: "CORE_PEER_TLS_ROOTCERT_FILE", value: "/etc/hyperledger/fabric/artifacts/keyfiles/{{ peer.org }}/peers/{{ peer.name }}.{{ peer.org }}/tls/ca.crt" }
+        - { name: "CORE_PEER_TLS_ROOTCERT_FILE", value: "/etc/hyperledger/fabric/artifacts/keyfiles/{{ peer.org }}/tlsca/tlsca.{{ peer.org }}-cert.pem" }
 {% endif %}
         - { name: "CORE_PEER_ID", value: "{{ peer.name }}" }
 {% if fabric.k8s.exposeserviceport %}
-        - { name: "CORE_PEER_GOSSIP_EXTERNALENDPOINT", value: "{{ allips|random }}:{{ k8sports[peer.name+':7051'] }}" }
+        - { name: "CORE_PEER_GOSSIP_EXTERNALENDPOINT", value: "{{ k8shosts[peer.name] }}:{{ k8sports[peer.name+':7051'] }}" }
 {% else %}
         - { name: "CORE_PEER_GOSSIP_EXTERNALENDPOINT", value: "{{ peer.name }}:7051" }
 {% endif %}
         - { name: "CORE_PEER_ADDRESS", value: "{{ peer.name }}:7051" }
-        - { name: "CORE_PEER_LISTENADDRESS", value: "0.0.0.0:7051" }
+        - { name: "CORE_PEER_LISTENADDRESS", value: "{{ peer.name }}:7051" }
 {% if project_version is version('1.1.0','>=') or 'stable' in project_version or 'latest' in project_version %}
         - { name: "CORE_PEER_CHAINCODEADDRESS", value: "{{ peer.name }}:7052" }
-        - { name: "CORE_PEER_CHAINCODELISTENADDRESS", value: "0.0.0.0:7052" }
+        - { name: "CORE_PEER_CHAINCODELISTENADDRESS", value: "{{ peer.name }}:7052" }
 {% if mutualtls %}
         - { name: "CORE_PEER_TLS_CLIENTAUTHREQUIRED", value: "true" }
         - { name: "CORE_PEER_TLS_CLIENTROOTCAS_FILES", value: "{{ rootca | list | join (" ") }}" }
@@ -350,9 +344,10 @@ spec:
         - { name: "ORDERER_GENERAL_LOCALMSPDIR", value: "/etc/hyperledger/fabric/artifacts/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}/msp" }
         - { name: "ORDERER_GENERAL_TLS_ENABLED", value: "{{ tls | lower }}" }
 {% if tls %}
+        - { name: "ORDERER_GENERAL_TLS_SERVERHOSTOVERRIDE", value: "{{ orderer.name }}" }
         - { name: "ORDERER_GENERAL_TLS_PRIVATEKEY", value: "/etc/hyperledger/fabric/artifacts/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}/tls/server.key" }
         - { name: "ORDERER_GENERAL_TLS_CERTIFICATE", value: "/etc/hyperledger/fabric/artifacts/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}/tls/server.crt" }
-        - { name: "ORDERER_GENERAL_TLS_ROOTCAS", value: "[/etc/hyperledger/fabric/artifacts/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}/tls/ca.crt]" }
+        - { name: "ORDERER_GENERAL_TLS_ROOTCAS", value: "[/etc/hyperledger/fabric/artifacts/keyfiles/{{ orderer.org }}/tlsca/tlsca.{{ orderer.org }}-cert.pem]" }
 {% endif %}
 {% if (project_version is version_compare('1.4.1','>=') or ('stable' in project_version or 'latest' in project_version)) and fabric.consensus_type is defined and fabric.consensus_type == 'etcdraft' %}
         - { name: "ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY", value: "/etc/hyperledger/fabric/artifacts/keyfiles/{{ orderer.org }}/orderers/{{ orderer.name }}.{{ orderer.org }}/tls/server.key" }

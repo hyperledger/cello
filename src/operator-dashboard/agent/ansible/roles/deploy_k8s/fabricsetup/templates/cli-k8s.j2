@@ -1,9 +1,3 @@
-{% if 'stable' in fabric.baseimage_tag or 'latest' in fabric.baseimage_tag %}
-{% set project_version = fabric.baseimage_tag %}
-{% else %}
-{% set tag = fabric.baseimage_tag.split('-') %}
-{% set project_version = tag[1] %}
-{% endif %}
 ---
 apiVersion: v1
 kind: Pod

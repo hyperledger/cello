@@ -1,20 +1,7 @@
 ---
-# The url to the fabric source repository
-GIT_URL: "http://gerrit.hyperledger.org/r/fabric"
-
-# The gerrit patch set reference, should be automatically set by gerrit
-# GERRIT_REFSPEC: "refs/changes/23/11523/3" # 1.0.0
-# GERRIT_REFSPEC: "refs/changes/47/12047/3" # 1.0.1
-# GERRIT_REFSPEC: "refs/changes/13/13113/1"
-# GERRIT_REFSPEC: "refs/tags/v1.0.4" # 1.0.4
-GERRIT_REFSPEC: "" # 1.0.5
 
 # This variable defines fabric network attributes
 fabric: {
-
-  # The user to connect to the server
-  ssh_user: "ubuntu",
-
   # options are "goleveldb", "CouchDB", default is goleveldb
   peer_db: "goleveldb",
   tls: false,

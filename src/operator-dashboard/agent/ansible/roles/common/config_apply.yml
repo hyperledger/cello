@@ -26,6 +26,24 @@
     cliorderer: "{}"
     tls: "{}"
     mutualtls: "{}"
+    allcerts: "{{ [] }}"
+    tag: "{{ fabric.baseimage_tag.split('-') }}"
+
+- name: Set project_version value
+  set_fact:
+    project_version: "{{ fabric.baseimage_tag }}"
+  when: >-
+        'stable' in fabric.baseimage_tag or
+        'latest' in fabric.baseimage_tag or
+        (tag|length) == 1
+
+- name: Set project_version value
+  set_fact:
+    project_version: "{{ tag[1] }}"
+  when: >-
+        'stable' not in fabric.baseimage_tag and
+        'latest' not in fabric.baseimage_tag and
+        (tag|length) > 1
 
 - name: Make sure that working directory exists
   file:
@@ -87,17 +105,6 @@
         'name':item | replace('.', '-') }] }}
   with_items: "{{ ordererls }}"
 
-- name: Find all anchor peers
-  set_fact:
-    anchor_peers: "{{ allpeers | selectattr('role', 'equalto', 'anchor') | list }}"
-  when: allpeers is defined and (allpeers | length > 0)
-
-- name: Create org anchor peer hash
-  set_fact:
-    org_anchor: "{{ org_anchor | default({}) | combine( { item.org: item } ) }}"
-  with_items: "{{ anchor_peers }}"
-  when: anchor_peers is defined and (anchor_peers | length > 0)
-
 - name: Select a peer to run channel and chaincode command
   set_fact:
     clipeer: "{{ allpeers | random }}"
@@ -135,23 +142,46 @@
     peerorg_rootca: |
       {{ peerorg_rootca | default([]) | replace('+', ',') }}  +  [ '/etc/hyperledger/fabric/artifacts/keyfiles/{{ item }}/ca/ca.{{ item }}-cert.pem' ]
   with_items: "{{ peerorgs }}"
-  when: fabric.tls == "client"
+  when: fabric.tls != false
 
 - name: Create peers rootca list
   set_fact:
     peers_rootca: |
-      {{ peers_rootca | default([]) | replace('+', ',') }}  +  [ '/etc/hyperledger/fabric/artifacts/keyfiles/{{ item.org }}/peers/{{ item.name }}.{{ item.org }}/tls/ca.crt' ]
-  with_items: "{{ allpeers }}"
-  when: fabric.tls == "client"
+      {{ peers_rootca | default([]) | replace('+', ',') }}  +  [ '/etc/hyperledger/fabric/artifacts/keyfiles/{{ item }}/tlsca/tlsca.{{ item }}-cert.pem' ]
+  with_items: "{{ peerorgs }}"
+  when: fabric.tls != false
+
+- name: Create all org admin certs list
+  set_fact:
+    allcerts: >-
+      {{ allcerts | default([]) +
+      [ '/etc/hyperledger/fabric/artifacts/keyfiles/'+item+'/users/Admin@'+item+'/tls/client.crt' ] +
+      [ '/etc/hyperledger/fabric/artifacts/keyfiles/'+item+'/ca/ca.'+item+'-cert.pem' ] +
+      [ '/etc/hyperledger/fabric/artifacts/keyfiles/'+item+'/tlsca/tlsca.'+item+'-cert.pem' ] }}
+  with_items: "{{ allorgs }}"
+  when: fabric.tls != false
+
+- debug:
+    var: allcerts
 
 - name: Create orderers rootca list
   set_fact:
     orderer_rootca: |
-      {{ orderer_rootca | default([]) | replace('+', ',') }} + [ '/etc/hyperledger/fabric/artifacts/keyfiles/{{ item.org }}/orderers/{{ item.name }}.{{ item.org }}/tls/ca.crt' ]
-  with_items: "{{ allorderers }}"
-  when: fabric.tls == "client"
+      {{ orderer_rootca | default([]) | replace('+', ',') }} + [ '/etc/hyperledger/fabric/artifacts/keyfiles/{{ item}}/tlsca/tlsca.{{ item }}-cert.pem' ]
+  with_items: "{{ ordererorgs }}"
+  when: fabric.tls != false
+
+- name: Make orderer rootca list unique
+  set_fact:
+    orderer_rootca: "{{ orderer_rootca | unique }}"
+  when: fabric.tls != false
 
 - name: Joining the orderer rootca list and peerorg rootca list
   set_fact:
     rootca: "{{ peerorg_rootca }} + {{ peers_rootca }} + {{ orderer_rootca }}"
-  when: fabric.tls == "client"
+  when: fabric.tls != false
+
+- name: Make rootca list unique
+  set_fact:
+    rootca: "{{ allcerts | unique }}"
+  when: fabric.tls != false

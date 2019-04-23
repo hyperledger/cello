@@ -1,15 +1,7 @@
 ---
-# The url to the fabric source repository
-GIT_URL: "http://gerrit.hyperledger.org/r/fabric"
-
-# The gerrit patch set reference, should be automatically set by gerrit
-GERRIT_REFSPEC: ""
-
 # The following defines a fabric network with 2 peers, 1 orderer, 1 zookeeper and 1 kafka
 # It also defines that the peers will be using goleveldb.
 fabric: {
-
-  ssh_user: "ubuntu",
   consensus_type: "kafka",
   peer_db: "goleveldb",
   tls: true,

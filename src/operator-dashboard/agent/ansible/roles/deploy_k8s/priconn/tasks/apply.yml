@@ -1,0 +1,18 @@
+---
+- name: Create connection profiles
+  template:
+    src: "{{ playbook_dir }}/priconn/templates/connection.j2"
+    dest: "{{ fabricworkdir }}/keyfiles/{{ item }}/connection.json"
+  with_items: "{{ allorgs }}"
+
+- name: Create yaml connection profiles
+  template:
+    src: "{{ playbook_dir }}/priconn/templates/connyaml.j2"
+    dest: "{{ fabricworkdir }}/keyfiles/{{ item }}/connection.yml"
+  with_items: "{{ allorgs }}"
+
+- name: Create metric config file
+  template:
+    src: "{{ playbook_dir }}/priconn/templates/metriccfg.j2"
+    dest: "{{ fabricworkdir }}/keyfiles/metriccfg.yml"
+  when: (fabric.metrics|default(False)) == True

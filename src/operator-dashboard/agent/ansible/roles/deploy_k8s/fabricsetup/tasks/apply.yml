@@ -39,10 +39,29 @@
     dest: "{{ fabricworkdir }}/keyfiles/bndsamplerconfig.json"
   when: profilenodes | length > 0
 
+# Create the k8s services so that node addresses become available
+- name: Create k8s service deployment files
+  template:
+    src: "{{ playbook_dir }}/../deploy_k8s/fabricsetup/templates/fabric-services.j2"
+    dest: "{{ pjrun }}/fabric-services.yml"
+
+- name: Start fabric services
+  command: >-
+    kubectl --kubeconfig kubeconfig apply -f {{ pjrun }}/fabric-services.yml
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+  tags: "fabricup"
+
+- include_tasks: "{{ playbook_dir }}/../common/publicports.yml"
+  when: fabric.k8s.exposeserviceport == True
+
 - name: Create peer org member string
   set_fact:
     orgmembers: >-
       {{ peerorgs|map('regex_replace','(.*)',"'\g<1>.member'")|list|join(',') }}
+
+- include_tasks: "{{ playbook_dir }}/certsetup/tasks/apply.yml"
+  when: fabric.generate_certs == true
 
 - name: Create peer channel command script
   template:
@@ -53,14 +72,14 @@
 
 - name: Create persistent volume
   command: >-
-    ./kubectl --kubeconfig kubeconfig apply -f {{ pjrun }}/pvc.yaml
+    kubectl --kubeconfig kubeconfig apply -f {{ pjrun }}/pvc.yaml
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
   tags: "createpvc"
 
 - name: Query PVC status
   command: >-
-    ./kubectl --kubeconfig kubeconfig get -o=custom-columns=STATUS:.status.phase
+    kubectl --kubeconfig kubeconfig get -o=custom-columns=STATUS:.status.phase
     pvc fabriccerts
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
@@ -72,7 +91,7 @@
 
 - name: Create certs volume initialization pod
   command: >-
-    ./kubectl --kubeconfig kubeconfig apply -f {{ pjrun }}/certssetup.yaml
+    kubectl --kubeconfig kubeconfig apply -f {{ pjrun }}/certssetup.yaml
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
   tags: "createcertspod"
@@ -80,7 +99,7 @@
 
 - name: Query initialization container status
   command: >-
-    ./kubectl --kubeconfig kubeconfig get -o=custom-columns=STATUS:.status.phase
+    kubectl --kubeconfig kubeconfig get -o=custom-columns=STATUS:.status.phase
     pod fabriccertspod
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
@@ -93,7 +112,7 @@
 
 - name: Check the status of secret for pulling images
   command: >-
-    ./kubectl --kubeconfig='kubeconfig' get secrets -o=custom-columns=NAME:.metadata.name
+    kubectl --kubeconfig='kubeconfig' get secrets -o=custom-columns=NAME:.metadata.name
     regcred
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
@@ -107,7 +126,7 @@
 
 - name: Create secret for image
   command: >-
-    ./kubectl --kubeconfig kubeconfig create secret docker-registry regcred --docker-server={{ fabric.repo.url }}
+    kubectl --kubeconfig kubeconfig create secret docker-registry regcred --docker-server={{ fabric.repo.url }}
     --docker-username={{ fabric.repo.username }} --docker-password={{ fabric.repo.password }} --docker-email=email@email.com
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
@@ -120,7 +139,7 @@
 
 - name: Clean up the Persistent volume
   command: >-
-    ./kubectl --kubeconfig kubeconfig exec fabriccertspod -c task-pv-container
+    kubectl --kubeconfig kubeconfig exec fabriccertspod -c task-pv-container
     -- rm -rf /fabriccerts/*
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
@@ -129,7 +148,7 @@
 
 - name: Copy certs onto the persistent volume
   command: >-
-    ./kubectl --kubeconfig kubeconfig cp {{ item }} fabriccertspod:/fabriccerts
+    kubectl --kubeconfig kubeconfig cp {{ item }} fabriccertspod:/fabriccerts
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
   with_items:
@@ -140,7 +159,7 @@
 
 - name: Copy channel operation script onto the persistent volume
   command: >-
-    ./kubectl --kubeconfig kubeconfig cp {{ item }} fabriccertspod:/fabriccerts
+    kubectl --kubeconfig kubeconfig cp {{ item }} fabriccertspod:/fabriccerts
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
   with_items:
@@ -150,7 +169,7 @@
 
 - name: Create directory for profiling configuration file on persistent volume
   command: >-
-    ./kubectl --kubeconfig kubeconfig exec fabriccertspod -c task-pv-container
+    kubectl --kubeconfig kubeconfig exec fabriccertspod -c task-pv-container
     -- mkdir -p /fabriccerts/bndprofiles/config
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
@@ -159,7 +178,7 @@
 
 - name: Copy profiling configuration file onto persistent volume
   command: >-
-    ./kubectl --kubeconfig kubeconfig cp {{ item }}
+    kubectl --kubeconfig kubeconfig cp {{ item }}
     fabriccertspod:/fabriccerts/bndprofiles/config/config.json
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
@@ -170,7 +189,7 @@
 
 - name: Untar certs.tgz in the Persistent volume
   command: >-
-    ./kubectl --kubeconfig kubeconfig exec fabriccertspod -c task-pv-container
+    kubectl --kubeconfig kubeconfig exec fabriccertspod -c task-pv-container
     -- tar -C /fabriccerts -xzvf /fabriccerts/certs.tgz
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
@@ -179,7 +198,7 @@
 
 - name: Change certs permissions
   command: >-
-    ./kubectl --kubeconfig kubeconfig exec fabriccertspod -c task-pv-container
+    kubectl --kubeconfig kubeconfig exec fabriccertspod -c task-pv-container
     -- chmod -R o+rw /fabriccerts
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
@@ -188,7 +207,7 @@
 
 - name: Removing the certs pod
   command: >-
-    ./kubectl --kubeconfig kubeconfig delete -f {{ pjrun }}/certssetup.yaml
+    kubectl --kubeconfig kubeconfig delete -f {{ pjrun }}/certssetup.yaml
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
   tags: "deletecertspod"
@@ -196,7 +215,7 @@
 
 - name: Deploy chaincode container endpoint daemon set
   command: >-
-    ./kubectl --kubeconfig kubeconfig apply -f {{ pjrun }}/chainep.yaml
+    kubectl --kubeconfig kubeconfig apply -f {{ pjrun }}/chainep.yaml
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
   tags: "doendpointdaemonset"
@@ -219,35 +238,20 @@
     fabric.peersettings.CORE_PEER_PROFILE_ENABLED is defined and
     fabric.peersettings.CORE_PEER_PROFILE_ENABLED == True
 
-- name: Create k8s service deployment files
-  template:
-    src: "{{ playbook_dir }}/../deploy_k8s/fabricsetup/templates/fabric-services.j2"
-    dest: "{{ pjrun }}/fabric-services.yml"
-
-- name: Start fabric services
-  command: >-
-    ./kubectl --kubeconfig kubeconfig apply -f {{ pjrun }}/fabric-services.yml
-  args:
-    chdir: "{{ playbook_dir }}/../../vars/"
-  tags: "fabricup"
-
-- include_tasks: "{{ playbook_dir }}/../common/publicports.yml"
-  when: fabric.k8s.exposeserviceport == True
-
 - name: Create k8s deployment files
   template:
     src: "{{ playbook_dir }}/../deploy_k8s/fabricsetup/templates/fabric-pod.j2"
     dest: "{{ pjrun }}/fabric-pod.yml"
 
 - name: Start fabric pods
-  command: "./kubectl --kubeconfig kubeconfig apply -f {{ pjrun }}/fabric-pod.yml"
+  command: "kubectl --kubeconfig kubeconfig apply -f {{ pjrun }}/fabric-pod.yml"
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
   tags: "fabricup"
 
 - name: Wait for all peer pods to be ready
   command: >-
-    ./kubectl --kubeconfig kubeconfig -o=custom-columns=STATUS:.status.phase
+    kubectl --kubeconfig kubeconfig -o=custom-columns=STATUS:.status.phase
     get pods -l type=peer --no-headers --field-selector=status.phase=Running
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
@@ -258,14 +262,14 @@
 
 - name: Get number of nodes
   command: >-
-    ./kubectl --kubeconfig kubeconfig get nodes --no-headers
+    kubectl --kubeconfig kubeconfig get nodes --no-headers
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
   register: numberofnodes
 
 - name: Wait for docker endpoint pods to be ready
   command: >-
-    ./kubectl --kubeconfig kubeconfig -o=custom-columns=STATUS:.status.phase
+    kubectl --kubeconfig kubeconfig -o=custom-columns=STATUS:.status.phase
     get pods -l name=dind --no-headers --field-selector=status.phase=Running
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
@@ -277,7 +281,7 @@
 
 - name: Get all the endpoint pods
   command: >-
-    ./kubectl --kubeconfig kubeconfig -o=custom-columns=NAME:.metadata.name
+    kubectl --kubeconfig kubeconfig -o=custom-columns=NAME:.metadata.name
     get pods -l name=dind --no-headers
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
@@ -286,7 +290,7 @@
 
 - name: Download chaincode container image
   command: >-
-    ./kubectl --kubeconfig kubeconfig exec {{ item }} --
+    kubectl --kubeconfig kubeconfig exec {{ item }} --
     docker pull {{ fabric.repo.url }}fabric-ccenv:{{ fabric.baseimage_tag }}
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
@@ -295,7 +299,7 @@
   tags: "downloadccenv"
 
 - name: Start channel operations
-  command: "./kubectl --kubeconfig kubeconfig apply -f {{ pjrun }}/cli-k8s.yaml"
+  command: "kubectl --kubeconfig kubeconfig apply -f {{ pjrun }}/cli-k8s.yaml"
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
   tags: "channeloperation"
@@ -303,7 +307,7 @@
 
 - name: Wait for channel operation pod to complete
   command: >-
-    ./kubectl --kubeconfig kubeconfig -o=custom-columns=STATUS:.status.phase
+    kubectl --kubeconfig kubeconfig -o=custom-columns=STATUS:.status.phase
     get pods -l k8s-app=fabriccli --no-headers --field-selector=status.phase=Succeeded
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
@@ -312,3 +316,4 @@
   when: (allorderers | length > 0) and (allpeers | length > 0)
   retries: 50
   delay: 5
+  tags: "channeloperation"

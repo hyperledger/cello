@@ -1,0 +1,29 @@
+registry:
+  # Maximum number of times a password/secret can be reused for enrollment
+  # (default: -1, which means there is no limit)
+  maxenrollments: -1
+
+  # Contains identity information which is used when LDAP is disabled
+  identities:
+     - name: {{ fabric.ca.admin }}
+       pass: {{ fabric.ca.adminpw }}
+       type: client
+       affiliation: ""
+       maxenrollments: -1
+       attrs:
+          hf.Registrar.Roles: "*"
+          hf.Registrar.DelegateRoles: "*"
+          hf.Revoker: true
+          hf.IntermediateCA: true
+{% if project_version is version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+          hf.GenCRL: true
+          hf.Registrar.Attributes: "*"
+          hf.AffiliationMgr: true
+{% endif %}
+ldap:
+  enabled: false
+
+affiliations:
+   {{ item.org }}:
+      - department1
+      - department2

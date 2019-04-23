@@ -1,8 +1,0 @@
----
-- name: Add provisioning host group
-  add_host:
-    name: "{{ cluster.name_prefix }}{{ item }}"
-    ansible_host: "127.0.0.1"
-    groups: "prohosts"
-  with_sequence: count={{ cluster.stack_size }} format=%03d
-  no_log: True

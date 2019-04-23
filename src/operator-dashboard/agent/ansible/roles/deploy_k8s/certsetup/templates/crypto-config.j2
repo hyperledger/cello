@@ -1,0 +1,50 @@
+---
+{% if allorderers is defined and (allorderers | length > 0 ) %}
+OrdererOrgs:
+{% for org in ordererorgs %}
+  - Name: {{ org }}
+    Domain: {{ org }}
+    Specs:
+{%   for item in allorderers %}
+{%     if item.org == org %}
+      - Hostname: {{ item.name }}
+{% if fabric.k8s.exposeserviceport == true%}
+        SANS:
+{%   for anip in allips %}
+          - {{ anip }}
+{%   endfor%}
+{%   for anode in k8snodes %}
+          - {{ anode }}
+{%   endfor %}
+{% endif %}
+{%     endif %}
+{%   endfor %}
+{% endfor %}
+{% endif %}
+
+{% if allpeers is defined and (allpeers | length > 0) %}
+
+PeerOrgs:
+{% for org in peerorgs %}
+  - Name: {{ org }}
+    Domain: {{ org }}
+{% if project_version is version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+    EnableNodeOUs: true
+{% endif %}
+    Specs:
+{%   for item in allpeers %}
+{%     if item.org == org %}
+      - Hostname: {{ item.name }}
+{% if fabric.k8s.exposeserviceport == true%}
+        SANS:
+{%   for anip in allips %}
+          - {{ anip }}
+{%   endfor%}
+{%   for anode in k8snodes %}
+          - {{ anode }}
+{%   endfor %}
+{% endif %}
+{%     endif %}
+{%   endfor %}
+{% endfor %}
+{% endif %}

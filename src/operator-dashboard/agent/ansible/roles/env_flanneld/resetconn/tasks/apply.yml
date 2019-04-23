@@ -1,5 +1,0 @@
----
-- name: Reset ssh connection to make group change take effects
-  shell: sleep 1; pkill -u {{ cluster.ssh_user }} sshd
-  async: 5
-  poll: 2
