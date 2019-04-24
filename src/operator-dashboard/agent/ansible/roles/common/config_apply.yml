@@ -137,6 +137,12 @@
     tls: "true"
   when: fabric.tls == "client"
 
+- name: Initialize sets
+  set_fact:
+    orderer_rootca: "{{ [] }}"
+    peerorg_rootca: "{{ [] }}"
+    peers_rootca: "{{ [] }}"
+
 - name: Create peerorg rootca list
   set_fact:
     peerorg_rootca: |

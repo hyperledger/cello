@@ -83,7 +83,7 @@ Orderer: &OrdererDefaults
 {%     endfor %}
 {%   endif %}
 
-{%   if fabric.orderersettings.config is defined %}
+{%   if fabric.orderersettings is defined and fabric.orderersettings.config is defined %}
   {{ fabric.orderersettings.config | to_nice_yaml | indent(2, False) -}}
 {%   endif %}
 
