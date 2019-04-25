@@ -163,7 +163,8 @@ REST_USE_JWT = True
 AUTH_USER_MODEL = 'api.UserProfile'
 
 JWT_AUTH = {
-    'JWT_EXPIRATION_DELTA': datetime.timedelta(minutes=120)
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(minutes=120),
+    'JWT_RESPONSE_PAYLOAD_HANDLER': 'api.utils.jwt.jwt_response_payload_handler',
 }
 
 SWAGGER_SETTINGS = {

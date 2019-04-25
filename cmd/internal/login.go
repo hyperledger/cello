@@ -14,7 +14,7 @@ import (
 	"log"
 )
 
-var loginBaseUrl = "auth/login/"
+var loginBaseUrl = "auth"
 
 func Login(baseUrl string) error {
 	authUrl := fmt.Sprintf("%s/%s", baseUrl, loginBaseUrl)

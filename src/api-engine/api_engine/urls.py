@@ -24,6 +24,8 @@ from rest_framework import permissions
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework.routers import DefaultRouter
+from rest_framework_jwt.views import obtain_jwt_token, verify_jwt_token
+
 from api.routes.network.views import NetworkViewSet
 from api.routes.agent.views import AgentViewSet
 from api.routes.node.views import NodeViewSet
@@ -63,7 +65,8 @@ router.register("files", FileViewSet, base_name="file")
 urlpatterns = router.urls
 
 urlpatterns += [
-    path("auth/", include("rest_auth.urls")),
+    path("auth", obtain_jwt_token),
+    path("token-verify", verify_jwt_token),
     path("docs/", SchemaView.with_ui("swagger", cache_timeout=0), name="docs"),
     path("redoc/", SchemaView.with_ui("redoc", cache_timeout=0), name="redoc"),
 ]
