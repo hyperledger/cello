@@ -3,6 +3,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: fabriccli
+  namespace: "{{ namespace }}"
   labels:
     k8s-app: fabriccli
 spec:

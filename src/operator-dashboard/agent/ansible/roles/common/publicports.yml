@@ -17,7 +17,7 @@
 
 - name: Query service ports
   shell: >-
-    kubectl --kubeconfig kubeconfig get services
+    kubectl --kubeconfig kubeconfig --namespace {{ namespace }} get services
     | grep NodePort | awk '{print $1, $5}'
   register: ports
   args:

@@ -2,6 +2,7 @@ apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
   name: dind
+  namespace: "{{ namespace }}"
 spec:
   updateStrategy:
     type: RollingUpdate

@@ -14,6 +14,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: {{ zookeeper }}
+  namespace: "{{ namespace }}"
   labels:
     k8s-app: {{ zookeeper }}
     type: zookeeper
@@ -61,6 +62,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: {{ kafka }}
+  namespace: "{{ namespace }}"
   labels:
     k8s-app: {{ kafka }}
     type: kafka
@@ -112,6 +114,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ ca.name }}
+  namespace: "{{ namespace }}"
 spec:
   selector:
     matchLabels:
@@ -180,6 +183,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ peer.name }}
+  namespace: "{{ namespace }}"
 spec:
   selector:
     matchLabels:
@@ -319,6 +323,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ orderer.name }}
+  namespace: "{{ namespace }}"
 spec:
   selector:
     matchLabels:
@@ -419,28 +424,4 @@ spec:
 {{ resourceQuota.orderer | to_nice_yaml | indent(12, True) }}
 {% endif %}
 {% endfor %}
-{% endif %}
-{% if profilenodes|default([])|length > 0 %}
----
-kind: Pod
-apiVersion: v1
-metadata:
-  name: "bndsampler"
-  labels:
-    k8s-app: "bndsampler"
-spec:
-  volumes:
-    - name: task-pv-storage
-      persistentVolumeClaim:
-        claimName: fabriccerts
-  containers:
-  - name: sampler
-    image: hfrd/pprof-sampler:bnd-latest
-    imagePullPolicy: IfNotPresent
-    env:
-    - { name: "SAMPLING_RATE", value: "10s" }
-    volumeMounts:
-    - mountPath: "/profiles/pprof"
-      name: "task-pv-storage"
-      subPath: "bndprofiles"
 {% endif %}

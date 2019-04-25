@@ -3,6 +3,7 @@ kind: Pod
 apiVersion: v1
 metadata:
   name: fabriccertspod
+  namespace: "{{ namespace }}"
 spec:
   volumes:
     - name: task-pv-storage

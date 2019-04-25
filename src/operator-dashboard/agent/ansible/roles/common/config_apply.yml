@@ -45,6 +45,15 @@
         'latest' not in fabric.baseimage_tag and
         (tag|length) > 1
 
+- name: Set deployment namespace
+  set_fact:
+    namespace: "{{ fabric.namespace | default('default') | lower }}"
+
+- name: Generate namespace
+  set_fact:
+    namespace: "{{ (ansible_date_time.iso8601_micro | to_uuid | lower)[:8] }}"
+  when: namespace == 'generate'
+
 - name: Make sure that working directory exists
   file:
     path: "{{ pjrun }}"

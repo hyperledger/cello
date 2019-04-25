@@ -4,7 +4,7 @@
 
 - name: Remove fabric client pod
   command: >-
-    kubectl --kubeconfig='kubeconfig' delete -f {{ pjrun }}/cli-k8s.yaml
+    kubectl --kubeconfig kubeconfig delete -f {{ pjrun }}/cli-k8s.yaml
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
   when: (allorderers | length > 0) and (allpeers | length > 0)
@@ -13,7 +13,7 @@
 
 - name: Stop fabric pod and chaincode endpoint daemon set
   command: >-
-    kubectl --kubeconfig='kubeconfig' delete -f {{ pjrun }}/{{ item }}
+    kubectl --kubeconfig kubeconfig delete -f {{ pjrun }}/{{ item }}
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
   with_items:
@@ -23,5 +23,15 @@
   ignore_errors: yes
   tags: "fabricdown"
 
-- name: Reuse common code
+- name: Remove the namespace
+  command: >-
+    kubectl --kubeconfig kubeconfig delete -f {{ pjrun }}/namespace.yaml
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+  when: (fabric.namespace|default('default')|lower) == 'generate'
+  ignore_errors: yes
+  tags: "fabricdown,namespace"
+
+- name: Remove run directory
   include_tasks: "{{ playbook_dir }}/../common/config_destroy.yml"
+
