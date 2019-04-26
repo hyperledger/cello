@@ -11,6 +11,7 @@ metadata:
   labels:
     k8s-app: {{ zookeeper }}
   name: {{ zookeeper }}
+  namespace: "{{ namespace }}"
 spec:
   selector:
     k8s-app: {{ zookeeper }}
@@ -28,6 +29,7 @@ metadata:
   labels:
     k8s-app: {{ kafka }}
   name: {{ kafka }}
+  namespace: "{{ namespace }}"
 spec:
   selector:
     k8s-app: {{ kafka }}
@@ -46,6 +48,7 @@ metadata:
   labels:
     k8s-app: {{ ca.name }}
   name: {{ ca.name }}
+  namespace: "{{ namespace }}"
 spec:
   selector:
     k8s-app: {{ ca.name }}
@@ -68,6 +71,7 @@ metadata:
   labels:
     k8s-app: {{ peer.name }}
   name: {{ peer.name }}
+  namespace: "{{ namespace }}"
 spec:
   selector:
     k8s-app: {{ peer.name }}
@@ -93,6 +97,7 @@ metadata:
   labels:
     k8s-app: {{ peer.name }}-profile
   name: {{ peer.name }}-profile
+  namespace: "{{ namespace }}"
 spec:
   selector:
     k8s-app: {{ peer.name }}
@@ -112,6 +117,7 @@ metadata:
   labels:
     k8s-app: {{ orderer.name }}
   name: {{ orderer.name }}
+  namespace: "{{ namespace }}"
 spec:
   selector:
     k8s-app: {{ orderer.name }}
@@ -133,6 +139,7 @@ metadata:
   labels:
     k8s-app: {{ orderer.name }}-profile
   name: {{ orderer.name }}-profile
+  namespace: "{{ namespace }}"
 spec:
   selector:
     k8s-app: {{ orderer.name }}

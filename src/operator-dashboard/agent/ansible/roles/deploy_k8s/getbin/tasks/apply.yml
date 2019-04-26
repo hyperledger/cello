@@ -21,10 +21,3 @@
     remote_src: yes
   when: fabric.repo.bin|length > 0 and binexists.stat.exists == false
   tags: "downloadbin"
-
-- name: Download kubectl
-  get_url:
-    url: "https://storage.googleapis.com/kubernetes-release/release/v1.13.5/bin/linux/amd64/kubectl"
-    dest: "{{ playbook_dir }}/../../vars/kubectl"
-    mode: 0755
-  tags: "downloadbin"
