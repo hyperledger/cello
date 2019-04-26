@@ -15,11 +15,7 @@ fabric: {
     exposeserviceport: False,
     storageclass: "default",
     storagecapacity: "2Gi",
-    shared_storage: false,
-    mem_req: "512Mi",
-    mem_limit: "1024Mi",
-    cpu_req: "0.1",
-    cpu_limit: "0.2"
+    shared_storage: false
   },
   # Peer environment variables to override core.yaml values
   # variables should be in the peer readable format like shown below
@@ -55,9 +51,8 @@ fabric: {
       TickInterval: "500ms",
       ElectionTick: 10,
       HeartbeatTick: 1,
-      MaxInflightMsgs: 256,
-      MaxSizePerMsg: 1048576,
-      SnapshotInterval: "100 MB"
+      MaxInflightBlocks: 5,
+      SnapshotIntervalSize: "100 MB"
     }
   },
 
