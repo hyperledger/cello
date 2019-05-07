@@ -17,3 +17,4 @@ django-allauth<=0.39.1
 django-rest-auth<=0.9.3
 djangorestframework-jwt<=1.11.0
 kubernetes<=9.0.0
+django-cors-headers
