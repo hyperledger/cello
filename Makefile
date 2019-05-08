@@ -84,6 +84,7 @@ export NEXT_VERSION?=False
 -include .makerc/parse-server
 -include .makerc/kubernetes
 -include .makerc/api-engine
+-include .makerc/dashboard
 
 export ROOT_PATH = ${PWD}
 ROOT_PATH_REPLACE=$(subst $(SLASH),$(REPLACE_SLASH),$(ROOT_PATH))
@@ -296,6 +297,13 @@ stop-old:
 	docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} stop
 	echo "Remove all services with ${COMPOSE_FILE}..."
 	docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} rm -f -a
+
+start-dashboard-dev:
+	if [ "$(MOCK)" = "True" ]; then \
+		make -C src/dashboard start; \
+	else \
+		make -C src/dashboard start-no-mock; \
+	fi
 
 stop: ##@Service Stop service
 	if [ "$(NEXT_VERSION)" = "False" ]; then \

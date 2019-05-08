@@ -6,10 +6,15 @@ export default {
     notices: [],
   },
 
-  effects: {
-  },
+  effects: {},
 
   reducers: {
+    changeLayoutCollapsed(state, { payload }) {
+      return {
+        ...state,
+        collapsed: payload,
+      };
+    },
   },
 
   subscriptions: {

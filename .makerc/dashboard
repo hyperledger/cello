@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+# whether use mock api for dashboard
+export MOCK?=True
+# api proxy for api server
+export PROXY?=

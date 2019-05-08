@@ -40,6 +40,7 @@ Using Cello, blockchain developers can:
 ## Design Documentation
 * [Architecture Design](arch.md)
 * [API Engine](api/index.md)
+* [Dashboard](dashboard/index.md)
 
 ## Communication Channels
 
