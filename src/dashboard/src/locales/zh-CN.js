@@ -4,6 +4,8 @@ import login from './zh-CN/login';
 import menu from './zh-CN/menu';
 import pwa from './zh-CN/pwa';
 import component from './zh-CN/component';
+import operatorOrganization from './zh-CN/operatorOrganization';
+import form from './zh-CN/form';
 
 export default {
   'navBar.lang': '语言',
@@ -20,4 +22,6 @@ export default {
   ...menu,
   ...pwa,
   ...component,
+  ...operatorOrganization,
+  ...form,
 };

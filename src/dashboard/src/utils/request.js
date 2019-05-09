@@ -69,7 +69,7 @@ const request = extend({
   errorHandler,
   credentials: 'include',
   headers: {
-    Authorization: `Bearer ${localStorage.getItem('cello-token')}`,
+    Authorization: `JWT ${localStorage.getItem('cello-token')}`,
   },
 });
 

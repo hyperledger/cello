@@ -17,16 +17,28 @@ export default [
     component: '../layouts/BasicLayout',
     Routes: ['src/pages/Authorized'],
     routes: [
-      { path: '/', redirect: '/operator/overview', authority: ['operator', 'administrator'] },
+      { path: '/', redirect: '/overview', authority: ['operator', 'administrator', 'user'] },
+      {
+        path: '/overview',
+        name: 'overview',
+        icon: 'eye',
+        component: './Overview/Overview',
+      },
       {
         path: '/operator',
         name: 'operator',
         icon: 'dashboard',
+        authority: ['operator', 'administrator'],
         routes: [
           {
             path: '/operator/overview',
             name: 'overview',
             component: './Operator/Overview',
+          },
+          {
+            path: '/operator/organization',
+            name: 'organization',
+            component: './Operator/Organization',
           },
           {
             path: '/operator/agent',

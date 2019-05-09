@@ -3,4 +3,9 @@ export default {
   'component.tagSelect.collapse': 'Collapse',
   'component.tagSelect.all': 'All',
   'component.miniProgress.tooltipDefault': 'Target value',
+  'component.standardTable.selected': 'Selected',
+  'component.standardTable.items': 'Items',
+  'component.standardTable.total': 'Total',
+  'component.standardTable.clean': 'Clean',
+  'component.standardTable.showTotal': '{start}-{end} of {total} items',
 };

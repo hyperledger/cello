@@ -1,0 +1,17 @@
+export default {
+  'app.operator.organization.title': '组织管理',
+  'app.operator.organization.table.header.name': '组织名称',
+  'app.operator.organization.table.header.createTime': '创建时间',
+  'app.operator.organization.form.new.title': '新建组织',
+  'app.operator.organization.form.update.title': '更新组织',
+  'app.operator.organization.form.name.label': '组织名称',
+  'app.operator.organization.form.name.required': '请输入组织名称',
+  'app.operator.organization.create.success': '创建组织 {name} 成功',
+  'app.operator.organization.create.fail': '创建组织 {name} 失败',
+  'app.operator.organization.update.success': '更新组织 {name} 成功',
+  'app.operator.organization.update.fail': '更新组织 {name} 失败',
+  'app.operator.organization.form.delete.title': '删除组织',
+  'app.operator.organization.form.delete.content': '确认删除组织 {name}',
+  'app.operator.organization.delete.success': '删除组织 {name} 成功',
+  'app.operator.organization.delete.fail': '删除组织 {name} 失败',
+};

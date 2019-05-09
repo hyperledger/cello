@@ -5,6 +5,7 @@ from rest_framework import serializers
 from api.common.enums import Operation, NetworkType, FabricNodeType, UserRole
 from api.common.serializers import PageQuerySerializer
 from api.models import UserProfile
+from api.utils.jwt import OrgSerializer
 
 
 class NodeQuery(PageQuerySerializer):
@@ -62,10 +63,11 @@ class UserQuerySerializer(PageQuerySerializer, serializers.Serializer):
 
 class UserInfoSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(help_text="ID of user")
+    organization = OrgSerializer(allow_null=True, required=False)
 
     class Meta:
         model = UserProfile
-        fields = ("id", "username", "role")
+        fields = ("id", "username", "role", "organization")
         extra_kwargs = {
             "id": {"read_only": False},
             "username": {"validators": []},

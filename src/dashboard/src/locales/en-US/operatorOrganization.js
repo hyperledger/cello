@@ -1,0 +1,17 @@
+export default {
+  'app.operator.organization.title': 'Organization Management',
+  'app.operator.organization.table.header.name': 'Organization Name',
+  'app.operator.organization.table.header.createTime': 'Create Time',
+  'app.operator.organization.form.new.title': 'New Organization',
+  'app.operator.organization.form.update.title': 'Update Organization',
+  'app.operator.organization.form.name.label': 'Organization Name',
+  'app.operator.organization.form.name.required': 'Please input organization name',
+  'app.operator.organization.create.success': 'Create organization {name} success',
+  'app.operator.organization.create.fail': 'Create organization {name} failed',
+  'app.operator.organization.update.success': 'Update organization {name} success',
+  'app.operator.organization.update.fail': 'Update organization {name} failed',
+  'app.operator.organization.form.delete.title': 'Delete Organization',
+  'app.operator.organization.form.delete.content': 'Confirm to delete organization {name}',
+  'app.operator.organization.delete.fail': 'Delete Organization {name} failed',
+  'app.operator.organization.delete.success': 'Delete Organization {name} success',
+};

@@ -70,15 +70,12 @@ class UserViewSet(viewsets.ViewSet):
             )
             p = Paginator(users, per_page)
             users = p.page(page)
-            users = [user.__dict__ for user in users]
+            # users = [user for user in users]
 
             response = UserListSerializer(
-                data={"total": p.count, "data": users}
-            )
-            if response.is_valid(raise_exception=True):
-                return Response(
-                    data=response.validated_data, status=status.HTTP_200_OK
-                )
+                {"total": p.count, "data": list(users.object_list)}
+            ).data
+            return Response(data=response, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         request_body=UserCreateBody,

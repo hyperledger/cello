@@ -4,6 +4,8 @@ import login from './en-US/login';
 import menu from './en-US/menu';
 import pwa from './en-US/pwa';
 import component from './en-US/component';
+import operatorOrganization from './en-US/operatorOrganization';
+import form from './en-US/form';
 
 export default {
   'navBar.lang': 'Languages',
@@ -20,4 +22,6 @@ export default {
   ...menu,
   ...pwa,
   ...component,
+  ...operatorOrganization,
+  ...form,
 };

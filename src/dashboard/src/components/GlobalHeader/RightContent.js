@@ -6,12 +6,8 @@ import SelectLang from '../SelectLang';
 import styles from './index.less';
 
 export default class GlobalHeaderRight extends PureComponent {
-
   render() {
-    const {
-      currentUser,
-      onMenuClick,
-    } = this.props;
+    const { currentUser, onMenuClick } = this.props;
     const menu = (
       <Menu className={styles.menu} selectedKeys={[]} onClick={onMenuClick}>
         <Menu.Item key="logout">
@@ -29,12 +25,7 @@ export default class GlobalHeaderRight extends PureComponent {
         {currentUser.username ? (
           <HeaderDropdown overlay={menu}>
             <span className={`${styles.action} ${styles.account}`}>
-              <Avatar
-                size="small"
-                className={styles.avatar}
-                src={currentUser.avatar}
-                alt="avatar"
-              />
+              <Avatar size="small" className={styles.avatar} src="/avatar.png" alt="avatar" />
               <span className={styles.name}>{currentUser.username}</span>
             </span>
           </HeaderDropdown>
