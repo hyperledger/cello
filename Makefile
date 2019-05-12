@@ -172,7 +172,7 @@ dockerhub-pull: ##@Pull service images from dockerhub
 	cd scripts/master_node && bash download_images.sh
 
 license:
-	bash scripts/check_license.sh
+	scripts/check_license.sh
 
 install: $(patsubst %,build/docker/%/.push,$(DOCKER_IMAGES))
 
