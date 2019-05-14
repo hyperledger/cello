@@ -47,6 +47,8 @@ export default {
           }
         }
         yield put(routerRedux.replace(redirect || '/'));
+        // TODO: find better method to reload token for request, reload page to obtain the token from storage
+        window.location.reload();
       }
     },
 
