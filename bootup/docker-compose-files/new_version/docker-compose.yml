@@ -103,3 +103,13 @@ services:
     - ADMIN_TOKEN=$API_ENGINE_ADMIN_TOKEN
     - CELERY_BROKER_URL=redis://redis
     command: bash -c "celery -A api_engine worker -l info"
+
+  dashboard:
+    image: hyperledger/cello-dashboard
+    container_name: cello-dashboard
+    links:
+      - nginx
+    environment:
+      - API_PROXY=http://nginx:80/engine
+    ports:
+      - "${DASHBOARD_SERVICE_PORT}:80"

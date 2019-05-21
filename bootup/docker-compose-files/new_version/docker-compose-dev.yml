@@ -97,33 +97,12 @@ services:
     - $ROOT_PATH/src/api-engine:/var/www/server
     command: bash -c "celery -A api_engine worker -l info"
 
-#  mysql:
-#    image: mariadb:10.3.10
-#    container_name: cello-keycloak-mysql
-#    environment:
-#    - MYSQL_DATABASE=keycloak
-#    - MYSQL_USER=$KEYCLOAK_DB_USERNAME
-#    - MYSQL_PASSWORD=$KEYCLOAK_DB_PASSWORD
-#    - MYSQL_ROOT_PASSWORD=$KEYCLOAK_MYSQL_ROOT_PASSWORD
-#    volumes:
-#    - /opt/cello/keycloak-mysql:/var/lib/mysql
-#
-#  keycloak:
-#    image: jboss/keycloak:4.8.0.Final
-#    container_name: cello-keycloak-server
-#    environment:
-#      - KEYCLOAK_USER=$KEYCLOAK_ADMIN_NAME
-#      - KEYCLOAK_PASSWORD=$KEYCLOAK_ADMIN_PASSWORD
-#      - DB_ADDR=mysql
-#      - DB_USER=$KEYCLOAK_DB_USERNAME
-#      - DB_PASSWORD=$KEYCLOAK_DB_PASSWORD
-#      - KEYCLOAK_HTTPS_PORT=$KEYCLOAK_SERVER_HTTPS_PORT
-#      - DB_VENDOR=mysql
-#    volumes:
-#      - $ROOT_PATH/thirdparty/keycloak/resources/img/keycloak-bg.png:/opt/jboss/keycloak/themes/keycloak/login/resources/img/keycloak-bg.png
-#      - $ROOT_PATH/thirdparty/keycloak/resources/img/keycloak-logo-text.png:/opt/jboss/keycloak/themes/keycloak/login/resources/img/keycloak-logo-text.png
-#    links:
-#      - mysql
-#    ports:
-#      - $KEYCLOAK_SERVER_PORT:8080
-#      - $KEYCLOAK_SERVER_HTTPS_PORT:8443
+  dashboard:
+    image: hyperledger/cello-dashboard
+    container_name: cello-dashboard
+    links:
+      - api-engine
+    environment:
+      - API_PROXY=http://api-engine:8080/engine
+    ports:
+      - "${DASHBOARD_SERVICE_PORT}:80"

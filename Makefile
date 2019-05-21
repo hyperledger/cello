@@ -60,7 +60,7 @@ SERVER_PUBLIC_IP ?= 127.0.0.1
 LOCAL_STORAGE_PATH=/opt/cello
 
 # Docker images needed to run cello services
-DOCKER_IMAGES = ansible-agent api-engine nginx
+DOCKER_IMAGES = ansible-agent api-engine nginx dashboard
 DUMMY = .$(IMG_TAG)
 
 ifeq ($(DOCKER_BASE), )

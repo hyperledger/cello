@@ -3,3 +3,5 @@
 export MOCK?=True
 # api proxy for api server
 export PROXY?=
+
+export DASHBOARD_SERVICE_PORT?=8081
