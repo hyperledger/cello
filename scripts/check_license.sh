@@ -4,9 +4,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-
-set -o pipefail
-
 # Get list of files that have been modified
 patterns=$(dirname $0)/exclude-patterns
 if CHECK=$(git diff --name-only HEAD * | grep -v -f $patterns | sort -u); then
@@ -18,6 +15,7 @@ else
     echo "Checking files in last commit"
 fi
 
+set -o pipefail
 echo "Checking committed files for SPDX-License-Identifier headers ..."
 if [ -z "$CHECK" ]; then
    echo "All files have SPDX-License-Identifier headers"

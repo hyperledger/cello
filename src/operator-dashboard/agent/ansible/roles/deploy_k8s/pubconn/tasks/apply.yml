@@ -23,3 +23,9 @@
     src: "{{ playbook_dir }}/../deploy_k8s/pubconn/templates/connyaml.j2"
     dest: "{{ fabricworkdir }}/keyfiles/{{ item }}/connection.yml"
   with_items: "{{ allorgs }}"
+
+- name: Create orderer endpoint file
+  template:
+    src: "{{ playbook_dir }}/../deploy_k8s/pubconn/templates/ordererendpoints.j2"
+    dest: "{{ fabricworkdir }}/keyfiles/{{ item }}/{{ item }}_orderendpoints.json"
+  with_items: "{{ ordererorgs }}"

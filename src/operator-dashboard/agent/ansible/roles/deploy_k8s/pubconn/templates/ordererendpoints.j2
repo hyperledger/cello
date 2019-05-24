@@ -1,0 +1,13 @@
+{
+"channelID": "<<FillInYourChannelName>>",
+"ordererEndpoints": [
+{% for orderer in allorderers %}
+      "{{ k8shosts[orderer.name] }}:{{ k8sports[orderer.name+':7050'] }}"{{ '' if loop.last else ',' }}
+{% endfor %}
+],
+"ordererTlsCertificates": [
+{% for orderer in allorderers %}
+      "{{lookup('file', fabricworkdir+'/keyfiles/'+orderer.org+'/orderers/'+orderer.name+'.'+orderer.org+'/tls/server.crt')|b64encode}}"{{ '' if loop.last else ',' }}
+{% endfor %}
+]
+}

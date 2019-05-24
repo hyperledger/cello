@@ -80,10 +80,19 @@
     chdir: "{{ fabricworkdir }}"
   when: allorderers | length > 0
 
+- name: Create org join request json file
+  shell: >-
+    export FABRIC_CFG_PATH={{ fabricworkdir }} &&
+    {{ fabricpath }}/bin/configtxgen -printOrg {{ item }} > keyfiles/{{item}}/JoinRequest_{{item}}.json
+  args:
+    chdir: "{{ fabricworkdir }}"
+  when: peerorgs | length > 0
+  with_items: "{{ peerorgs }}"
+
 - name: Create ca config file
   template:
     src: "{{ playbook_dir }}/certsetup/templates/fabric-ca-server-config.j2"
-    dest: "{{ fabricworkdir }}/run/keyfiles/{{ item.org }}/ca/fabric-ca-server-config.yaml"
+    dest: "{{ fabricworkdir }}/keyfiles/{{ item.org }}/ca/fabric-ca-server-config.yaml"
   with_items: "{{ cas }}"
 
 - name: Create a zip file of all certificates
