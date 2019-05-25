@@ -1,7 +1,10 @@
+/*
+ SPDX-License-Identifier: Apache-2.0
+*/
 import React, { Component } from 'react';
 import { connect } from 'dva';
 import { formatMessage, FormattedMessage } from 'umi-plugin-react/locale';
-import { Checkbox, Alert, message } from 'antd';
+import { Checkbox, Alert } from 'antd';
 import Login from '@/components/Login';
 import styles from './Login.less';
 
@@ -38,7 +41,13 @@ class LoginPage extends Component {
   };
 
   renderMessage = content => (
-    <Alert className={styles.alertText} style={{ marginBottom: 24 }} message={content} type="error" showIcon />
+    <Alert
+      className={styles.alertText}
+      style={{ marginBottom: 24 }}
+      message={content}
+      type="error"
+      showIcon
+    />
   );
 
   render() {
