@@ -1,0 +1,30 @@
+/*
+ SPDX-License-Identifier: Apache-2.0
+*/
+export default {
+  'app.operator.user.title': 'User Management',
+  'app.operator.user.table.header.name': 'User Name',
+  'app.operator.user.table.header.role': 'User Role',
+  'app.operator.user.table.header.organization': 'Organization',
+  'app.operator.user.role.user': 'User',
+  'app.operator.user.role.operator': 'Operator',
+  'app.operator.user.role.administrator': 'Administrator',
+  'app.operator.user.form.new.title': 'New User',
+  'app.operator.user.form.update.title': 'Update User',
+  'app.operator.user.form.name.label': 'User Name',
+  'app.operator.user.form.name.required': 'Please input user name',
+  'app.operator.user.form.role.label': 'User Role',
+  'app.operator.user.form.email.label': 'Email',
+  'app.operator.user.form.email.required': 'Please input email',
+  'app.operator.user.form.email.noValid': 'Please input valid email',
+  'app.operator.user.form.password.label': 'Password',
+  'app.operator.user.form.password.required': 'Please input password',
+  'app.operator.user.form.passwordConfirm.label': 'Password Confirm',
+  'app.operator.user.form.passwordConfirm.noValid': 'Inconsistent password input twice',
+  'app.operator.user.create.success': 'Create user {name} success',
+  'app.operator.user.create.fail': 'Create user {name} failed',
+  'app.operator.user.delete.success': 'Delete user {name} success',
+  'app.operator.user.delete.fail': 'Delete user {name} failed',
+  'app.operator.user.form.delete.title': 'Delete User',
+  'app.operator.user.form.delete.content': 'Confirm to delete user {name}',
+};

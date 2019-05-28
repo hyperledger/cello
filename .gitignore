@@ -237,3 +237,5 @@ lambda/mock/index.js
 screenshot
 .firebase
 .temp
+
+src/dashboard/dist

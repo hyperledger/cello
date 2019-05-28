@@ -1,3 +1,6 @@
+/*
+ SPDX-License-Identifier: Apache-2.0
+*/
 import exception from './en-US/exception';
 import globalHeader from './en-US/globalHeader';
 import login from './en-US/login';
@@ -5,6 +8,7 @@ import menu from './en-US/menu';
 import pwa from './en-US/pwa';
 import component from './en-US/component';
 import operatorOrganization from './en-US/operatorOrganization';
+import operatorUser from './en-US/operatorUser';
 import form from './en-US/form';
 
 export default {
@@ -23,5 +27,6 @@ export default {
   ...pwa,
   ...component,
   ...operatorOrganization,
+  ...operatorUser,
   ...form,
 };

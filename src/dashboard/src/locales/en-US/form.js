@@ -1,3 +1,6 @@
+/*
+ SPDX-License-Identifier: Apache-2.0
+*/
 export default {
   'form.button.new': 'New',
   'form.table.header.operation': 'Operation',
@@ -6,4 +9,5 @@ export default {
   'form.menu.item.update': 'Update',
   'form.button.confirm': 'Confirm',
   'form.button.cancel': 'Cancel',
+  'form.button.moreActions': 'More Actions',
 };

@@ -1,3 +1,6 @@
+/*
+ SPDX-License-Identifier: Apache-2.0
+*/
 export default {
   'form.button.new': '新建',
   'form.table.header.operation': '操作',
@@ -6,4 +9,5 @@ export default {
   'form.menu.item.update': '更新',
   'form.button.confirm': '确认',
   'form.button.cancel': '取消',
+  'form.button.moreActions': '更多操作',
 };

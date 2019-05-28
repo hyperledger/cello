@@ -1,3 +1,6 @@
+/*
+ SPDX-License-Identifier: Apache-2.0
+*/
 export default [
   // user
   {
@@ -37,6 +40,7 @@ export default [
           },
           {
             path: '/operator/organization',
+            authority: ['operator'],
             name: 'organization',
             component: './Operator/Organization',
           },

@@ -1,4 +1,7 @@
-import React, { Suspense } from 'react';
+/*
+ SPDX-License-Identifier: Apache-2.0
+*/
+import React from 'react';
 import { Layout } from 'antd';
 import DocumentTitle from 'react-document-title';
 import { connect } from 'dva';
