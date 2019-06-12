@@ -10,6 +10,7 @@ export API_ENGINE_ADMIN_TOKEN?=administrator
 export API_ENGINE_ADMIN_USERNAME?=admin
 export API_ENGINE_ADMIN_PASSWORD?=pass
 export API_ENGINE_ADMIN_EMAIL?=admin@cello.com
+export API_DOCKER_HOST?=unix://var/run/docker.sock
 
 ifeq ($(DEPLOY_METHOD), docker-compose)
     export API_ENGINE_SSO_AUTH_URL?=http://${SERVER_PUBLIC_IP}:${KEYCLOAK_SERVER_PORT}/auth/

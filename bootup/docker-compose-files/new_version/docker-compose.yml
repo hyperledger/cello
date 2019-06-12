@@ -75,6 +75,10 @@ services:
     - ADMIN_USERNAME=$API_ENGINE_ADMIN_USERNAME
     - ADMIN_PASSWORD=$API_ENGINE_ADMIN_PASSWORD
     - ADMIN_EMAIL=$API_ENGINE_ADMIN_EMAIL
+    - DOCKER_HOST=$DOCKER_HOST
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+
 
   api-engine-tasks:
     image: hyperledger/cello-api-engine
