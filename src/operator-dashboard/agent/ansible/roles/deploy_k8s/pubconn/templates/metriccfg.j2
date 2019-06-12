@@ -11,4 +11,10 @@
   labels:
     hostname: "{{ peer.name }}"
 {% endfor %}
-
+{% for dsnode in dsnodes %}
+{%   set key='metricep-'+(dsnode[1]|replace('.','-')) %}
+- targets:
+  - {{ k8shosts[key] }}:{{ k8sports[key+':9100'] }}
+  labels:
+    hostname: "{{ dsnode[1] }}"
+{% endfor %}

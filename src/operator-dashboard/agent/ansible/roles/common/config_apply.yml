@@ -200,3 +200,14 @@
   set_fact:
     rootca: "{{ allcerts | unique }}"
   when: fabric.tls != false
+
+- name: Query node names
+  command: >-
+    kubectl --kubeconfig kubeconfig get nodes
+    -o=jsonpath={.items[*].metadata.name}
+  register: nodenames
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+
+- set_fact:
+    k8snodes: "{{ nodenames.stdout.split(' ') }}"

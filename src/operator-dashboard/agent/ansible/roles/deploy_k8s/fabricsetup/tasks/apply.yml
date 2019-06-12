@@ -34,6 +34,45 @@
     chdir: "{{ playbook_dir }}/../../vars/"
   tags: "fabricup"
 
+# Wait for metrics daemon set to be ready
+- name: Wait for metric daemon set to be ready
+  command: >-
+    kubectl --kubeconfig kubeconfig --namespace {{ namespace }}
+    get ds nodemetricds -o
+    jsonpath='{ .status.desiredNumberScheduled }{"="}{ .status.numberReady}'
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+  register: dsstatus
+  until: dsstatus.stdout.split('=')[0] == dsstatus.stdout.split('=')[1]
+  when: fabric.metrics is defined and fabric.metrics
+  retries: 50
+  delay: 5
+
+- name: Get metric daemon pod names
+  command: >-
+    kubectl --kubeconfig kubeconfig --namespace {{ namespace }}
+    get pods -l name=nodemetricds -o
+    jsonpath='{range .items[*]}["{.metadata.name}","{.spec.nodeName}"],{end}'
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+  when: fabric.metrics is defined and fabric.metrics
+  register: dsstatus
+
+- set_fact:
+    dsnodes: >-
+      {{ '[' + dsstatus.stdout[0:(dsstatus.stdout|length|int-1)] + ']' }}
+  when: fabric.metrics is defined and fabric.metrics
+
+- name: Label daemon set pod
+  command: >-
+    kubectl --kubeconfig kubeconfig --namespace {{ namespace }}
+    label pods {{ item[0] }} nodeName={{ item[1]|replace('.', '-') }}
+    --overwrite
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+  when: fabric.metrics is defined and fabric.metrics
+  with_list: "{{ dsnodes }}"
+
 - include_tasks: "{{ playbook_dir }}/../common/publicports.yml"
   when: fabric.k8s.exposeserviceport == True
 
@@ -63,19 +102,6 @@
     src: "{{ playbook_dir }}/../deploy_k8s/fabricsetup/templates/bndsamplerconfig.j2"
     dest: "{{ fabricworkdir }}/keyfiles/bndsamplerconfig.json"
   when: profilenodes | length > 0
-
-# Create the k8s services so that node addresses become available
-- name: Create k8s service deployment files
-  template:
-    src: "{{ playbook_dir }}/../deploy_k8s/fabricsetup/templates/fabric-services.j2"
-    dest: "{{ pjrun }}/fabric-services.yml"
-
-- name: Start fabric services
-  command: >-
-    kubectl --kubeconfig kubeconfig apply -f {{ pjrun }}/fabric-services.yml
-  args:
-    chdir: "{{ playbook_dir }}/../../vars/"
-  tags: "fabricup"
 
 - include_tasks: "{{ playbook_dir }}/../common/publicports.yml"
   when: fabric.k8s.exposeserviceport == True

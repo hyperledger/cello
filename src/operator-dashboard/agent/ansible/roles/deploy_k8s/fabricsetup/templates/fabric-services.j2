@@ -149,3 +149,49 @@ spec:
 {% endif %}
 {% endfor %}
 {% endif %}
+
+{% if fabric.metrics is defined and fabric.metrics %}
+---
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: nodemetricds
+  namespace: "{{ namespace }}"
+spec:
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      name:  nodemetricds
+  template:
+    metadata:
+      labels:
+        name: nodemetricds
+    spec:
+      containers:
+      - name: nodemetric
+        image: prom/node-exporter:latest
+        securityContext:
+          privileged: true
+      terminationGracePeriodSeconds: 3
+
+{% for anode in k8snodes %}
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    k8s-app: metricep-{{anode|replace('.','-')}}
+  name: metricep-{{anode|replace('.','-')}}
+  namespace: "{{ namespace }}"
+spec:
+  selector:
+    nodeName: "{{ anode|replace('.','-') }}"
+{% if fabric.k8s.exposeserviceport %}
+  type: NodePort
+{% endif %}
+  ports:
+    - name: metricport
+      port: 9100
+{% endfor %}
+{% endif %}
