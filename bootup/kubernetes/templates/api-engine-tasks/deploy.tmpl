@@ -26,6 +26,8 @@ spec:
           mountPath: /var/www/server
         - name: media
           mountPath: /var/www/media
+        - name: docker-sock
+          mountPath: /var/run/docker.sock
       volumes:
       - name: api-engine
         hostPath:
@@ -33,3 +35,6 @@ spec:
       - name: media
         hostPath:
           path: /opt/cello/api-engine/media
+      - name: docker-sock
+        hostPath:
+          path: /var/run/docker.sock

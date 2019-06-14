@@ -115,6 +115,7 @@ class NodeViewSet(viewsets.ViewSet):
             network_version = serializer.validated_data.get("network_version")
             agent = serializer.validated_data.get("agent")
             node_type = serializer.validated_data.get("type")
+            agent_image = serializer.validated_data.get("agent_image")
             if agent is None:
                 available_agents = (
                     Agent.objects.annotate(network_num=Count("node__network"))
@@ -147,7 +148,15 @@ class NodeViewSet(viewsets.ViewSet):
                 type=node_type,
             )
             node.save()
-            create_node.delay(str(node.id))
+            agent_config_file = (
+                request.build_absolute_uri(agent.k8s_config_file.url),
+            )
+            if isinstance(agent_config_file, tuple):
+                agent_config_file = list(agent_config_file)[0]
+            # TODO: add node update api value
+            create_node.delay(
+                str(node.id), agent_image, agent_config_file=agent_config_file
+            )
             response = NodeIDSerializer(data={"id": str(node.id)})
             if response.is_valid(raise_exception=True):
                 return Response(
