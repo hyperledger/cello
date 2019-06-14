@@ -25,6 +25,7 @@ from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework.routers import DefaultRouter
 from rest_framework_jwt.views import obtain_jwt_token, verify_jwt_token
+from django.conf.urls.static import static
 
 from api.routes.network.views import NetworkViewSet
 from api.routes.agent.views import AgentViewSet
@@ -73,3 +74,6 @@ urlpatterns += [
 
 if DEBUG:
     urlpatterns = [path(WEBROOT, include(urlpatterns))]
+    urlpatterns += static(
+        settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
+    )

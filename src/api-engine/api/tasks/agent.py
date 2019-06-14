@@ -2,46 +2,44 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 from __future__ import absolute_import, unicode_literals
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.files.base import ContentFile
-import yaml
-from api_engine.celery import app
-from api.models import Node, Port
-from api.common.enums import NodeStatus, HostType
-from api.lib.agent.handler import AgentHandler
 
 import logging
+
+import docker
+from django.core.exceptions import ObjectDoesNotExist
+
+from api.common.enums import NodeStatus
+from api.models import Node, Port
+from api_engine.celery import app
 
 LOG = logging.getLogger(__name__)
 
 
 @app.task(bind=True, default_retry_delay=5, max_retries=3, time_limit=360)
-def create_node(self, node_id=None):
+def create_node(self, node_id=None, agent_image=None, **kwargs):
+    agent_config_file = kwargs.get("agent_config_file")
+    node_update_api = kwargs.get("node_update_api")
     if node_id is None:
         return False
 
     node = None
     try:
         node = Node.objects.get(id=node_id)
-        agent_handler = AgentHandler(node)
-        if node.agent.type == HostType.Docker.name.lower():
-            compose_config = agent_handler.config
-            if compose_config:
-                node.compose_file.save(
-                    "docker-compose.yml",
-                    ContentFile(
-                        yaml.safe_dump(
-                            compose_config, default_flow_style=False
-                        )
-                    ),
-                )
-            else:
-                node.status = NodeStatus.Error.name.lower()
-                node.save()
-                return False
-        # elif node.agent.type == HostType.Kubernetes.name.lower():
-        #     config = agent_handler.config
-        agent_handler.create_node()
+        environment = {
+            "DEPLOY_NAME": node.name,
+            "NETWORK_TYPE": node.network_type,
+            "NETWORK_VERSION": node.network_version,
+            "NODE_TYPE": node.type,
+            "NODE_ID": str(node.id),
+            "AGENT_URL": node.agent.worker_api,
+            "AGENT_ID": str(node.agent.id),
+            "AGENT_CONFIG_FILE": agent_config_file,
+            "NODE_UPDATE_URL": node_update_api,
+        }
+        client = docker.from_env()
+        client.containers.run(
+            agent_image, auto_remove=True, environment=environment, detach=True
+        )
     except ObjectDoesNotExist:
         return False
     except Exception as e:
@@ -50,9 +48,6 @@ def create_node(self, node_id=None):
             node.status = NodeStatus.Error.name.lower()
             node.save()
         raise self.retry(exc=e)
-
-    node.status = NodeStatus.Running.name.lower()
-    node.save()
 
     return True
 
@@ -64,8 +59,8 @@ def delete_node(self, node_id=None):
 
     try:
         node = Node.objects.get(id=node_id)
-        agent_handler = AgentHandler(node)
-        agent_handler.delete_node()
+        # agent_handler = AgentHandler(node)
+        # agent_handler.delete_node()
     except ObjectDoesNotExist:
         return False
     except Exception as e:

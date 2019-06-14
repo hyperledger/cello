@@ -203,6 +203,9 @@ class AgentResponseSerializer(AgentIDSerializer, serializers.ModelSerializer):
     organization_id = serializers.UUIDField(
         help_text="Organization ID", required=False, allow_null=True
     )
+    config_file = serializers.URLField(
+        help_text="Config file of agent", required=False
+    )
 
     class Meta:
         model = Agent
@@ -218,6 +221,7 @@ class AgentResponseSerializer(AgentIDSerializer, serializers.ModelSerializer):
             "type",
             "schedulable",
             "organization_id",
+            "config_file",
         )
         extra_kwargs = {
             "id": {"required": True},

@@ -96,10 +96,21 @@ class AgentViewSet(viewsets.ViewSet):
             agents = Agent.objects.filter(**query_filters)
             p = Paginator(agents, per_page)
             agents = p.page(page)
-            agents = [agent.__dict__ for agent in agents]
+            # agents = [agent.__dict__ for agent in agents]
+            agent_list = []
+            for agent in agents:
+                agent_dict = agent.__dict__
+                agent_dict.update(
+                    {
+                        "config_file": request.build_absolute_uri(
+                            agent.k8s_config_file.url
+                        )
+                    }
+                )
+                agent_list.append(agent_dict)
 
             response = AgentListResponse(
-                data={"data": agents, "total": p.count}
+                data={"data": agent_list, "total": p.count}
             )
             if response.is_valid(raise_exception=True):
                 return Response(
