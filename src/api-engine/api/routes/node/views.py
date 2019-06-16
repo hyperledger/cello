@@ -149,7 +149,7 @@ class NodeViewSet(viewsets.ViewSet):
             )
             node.save()
             agent_config_file = (
-                request.build_absolute_uri(agent.k8s_config_file.url),
+                request.build_absolute_uri(agent.config_file.url),
             )
             if isinstance(agent_config_file, tuple):
                 agent_config_file = list(agent_config_file)[0]

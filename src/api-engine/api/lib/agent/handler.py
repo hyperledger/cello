@@ -27,10 +27,10 @@ class AgentHandler(object):
                 "agent_id": str(node.agent.id),
                 "compose_file": node.get_compose_file_path(),
                 "k8s_config_file": os.path.join(
-                    os.path.dirname(node.agent.k8s_config_file.path),
+                    os.path.dirname(node.agent.config_file.path),
                     ".kube/config",
                 )
-                if node.agent.k8s_config_file
+                if node.agent.config_file
                 else "",
             }
         )

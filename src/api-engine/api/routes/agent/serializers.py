@@ -18,7 +18,7 @@ from api.common.enums import (
     separate_upper_class,
 )
 from api.common.serializers import PageQuerySerializer, ListResponseSerializer
-from api.models import Agent, KubernetesConfig, validate_k8s_config_file
+from api.models import Agent, KubernetesConfig, validate_agent_config_file
 from api.utils.common import to_form_paras
 
 LOG = logging.getLogger(__name__)
@@ -118,48 +118,35 @@ class AgentCreateBody(serializers.ModelSerializer):
         model = Agent
         fields = (
             "name",
-            "worker_api",
             "capacity",
             "node_capacity",
             "log_level",
             "type",
             "schedulable",
-            "k8s_config_file",
+            "ip",
+            "image",
+            "config_file",
         )
         extra_kwargs = {
-            "worker_api": {
-                "required": False,
-                "allow_blank": True,
-                "validators": [URLValidator(schemes=("http", "https", "tcp"))],
-            },
             "capacity": {"required": True},
             "node_capacity": {"required": True},
             "type": {"required": True},
-            "k8s_config_file": {
+            "ip": {"required": True},
+            "image": {"required": True},
+            "config_file": {
                 "required": False,
                 "validators": [
                     FileExtensionValidator(
                         allowed_extensions=["tgz", "gz", "zip"]
                     ),
-                    validate_k8s_config_file,
+                    validate_agent_config_file,
                 ],
             },
         }
 
     def validate(self, attrs):
-        agent_type = attrs.get("type")
         capacity = attrs.get("capacity")
         node_capacity = attrs.get("node_capacity")
-        worker_api = attrs.get("worker_api", "")
-        if agent_type == HostType.Kubernetes.name.lower():
-            k8s_config_file = attrs.get("k8s_config_file")
-            if k8s_config_file is None:
-                raise serializers.ValidationError("Need input k8s config file")
-        if agent_type == HostType.Docker.name.lower():
-            if worker_api == "":
-                raise serializers.ValidationError(
-                    "Please input worker api for docker"
-                )
         if node_capacity < capacity:
             raise serializers.ValidationError(
                 "Node capacity must larger than capacity"
@@ -212,7 +199,6 @@ class AgentResponseSerializer(AgentIDSerializer, serializers.ModelSerializer):
         fields = (
             "id",
             "name",
-            "worker_api",
             "capacity",
             "node_capacity",
             "status",
@@ -222,11 +208,12 @@ class AgentResponseSerializer(AgentIDSerializer, serializers.ModelSerializer):
             "schedulable",
             "organization_id",
             "config_file",
+            "ip",
+            "image",
         )
         extra_kwargs = {
             "id": {"required": True},
             "name": {"required": True},
-            "worker_api": {"required": True},
             "status": {"required": True},
             "capacity": {"required": True},
             "node_capacity": {"required": True},
@@ -234,6 +221,8 @@ class AgentResponseSerializer(AgentIDSerializer, serializers.ModelSerializer):
             "type": {"required": True},
             "log_level": {"required": True},
             "schedulable": {"required": True},
+            "ip": {"required": True},
+            "image": {"required": True},
         }
 
 
@@ -250,7 +239,6 @@ class AgentInfoSerializer(AgentIDSerializer, serializers.ModelSerializer):
         fields = (
             "id",
             "name",
-            "worker_api",
             "capacity",
             "node_capacity",
             "status",
@@ -264,7 +252,6 @@ class AgentInfoSerializer(AgentIDSerializer, serializers.ModelSerializer):
         extra_kwargs = {
             "id": {"required": True},
             "name": {"required": True},
-            "worker_api": {"required": True},
             "status": {"required": True},
             "capacity": {"required": True},
             "node_capacity": {"required": True},

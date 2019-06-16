@@ -103,7 +103,7 @@ class AgentViewSet(viewsets.ViewSet):
                 agent_dict.update(
                     {
                         "config_file": request.build_absolute_uri(
-                            agent.k8s_config_file.url
+                            agent.config_file.url
                         )
                     }
                 )
@@ -132,30 +132,23 @@ class AgentViewSet(viewsets.ViewSet):
         serializer = AgentCreateBody(data=request.data)
         if serializer.is_valid(raise_exception=True):
             name = serializer.validated_data.get("name")
-            worker_api = serializer.validated_data.get("worker_api")
             capacity = serializer.validated_data.get("capacity")
             node_capacity = serializer.validated_data.get("node_capacity")
             log_level = serializer.validated_data.get("log_level")
             agent_type = serializer.validated_data.get("type")
             schedulable = serializer.validated_data.get("schedulable")
             parameters = serializer.validated_data.get("parameters")
-            k8s_config_file = serializer.validated_data.get("k8s_config_file")
+            ip = serializer.validated_data.get("ip")
+            image = serializer.validated_data.get("image")
+            config_file = serializer.validated_data.get("config_file")
 
             body = {
-                "worker_api": worker_api,
                 "capacity": capacity,
                 "node_capacity": node_capacity,
                 "type": agent_type,
+                "ip": ip,
+                "image": image,
             }
-            if worker_api:
-                agent_count = Agent.objects.filter(
-                    worker_api=worker_api,
-                    organization=request.user.organization,
-                ).count()
-                if agent_count > 0:
-                    raise ResourceExists(
-                        detail="Work api %s already exists" % worker_api
-                    )
             if name:
                 agent_count = Agent.objects.filter(
                     name=name, organization=request.user.organization
@@ -171,8 +164,8 @@ class AgentViewSet(viewsets.ViewSet):
                 body.update({"log_level": log_level})
             if parameters is not None:
                 body.update({"parameters": parameters})
-            if k8s_config_file is not None:
-                body.update({"k8s_config_file": k8s_config_file})
+            if config_file is not None:
+                body.update({"config_file": config_file})
 
             agent = Agent(**body)
             agent.save()

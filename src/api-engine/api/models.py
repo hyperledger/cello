@@ -105,14 +105,14 @@ class UserProfile(AbstractUser):
         return self.role == UserRole.User.name.lower()
 
 
-def get_k8s_config_file_path(instance, file):
+def get_agent_config_file_path(instance, file):
     file_ext = file.split(".")[-1]
-    filename = "%s.%s" % (hash_file(instance.k8s_config_file), file_ext)
+    filename = "%s.%s" % (hash_file(instance.config_file), file_ext)
 
-    return os.path.join("k8s_config_files/%s" % str(instance.id), filename)
+    return os.path.join("config_files/%s" % str(instance.id), filename)
 
 
-def validate_k8s_config_file(file):
+def validate_agent_config_file(file):
     file_size = file.size
     if file_size > LIMIT_K8S_CONFIG_FILE_MB * 1024 * 1024:
         raise ValidationError(
@@ -132,9 +132,10 @@ class Agent(models.Model):
         max_length=64,
         default=random_name("agent"),
     )
-    worker_api = models.CharField(
-        help_text="Worker api of agent", max_length=128, default="", null=True
+    image = models.CharField(
+        help_text="Image name for deploy agent", max_length=64, default=""
     )
+    ip = models.GenericIPAddressField(help_text="Agent IP Address")
     govern = models.ForeignKey(
         Govern,
         help_text="Govern of agent",
@@ -181,23 +182,22 @@ class Agent(models.Model):
             MaxValueValidator(MAX_NODE_CAPACITY),
         ],
     )
-    k8s_config_file = models.FileField(
-        help_text="Kubernetes config file",
+    config_file = models.FileField(
+        help_text="Config file for agent",
         max_length=256,
         blank=True,
-        upload_to=get_k8s_config_file_path,
+        upload_to=get_agent_config_file_path,
     )
     created_at = models.DateTimeField(
         help_text="Create time of agent", auto_now_add=True
     )
 
     def delete(self, using=None, keep_parents=False):
-        if self.k8s_config_file:
-            if os.path.isfile(self.k8s_config_file.path):
-                os.remove(self.k8s_config_file.path)
+        if self.config_file:
+            if os.path.isfile(self.config_file.path):
+                os.remove(self.config_file.path)
                 shutil.rmtree(
-                    os.path.dirname(self.k8s_config_file.path),
-                    ignore_errors=True,
+                    os.path.dirname(self.config_file.path), ignore_errors=True
                 )
 
         super(Agent, self).delete(using, keep_parents)
@@ -209,17 +209,15 @@ class Agent(models.Model):
 @receiver(post_save, sender=Agent)
 def extract_file(sender, instance, created, *args, **kwargs):
     if created:
-        if instance.k8s_config_file:
-            file_format = instance.k8s_config_file.name.split(".")[-1]
+        if instance.config_file:
+            file_format = instance.config_file.name.split(".")[-1]
             if file_format in ["tgz", "gz"]:
-                tar = tarfile.open(instance.k8s_config_file.path)
-                tar.extractall(
-                    path=os.path.dirname(instance.k8s_config_file.path)
-                )
+                tar = tarfile.open(instance.config_file.path)
+                tar.extractall(path=os.path.dirname(instance.config_file.path))
             elif file_format == "zip":
-                with ZipFile(instance.k8s_config_file.path, "r") as zip_file:
+                with ZipFile(instance.config_file.path, "r") as zip_file:
                     zip_file.extractall(
-                        path=os.path.dirname(instance.k8s_config_file.path)
+                        path=os.path.dirname(instance.config_file.path)
                     )
 
 
