@@ -174,6 +174,14 @@ class FileType(ExtraEnum):
     Certificate = 0
 
 
+@unique
+class AgentOperation(ExtraEnum):
+    Start = "start"
+    Query = "query"
+    Update = "update"
+    Delete = "delete"
+
+
 class EnumWithDisplayMeta(EnumMeta):
     def __new__(mcs, name, bases, attrs):
         display_strings = attrs.get("DisplayStrings")

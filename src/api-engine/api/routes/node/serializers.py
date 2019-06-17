@@ -82,9 +82,6 @@ class NodeCreateBody(serializers.ModelSerializer):
         choices=HostType.to_choices(True),
         required=False,
     )
-    agent_image = serializers.CharField(
-        help_text="Image name for launch agent", required=True
-    )
 
     class Meta:
         model = Node
@@ -93,7 +90,6 @@ class NodeCreateBody(serializers.ModelSerializer):
             "network_version",
             "type",
             "agent_type",
-            "agent_image",
             "agent",
         )
         extra_kwargs = {

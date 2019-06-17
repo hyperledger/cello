@@ -8,7 +8,7 @@ import logging
 import docker
 from django.core.exceptions import ObjectDoesNotExist
 
-from api.common.enums import NodeStatus
+from api.common.enums import NodeStatus, AgentOperation
 from api.models import Node, Port
 from api_engine.celery import app
 
@@ -31,10 +31,10 @@ def create_node(self, node_id=None, agent_image=None, **kwargs):
             "NETWORK_VERSION": node.network_version,
             "NODE_TYPE": node.type,
             "NODE_ID": str(node.id),
-            "AGENT_URL": node.agent.worker_api,
             "AGENT_ID": str(node.agent.id),
             "AGENT_CONFIG_FILE": agent_config_file,
             "NODE_UPDATE_URL": node_update_api,
+            "OPERATION": AgentOperation.Start,
         }
         client = docker.from_env()
         client.containers.run(
