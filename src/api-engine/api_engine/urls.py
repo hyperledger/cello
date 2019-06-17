@@ -35,13 +35,14 @@ from api.routes.user.views import UserViewSet
 from api.routes.file.views import FileViewSet
 
 DEBUG = getattr(settings, "DEBUG")
+API_VERSION = os.getenv("API_VERSION")
 WEBROOT = os.getenv("WEBROOT")
 WEBROOT = "/".join(WEBROOT.split("/")[1:]) + "/"
 
 
 swagger_info = openapi.Info(
     title="Cello API Engine Service",
-    default_version="v1",
+    default_version=API_VERSION,
     description="""
     This is swagger docs for Cello API engine.
     """,

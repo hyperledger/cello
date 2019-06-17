@@ -12,7 +12,7 @@ from api.common.enums import (
     HostType,
 )
 from api.common.serializers import PageQuerySerializer
-from api.models import Node
+from api.models import Node, Port
 
 LOG = logging.getLogger(__name__)
 
@@ -122,6 +122,24 @@ class NodeCreateBody(serializers.ModelSerializer):
                 )
 
         return attrs
+
+
+class PortSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Port
+        fields = ("external", "internal")
+        extra_kwargs = {
+            "external": {"required": True},
+            "internal": {"required": True},
+        }
+
+
+class NodeUpdateBody(serializers.ModelSerializer):
+    ports = PortSerializer(help_text="Port mapping for node", many=True)
+
+    class Meta:
+        model = Node
+        fields = ("status", "ports")
 
 
 class NodeOperationSerializer(serializers.Serializer):

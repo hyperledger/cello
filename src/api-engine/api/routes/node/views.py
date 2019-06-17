@@ -7,6 +7,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Count, F
+from django.urls import reverse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -14,26 +15,37 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
+from api.auth import IsOperatorAuthenticated
 from api.common.enums import NodeStatus
 from api.exceptions import CustomError, NoResource
 from api.exceptions import ResourceNotFound
-from api.models import Agent, Node
+from api.models import Agent, Node, Port
 from api.routes.node.serializers import (
     NodeOperationSerializer,
     NodeQuery,
     NodeCreateBody,
     NodeIDSerializer,
     NodeListSerializer,
+    NodeUpdateBody,
 )
 from api.tasks import create_node, delete_node
 from api.utils.common import with_common_response
+from api.auth import CustomAuthenticate
 
 LOG = logging.getLogger(__name__)
 
 
 class NodeViewSet(viewsets.ViewSet):
-    authentication_classes = (JSONWebTokenAuthentication,)
-    permission_classes = (IsAuthenticated,)
+    authentication_classes = (CustomAuthenticate, JSONWebTokenAuthentication)
+
+    # Only operator can update node info
+    def get_permissions(self):
+        if self.action in ["update"]:
+            permission_classes = (IsAuthenticated, IsOperatorAuthenticated)
+        else:
+            permission_classes = (IsAuthenticated,)
+
+        return [permission() for permission in permission_classes]
 
     @staticmethod
     def _validate_organization(request):
@@ -150,11 +162,15 @@ class NodeViewSet(viewsets.ViewSet):
             agent_config_file = (
                 request.build_absolute_uri(agent.config_file.url),
             )
+            node_update_api = reverse("node-detail", args=[str(node.id)])
+            node_update_api = request.build_absolute_uri(node_update_api)
             if isinstance(agent_config_file, tuple):
                 agent_config_file = list(agent_config_file)[0]
-            # TODO: add node update api value
             create_node.delay(
-                str(node.id), agent.image, agent_config_file=agent_config_file
+                str(node.id),
+                agent.image,
+                agent_config_file=agent_config_file,
+                node_update_api=node_update_api,
             )
             response = NodeIDSerializer(data={"id": str(node.id)})
             if response.is_valid(raise_exception=True):
@@ -207,3 +223,36 @@ class NodeViewSet(viewsets.ViewSet):
                     node.delete()
 
             return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @swagger_auto_schema(
+        operation_id="update node",
+        request_body=NodeUpdateBody,
+        responses=with_common_response({status.HTTP_202_ACCEPTED: "Accepted"}),
+    )
+    def update(self, request, pk=None):
+        """
+        Update Node
+
+        Update special node with id.
+        """
+        serializer = NodeUpdateBody(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            node_status = serializer.validated_data.get("status")
+            ports = serializer.validated_data.get("ports")
+            try:
+                node = Node.objects.get(id=pk)
+            except ObjectDoesNotExist:
+                raise ResourceNotFound
+
+            node.status = node_status
+            node.save()
+
+            for port_item in ports:
+                port = Port(
+                    external=port_item.get("external"),
+                    internal=port_item.get("internal"),
+                    node=node,
+                )
+                port.save()
+
+            return Response(status=status.HTTP_202_ACCEPTED)

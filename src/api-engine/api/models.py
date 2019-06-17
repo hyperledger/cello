@@ -40,6 +40,8 @@ MEDIA_ROOT = getattr(settings, "MEDIA_ROOT")
 LIMIT_K8S_CONFIG_FILE_MB = 100
 # Limit file upload size less than 100Mb
 LIMIT_FILE_MB = 100
+MIN_PORT = 1
+MAX_PORT = 65535
 
 
 class Govern(models.Model):
@@ -421,8 +423,16 @@ class Port(models.Model):
     node = models.ForeignKey(
         Node, help_text="Node of port", on_delete=models.CASCADE, null=True
     )
-    external = models.IntegerField(help_text="External port", default=0)
-    internal = models.IntegerField(help_text="Internal port", default=0)
+    external = models.IntegerField(
+        help_text="External port",
+        default=0,
+        validators=[MinValueValidator(MIN_PORT), MaxValueValidator(MAX_PORT)],
+    )
+    internal = models.IntegerField(
+        help_text="Internal port",
+        default=0,
+        validators=[MinValueValidator(MIN_PORT), MaxValueValidator(MAX_PORT)],
+    )
 
     class Meta:
         ordering = ("external",)

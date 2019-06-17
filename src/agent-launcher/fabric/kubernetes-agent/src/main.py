@@ -3,8 +3,29 @@
 #
 import os
 import zipfile
+import requests
+import json
 from utils import download_file, KubernetesClient
 from network import FabricNetwork
+from enum import Enum, unique
+
+
+@unique
+class AgentOperation(Enum):
+    Start = "start"
+    Query = "query"
+    Update = "update"
+    Delete = "delete"
+
+
+@unique
+class NodeStatus(Enum):
+    Deploying = "deploying"
+    Running = "running"
+    Stopped = "stopped"
+    Deleting = "deleting"
+    Error = "error"
+
 
 AGENT_URL = os.getenv("AGENT_URL")
 DEPLOY_NAME = os.getenv("DEPLOY_NAME")
@@ -15,6 +36,8 @@ AGENT_CONFIG_FILE = os.getenv("AGENT_CONFIG_FILE")
 AGENT_ID = os.getenv("AGENT_ID")
 NODE_ID = os.getenv("NODE_ID")
 OPERATION = os.getenv("OPERATION")
+TOKEN = os.getenv("TOKEN")
+NODE_UPDATE_URL = os.getenv("NODE_UPDATE_URL")
 
 if __name__ == "__main__":
     config_file = download_file(AGENT_CONFIG_FILE, "/tmp")
@@ -40,7 +63,14 @@ if __name__ == "__main__":
     service = config.get("service")
     ingress = config.get("ingress")
 
-    if OPERATION == "start":
+    # authorization headers for call update api
+    headers = {
+        "Authorization": "JWT %s" % TOKEN,
+        "Content-Type": "application/json",
+    }
+    ports = []
+
+    if OPERATION == AgentOperation.Start.value:
         if deployment:
             k8s_client.create_deployment(AGENT_ID, **deployment)
         if service:
@@ -53,6 +83,13 @@ if __name__ == "__main__":
                     {"external": port.node_port, "internal": port.port}
                     for port in ports
                 ]
-                # set_ports_mapping(self._node_id, ports, True)
         if ingress:
             k8s_client.create_ingress(AGENT_ID, **ingress)
+
+        ret = requests.put(
+            url=NODE_UPDATE_URL,
+            headers=headers,
+            data=json.dumps(
+                {"status": NodeStatus.Running.value, "ports": ports}
+            ),
+        )
