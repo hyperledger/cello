@@ -184,7 +184,7 @@ check: ##@Code Check code format
 	find ./docs -type f -name "*.md" -exec egrep -l " +$$" {} \;
 	cd src/api-engine && tox && cd ${ROOT_PATH}
 	make docker
-	API_ENGINE_SSO_AUTH_URL=http://keycloak:8080/auth/ NEXT_VERSION=True SERVER_PUBLIC_IP=127.0.0.1 MODE=dev make start
+	NEXT_VERSION=True MODE=dev make start
 	sleep 10
 	make test-api
 	NEXT_VERSION=True MODE=dev make stop
