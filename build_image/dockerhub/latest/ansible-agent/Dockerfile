@@ -7,7 +7,7 @@ FROM alpine/git AS BUILD
 RUN cd /tmp && git init cello && cd cello                          && \
     git remote add origin https://github.com/hyperledger/cello.git && \
     git config core.sparsecheckout true                            && \
-    echo "src/operator-dashboard/agent/ansible/*" >> .git/info/sparse-checkout        && \
+    echo "src/agent/ansible/*" >> .git/info/sparse-checkout        && \
     git pull --depth=1 origin master
 
 FROM ubuntu:xenial
@@ -31,8 +31,8 @@ RUN apt-get update                                                 && \
     echo "  StrictHostKeyChecking no" >> config                    && \
     echo "  UserKnownHostsFile /dev/null" >> config
 
-COPY --from=build /tmp/cello/src/operator-dashboard/agent/ansible /opt/agent
-ADD https://storage.googleapis.com/kubernetes-release/release/v1.13.5/bin/linux/amd64/kubectl /usr/local/bin/kubectl
+COPY --from=build /tmp/cello/src/agent/ansible /opt/agent
+ADD https://storage.googleapis.com/kubernetes-release/release/v1.15.0/bin/linux/amd64/kubectl /usr/local/bin/kubectl
 RUN chown -R ${uid}:${gid} /opt/agent                              && \
     chmod 755 /usr/local/bin/kubectl
 
