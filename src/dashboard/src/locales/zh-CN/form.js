@@ -10,4 +10,7 @@ export default {
   'form.button.confirm': '确认',
   'form.button.cancel': '取消',
   'form.button.moreActions': '更多操作',
+  'form.button.submit': '提交',
+  'form.button.add': '添加',
+  'form.button.back': '返回'
 };

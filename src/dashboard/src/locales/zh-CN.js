@@ -10,6 +10,7 @@ import component from './zh-CN/component';
 import operatorOrganization from './zh-CN/operatorOrganization';
 import operatorUser from './zh-CN/operatorUser';
 import form from './zh-CN/form';
+import operatorAgent from './zh-CN/operatorAgent';
 
 export default {
   'navBar.lang': '语言',
@@ -27,6 +28,7 @@ export default {
   ...pwa,
   ...component,
   ...operatorOrganization,
+  ...operatorAgent,
   ...operatorUser,
   ...form,
 };

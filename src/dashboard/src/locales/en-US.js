@@ -10,6 +10,7 @@ import component from './en-US/component';
 import operatorOrganization from './en-US/operatorOrganization';
 import operatorUser from './en-US/operatorUser';
 import form from './en-US/form';
+import operatorAgent from './en-US/operatorAgent';
 
 export default {
   'navBar.lang': 'Languages',
@@ -27,6 +28,7 @@ export default {
   ...pwa,
   ...component,
   ...operatorOrganization,
+  ...operatorAgent,
   ...operatorUser,
   ...form,
 };

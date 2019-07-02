@@ -47,7 +47,7 @@ export default [
           {
             path: '/operator/agent',
             name: 'agent',
-            component: './Operator/Agent',
+            component: './Operator/Agent/Agent',
           },
           {
             path: '/operator/userManagement',
