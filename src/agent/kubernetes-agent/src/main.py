@@ -93,3 +93,16 @@ if __name__ == "__main__":
                 {"status": NodeStatus.Running.value, "ports": ports}
             ),
         )
+    elif OPERATION == AgentOperation.Delete.value:
+        if ingress:
+            k8s_client.delete_ingress(
+                namespace=AGENT_ID, name=ingress.get("name")
+            )
+        if service:
+            k8s_client.delete_service(
+                namespace=AGENT_ID, name=service.get("name")
+            )
+        if deployment:
+            k8s_client.delete_deployment(
+                namespace=AGENT_ID, name=deployment.get("name")
+            )

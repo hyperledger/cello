@@ -57,14 +57,29 @@ def create_node(self, node_id=None, agent_image=None, **kwargs):
 
 
 @app.task(bind=True, default_retry_delay=5, max_retires=3, time_limit=360)
-def delete_node(self, node_id=None):
+def delete_node(self, node_id=None, **kwargs):
     if node_id is None:
         return False
+    agent_config_file = kwargs.get("agent_config_file")
 
     try:
         node = Node.objects.get(id=node_id)
-        # agent_handler = AgentHandler(node)
-        # agent_handler.delete_node()
+        environment = {
+            "AGENT_ID": str(node.agent.id),
+            "AGENT_CONFIG_FILE": agent_config_file,
+            "NETWORK_TYPE": node.network_type,
+            "NETWORK_VERSION": node.network_version,
+            "NODE_TYPE": node.type,
+            "NODE_ID": str(node.id),
+            "OPERATION": AgentOperation.Delete.value,
+        }
+        client = docker.from_env()
+        client.containers.run(
+            node.agent.image,
+            auto_remove=True,
+            environment=environment,
+            detach=True,
+        )
     except ObjectDoesNotExist:
         return False
     except Exception as e:

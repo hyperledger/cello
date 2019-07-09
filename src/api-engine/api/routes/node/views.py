@@ -218,7 +218,14 @@ class NodeViewSet(viewsets.ViewSet):
                     node.status = NodeStatus.Deleting.name.lower()
                     node.save()
 
-                    delete_node.delay(str(node.id))
+                    agent_config_file = (
+                        request.build_absolute_uri(node.agent.config_file.url),
+                    )
+                    if isinstance(agent_config_file, tuple):
+                        agent_config_file = list(agent_config_file)[0]
+                    delete_node.delay(
+                        str(node.id), agent_config_file=agent_config_file
+                    )
                 else:
                     node.delete()
 
