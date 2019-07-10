@@ -27,6 +27,7 @@ from api.routes.node.serializers import (
     NodeIDSerializer,
     NodeListSerializer,
     NodeUpdateBody,
+    NodeFileCreateSerializer,
 )
 from api.tasks import create_node, delete_node
 from api.utils.common import with_common_response
@@ -179,6 +180,10 @@ class NodeViewSet(viewsets.ViewSet):
             )
             node_update_api = reverse("node-detail", args=[str(node.id)])
             node_update_api = request.build_absolute_uri(node_update_api)
+            node_file_upload_api = reverse("node-files", args=[str(node.id)])
+            node_file_upload_api = request.build_absolute_uri(
+                node_file_upload_api
+            )
             if isinstance(agent_config_file, tuple):
                 agent_config_file = list(agent_config_file)[0]
             create_node.delay(
@@ -186,6 +191,7 @@ class NodeViewSet(viewsets.ViewSet):
                 agent.image,
                 agent_config_file=agent_config_file,
                 node_update_api=node_update_api,
+                node_file_upload_api=node_file_upload_api,
             )
             response = NodeIDSerializer({"id": str(node.id)})
             return Response(response.data, status=status.HTTP_201_CREATED)
@@ -275,3 +281,31 @@ class NodeViewSet(viewsets.ViewSet):
                 port.save()
 
             return Response(status=status.HTTP_202_ACCEPTED)
+
+    @swagger_auto_schema(
+        methods=["post"],
+        manual_parameters=NodeFileCreateSerializer().to_form_paras(),
+        responses=with_common_response({status.HTTP_202_ACCEPTED: "Accepted"}),
+    )
+    @action(methods=["post"], detail=True, url_path="files", url_name="files")
+    def upload_files(self, request, pk=None):
+        """
+        Operate Node
+
+        Do some operation on node, start/stop/restart
+        """
+        serializer = NodeFileCreateSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            file = serializer.validated_data.get("file")
+            try:
+                node = Node.objects.get(id=pk)
+            except ObjectDoesNotExist:
+                raise ResourceNotFound
+            else:
+                # delete old file
+                if node.file:
+                    node.file.delete()
+                node.file = file
+                node.save()
+
+        return Response(status=status.HTTP_202_ACCEPTED)

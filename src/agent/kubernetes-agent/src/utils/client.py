@@ -25,6 +25,26 @@ class KubernetesClient(object):
                 % (i.status.pod_ip, i.metadata.namespace, i.metadata.name)
             )
 
+    def get_pod(self, namespace=None, deploy_name=None):
+        v1 = client.CoreV1Api()
+        pod = None
+        try:
+            api_response = v1.list_namespaced_pod(
+                namespace, label_selector="app=%s" % deploy_name
+            )
+        except ApiException as e:
+            LOG.error(
+                "Exception when calling CoreV1Api->list_namespaced_pod: %s", e
+            )
+        else:
+            for item in api_response.items:
+                pod_name = item.metadata.name
+                pod = item
+                if pod_name.startswith(deploy_name):
+                    break
+
+        return pod
+
     def get_or_create_namespace(self, name=None):
         if name:
             v1 = client.CoreV1Api()

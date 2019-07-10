@@ -22,6 +22,7 @@ ADMIN_TOKEN = os.getenv("ADMIN_TOKEN")
 def create_node(self, node_id=None, agent_image=None, **kwargs):
     agent_config_file = kwargs.get("agent_config_file")
     node_update_api = kwargs.get("node_update_api")
+    node_file_upload_api = kwargs.get("node_file_upload_api")
     if node_id is None:
         return False
 
@@ -38,6 +39,7 @@ def create_node(self, node_id=None, agent_image=None, **kwargs):
             "AGENT_IP": str(node.agent.ip),
             "AGENT_CONFIG_FILE": agent_config_file,
             "NODE_UPDATE_URL": node_update_api,
+            "NODE_UPLOAD_FILE_URL": node_file_upload_api,
             # Token for call update node api
             "TOKEN": ADMIN_TOKEN,
             "OPERATION": AgentOperation.Start.value,
@@ -56,7 +58,7 @@ def create_node(self, node_id=None, agent_image=None, **kwargs):
             )
         client = docker.from_env()
         client.containers.run(
-            agent_image, auto_remove=True, environment=environment, detach=True
+            agent_image, environment=environment, detach=True
         )
     except ObjectDoesNotExist:
         return False

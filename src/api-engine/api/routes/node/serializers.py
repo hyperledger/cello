@@ -3,6 +3,7 @@
 #
 import logging
 
+from django.core.validators import FileExtensionValidator
 from rest_framework import serializers
 from api.common.enums import (
     Operation,
@@ -12,7 +13,8 @@ from api.common.enums import (
     HostType,
 )
 from api.common.serializers import PageQuerySerializer
-from api.models import Node, Port, FabricCA
+from api.models import Node, Port, FabricCA, validate_file
+from api.utils.common import to_form_paras
 
 LOG = logging.getLogger(__name__)
 
@@ -164,3 +166,25 @@ class NodeOperationSerializer(serializers.Serializer):
         help_text=Operation.get_info("Operation for node:", list_str=True),
         choices=Operation.to_choices(True),
     )
+
+
+class NodeFileCreateSerializer(serializers.ModelSerializer):
+    def to_form_paras(self):
+        custom_paras = to_form_paras(self)
+
+        return custom_paras
+
+    class Meta:
+        model = Node
+        fields = ("file",)
+        extra_kwargs = {
+            "file": {
+                "required": True,
+                "validators": [
+                    FileExtensionValidator(
+                        allowed_extensions=["tar.gz", "tgz"]
+                    ),
+                    validate_file,
+                ],
+            }
+        }

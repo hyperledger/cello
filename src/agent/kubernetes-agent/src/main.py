@@ -5,6 +5,9 @@ import os
 import zipfile
 import requests
 import json
+import subprocess
+import tarfile
+from time import sleep
 from utils import download_file, KubernetesClient
 from network import FabricNetwork
 from enum import Enum, unique
@@ -38,6 +41,8 @@ NODE_ID = os.getenv("NODE_ID")
 OPERATION = os.getenv("OPERATION")
 TOKEN = os.getenv("TOKEN")
 NODE_UPDATE_URL = os.getenv("NODE_UPDATE_URL")
+NODE_UPLOAD_FILE_URL = os.getenv("NODE_UPLOAD_FILE_URL")
+MAX_QUERY_RETRY = 10
 
 if __name__ == "__main__":
     config_file = download_file(AGENT_CONFIG_FILE, "/tmp")
@@ -71,8 +76,10 @@ if __name__ == "__main__":
     ports = []
 
     if OPERATION == AgentOperation.Start.value:
+        deploy_name = None
         if deployment:
             k8s_client.create_deployment(AGENT_ID, **deployment)
+            deploy_name = deployment.get("name")
         if service:
             success, service_response = k8s_client.create_service(
                 AGENT_ID, **service
@@ -93,6 +100,33 @@ if __name__ == "__main__":
                 {"status": NodeStatus.Running.value, "ports": ports}
             ),
         )
+
+        if deploy_name and NODE_TYPE == "ca":
+            pod = None
+            for i in range(1, MAX_QUERY_RETRY):
+                pod = k8s_client.get_pod(AGENT_ID, deploy_name)
+                if pod.status.phase == "Running":
+                    break
+                sleep(5)
+            if pod:
+                copy_cmd = [
+                    "kubectl",
+                    "cp",
+                    "%s/%s:/etc/hyperledger/fabric-ca-server/crypto"
+                    % (AGENT_ID, pod.metadata.name),
+                    "crypto",
+                ]
+                subprocess.call(copy_cmd)
+                crypto_tar_file = "crypto.tgz"
+                tf = tarfile.open(crypto_tar_file, mode="w:gz")
+                tf.add("crypto")
+                tf.close()
+
+                files = {"file": open(crypto_tar_file, "rb")}
+                del headers["Content-Type"]
+                r = requests.post(
+                    NODE_UPLOAD_FILE_URL, headers=headers, files=files
+                )
     elif OPERATION == AgentOperation.Delete.value:
         if ingress:
             k8s_client.delete_ingress(

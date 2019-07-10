@@ -309,6 +309,22 @@ def get_compose_file_path(instance, file):
     )
 
 
+def get_node_file_path(instance, file):
+    """
+    Get the file path where will be stored in
+    :param instance: database object of this db record
+    :param file: file object.
+    :return: path of file system which will store the file.
+    """
+    file_ext = file.split(".")[-1]
+    filename = "%s.%s" % (hash_file(instance.file), file_ext)
+
+    return os.path.join(
+        "files/%s/node/%s" % (str(instance.organization.id), str(instance.id)),
+        filename,
+    )
+
+
 class FabricCA(models.Model):
     admin_name = models.CharField(
         help_text="Admin username for ca server",
@@ -408,6 +424,13 @@ class Node(models.Model):
         blank=True,
         null=True,
     )
+    file = models.FileField(
+        help_text="File of node",
+        max_length=256,
+        blank=True,
+        upload_to=get_node_file_path,
+        null=True,
+    )
 
     class Meta:
         ordering = ("-created_at",)
@@ -437,6 +460,15 @@ class Node(models.Model):
             compose_file_path = Path(self.compose_file.path)
             if os.path.isdir(os.path.dirname(compose_file_path)):
                 shutil.rmtree(os.path.dirname(compose_file_path))
+
+        # remove related files of node
+        if self.file:
+            file_path = Path(self.file.path)
+            if os.path.isdir(os.path.dirname(file_path)):
+                shutil.rmtree(os.path.dirname(file_path))
+
+        if self.ca:
+            self.ca.delete()
 
         super(Node, self).delete(using, keep_parents)
 
