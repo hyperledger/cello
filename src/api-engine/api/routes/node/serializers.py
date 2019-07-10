@@ -12,7 +12,7 @@ from api.common.enums import (
     HostType,
 )
 from api.common.serializers import PageQuerySerializer
-from api.models import Node, Port
+from api.models import Node, Port, FabricCA
 
 LOG = logging.getLogger(__name__)
 
@@ -76,11 +76,27 @@ class NodeListSerializer(serializers.Serializer):
     )
 
 
+class FabricCASerializer(serializers.ModelSerializer):
+    hosts = serializers.ListField(
+        help_text="Hosts for ca support",
+        child=serializers.CharField(help_text="Host name", max_length=64),
+        required=False,
+        allow_empty=True,
+    )
+
+    class Meta:
+        model = FabricCA
+        fields = ("admin_name", "admin_password", "hosts")
+
+
 class NodeCreateBody(serializers.ModelSerializer):
     agent_type = serializers.ChoiceField(
         help_text="Agent type",
         choices=HostType.to_choices(True),
         required=False,
+    )
+    ca = FabricCASerializer(
+        help_text="CA configuration for node", required=False
     )
 
     class Meta:
@@ -91,6 +107,7 @@ class NodeCreateBody(serializers.ModelSerializer):
             "type",
             "agent_type",
             "agent",
+            "ca",
         )
         extra_kwargs = {
             "network_type": {"required": True},

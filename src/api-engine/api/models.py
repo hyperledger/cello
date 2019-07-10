@@ -309,6 +309,22 @@ def get_compose_file_path(instance, file):
     )
 
 
+class FabricCA(models.Model):
+    admin_name = models.CharField(
+        help_text="Admin username for ca server",
+        default="admin",
+        max_length=32,
+    )
+    admin_password = models.CharField(
+        help_text="Admin password for ca server",
+        default="adminpw",
+        max_length=32,
+    )
+    hosts = JSONField(
+        help_text="Hosts for ca", null=True, blank=True, default=list
+    )
+
+
 class Node(models.Model):
     id = models.UUIDField(
         primary_key=True,
@@ -339,6 +355,12 @@ class Node(models.Model):
     """
         % (FabricNodeType.names()),
         max_length=64,
+    )
+    ca = models.ForeignKey(
+        FabricCA,
+        help_text="CA configuration of node",
+        null=True,
+        on_delete=models.CASCADE,
     )
     urls = JSONField(
         help_text="URL configurations for node",

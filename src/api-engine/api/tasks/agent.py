@@ -3,6 +3,7 @@
 #
 from __future__ import absolute_import, unicode_literals
 
+import json
 import logging
 import os
 
@@ -34,12 +35,25 @@ def create_node(self, node_id=None, agent_image=None, **kwargs):
             "NODE_TYPE": node.type,
             "NODE_ID": str(node.id),
             "AGENT_ID": str(node.agent.id),
+            "AGENT_IP": str(node.agent.ip),
             "AGENT_CONFIG_FILE": agent_config_file,
             "NODE_UPDATE_URL": node_update_api,
             # Token for call update node api
             "TOKEN": ADMIN_TOKEN,
             "OPERATION": AgentOperation.Start.value,
         }
+        if node.ca:
+            environment.update(
+                {
+                    "CA_CONFIG": json.dumps(
+                        {
+                            "admin_name": node.ca.admin_name,
+                            "admin_password": node.ca.admin_password,
+                            "hosts": ",".join(node.ca.hosts),
+                        }
+                    )
+                }
+            )
         client = docker.from_env()
         client.containers.run(
             agent_image, auto_remove=True, environment=environment, detach=True

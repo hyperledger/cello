@@ -46,10 +46,28 @@ class KubernetesClient(object):
 
     def create_deployment(self, namespace=None, *args, **kwargs):
         containers = kwargs.get("containers", [])
+        volumes_json = kwargs.get("volumes", [])
         deploy_name = kwargs.get("name")
         labels = kwargs.get("labels", {})
         labels.update({"app": deploy_name})
         container_pods = []
+        volumes = []
+        for volume in volumes_json:
+            volume_name = volume.get("name")
+            host_path = volume.get("host_path", None)
+            parameters = {}
+            if host_path:
+                host_path = client.V1HostPathVolumeSource(path=host_path)
+                parameters.update({"host_path": host_path})
+            persistent_volume_claim = volume.get("pvc", None)
+            if persistent_volume_claim:
+                persistent_volume_claim = client.V1PersistentVolumeClaimVolumeSource(
+                    claim_name=persistent_volume_claim
+                )
+                parameters.update(
+                    {"persistent_volume_claim": persistent_volume_claim}
+                )
+            volumes.append(client.V1Volume(name=volume_name, **parameters))
         for container in containers:
             name = container.get("name")
             image = container.get("image")
@@ -57,6 +75,14 @@ class KubernetesClient(object):
             environments = container.get("environments", [])
             command = container.get("command", [])
             command_args = container.get("command_args", [])
+            volume_mounts = container.get("volume_mounts", [])
+            volume_mounts = [
+                client.V1VolumeMount(
+                    mount_path=volume_mount.get("path"),
+                    name=volume_mount.get("name"),
+                )
+                for volume_mount in volume_mounts
+            ]
 
             environments = [
                 client.V1EnvVar(name=env.get("name"), value=env.get("value"))
@@ -74,10 +100,11 @@ class KubernetesClient(object):
                     args=command_args,
                     ports=ports,
                     image_pull_policy="IfNotPresent",
+                    volume_mounts=volume_mounts,
                 )
             )
         deployment_metadata = client.V1ObjectMeta(name=deploy_name)
-        pod_spec = client.V1PodSpec(containers=container_pods)
+        pod_spec = client.V1PodSpec(containers=container_pods, volumes=volumes)
         spec_metadata = client.V1ObjectMeta(labels=labels)
         template_spec = client.V1PodTemplateSpec(
             metadata=spec_metadata, spec=pod_spec

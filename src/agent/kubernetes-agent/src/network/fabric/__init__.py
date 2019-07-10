@@ -2,10 +2,20 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import logging
+import os
+import json
 
 from enum import Enum, unique
 
 LOG = logging.getLogger(__name__)
+CA_CONFIG = json.loads(os.getenv("CA_CONFIG", "{}"))
+# Initial admin name/password for ca server
+CA_ADMIN_NAME = CA_CONFIG.get("admin_name", "admin")
+CA_ADMIN_PASSWORD = CA_CONFIG.get("admin_password", "adminpw")
+CA_HOSTS = CA_CONFIG.get("hosts", "").split(",")
+AGENT_IP = os.getenv("AGENT_IP", "")
+# Set fabric ca hosts from agent ip and user customize hosts.
+CA_HOSTS.append(AGENT_IP)
 
 
 @unique
@@ -35,11 +45,25 @@ class FabricNetwork(object):
                 {
                     "name": "FABRIC_CA_HOME",
                     "value": "/etc/hyperledger/fabric-ca-server",
-                }
+                },
+                {
+                    "name": "FABRIC_CA_SERVER_HOME",
+                    "value": "/etc/hyperledger/fabric-ca-server/crypto",
+                },
+                {"name": "FABRIC_CA_SERVER_TLS_ENABLED", "value": "true"},
+                {
+                    "name": "FABRIC_CA_SERVER_CSR_HOSTS",
+                    "value": ",".join(CA_HOSTS),
+                },
             ]
             ports = [7054]
             command = ["fabric-ca-server"]
-            command_args = ["start", "-b", "admin:adminpw", "-d"]
+            command_args = [
+                "start",
+                "-b",
+                "%s:%s" % (CA_ADMIN_NAME, CA_ADMIN_PASSWORD),
+                "-d",
+            ]
             containers.append(
                 {
                     "image": image,

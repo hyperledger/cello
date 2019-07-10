@@ -19,7 +19,7 @@ from api.auth import IsOperatorAuthenticated
 from api.common.enums import NodeStatus
 from api.exceptions import CustomError, NoResource
 from api.exceptions import ResourceNotFound
-from api.models import Agent, Node, Port
+from api.models import Agent, Node, Port, FabricCA, FabricNodeType
 from api.routes.node.serializers import (
     NodeOperationSerializer,
     NodeQuery,
@@ -127,6 +127,7 @@ class NodeViewSet(viewsets.ViewSet):
             network_version = serializer.validated_data.get("network_version")
             agent = serializer.validated_data.get("agent")
             node_type = serializer.validated_data.get("type")
+            ca = serializer.validated_data.get("ca", {})
             if agent is None:
                 available_agents = (
                     Agent.objects.annotate(network_num=Count("node__network"))
@@ -150,6 +151,19 @@ class NodeViewSet(viewsets.ViewSet):
                 node_count = Node.objects.filter(agent=agent).count()
                 if node_count >= agent.node_capacity or not agent.schedulable:
                     raise NoResource
+
+            fabric_ca = None
+            if node_type == FabricNodeType.Ca.name.lower():
+                ca_body = {}
+                admin_name = ca.get("admin_name")
+                admin_password = ca.get("admin_password")
+                hosts = ca.get("hosts", [])
+                if admin_name:
+                    ca_body.update({"admin_name": admin_name})
+                if admin_password:
+                    ca_body.update({"admin_password": admin_password})
+                fabric_ca = FabricCA(**ca_body, hosts=hosts)
+                fabric_ca.save()
             node = Node(
                 network_type=network_type,
                 agent=agent,
@@ -157,6 +171,7 @@ class NodeViewSet(viewsets.ViewSet):
                 user=request.user,
                 organization=request.user.organization,
                 type=node_type,
+                ca=fabric_ca,
             )
             node.save()
             agent_config_file = (
@@ -172,11 +187,8 @@ class NodeViewSet(viewsets.ViewSet):
                 agent_config_file=agent_config_file,
                 node_update_api=node_update_api,
             )
-            response = NodeIDSerializer(data={"id": str(node.id)})
-            if response.is_valid(raise_exception=True):
-                return Response(
-                    response.validated_data, status=status.HTTP_201_CREATED
-                )
+            response = NodeIDSerializer({"id": str(node.id)})
+            return Response(response.data, status=status.HTTP_201_CREATED)
 
     @swagger_auto_schema(
         methods=["post"],
