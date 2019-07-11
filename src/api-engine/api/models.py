@@ -24,6 +24,7 @@ from api.common.enums import (
     separate_upper_class,
     NodeStatus,
     FileType,
+    FabricCAServerType,
 )
 from api.common.enums import (
     UserRole,
@@ -338,6 +339,12 @@ class FabricCA(models.Model):
     )
     hosts = JSONField(
         help_text="Hosts for ca", null=True, blank=True, default=list
+    )
+    type = models.CharField(
+        help_text="Fabric ca server type",
+        default=FabricCAServerType.Signature.value,
+        choices=FabricCAServerType.to_choices(),
+        max_length=32,
     )
 
 

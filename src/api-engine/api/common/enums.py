@@ -122,6 +122,13 @@ class NetworkType(ExtraEnum):
 
 
 @unique
+class FabricCAServerType(ExtraEnum):
+    # every company only can create one TLS type ca server
+    TLS = "tls"
+    Signature = "signature"
+
+
+@unique
 class FabricVersions(ExtraEnum):
     V1_4 = "1.4"
     V1_5 = "1.5"

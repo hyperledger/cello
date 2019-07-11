@@ -17,9 +17,16 @@ from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
 from api.auth import IsOperatorAuthenticated
 from api.common.enums import NodeStatus
-from api.exceptions import CustomError, NoResource
+from api.exceptions import CustomError, NoResource, ResourceExists
 from api.exceptions import ResourceNotFound
-from api.models import Agent, Node, Port, FabricCA, FabricNodeType
+from api.models import (
+    Agent,
+    Node,
+    Port,
+    FabricCA,
+    FabricNodeType,
+    FabricCAServerType,
+)
 from api.routes.node.serializers import (
     NodeOperationSerializer,
     NodeQuery,
@@ -28,6 +35,7 @@ from api.routes.node.serializers import (
     NodeListSerializer,
     NodeUpdateBody,
     NodeFileCreateSerializer,
+    NodeInfoSerializer,
 )
 from api.tasks import create_node, delete_node
 from api.utils.common import with_common_response
@@ -158,12 +166,26 @@ class NodeViewSet(viewsets.ViewSet):
                 ca_body = {}
                 admin_name = ca.get("admin_name")
                 admin_password = ca.get("admin_password")
+                # If found tls type ca server under this organization,
+                # will cause resource exists error
+                ca_server_type = ca.get(
+                    "type", FabricCAServerType.Signature.value
+                )
+                if ca_server_type == FabricCAServerType.TLS.value:
+                    exist_ca_server = Node.objects.filter(
+                        organization=request.user.organization,
+                        ca__type=FabricCAServerType.TLS.value,
+                    ).count()
+                    if exist_ca_server > 0:
+                        raise ResourceExists
                 hosts = ca.get("hosts", [])
                 if admin_name:
                     ca_body.update({"admin_name": admin_name})
                 if admin_password:
                     ca_body.update({"admin_password": admin_password})
-                fabric_ca = FabricCA(**ca_body, hosts=hosts)
+                fabric_ca = FabricCA(
+                    **ca_body, hosts=hosts, type=ca_server_type
+                )
                 fabric_ca.save()
             node = Node(
                 network_type=network_type,
@@ -309,3 +331,25 @@ class NodeViewSet(viewsets.ViewSet):
                 node.save()
 
         return Response(status=status.HTTP_202_ACCEPTED)
+
+    @swagger_auto_schema(
+        responses=with_common_response(
+            with_common_response({status.HTTP_200_OK: NodeInfoSerializer})
+        )
+    )
+    def retrieve(self, request, pk=None):
+        """
+        Get Node information
+
+        Get node detail information.
+        """
+        self._validate_organization(request)
+        try:
+            node = Node.objects.get(
+                id=pk, organization=request.user.organization
+            )
+        except ObjectDoesNotExist:
+            raise ResourceNotFound
+        else:
+            response = NodeInfoSerializer(node)
+            return Response(data=response.data, status=status.HTTP_200_OK)

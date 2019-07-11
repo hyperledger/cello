@@ -88,7 +88,32 @@ class FabricCASerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FabricCA
-        fields = ("admin_name", "admin_password", "hosts")
+        fields = ("admin_name", "admin_password", "hosts", "type")
+
+
+class NodeInfoSerializer(NodeIDSerializer, serializers.ModelSerializer):
+    ca = FabricCASerializer(
+        help_text="CA configuration for node", required=False, allow_null=True
+    )
+
+    class Meta:
+        model = Node
+        fields = (
+            "id",
+            "type",
+            "name",
+            "network_type",
+            "network_version",
+            "created_at",
+            "agent_id",
+            "network_id",
+            "status",
+            "ca",
+        )
+        extra_kwargs = {
+            "id": {"required": True, "read_only": False},
+            "created_at": {"required": True, "read_only": False},
+        }
 
 
 class NodeCreateBody(serializers.ModelSerializer):
