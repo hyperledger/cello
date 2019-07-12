@@ -10,7 +10,6 @@ import os
 import docker
 from django.core.exceptions import ObjectDoesNotExist
 
-from api.common.enums import NodeStatus, AgentOperation
 from api.models import Node, Port
 from api_engine.celery import app
 
@@ -18,18 +17,35 @@ LOG = logging.getLogger(__name__)
 ADMIN_TOKEN = os.getenv("ADMIN_TOKEN")
 
 
-@app.task(bind=True, default_retry_delay=5, max_retries=3, time_limit=360)
-def create_node(self, node_id=None, agent_image=None, **kwargs):
-    agent_config_file = kwargs.get("agent_config_file")
-    node_update_api = kwargs.get("node_update_api")
-    node_file_upload_api = kwargs.get("node_file_upload_api")
-    if node_id is None:
-        return False
+class NodeHandler(object):
+    def __init__(self, node_id=None, action=None, **kwargs):
+        self._node_id = node_id
+        self._action = action
 
-    node = None
-    try:
-        node = Node.objects.get(id=node_id)
-        environment = {
+        try:
+            node = Node.objects.get(id=node_id)
+            ports = Port.objects.filter(node=node)
+            ports = {str(item.internal): item.external for item in ports}
+        except ObjectDoesNotExist:
+            raise ObjectDoesNotExist
+
+        self._node = node
+        self._network_type = node.network_type
+        self._network_version = node.network_version
+        self._node_type = node.type
+        self._agent_image = node.agent.image
+        self._agent_id = str(node.agent.id)
+        self._agent_ip = str(node.agent.ip)
+        self._service_ports = ports
+
+        self._agent_config_file = kwargs.get("agent_config_file")
+        self._node_detail_url = kwargs.get("node_detail_url")
+        self._node_file_upload_api = kwargs.get("node_file_upload_api")
+        self._node_file_url = kwargs.get("node_file_url")
+        self._fabric_ca_user = kwargs.get("fabric_ca_user", {})
+        self._user_patch_url = kwargs.get("user_patch_url")
+
+        self._agent_environment = {
             "DEPLOY_NAME": node.name,
             "NETWORK_TYPE": node.network_type,
             "NETWORK_VERSION": node.network_version,
@@ -37,17 +53,23 @@ def create_node(self, node_id=None, agent_image=None, **kwargs):
             "NODE_ID": str(node.id),
             "AGENT_ID": str(node.agent.id),
             "AGENT_IP": str(node.agent.ip),
-            "AGENT_CONFIG_FILE": agent_config_file,
-            "NODE_UPDATE_URL": node_update_api,
-            "NODE_UPLOAD_FILE_URL": node_file_upload_api,
+            "AGENT_CONFIG_FILE": self._agent_config_file,
+            "NODE_DETAIL_URL": self._node_detail_url,
+            "NODE_UPLOAD_FILE_URL": self._node_file_upload_api,
+            # Related files to node
+            "NODE_FILE_URL": self._node_file_url,
             # Token for call update node api
             "TOKEN": ADMIN_TOKEN,
-            "OPERATION": AgentOperation.Start.value,
+            "OPERATION": self._action,
+            "FABRIC_CA_USER": json.dumps(self._fabric_ca_user),
+            "SERVICE_PORTS": json.dumps(self._service_ports),
+            "USER_PATCH_URL": self._user_patch_url,
         }
+
         if node.ca:
-            environment.update(
+            self._agent_environment.update(
                 {
-                    "CA_CONFIG": json.dumps(
+                    "FABRIC_CA_CONFIG": json.dumps(
                         {
                             "admin_name": node.ca.admin_name,
                             "admin_password": node.ca.admin_password,
@@ -56,51 +78,31 @@ def create_node(self, node_id=None, agent_image=None, **kwargs):
                     )
                 }
             )
+
+    def _launch_agent(self):
         client = docker.from_env()
         client.containers.run(
-            agent_image, environment=environment, detach=True
+            self._agent_image,
+            auto_remove=True,
+            environment=self._agent_environment,
+            detach=True,
         )
-    except ObjectDoesNotExist:
-        return False
-    except Exception as e:
-        Port.objects.filter(node__id=node_id).delete()
-        if node:
-            node.status = NodeStatus.Error.name.lower()
-            node.save()
-        raise self.retry(exc=e)
 
-    return True
+    def run(self):
+        self._launch_agent()
 
 
 @app.task(bind=True, default_retry_delay=5, max_retires=3, time_limit=360)
-def delete_node(self, node_id=None, **kwargs):
-    if node_id is None:
+def operate_node(self, node_id=None, action=None, **kwargs):
+    if node_id is None or action is None:
         return False
-    agent_config_file = kwargs.get("agent_config_file")
 
     try:
-        node = Node.objects.get(id=node_id)
-        environment = {
-            "AGENT_ID": str(node.agent.id),
-            "AGENT_CONFIG_FILE": agent_config_file,
-            "NETWORK_TYPE": node.network_type,
-            "NETWORK_VERSION": node.network_version,
-            "NODE_TYPE": node.type,
-            "NODE_ID": str(node.id),
-            "OPERATION": AgentOperation.Delete.value,
-        }
-        client = docker.from_env()
-        client.containers.run(
-            node.agent.image,
-            auto_remove=True,
-            environment=environment,
-            detach=True,
-        )
+        node_handler = NodeHandler(node_id=node_id, action=action, **kwargs)
     except ObjectDoesNotExist:
         return False
-    except Exception as e:
-        raise self.retry(exc=e)
-    else:
-        node.delete()
 
-    return True
+    try:
+        node_handler.run()
+    except Exception as e:
+        self.retry(exc=e)

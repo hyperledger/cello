@@ -8,7 +8,7 @@ import json
 from enum import Enum, unique
 
 LOG = logging.getLogger(__name__)
-CA_CONFIG = json.loads(os.getenv("CA_CONFIG", "{}"))
+CA_CONFIG = json.loads(os.getenv("FABRIC_CA_CONFIG", "{}"))
 # Initial admin name/password for ca server
 CA_ADMIN_NAME = CA_CONFIG.get("admin_name", "admin")
 CA_ADMIN_PASSWORD = CA_CONFIG.get("admin_password", "adminpw")

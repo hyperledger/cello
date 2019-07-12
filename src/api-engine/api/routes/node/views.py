@@ -16,7 +16,7 @@ from rest_framework.response import Response
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
 from api.auth import IsOperatorAuthenticated
-from api.common.enums import NodeStatus
+from api.common.enums import NodeStatus, AgentOperation
 from api.exceptions import CustomError, NoResource, ResourceExists
 from api.exceptions import ResourceNotFound
 from api.models import (
@@ -26,6 +26,7 @@ from api.models import (
     FabricCA,
     FabricNodeType,
     FabricCAServerType,
+    NodeUser,
 )
 from api.routes.node.serializers import (
     NodeOperationSerializer,
@@ -36,8 +37,11 @@ from api.routes.node.serializers import (
     NodeUpdateBody,
     NodeFileCreateSerializer,
     NodeInfoSerializer,
+    NodeUserCreateSerializer,
+    NodeUserIDSerializer,
+    NodeUserPatchSerializer,
 )
-from api.tasks import create_node, delete_node
+from api.tasks import operate_node
 from api.utils.common import with_common_response
 from api.auth import CustomAuthenticate
 
@@ -197,22 +201,20 @@ class NodeViewSet(viewsets.ViewSet):
                 ca=fabric_ca,
             )
             node.save()
-            agent_config_file = (
-                request.build_absolute_uri(agent.config_file.url),
+            agent_config_file = request.build_absolute_uri(
+                agent.config_file.url
             )
-            node_update_api = reverse("node-detail", args=[str(node.id)])
-            node_update_api = request.build_absolute_uri(node_update_api)
+            node_detail_url = reverse("node-detail", args=[str(node.id)])
+            node_detail_url = request.build_absolute_uri(node_detail_url)
             node_file_upload_api = reverse("node-files", args=[str(node.id)])
             node_file_upload_api = request.build_absolute_uri(
                 node_file_upload_api
             )
-            if isinstance(agent_config_file, tuple):
-                agent_config_file = list(agent_config_file)[0]
-            create_node.delay(
+            operate_node.delay(
                 str(node.id),
-                agent.image,
+                AgentOperation.Create.value,
                 agent_config_file=agent_config_file,
-                node_update_api=node_update_api,
+                node_detail_url=node_detail_url,
                 node_file_upload_api=node_file_upload_api,
             )
             response = NodeIDSerializer({"id": str(node.id)})
@@ -254,17 +256,25 @@ class NodeViewSet(viewsets.ViewSet):
             raise ResourceNotFound
         else:
             if node.status != NodeStatus.Deleting.name.lower():
-                if node.status != NodeStatus.Error.name.lower():
+                if node.status not in [
+                    NodeStatus.Error.name.lower(),
+                    NodeStatus.Deleted.name.lower(),
+                ]:
                     node.status = NodeStatus.Deleting.name.lower()
                     node.save()
 
-                    agent_config_file = (
-                        request.build_absolute_uri(node.agent.config_file.url),
+                    agent_config_file = request.build_absolute_uri(
+                        node.agent.config_file.url
                     )
-                    if isinstance(agent_config_file, tuple):
-                        agent_config_file = list(agent_config_file)[0]
-                    delete_node.delay(
-                        str(node.id), agent_config_file=agent_config_file
+                    node_detail_url = reverse("node-detail", args=[pk])
+                    node_detail_url = request.build_absolute_uri(
+                        node_detail_url
+                    )
+                    operate_node.delay(
+                        str(node.id),
+                        AgentOperation.Delete.value,
+                        agent_config_file=agent_config_file,
+                        node_detail_url=node_detail_url,
                     )
                 else:
                     node.delete()
@@ -312,9 +322,9 @@ class NodeViewSet(viewsets.ViewSet):
     @action(methods=["post"], detail=True, url_path="files", url_name="files")
     def upload_files(self, request, pk=None):
         """
-        Operate Node
+        Upload file to node
 
-        Do some operation on node, start/stop/restart
+        Upload related files to node
         """
         serializer = NodeFileCreateSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
@@ -351,5 +361,102 @@ class NodeViewSet(viewsets.ViewSet):
         except ObjectDoesNotExist:
             raise ResourceNotFound
         else:
+            # Set file url of node
+            node.file = request.build_absolute_uri(node.file.url)
             response = NodeInfoSerializer(node)
             return Response(data=response.data, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        methods=["post"],
+        request_body=NodeUserCreateSerializer,
+        responses=with_common_response(
+            {status.HTTP_201_CREATED: NodeUserIDSerializer}
+        ),
+    )
+    @action(methods=["post"], detail=True, url_path="users", url_name="users")
+    def users(self, request, pk=None):
+        """
+        Register user to node
+
+        Register user to node
+        """
+        serializer = NodeUserCreateSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            name = serializer.validated_data.get("name")
+            secret = serializer.validated_data.get("secret")
+            user_type = serializer.validated_data.get("user_type")
+            attrs = serializer.validated_data.get("attrs", "")
+            try:
+                node = Node.objects.get(
+                    id=pk, organization=request.user.organization
+                )
+                # Name is unique for each node
+                user_count = NodeUser.objects.filter(
+                    node=node, name=name
+                ).count()
+                if user_count > 0:
+                    raise ResourceExists
+            except ObjectDoesNotExist:
+                raise ResourceNotFound
+
+            node_user = NodeUser(
+                name=name,
+                secret=secret,
+                user_type=user_type,
+                attrs=attrs,
+                node=node,
+            )
+            node_user.save()
+
+            agent_config_file = request.build_absolute_uri(
+                node.agent.config_file.url
+            )
+            node_file_url = request.build_absolute_uri(node.file.url)
+            user_patch_url = self.reverse_action(
+                "patch-user", kwargs={"pk": pk, "user_pk": node_user.id}
+            )
+            user_patch_url = request.build_absolute_uri(user_patch_url)
+            operate_node.delay(
+                str(node.id),
+                AgentOperation.FabricCARegister.value,
+                agent_config_file=agent_config_file,
+                node_file_url=node_file_url,
+                user_patch_url=user_patch_url,
+                fabric_ca_user={
+                    "name": name,
+                    "secret": secret,
+                    "type": user_type,
+                    "attrs": attrs,
+                },
+            )
+            response = NodeUserIDSerializer(node_user)
+            return Response(data=response.data, status=status.HTTP_201_CREATED)
+
+    @swagger_auto_schema(
+        methods=["patch"],
+        request_body=NodeUserPatchSerializer,
+        responses=with_common_response({status.HTTP_202_ACCEPTED: "Accepted"}),
+    )
+    @action(
+        methods=["patch"],
+        detail=True,
+        url_path="users/(?P<user_pk>[^/.]+)",
+        url_name="patch-user",
+    )
+    def patch_user(self, request, pk=None, user_pk=None):
+        """
+        Patch user status for node
+
+        Patch user status for node
+        """
+        serializer = NodeUserPatchSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            try:
+                node_user = NodeUser.objects.get(id=user_pk, node__id=pk)
+            except ObjectDoesNotExist:
+                raise ResourceNotFound
+
+            node_user.status = serializer.validated_data.get("status")
+            node_user.save()
+
+            return Response(status=status.HTTP_202_ACCEPTED)

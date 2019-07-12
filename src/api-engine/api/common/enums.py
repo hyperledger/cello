@@ -148,6 +148,20 @@ class NodeStatus(ExtraEnum):
     Stopped = 2
     Deleting = 3
     Error = 4
+    Deleted = 5
+
+
+@unique
+class FabricCAUserType(ExtraEnum):
+    Peer = "peer"
+    Orderer = "orderer"
+
+
+@unique
+class FabricCAUserStatus(ExtraEnum):
+    Registering = "registering"
+    Registered = "registered"
+    Fail = "fail"
 
 
 @unique
@@ -183,10 +197,13 @@ class FileType(ExtraEnum):
 
 @unique
 class AgentOperation(ExtraEnum):
+    Create = "create"
     Start = "start"
+    Stop = "stop"
     Query = "query"
     Update = "update"
     Delete = "delete"
+    FabricCARegister = "fabric:ca:register"
 
 
 class EnumWithDisplayMeta(EnumMeta):

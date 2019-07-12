@@ -25,6 +25,8 @@ from api.common.enums import (
     NodeStatus,
     FileType,
     FabricCAServerType,
+    FabricCAUserType,
+    FabricCAUserStatus,
 )
 from api.common.enums import (
     UserRole,
@@ -478,6 +480,33 @@ class Node(models.Model):
             self.ca.delete()
 
         super(Node, self).delete(using, keep_parents)
+
+
+class NodeUser(models.Model):
+    name = models.CharField(
+        help_text="User name of node", max_length=64, default=""
+    )
+    secret = models.CharField(
+        help_text="User secret of node", max_length=64, default=""
+    )
+    user_type = models.CharField(
+        help_text="User type of node",
+        choices=FabricCAUserType.to_choices(),
+        default=FabricCAUserType.Peer.value,
+        max_length=64,
+    )
+    node = models.ForeignKey(
+        Node, help_text="Node of user", on_delete=models.CASCADE, null=True
+    )
+    status = models.CharField(
+        help_text="Status of node user",
+        choices=FabricCAUserStatus.to_choices(),
+        default=FabricCAUserStatus.Registering.value,
+        max_length=32,
+    )
+    attrs = models.CharField(
+        help_text="Attributes of node user", default="", max_length=512
+    )
 
 
 class Port(models.Model):

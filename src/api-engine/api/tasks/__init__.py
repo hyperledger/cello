@@ -1,1 +1,1 @@
-from .agent import create_node, delete_node
+from .agent import operate_node

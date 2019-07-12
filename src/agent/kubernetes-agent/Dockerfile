@@ -1,3 +1,7 @@
+FROM golang as fabric-binary
+
+RUN go get -u github.com/hyperledger/fabric-ca/cmd/...
+
 FROM python:3.6
 
 COPY requirements.txt /
@@ -7,8 +11,12 @@ RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s
 
 COPY src /app
 
+COPY --from=fabric-binary /go/bin/fabric-ca-client /usr/local/bin/fabric-ca-client
+
 WORKDIR /app
 
 ENV KUBECONFIG /app/.kube/config
+ENV FABRIC_CA_CLIENT_TLS_CERTFILES /tmp/crypto/ca-cert.pem
+ENV FABRIC_CA_CLIENT_HOME /tmp/admin
 
 CMD python main.py

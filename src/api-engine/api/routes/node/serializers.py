@@ -13,7 +13,7 @@ from api.common.enums import (
     HostType,
 )
 from api.common.serializers import PageQuerySerializer
-from api.models import Node, Port, FabricCA, validate_file
+from api.models import Node, Port, FabricCA, validate_file, NodeUser
 from api.utils.common import to_form_paras
 
 LOG = logging.getLogger(__name__)
@@ -95,6 +95,7 @@ class NodeInfoSerializer(NodeIDSerializer, serializers.ModelSerializer):
     ca = FabricCASerializer(
         help_text="CA configuration for node", required=False, allow_null=True
     )
+    file = serializers.URLField(help_text="File url of node", required=False)
 
     class Meta:
         model = Node
@@ -109,6 +110,7 @@ class NodeInfoSerializer(NodeIDSerializer, serializers.ModelSerializer):
             "network_id",
             "status",
             "ca",
+            "file",
         )
         extra_kwargs = {
             "id": {"required": True, "read_only": False},
@@ -179,7 +181,9 @@ class PortSerializer(serializers.ModelSerializer):
 
 
 class NodeUpdateBody(serializers.ModelSerializer):
-    ports = PortSerializer(help_text="Port mapping for node", many=True)
+    ports = PortSerializer(
+        help_text="Port mapping for node", many=True, required=False
+    )
 
     class Meta:
         model = Node
@@ -213,3 +217,27 @@ class NodeFileCreateSerializer(serializers.ModelSerializer):
                 ],
             }
         }
+
+
+class NodeUserCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NodeUser
+        fields = ("name", "user_type", "secret", "attrs")
+        extra_kwargs = {
+            "name": {"required": True},
+            "user_type": {"required": True},
+            "secret": {"required": True},
+        }
+
+
+class NodeUserIDSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NodeUser
+        fields = ("id",)
+
+
+class NodeUserPatchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NodeUser
+        fields = ("status",)
+        extra_kwargs = {"status": {"required": True}}
