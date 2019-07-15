@@ -231,7 +231,25 @@ class AgentViewSet(viewsets.ViewSet):
 
         Partial update special agent with id.
         """
-        pass
+        serializer = AgentPatchBody(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            name = serializer.validated_data.get("name")
+            capacity = serializer.validated_data.get("capacity")
+            log_level = serializer.validated_data.get("log_level")
+            try:
+                agent = Agent.objects.get(id=pk)
+            except ObjectDoesNotExist:
+                raise ResourceNotFound
+            else:
+                if name:
+                    agent.name = name
+                if capacity:
+                    agent.capacity = capacity
+                if log_level:
+                    agent.log_level = log_level
+                agent.save()
+
+                return Response(status=status.HTTP_202_ACCEPTED)
 
     @swagger_auto_schema(
         responses=with_common_response(
