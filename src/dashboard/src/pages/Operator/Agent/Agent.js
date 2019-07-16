@@ -43,39 +43,14 @@ class Agent extends PureComponent {
   }
 
   onAddAgent = () => {
-
-  };
-
-  createCallback = data => {
-    const { name } = data.payload;
-    if (data.id) {
-      message.success(
-        formatMessage(
-          {
-            id: 'app.operator.organization.create.success',
-            defaultMessage: 'Create organization {name} success',
-          },
-          {
-            name,
-            id: data.id,
-          }
-        )
-      );
-      this.handleModalVisible();
-      this.handleFormReset();
-    } else {
-      message.error(
-        formatMessage(
-          {
-            id: 'app.operator.organization.create.fail',
-            defaultMessage: 'Create organization {name} failed',
-          },
-          {
-            name,
-          }
-        )
-      );
-    }
+    this.props.dispatch(
+      routerRedux.push({
+        pathname: '/operator/agent/newAgent',
+        search: stringify({
+          action: 'create',
+        }),
+      })
+    );
   };
 
   deleteCallback = data => {
@@ -230,7 +205,7 @@ class Agent extends PureComponent {
                     title={<span className={styles.ListItemTitle}>{item.name}</span>}
                     description={
                       <div>
-                        <p>{item.worker_api}</p>
+                        <p>{item.ip}</p>
                         <p>
                           <FormattedMessage id="app.operator.agent.listItem.organization" defaultMessage="Organization" />{' : '}
                           {filterOrgName(item.organization_id)}

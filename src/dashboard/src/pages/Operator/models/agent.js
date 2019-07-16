@@ -40,7 +40,7 @@ export default {
       }
     },
     *createAgent({ payload, callback }, { call }) {
-      const response = yield call(createAgent, payload);
+      const response = yield call(createAgent, payload.formData);
       if (callback) {
         callback({
           payload,
