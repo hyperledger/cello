@@ -63,6 +63,7 @@ services:
       - ADMIN_PASSWORD=$API_ENGINE_ADMIN_PASSWORD
       - ADMIN_EMAIL=$API_ENGINE_ADMIN_EMAIL
       - DOCKER_HOST=$DOCKER_HOST
+      - API_VERSION=$API_VERSION
     ports:
       - "${API_ENGINE_SERVICE_PORT}:8080"
     volumes:
@@ -95,6 +96,7 @@ services:
     - KEYCLOAK_ADMIN_PASSWORD=$KEYCLOAK_ADMIN_PASSWORD
     - ADMIN_TOKEN=$API_ENGINE_ADMIN_TOKEN
     - CELERY_BROKER_URL=redis://redis
+    - API_VERSION=$API_VERSION
     volumes:
     - $ROOT_PATH/src/api-engine:/var/www/server
     command: bash -c "celery -A api_engine worker -l info"
