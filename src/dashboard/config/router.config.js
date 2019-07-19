@@ -50,6 +50,12 @@ export default [
             component: './Operator/Agent/Agent',
           },
           {
+            path: '/operator/agent/newAgent',
+            name: 'newAgent',
+            component: './Operator/Agent/newAgent',
+            hideInMenu: true
+          },
+          {
             path: '/operator/userManagement',
             name: 'userManagement',
             component: './Operator/UserManagement',
