@@ -185,7 +185,7 @@ class Agent extends PureComponent {
               size={'large'}
               rowKey={'id'}
               loading={loadingAgents}
-              pagination={paginationProps}
+              pagination={agents.length > 0 ? paginationProps : false}
               dataSource={agents}
               renderItem={item => (
                 <List.Item
