@@ -23,8 +23,6 @@
 #   - setup-worker:   Setup the host as a worker node, install pkg and download docker images
 #   - start:          Start the cello service
 #   - stop:           Stop the cello service, and remove all service containers
-#   - start-nfs:      Start the cello nfs service
-#   - stop-nfs:       Stop the cello nfs service
 
 GREEN  := $(shell tput -Txterm setaf 2)
 WHITE  := $(shell tput -Txterm setaf 7)
@@ -73,7 +71,6 @@ REPLACE_SLASH:=\/
 
 # deploy method docker-compose/k8s
 export DEPLOY_METHOD?=docker-compose
-export NEXT_VERSION?=False
 
 -include .makerc/service
 -include .makerc/email
@@ -95,18 +92,6 @@ ifeq ($(SYSTEM), Darwin)
 	SED = sed -ix
 else
 	SED = sed -i
-endif
-
-ifneq ($(wildcard /opt/cello/keycloak-mysql),)
-	INITIAL_CMD =
-	INITIAL_KEYCLOAK=false
-else
-	ifeq ($(NEXT_VERSION),False)
-		INITIAL_CMD = make initial-keycloak
-	else
-		INITIAL_CMD = make initial-keycloak-next
-	endif
-	INITIAL_KEYCLOAK=true
 endif
 
 # Specify what type the worker node is setup as
@@ -184,10 +169,10 @@ check: ##@Code Check code format
 	find ./docs -type f -name "*.md" -exec egrep -l " +$$" {} \;
 	cd src/api-engine && tox && cd ${ROOT_PATH}
 	make docker
-	NEXT_VERSION=True MODE=dev make start
+	MODE=dev make start
 	sleep 10
 	make test-api
-	NEXT_VERSION=True MODE=dev make stop
+	MODE=dev make stop
 
 test-case: ##@Code Run test case for flask server
 	@$(MAKE) -C src/operator-dashboard/test/ all
@@ -227,60 +212,21 @@ initial-keycloak:
 initial-keycloak-next:
 	docker-compose -f bootup/docker-compose-files/new_version/docker-compose-initial.yml up --abort-on-container-exit
 
-check-environment:
-	if [ "$(SERVER_PUBLIC_IP)" = "" ] && [ "$(NEXT_VERSION)" = "False" ]; then \
-		echo "Environment variable SERVER_PUBLIC_IP not set"; \
-		echo "Please refer docs/setup_master.md for more details"; \
-		exit 1; \
-	fi
-
-start-old:
-	echo "Start all services with bootup/docker-compose-files/${COMPOSE_FILE}... docker images must exist local now, otherwise, run 'make setup-master first' !"
-	if [ "$(MODE)" = "dev" ]; then \
-		make build-admin-js; \
-	fi
-	$(INITIAL_CMD)
-	if [ "$(INITIAL_KEYCLOAK)" = "true" ]; then \
-		OPERATOR_DASHBOARD_SSO_SECRET=`sed -n '/export OPERATOR_DASHBOARD_SSO_SECRET?=/ {s///p;q;}' .makerc/operator-dashboard` \
-		USER_DASHBOARD_SSO_SECRET=`sed -n '/export USER_DASHBOARD_SSO_SECRET?=/ {s///p;q;}' .makerc/user-dashboard` \
-		docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} up -d --force-recreate; \
-	else \
-		docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} up -d --force-recreate; \
-	fi
-	echo "Now you can visit operator-dashboard at localhost:8080, or user-dashboard at localhost:8081"
-	@$(MAKE) start-nfs
+start-docker-compose:
+	docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} up -d --force-recreate
 
 start: ##@Service Start service
-	@$(MAKE) check-environment
-	make initial-env
-	if [ "$(NEXT_VERSION)" = "False" ]; then \
-		make start-old; \
-	else \
-		make start-next; \
-	fi
-
-start-next-docker:
-	docker-compose -f bootup/docker-compose-files/new_version/${COMPOSE_FILE} up -d --force-recreate
-
-start-next:
 	if [ "$(DEPLOY_METHOD)" = "docker-compose" ]; then \
-		make start-next-docker; \
+		make start-docker-compose; \
 	else \
 		make start-k8s; \
 	fi
 
-stop-next-docker:
+stop-docker-compose:
 	echo "Stop all services with bootup/docker-compose-files/${COMPOSE_FILE}..."
-	docker-compose -f bootup/docker-compose-files/new_version/${COMPOSE_FILE} stop
+	docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} stop
 	echo "Remove all services with ${COMPOSE_FILE}..."
-	docker-compose -f bootup/docker-compose-files/new_version/${COMPOSE_FILE} rm -f -a
-
-stop-next:
-	if [ "$(DEPLOY_METHOD)" = "docker-compose" ]; then \
-		make stop-next-docker; \
-	else \
-		make stop-k8s; \
-	fi
+	docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} rm -f -a
 
 start-k8s:
 	@$(MAKE) -C bootup/kubernetes init-yaml
@@ -292,12 +238,6 @@ test-api:
 stop-k8s:
 	@$(MAKE) -C bootup/kubernetes stop
 
-stop-old:
-	echo "Stop all services with bootup/docker-compose-files/${COMPOSE_FILE}..."
-	docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} stop
-	echo "Remove all services with ${COMPOSE_FILE}..."
-	docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} rm -f -a
-
 start-dashboard-dev:
 	if [ "$(MOCK)" = "True" ]; then \
 		make -C src/dashboard start; \
@@ -306,10 +246,10 @@ start-dashboard-dev:
 	fi
 
 stop: ##@Service Stop service
-	if [ "$(NEXT_VERSION)" = "False" ]; then \
-		make stop-old; \
+	if [ "$(DEPLOY_METHOD)" = "docker-compose" ]; then \
+		make stop-docker-compose; \
 	else \
-		make stop-next; \
+		make stop-k8s; \
 	fi
 
 reset: clean ##@Environment clean up and remove local storage (only use for development)
@@ -334,12 +274,6 @@ build-user-dashboard-js: ##@Nodejs Build user dashboard js files
 
 help: ##@other Show this help.
 	@perl -e '$(HELP_FUN)' $(MAKEFILE_LIST)
-
-start-nfs: ##@Service start nfs service
-	docker-compose -f bootup/docker-compose-files/docker-compose-nfs.yml up -d --no-recreate
-
-stop-nfs: ##@Service stop nfs service
-	docker-compose -f bootup/docker-compose-files/docker-compose-nfs.yml down
 
 HELP_FUN = \
 	%help; \
