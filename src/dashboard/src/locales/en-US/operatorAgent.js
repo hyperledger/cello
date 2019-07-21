@@ -17,7 +17,7 @@ export default {
   'app.operator.agent.delete.success': 'Delete Agent {name} success',
   'app.operator.agent.listItem.organization': 'Organization',
   'app.operator.agent.type': 'Type',
-  'app.operator.newAgent.error.ip': 'Please enter a valid IP address and port.For example:192.168.0.10:2375.',
+  'app.operator.newAgent.error.ip': 'Please enter a valid IP address.For example:192.168.0.10.',
   'app.operator.newAgent.title': 'Create Agent',
   'app.operator.editAgent.title': 'Edit Agent',
   'app.operator.newAgent.label.name': 'Name',

@@ -17,7 +17,7 @@ export default {
   'app.operator.agent.delete.fail': '删除代理 {name} 失败',
   'app.operator.agent.listItem.organization': '所属组织',
   'app.operator.agent.type': '类型',
-  'app.operator.newAgent.error.ip': '请输入有效的IP地址和端口。例如：192.168.0.10:2375。',
+  'app.operator.newAgent.error.ip': '请输入有效的IP地址。例如：192.168.0.10。',
   'app.operator.newAgent.title': '新建代理',
   'app.operator.editAgent.title': '编辑代理',
   'app.operator.newAgent.label.name': '名称',
