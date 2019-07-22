@@ -1,12 +1,11 @@
 import React, { PureComponent } from 'react';
 import { FormattedMessage, formatMessage } from 'umi-plugin-react/locale';
 import { connect } from 'dva';
-import { Card, Button, Modal, message, List, Badge, Row, Col } from 'antd';
+import { Card, Button, message, List, Badge, Row, Col } from 'antd';
 import moment from 'moment';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
+import router from 'umi/router';
 import styles from '../styles.less';
-import { routerRedux } from 'dva/router';
-import { stringify } from 'qs';
 
 @connect(({agent, organization, loading}) => ({
   agent,
@@ -15,17 +14,6 @@ import { stringify } from 'qs';
 }))
 
 class Agent extends PureComponent {
-  constructor(props) {
-    super(props);
-    this.state = {
-      modalVisible: false,
-      modalMethod: 'create',
-      selectedRows: [],
-      formValues: {},
-      currentOrganization: {},
-    };
-  }
-
   componentDidMount() {
     const { dispatch } = this.props;
 
@@ -46,14 +34,7 @@ class Agent extends PureComponent {
   }
 
   onAddAgent = () => {
-    this.props.dispatch(
-      routerRedux.push({
-        pathname: '/operator/agent/newAgent',
-        search: stringify({
-          action: 'create',
-        }),
-      })
-    );
+    router.push('/operator/agent/newAgent?action=create');
   };
 
   deleteCallback = data => {
@@ -90,7 +71,7 @@ class Agent extends PureComponent {
   handleTableChange = (page) => {
     const { dispatch, agent: { pagination } } = this.props;
     const params = {
-      page: page,
+      page,
       per_page: pagination.pageSize,
     };
     dispatch({
@@ -99,14 +80,20 @@ class Agent extends PureComponent {
     });
   };
 
+  // TODO: remove these two comment lines after add the functional code
+  // eslint-disable-next-line no-unused-vars
   editAgent = agent => {
 
   };
 
+  // TODO: remove these two comment lines after add the functional code
+  // eslint-disable-next-line no-unused-vars
   nodeList = agent => {
 
   };
 
+  // TODO: remove these two comment lines after add the functional code
+  // eslint-disable-next-line no-unused-vars
   handleDelete = agent => {
 
   };
@@ -123,19 +110,23 @@ class Agent extends PureComponent {
       if (orgs.length > 0) {
         return orgs[0].name;
       }
-      else
-        return '';
+      return '';
     };
 
     function badgeStatus(status) {
+      let statusOfBadge = 'default';
       switch (status) {
         case 'active':
-          return 'success';
+          statusOfBadge = 'success';
+          break;
         case 'inactive':
-          return 'error';
+          statusOfBadge = 'error';
+          break;
         default:
           break;
       }
+
+      return statusOfBadge;
     }
 
     const paginationProps = {
@@ -146,7 +137,7 @@ class Agent extends PureComponent {
       onChange: this.handleTableChange
     };
 
-    const ListContent = ({ data: { type, created_at, status } }) => (
+    const ListContent = ({ data: { type, created_at: createdAt, status } }) => (
       <div>
         <Row gutter={15} className={styles.ListContentRow}>
           <Col span={8}>
@@ -159,7 +150,7 @@ class Agent extends PureComponent {
             <p>
               <FormattedMessage id="app.operator.agent.table.header.createTime" defaultMessage="Create Time" />
             </p>
-            <p>{moment(created_at).format('YYYY-MM-DD HH:mm:ss')}</p>
+            <p>{moment(createdAt).format('YYYY-MM-DD HH:mm:ss')}</p>
           </Col>
           <Col span={6}>
             <Badge status={badgeStatus(status)} text={status} />
@@ -185,8 +176,8 @@ class Agent extends PureComponent {
               </Button>
             </div>
             <List
-              size={'large'}
-              rowKey={'id'}
+              size="large"
+              rowKey="id"
               loading={loadingAgents}
               pagination={agents.length > 0 ? paginationProps : false}
               dataSource={agents}

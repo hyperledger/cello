@@ -2,7 +2,8 @@ import React, { PureComponent } from 'react';
 import { Card, Form, Input, Button, Select, Switch, Icon, InputNumber, Upload, message } from 'antd';
 import { FormattedMessage, formatMessage } from 'umi-plugin-react/locale';
 import isIP from 'validator/lib/isIP';
-import { routerRedux } from 'dva/router';
+import router from 'umi/router';
+import withRouter from 'umi/withRouter';
 import { connect } from 'dva';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 
@@ -20,29 +21,24 @@ class CreateAgent extends PureComponent {
     fileList: []
   };
 
-  clickCancel = () => {
-    this.props.dispatch(
-      routerRedux.push({
-        pathname: '/operator/agent',
-      })
-    );
-  };
-
   componentDidMount() {
-    const location = this.props.location || this.context.location;
-    const search = new URLSearchParams(location.search);
-    const action = search.get('action');
+    const { location } = this.props;
+    const { query = {} } = location;
+    const action = query.action || 'create';
     if (action === 'edit') {
       this.setState({
-        action: action,
-        id: search.get('id')
+        action,
       })
     }
     else {
       this.setState({
-        action: action
+        action
       })
     }
+  };
+
+  clickCancel = () => {
+    router.push('/operator/agent');
   };
 
   validateIp = (rule, value, callback) => {
@@ -58,62 +54,67 @@ class CreateAgent extends PureComponent {
     }
   };
 
-  submitCallback = data => {
-    if (this.state.action === 'edit') {
-
+  validateCreateResponse = data => {
+    if (data.id) {
+      message.success(
+        formatMessage(
+          {
+            id: 'app.operator.newAgent.success',
+            defaultMessage: 'Create agent {name} success',
+          },
+          {
+            name: data.payload.formData.get('name'),
+          }
+        )
+      );
+      router.push('/operator/agent');
+    } else {
+      message.error(
+        formatMessage(
+          {
+            id: 'app.operator.newAgent.fail',
+            defaultMessage: 'Create agent {name} failed',
+          },
+          {
+            name: data.payload.formData.get('name'),
+          }
+        )
+      );
     }
-    else {
-      if (data.id) {
-        message.success(
-          formatMessage(
-            {
-              id: 'app.operator.newAgent.success',
-              defaultMessage: 'Create agent {name} success',
-            },
-            {
-              name: data.payload.formData.get('name'),
-            }
-          )
-        );
-        this.props.dispatch(
-          routerRedux.push({
-            pathname: '/operator/agent',
-          })
-        );
-      } else {
-        message.error(
-          formatMessage(
-            {
-              id: 'app.operator.newAgent.fail',
-              defaultMessage: 'Create user {name} failed',
-            },
-            {
-              name: data.payload.formData.get('name'),
-            }
-          )
-        );
-      }
+  };
+
+  submitCallback = data => {
+    const { action } = this.state;
+
+    switch (action) {
+      case 'create':
+        this.validateCreateResponse(data);
+        break;
+      case 'edit':
+        break;
+      default:
+        break;
     }
   };
 
   handleSubmit = e => {
     e.preventDefault();
-    const action = this.state.action;
-    this.props.form.validateFieldsAndScroll((err, values) => {
+    const { action, fileList } = this.state;
+    const { form: { validateFieldsAndScroll }, dispatch } = this.props;
+    validateFieldsAndScroll((err, values) => {
       if (!err) {
         if (action === 'edit') {
-          this.props.dispatch({
+          dispatch({
             type: 'agent/updateAgent',
-            payload: data,
+            payload: {},
           });
-        }
-        else {
+        } else {
           const formData = new FormData();
 
           Object.keys(values).forEach(key => {
             if (key === 'config_file') {
-              if (this.state.fileList.length > 0) {
-                formData.append(key, this.state.fileList[0]);
+              if (fileList.length > 0) {
+                formData.append(key, fileList[0]);
               }
             }
             else {
@@ -121,10 +122,10 @@ class CreateAgent extends PureComponent {
             }
           });
 
-          this.props.dispatch({
+          dispatch({
             type: 'agent/createAgent',
             payload: {
-              formData: formData,
+              formData,
             },
             callback: this.submitCallback
           });
@@ -141,11 +142,10 @@ class CreateAgent extends PureComponent {
   };
 
   render() {
-    const { getFieldDecorator } = this.props.form;
-    const { submitting, updating } = this.props;
-    const location = this.props.location || this.context.location;
-    const search = new URLSearchParams(location.search);
-    const action = search.get('action');
+    const { fileList } = this.state;
+    const { form: { getFieldDecorator }, submitting, updating, location } = this.props;
+    const { query = {} } = location;
+    const action = query.action || 'create';
     const currentAgent = {};
     const schedulable = action === 'edit' ? '' : true;
     const formItemLayout = {
@@ -187,7 +187,7 @@ class CreateAgent extends PureComponent {
         this.setState({fileList: [file]});
         return false;
       },
-      fileList: this.state.fileList,
+      fileList,
     };
 
     return (
@@ -291,10 +291,10 @@ class CreateAgent extends PureComponent {
             >
               {getFieldDecorator('config_file', {
                 getValueFromEvent: this.normFile,
-                initialValue: this.state.fileList,
+                initialValue: fileList,
               })(
-                <Upload {...selectProps} >
-                  <Button disabled={this.state.fileList.length > 0}>
+                <Upload {...selectProps}>
+                  <Button disabled={fileList.length > 0}>
                     <Icon type="upload" /> {<FormattedMessage id="app.operator.newAgent.label.configFileSelect" defaultMessage="Please select the config file." />}
                   </Button>
                 </Upload>
@@ -315,11 +315,11 @@ class CreateAgent extends PureComponent {
               {getFieldDecorator('schedulable', {
                 initialValue: schedulable
               })(
-                <Switch defaultChecked={schedulable}/>
+                <Switch defaultChecked={schedulable} />
               )}
             </FormItem>
             <FormItem {...submitFormLayout} style={{ marginTop: 32 }}>
-              <Button onClick={this.clickCancel} >
+              <Button onClick={this.clickCancel}>
                 <FormattedMessage id="form.button.cancel" defaultMessage="Cancel" />
               </Button>
               <Button loading={action === 'create' ? submitting : updating} type="primary" htmlType="submit" style={{ marginLeft: 8 }}>
@@ -333,4 +333,4 @@ class CreateAgent extends PureComponent {
   }
 }
 
-export default CreateAgent;
+export default withRouter(CreateAgent);

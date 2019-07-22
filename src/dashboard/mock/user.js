@@ -4,19 +4,19 @@ import { paginator } from './_utils';
 
 const users = Mock.mock({
   'data|11': [{
-    id: function () {
+    id () {
       return Mock.Random.guid()
     },
     username: '@name',
-    role: function () {
+    role () {
       return Mock.Random.pick(['administrator', 'user'])
     },
     'organization|1': [
       {
-        id: function () {
+        id () {
           return Mock.Random.guid()
         },
-        name: function () {
+        name () {
           return faker.company.companyName()
         }
       },
@@ -56,8 +56,8 @@ function tokenVerify(req, res) {
 export default {
   'POST /api/token-verify': tokenVerify,
   '/api/users': (req, res) => {
-    const { page = 1, per_page = 10 } = req.query;
-    const result = paginator(users.data, parseInt(page), parseInt(per_page));
+    const { page = 1, per_page: perPage = 10 } = req.query;
+    const result = paginator(users.data, parseInt(page, 10), parseInt(perPage, 10));
     res.send({
       total: result.total,
       data: result.data,
