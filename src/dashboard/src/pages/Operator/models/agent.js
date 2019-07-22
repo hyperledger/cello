@@ -1,9 +1,4 @@
-import {
-  listAgent,
-  createAgent,
-  updateAgent,
-  deleteAgent,
-} from '@/services/agent';
+import { listAgent, createAgent, updateAgent, deleteAgent } from '@/services/agent';
 
 export default {
   namespace: 'agent',

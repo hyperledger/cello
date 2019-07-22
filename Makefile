@@ -173,6 +173,7 @@ check: ##@Code Check code format
 	sleep 10
 	make test-api
 	MODE=dev make stop
+	make check-dashboard
 
 test-case: ##@Code Run test case for flask server
 	@$(MAKE) -C src/operator-dashboard/test/ all
@@ -234,6 +235,9 @@ start-k8s:
 
 test-api:
 	@$(MAKE) -C tests/postman/ test-api
+
+check-dashboard: initial-env
+	docker-compose -f tests/dashboard/docker-compose.yml up --abort-on-container-exit || (echo "check dashboard failed $$?"; exit 1)
 
 stop-k8s:
 	@$(MAKE) -C bootup/kubernetes stop

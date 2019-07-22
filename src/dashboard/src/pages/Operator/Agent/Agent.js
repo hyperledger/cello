@@ -7,12 +7,11 @@ import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import router from 'umi/router';
 import styles from '../styles.less';
 
-@connect(({agent, organization, loading}) => ({
+@connect(({ agent, organization, loading }) => ({
   agent,
   organization,
   loadingAgents: loading.effects['agent/listAgent'],
 }))
-
 class Agent extends PureComponent {
   componentDidMount() {
     const { dispatch } = this.props;
@@ -68,8 +67,11 @@ class Agent extends PureComponent {
     }
   };
 
-  handleTableChange = (page) => {
-    const { dispatch, agent: { pagination } } = this.props;
+  handleTableChange = page => {
+    const {
+      dispatch,
+      agent: { pagination },
+    } = this.props;
     const params = {
       page,
       per_page: pagination.pageSize,
@@ -82,30 +84,24 @@ class Agent extends PureComponent {
 
   // TODO: remove these two comment lines after add the functional code
   // eslint-disable-next-line no-unused-vars
-  editAgent = agent => {
-
-  };
+  editAgent = agent => {};
 
   // TODO: remove these two comment lines after add the functional code
   // eslint-disable-next-line no-unused-vars
-  nodeList = agent => {
-
-  };
+  nodeList = agent => {};
 
   // TODO: remove these two comment lines after add the functional code
   // eslint-disable-next-line no-unused-vars
-  handleDelete = agent => {
-
-  };
+  handleDelete = agent => {};
 
   render() {
     const {
       agent: { agents, pagination },
       organization: { organizations },
-      loadingAgents
+      loadingAgents,
     } = this.props;
 
-    const filterOrgName = (organizationId) => {
+    const filterOrgName = organizationId => {
       const orgs = organizations.filter(organization => organizationId === organization.id);
       if (orgs.length > 0) {
         return orgs[0].name;
@@ -134,7 +130,7 @@ class Agent extends PureComponent {
       total: pagination.total,
       pageSize: pagination.pageSize,
       currentPage: pagination.current,
-      onChange: this.handleTableChange
+      onChange: this.handleTableChange,
     };
 
     const ListContent = ({ data: { type, created_at: createdAt, status } }) => (
@@ -148,7 +144,10 @@ class Agent extends PureComponent {
           </Col>
           <Col span={10}>
             <p>
-              <FormattedMessage id="app.operator.agent.table.header.createTime" defaultMessage="Create Time" />
+              <FormattedMessage
+                id="app.operator.agent.table.header.createTime"
+                defaultMessage="Create Time"
+              />
             </p>
             <p>{moment(createdAt).format('YYYY-MM-DD HH:mm:ss')}</p>
           </Col>
@@ -161,17 +160,17 @@ class Agent extends PureComponent {
 
     return (
       <PageHeaderWrapper
-        title={
-          <FormattedMessage
-            id="app.operator.agent.title"
-            defaultMessage="Agent Management"
-          />
-        }
+        title={<FormattedMessage id="app.operator.agent.title" defaultMessage="Agent Management" />}
       >
         <Card bordered={false}>
           <div className={styles.tableList}>
             <div className={styles.tableListOperator}>
-              <Button className={styles.newAgentButton} icon="plus" type="dashed" onClick={() => this.onAddAgent()}>
+              <Button
+                className={styles.newAgentButton}
+                icon="plus"
+                type="dashed"
+                onClick={() => this.onAddAgent()}
+              >
                 <FormattedMessage id="form.button.new" defaultMessage="New" />
               </Button>
             </div>
@@ -192,7 +191,7 @@ class Agent extends PureComponent {
                     </a>,
                     <a onClick={() => this.handleDelete(item)}>
                       <FormattedMessage id="form.menu.item.delete" defaultMessage="Delete" />
-                    </a>
+                    </a>,
                   ]}
                 >
                   <List.Item.Meta
@@ -201,7 +200,11 @@ class Agent extends PureComponent {
                       <div>
                         <p>{item.ip}</p>
                         <p>
-                          <FormattedMessage id="app.operator.agent.listItem.organization" defaultMessage="Organization" />{' : '}
+                          <FormattedMessage
+                            id="app.operator.agent.listItem.organization"
+                            defaultMessage="Organization"
+                          />
+                          {' : '}
                           {filterOrgName(item.organization_id)}
                         </p>
                       </div>

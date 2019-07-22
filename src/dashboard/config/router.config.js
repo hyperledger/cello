@@ -53,7 +53,7 @@ export default [
             path: '/operator/agent/newAgent',
             name: 'newAgent',
             component: './Operator/Agent/newAgent',
-            hideInMenu: true
+            hideInMenu: true,
           },
           {
             path: '/operator/userManagement',

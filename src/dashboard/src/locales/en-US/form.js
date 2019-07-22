@@ -12,5 +12,5 @@ export default {
   'form.button.moreActions': 'More Actions',
   'form.button.submit': 'Submit',
   'form.button.add': 'Add',
-  'form.button.back': 'Back'
+  'form.button.back': 'Back',
 };

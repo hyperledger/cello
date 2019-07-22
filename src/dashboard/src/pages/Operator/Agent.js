@@ -5,11 +5,7 @@ import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 @connect(() => ({}))
 class Agent extends PureComponent {
   render() {
-    return (
-      <PageHeaderWrapper>
-        Agent
-      </PageHeaderWrapper>
-    );
+    return <PageHeaderWrapper>Agent</PageHeaderWrapper>;
   }
 }
 

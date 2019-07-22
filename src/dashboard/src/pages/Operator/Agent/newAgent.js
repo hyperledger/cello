@@ -1,5 +1,16 @@
 import React, { PureComponent } from 'react';
-import { Card, Form, Input, Button, Select, Switch, Icon, InputNumber, Upload, message } from 'antd';
+import {
+  Card,
+  Form,
+  Input,
+  Button,
+  Select,
+  Switch,
+  Icon,
+  InputNumber,
+  Upload,
+  message,
+} from 'antd';
 import { FormattedMessage, formatMessage } from 'umi-plugin-react/locale';
 import isIP from 'validator/lib/isIP';
 import router from 'umi/router';
@@ -18,7 +29,7 @@ const { Option } = Select;
 @Form.create()
 class CreateAgent extends PureComponent {
   state = {
-    fileList: []
+    fileList: [],
   };
 
   componentDidMount() {
@@ -28,14 +39,13 @@ class CreateAgent extends PureComponent {
     if (action === 'edit') {
       this.setState({
         action,
-      })
-    }
-    else {
+      });
+    } else {
       this.setState({
-        action
-      })
+        action,
+      });
     }
-  };
+  }
 
   clickCancel = () => {
     router.push('/operator/agent');
@@ -44,12 +54,16 @@ class CreateAgent extends PureComponent {
   validateIp = (rule, value, callback) => {
     if (value !== '') {
       if (!isIP(value)) {
-        callback(<FormattedMessage id="app.operator.newAgent.error.ip" defaultMessage="Please enter a valid IP address.For example:192.168.0.10." />);
+        callback(
+          <FormattedMessage
+            id="app.operator.newAgent.error.ip"
+            defaultMessage="Please enter a valid IP address.For example:192.168.0.10."
+          />
+        );
       } else {
         callback();
       }
-    }
-    else {
+    } else {
       callback();
     }
   };
@@ -100,7 +114,10 @@ class CreateAgent extends PureComponent {
   handleSubmit = e => {
     e.preventDefault();
     const { action, fileList } = this.state;
-    const { form: { validateFieldsAndScroll }, dispatch } = this.props;
+    const {
+      form: { validateFieldsAndScroll },
+      dispatch,
+    } = this.props;
     validateFieldsAndScroll((err, values) => {
       if (!err) {
         if (action === 'edit') {
@@ -116,8 +133,7 @@ class CreateAgent extends PureComponent {
               if (fileList.length > 0) {
                 formData.append(key, fileList[0]);
               }
-            }
-            else {
+            } else {
               formData.append(key, values[key]);
             }
           });
@@ -127,7 +143,7 @@ class CreateAgent extends PureComponent {
             payload: {
               formData,
             },
-            callback: this.submitCallback
+            callback: this.submitCallback,
           });
         }
       }
@@ -143,7 +159,12 @@ class CreateAgent extends PureComponent {
 
   render() {
     const { fileList } = this.state;
-    const { form: { getFieldDecorator }, submitting, updating, location } = this.props;
+    const {
+      form: { getFieldDecorator },
+      submitting,
+      updating,
+      location,
+    } = this.props;
     const { query = {} } = location;
     const action = query.action || 'create';
     const currentAgent = {};
@@ -181,10 +202,10 @@ class CreateAgent extends PureComponent {
 
     const selectProps = {
       onRemove: () => {
-        this.setState({fileList:[]});
+        this.setState({ fileList: [] });
       },
       beforeUpload: file => {
-        this.setState({fileList: [file]});
+        this.setState({ fileList: [file] });
         return false;
       },
       fileList,
@@ -193,31 +214,63 @@ class CreateAgent extends PureComponent {
     return (
       <PageHeaderWrapper
         title={
-          action === 'create'
-            ? <FormattedMessage id="app.operator.newAgent.title" defaultMessage="Create Agent" />
-            : <FormattedMessage id="app.operator.editAgent.title" defaultMessage="Edit Agent" />
+          action === 'create' ? (
+            <FormattedMessage id="app.operator.newAgent.title" defaultMessage="Create Agent" />
+          ) : (
+            <FormattedMessage id="app.operator.editAgent.title" defaultMessage="Edit Agent" />
+          )
         }
       >
         <Card bordered={false}>
           <Form onSubmit={this.handleSubmit} hideRequiredMark style={{ marginTop: 8 }}>
-            <FormItem {...formItemLayout} label={<FormattedMessage id="app.operator.newAgent.label.name" defaultMessage="Name" />}>
+            <FormItem
+              {...formItemLayout}
+              label={
+                <FormattedMessage id="app.operator.newAgent.label.name" defaultMessage="Name" />
+              }
+            >
               {getFieldDecorator('name', {
                 initialValue: action === 'create' ? '' : currentAgent.name,
                 rules: [
                   {
                     required: false,
-                    message: <FormattedMessage id="app.operator.newAgent.Required.Name" defaultMessage="Please input name." />,
+                    message: (
+                      <FormattedMessage
+                        id="app.operator.newAgent.Required.Name"
+                        defaultMessage="Please input name."
+                      />
+                    ),
                   },
                 ],
-              })(<Input placeholder={formatMessage({id:"app.operator.newAgent.label.name", defaultMessage:"Name"})} />)}
+              })(
+                <Input
+                  placeholder={formatMessage({
+                    id: 'app.operator.newAgent.label.name',
+                    defaultMessage: 'Name',
+                  })}
+                />
+              )}
             </FormItem>
-            <FormItem {...formItemLayout} label={<FormattedMessage id="app.operator.newAgent.label.ip" defaultMessage="Agent IP Address" />}>
+            <FormItem
+              {...formItemLayout}
+              label={
+                <FormattedMessage
+                  id="app.operator.newAgent.label.ip"
+                  defaultMessage="Agent IP Address"
+                />
+              }
+            >
               {getFieldDecorator('ip', {
                 initialValue: action === 'create' ? '' : currentAgent.ip,
                 rules: [
                   {
                     required: true,
-                    message: <FormattedMessage id="app.operator.newAgent.required.ip" defaultMessage="Please input the ip address of the agent." />,
+                    message: (
+                      <FormattedMessage
+                        id="app.operator.newAgent.required.ip"
+                        defaultMessage="Please input the ip address of the agent."
+                      />
+                    ),
                   },
                   {
                     validator: this.validateIp,
@@ -225,69 +278,132 @@ class CreateAgent extends PureComponent {
                 ],
               })(<Input disabled={action === 'update'} placeholder="192.168.0.10" />)}
             </FormItem>
-            <FormItem {...formItemLayout} label={<FormattedMessage id="app.operator.newAgent.label.image" defaultMessage="Image name of deploy agent" />}>
+            <FormItem
+              {...formItemLayout}
+              label={
+                <FormattedMessage
+                  id="app.operator.newAgent.label.image"
+                  defaultMessage="Image name of deploy agent"
+                />
+              }
+            >
               {getFieldDecorator('image', {
                 initialValue: action === 'create' ? '' : currentAgent.image,
                 rules: [
                   {
                     required: true,
-                    message: <FormattedMessage id="app.operator.newAgent.required.image" defaultMessage="Please input the name of the agent's image." />,
+                    message: (
+                      <FormattedMessage
+                        id="app.operator.newAgent.required.image"
+                        defaultMessage="Please input the name of the agent's image."
+                      />
+                    ),
                   },
                 ],
-              })(<Input placeholder={formatMessage({id:"app.operator.newAgent.label.image", defaultMessage:"Image name of deploy agent"})} />)}
+              })(
+                <Input
+                  placeholder={formatMessage({
+                    id: 'app.operator.newAgent.label.image',
+                    defaultMessage: 'Image name of deploy agent',
+                  })}
+                />
+              )}
             </FormItem>
-            <FormItem {...formItemLayout} label={<FormattedMessage id="app.operator.newAgent.label.agentCapacity" defaultMessage="Capacity of agent" />}>
+            <FormItem
+              {...formItemLayout}
+              label={
+                <FormattedMessage
+                  id="app.operator.newAgent.label.agentCapacity"
+                  defaultMessage="Capacity of agent"
+                />
+              }
+            >
               {getFieldDecorator('capacity', {
                 initialValue: action === 'create' ? 1 : currentAgent.capacity,
                 rules: [
                   {
                     required: true,
-                    message: <FormattedMessage id="app.operator.newAgent.required.agentCapacity" defaultMessage="Please input the capacity of the agent." />,
+                    message: (
+                      <FormattedMessage
+                        id="app.operator.newAgent.required.agentCapacity"
+                        defaultMessage="Please input the capacity of the agent."
+                      />
+                    ),
                   },
                 ],
               })(
                 <InputNumber
-                  placeholder={formatMessage({id:"app.operator.newAgent.label.agentCapacity", defaultMessage:"Capacity of agent"})}
+                  placeholder={formatMessage({
+                    id: 'app.operator.newAgent.label.agentCapacity',
+                    defaultMessage: 'Capacity of agent',
+                  })}
                   min={1}
                   max={100}
                 />
               )}
             </FormItem>
-            <FormItem {...formItemLayout} label={<FormattedMessage id="app.operator.newAgent.label.nodeCapacity" defaultMessage="Capacity of nodes" />}>
+            <FormItem
+              {...formItemLayout}
+              label={
+                <FormattedMessage
+                  id="app.operator.newAgent.label.nodeCapacity"
+                  defaultMessage="Capacity of nodes"
+                />
+              }
+            >
               {getFieldDecorator('node_capacity', {
                 initialValue: action === 'create' ? 10 : currentAgent.node_capacity,
                 rules: [
                   {
                     required: true,
-                    message: <FormattedMessage id="app.operator.newAgent.required.nodeCapacity" defaultMessage="Please input the capacity of nodes." />,
+                    message: (
+                      <FormattedMessage
+                        id="app.operator.newAgent.required.nodeCapacity"
+                        defaultMessage="Please input the capacity of nodes."
+                      />
+                    ),
                   },
                 ],
               })(
                 <InputNumber
-                  placeholder={formatMessage({id:"app.operator.newAgent.label.nodeCapacity", defaultMessage:"Capacity of nodes"})}
+                  placeholder={formatMessage({
+                    id: 'app.operator.newAgent.label.nodeCapacity',
+                    defaultMessage: 'Capacity of nodes',
+                  })}
                   min={1}
                   max={600}
                 />
               )}
             </FormItem>
-            <FormItem {...formItemLayout} label={<FormattedMessage id="app.operator.newAgent.label.type" defaultMessage="Type" />}>
+            <FormItem
+              {...formItemLayout}
+              label={
+                <FormattedMessage id="app.operator.newAgent.label.type" defaultMessage="Type" />
+              }
+            >
               {getFieldDecorator('type', {
                 initialValue: action === 'create' ? agentTypeValues[0] : currentAgent.type,
                 rules: [
                   {
                     required: true,
-                    message: <FormattedMessage id="app.operator.newAgent.Required.type" defaultMessage="Please select a type." />,
+                    message: (
+                      <FormattedMessage
+                        id="app.operator.newAgent.Required.type"
+                        defaultMessage="Please select a type."
+                      />
+                    ),
                   },
                 ],
-              })(
-                <Select disabled={action !== 'create'}>
-                  {agentTypeOptions}
-                </Select>
-              )}
+              })(<Select disabled={action !== 'create'}>{agentTypeOptions}</Select>)}
             </FormItem>
             <FormItem
               {...formItemLayout}
-              label={<FormattedMessage id="app.operator.newAgent.label.configFile" defaultMessage="Config file" />}
+              label={
+                <FormattedMessage
+                  id="app.operator.newAgent.label.configFile"
+                  defaultMessage="Config file"
+                />
+              }
             >
               {getFieldDecorator('config_file', {
                 getValueFromEvent: this.normFile,
@@ -295,34 +411,64 @@ class CreateAgent extends PureComponent {
               })(
                 <Upload {...selectProps}>
                   <Button disabled={fileList.length > 0}>
-                    <Icon type="upload" /> {<FormattedMessage id="app.operator.newAgent.label.configFileSelect" defaultMessage="Please select the config file." />}
+                    <Icon type="upload" />{' '}
+                    {
+                      <FormattedMessage
+                        id="app.operator.newAgent.label.configFileSelect"
+                        defaultMessage="Please select the config file."
+                      />
+                    }
                   </Button>
                 </Upload>
               )}
             </FormItem>
-            <FormItem {...formItemLayout} label={<FormattedMessage id="app.operator.newAgent.label.logLevel" defaultMessage="Log level" />}>
+            <FormItem
+              {...formItemLayout}
+              label={
+                <FormattedMessage
+                  id="app.operator.newAgent.label.logLevel"
+                  defaultMessage="Log level"
+                />
+              }
+            >
               {getFieldDecorator('log_level', {
                 initialValue: action === 'create' ? logLevelValues[0] : currentAgent.log_level,
                 rules: [
                   {
                     required: false,
-                    message: <FormattedMessage id="app.operator.newAgent.Required.LogLevel" defaultMessage="Please select a log level." />,
+                    message: (
+                      <FormattedMessage
+                        id="app.operator.newAgent.Required.LogLevel"
+                        defaultMessage="Please select a log level."
+                      />
+                    ),
                   },
                 ],
               })(<Select>{logLevelOptions}</Select>)}
             </FormItem>
-            <FormItem {...formItemLayout} label={<FormattedMessage id="app.operator.newAgent.label.schedulable" defaultMessage="Schedulable" />}>
+            <FormItem
+              {...formItemLayout}
+              label={
+                <FormattedMessage
+                  id="app.operator.newAgent.label.schedulable"
+                  defaultMessage="Schedulable"
+                />
+              }
+            >
               {getFieldDecorator('schedulable', {
-                initialValue: schedulable
-              })(
-                <Switch defaultChecked={schedulable} />
-              )}
+                initialValue: schedulable,
+              })(<Switch defaultChecked={schedulable} />)}
             </FormItem>
             <FormItem {...submitFormLayout} style={{ marginTop: 32 }}>
               <Button onClick={this.clickCancel}>
                 <FormattedMessage id="form.button.cancel" defaultMessage="Cancel" />
               </Button>
-              <Button loading={action === 'create' ? submitting : updating} type="primary" htmlType="submit" style={{ marginLeft: 8 }}>
+              <Button
+                loading={action === 'create' ? submitting : updating}
+                type="primary"
+                htmlType="submit"
+                style={{ marginLeft: 8 }}
+              >
                 <FormattedMessage id="form.button.submit" defaultMessage="Submit" />
               </Button>
             </FormItem>

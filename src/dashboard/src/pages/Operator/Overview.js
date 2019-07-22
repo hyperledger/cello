@@ -5,11 +5,7 @@ import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 @connect(() => ({}))
 class Overview extends PureComponent {
   render() {
-    return (
-      <PageHeaderWrapper>
-        Overview
-      </PageHeaderWrapper>
-    );
+    return <PageHeaderWrapper>Overview</PageHeaderWrapper>;
   }
 }
 
