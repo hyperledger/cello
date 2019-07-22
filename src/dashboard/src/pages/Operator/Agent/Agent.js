@@ -15,13 +15,16 @@ import { stringify } from 'qs';
 }))
 
 class Agent extends PureComponent {
-  state = {
-    modalVisible: false,
-    modalMethod: 'create',
-    selectedRows: [],
-    formValues: {},
-    currentOrganization: {},
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      modalVisible: false,
+      modalMethod: 'create',
+      selectedRows: [],
+      formValues: {},
+      currentOrganization: {},
+    };
+  }
 
   componentDidMount() {
     const { dispatch } = this.props;

@@ -2,7 +2,6 @@ import React, { PureComponent } from 'react';
 import { Card, Form, Input, Button, Select, Switch, Icon, InputNumber, Upload, message } from 'antd';
 import { FormattedMessage, formatMessage } from 'umi-plugin-react/locale';
 import isIP from 'validator/lib/isIP';
-import isNumeric from 'validator/lib/isNumeric';
 import { routerRedux } from 'dva/router';
 import { connect } from 'dva';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
@@ -44,23 +43,17 @@ class CreateAgent extends PureComponent {
         action: action
       })
     }
-  }
+  };
 
   validateIp = (rule, value, callback) => {
-    if (value) {
-      if (value.indexOf(':') < 0) {
-        callback(<FormattedMessage id="app.operator.newAgent.error.ip" defaultMessage="Please input validate worker api." />);
+    if (value !== '') {
+      if (!isIP(value)) {
+        callback(<FormattedMessage id="app.operator.newAgent.error.ip" defaultMessage="Please enter a valid IP address.For example:192.168.0.10." />);
       } else {
-        const [ip, port] = value.split(':');
-        if (!isIP(ip) || !isNumeric(port)) {
-          callback(<FormattedMessage id="app.operator.newAgent.error.ip" defaultMessage="Please input validate worker api." />);
-        } else if (parseInt(port, 10) < 0 || parseInt(port, 10) > 65535) {
-          callback(<FormattedMessage id="app.operator.newAgent.error.ip" defaultMessage="Please input validate worker api." />);
-        } else {
-          callback();
-        }
+        callback();
       }
-    } else {
+    }
+    else {
       callback();
     }
   };
@@ -230,7 +223,7 @@ class CreateAgent extends PureComponent {
                     validator: this.validateIp,
                   },
                 ],
-              })(<Input disabled={action === 'update'} placeholder="192.168.0.10:2375" />)}
+              })(<Input disabled={action === 'update'} placeholder="192.168.0.10" />)}
             </FormItem>
             <FormItem {...formItemLayout} label={<FormattedMessage id="app.operator.newAgent.label.image" defaultMessage="Image name of deploy agent" />}>
               {getFieldDecorator('image', {
