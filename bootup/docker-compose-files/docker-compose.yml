@@ -109,6 +109,8 @@ services:
     - CELERY_BROKER_URL=redis://redis
     - API_VERSION=$API_VERSION
     command: bash -c "celery -A api_engine worker -l info"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
   dashboard:
     image: hyperledger/cello-dashboard

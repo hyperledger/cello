@@ -295,7 +295,7 @@ class NodeViewSet(viewsets.ViewSet):
         serializer = NodeUpdateBody(data=request.data)
         if serializer.is_valid(raise_exception=True):
             node_status = serializer.validated_data.get("status")
-            ports = serializer.validated_data.get("ports")
+            ports = serializer.validated_data.get("ports", [])
             try:
                 node = Node.objects.get(id=pk)
             except ObjectDoesNotExist:
