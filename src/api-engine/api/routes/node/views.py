@@ -40,6 +40,8 @@ from api.routes.node.serializers import (
     NodeUserCreateSerializer,
     NodeUserIDSerializer,
     NodeUserPatchSerializer,
+    NodeUserQuerySerializer,
+    NodeUserListSerializer,
 )
 from api.tasks import operate_node
 from api.utils.common import with_common_response
@@ -110,15 +112,9 @@ class NodeViewSet(viewsets.ViewSet):
             nodes = Node.objects.filter(**query_filter)
             p = Paginator(nodes, per_page)
             nodes = p.page(page)
-            nodes = [node.__dict__ for node in nodes]
 
-            response = NodeListSerializer(
-                data={"total": p.count, "data": nodes}
-            )
-            if response.is_valid(raise_exception=True):
-                return Response(
-                    data=response.validated_data, status=status.HTTP_200_OK
-                )
+            response = NodeListSerializer({"total": p.count, "data": nodes})
+            return Response(data=response.data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         request_body=NodeCreateBody,
@@ -366,20 +362,7 @@ class NodeViewSet(viewsets.ViewSet):
             response = NodeInfoSerializer(node)
             return Response(data=response.data, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(
-        methods=["post"],
-        request_body=NodeUserCreateSerializer,
-        responses=with_common_response(
-            {status.HTTP_201_CREATED: NodeUserIDSerializer}
-        ),
-    )
-    @action(methods=["post"], detail=True, url_path="users", url_name="users")
-    def users(self, request, pk=None):
-        """
-        Register user to node
-
-        Register user to node
-        """
+    def _register_user(self, request, pk=None):
         serializer = NodeUserCreateSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             name = serializer.validated_data.get("name")
@@ -431,6 +414,61 @@ class NodeViewSet(viewsets.ViewSet):
             )
             response = NodeUserIDSerializer(node_user)
             return Response(data=response.data, status=status.HTTP_201_CREATED)
+
+    def _list_user(self, request, pk=None):
+        serializer = NodeUserQuerySerializer(data=request.GET)
+        if serializer.is_valid(raise_exception=True):
+            page = serializer.validated_data.get("page")
+            per_page = serializer.validated_data.get("per_page")
+            name = serializer.validated_data.get("name")
+            user_type = serializer.validated_data.get("user_type")
+            user_status = serializer.validated_data.get("status")
+            query_param = {"node__id": pk}
+            if name is not None:
+                query_param.update({"name__icontains": name})
+            if user_type is not None:
+                query_param.update({"user_type": user_type})
+            if user_status is not None:
+                query_param.update({"status": user_status})
+
+            users = NodeUser.objects.filter(**query_param)
+            p = Paginator(users, per_page)
+            users = p.page(page)
+
+            response = NodeUserListSerializer(
+                {"data": users, "total": p.count}
+            )
+            return Response(response.data, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        methods=["post"],
+        operation_description="Register user to node",
+        operation_summary="Register user to node",
+        request_body=NodeUserCreateSerializer,
+        responses=with_common_response(
+            {status.HTTP_201_CREATED: NodeUserIDSerializer}
+        ),
+    )
+    @swagger_auto_schema(
+        methods=["get"],
+        operation_description="List user of node",
+        operation_summary="List user of node",
+        query_serializer=NodeUserQuerySerializer,
+        responses=with_common_response(
+            {status.HTTP_200_OK: NodeUserListSerializer}
+        ),
+    )
+    @action(
+        methods=["post", "get"],
+        detail=True,
+        url_path="users",
+        url_name="users",
+    )
+    def users(self, request, pk=None):
+        if request.method == "POST":
+            return self._register_user(request, pk)
+        elif request.method == "GET":
+            return self._list_user(request, pk)
 
     @swagger_auto_schema(
         methods=["patch"],

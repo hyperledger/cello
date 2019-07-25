@@ -118,7 +118,7 @@ class ChannelType(ExtraEnum):
 
 @unique
 class NetworkType(ExtraEnum):
-    Fabric = 0
+    Fabric = "fabric"
 
 
 @unique
@@ -155,6 +155,7 @@ class NodeStatus(ExtraEnum):
 class FabricCAUserType(ExtraEnum):
     Peer = "peer"
     Orderer = "orderer"
+    User = "user"
 
 
 @unique
@@ -204,6 +205,7 @@ class AgentOperation(ExtraEnum):
     Update = "update"
     Delete = "delete"
     FabricCARegister = "fabric:ca:register"
+    NewNetwork = "new:network"
 
 
 class EnumWithDisplayMeta(EnumMeta):

@@ -15,7 +15,7 @@ class NodeQuery(PageQuerySerializer):
 class NodeCreateBody(serializers.Serializer):
     network_type = serializers.ChoiceField(
         help_text=NetworkType.get_info("Network types:", list_str=True),
-        choices=NetworkType.to_choices(True),
+        choices=NetworkType.to_choices(),
     )
     type = serializers.ChoiceField(
         help_text=FabricNodeType.get_info("Node Types:", list_str=True),

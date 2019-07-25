@@ -44,12 +44,28 @@ class NodeIDSerializer(serializers.Serializer):
     id = serializers.UUIDField(help_text="ID of node")
 
 
+class FabricCASerializer(serializers.ModelSerializer):
+    hosts = serializers.ListField(
+        help_text="Hosts for ca support",
+        child=serializers.CharField(help_text="Host name", max_length=64),
+        required=False,
+        allow_empty=True,
+    )
+
+    class Meta:
+        model = FabricCA
+        fields = ("admin_name", "admin_password", "hosts", "type")
+
+
 class NodeInListSerializer(NodeIDSerializer, serializers.ModelSerializer):
     agent_id = serializers.UUIDField(
         help_text="Agent ID", required=False, allow_null=True
     )
     network_id = serializers.UUIDField(
         help_text="Network ID", required=False, allow_null=True
+    )
+    ca = FabricCASerializer(
+        help_text="CA configuration for node", required=False, allow_null=True
     )
 
     class Meta:
@@ -64,10 +80,12 @@ class NodeInListSerializer(NodeIDSerializer, serializers.ModelSerializer):
             "agent_id",
             "network_id",
             "status",
+            "ca",
         )
         extra_kwargs = {
             "id": {"required": True, "read_only": False},
             "created_at": {"required": True, "read_only": False},
+            "ca": {"required": False, "allow_null": True},
         }
 
 
@@ -76,19 +94,6 @@ class NodeListSerializer(serializers.Serializer):
     total = serializers.IntegerField(
         help_text="Total number of node", min_value=0
     )
-
-
-class FabricCASerializer(serializers.ModelSerializer):
-    hosts = serializers.ListField(
-        help_text="Hosts for ca support",
-        child=serializers.CharField(help_text="Host name", max_length=64),
-        required=False,
-        allow_empty=True,
-    )
-
-    class Meta:
-        model = FabricCA
-        fields = ("admin_name", "admin_password", "hosts", "type")
 
 
 class NodeInfoSerializer(NodeIDSerializer, serializers.ModelSerializer):
@@ -150,7 +155,7 @@ class NodeCreateBody(serializers.ModelSerializer):
         network_version = attrs.get("network_version")
         agent_type = attrs.get("agent_type")
         agent = attrs.get("agent")
-        if network_type == NetworkType.Fabric.name.lower():
+        if network_type == NetworkType.Fabric.value:
             if network_version not in FabricVersions.values():
                 raise serializers.ValidationError("Not valid fabric version")
             if node_type not in FabricNodeType.names():
@@ -228,6 +233,27 @@ class NodeUserCreateSerializer(serializers.ModelSerializer):
             "user_type": {"required": True},
             "secret": {"required": True},
         }
+
+
+class NodeUserQuerySerializer(
+    PageQuerySerializer, serializers.ModelSerializer
+):
+    class Meta:
+        model = NodeUser
+        fields = ("name", "user_type", "page", "per_page", "status")
+
+
+class UserInListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NodeUser
+        fields = ("id", "name", "user_type", "status")
+
+
+class NodeUserListSerializer(serializers.Serializer):
+    data = UserInListSerializer(many=True, help_text="Users list")
+    total = serializers.IntegerField(
+        help_text="Total number of node", min_value=0
+    )
 
 
 class NodeUserIDSerializer(serializers.ModelSerializer):

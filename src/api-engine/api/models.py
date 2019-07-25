@@ -287,6 +287,11 @@ class Network(models.Model):
     govern = models.ForeignKey(
         Govern, help_text="Govern of node", null=True, on_delete=models.CASCADE
     )
+    type = models.CharField(
+        help_text="Type of network, %s" % NetworkType.values(),
+        max_length=64,
+        default=NetworkType.Fabric.value,
+    )
     version = models.CharField(
         help_text="""
     Version of network.
@@ -360,8 +365,8 @@ class Node(models.Model):
     name = models.CharField(help_text="Node name", max_length=64, default="")
     network_type = models.CharField(
         help_text="Network type of node",
-        choices=NetworkType.to_choices(True),
-        default=NetworkType.Fabric.name.lower(),
+        choices=NetworkType.to_choices(),
+        default=NetworkType.Fabric.value,
         max_length=64,
     )
     network_version = models.CharField(
@@ -507,6 +512,9 @@ class NodeUser(models.Model):
     attrs = models.CharField(
         help_text="Attributes of node user", default="", max_length=512
     )
+
+    class Meta:
+        ordering = ("id",)
 
 
 class Port(models.Model):

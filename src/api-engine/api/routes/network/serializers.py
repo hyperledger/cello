@@ -9,6 +9,7 @@ from api.common.enums import (
     FabricNodeType,
     NetworkCreateType,
 )
+from api.models import Network
 
 
 CHANNEL_NAME_MIN_LEN = 4
@@ -54,13 +55,21 @@ class NetworkMemberSerializer(serializers.Serializer):
     url = serializers.CharField(help_text="URL of member")
 
 
-class NetworkCreateBody(serializers.Serializer):
-    create_type = serializers.ChoiceField(
+class NetworkCreateBody(serializers.ModelSerializer):
+    method = serializers.ChoiceField(
         help_text=NetworkCreateType.get_info(
             "Network Create Types:", list_str=True
         ),
         choices=NetworkCreateType.to_choices(True),
     )
+
+    class Meta:
+        model = Network
+        fields = ("type", "version", "method")
+        extra_kwargs = {
+            "type": {"required": True},
+            "version": {"required": True},
+        }
 
 
 class NetworkMemberResponse(serializers.Serializer):

@@ -34,7 +34,7 @@ class ClusterQuery(PageQuerySerializer):
         required=False,
         allow_null=True,
         help_text=NetworkType.get_info("Network Types:", list_str=True),
-        choices=NetworkType.to_choices(True),
+        choices=NetworkType.to_choices(),
     )
     size = serializers.IntegerField(
         required=False,
@@ -58,7 +58,7 @@ class ClusterCreateBody(serializers.Serializer):
     host_id = serializers.CharField(help_text="Host ID")
     network_type = serializers.ChoiceField(
         help_text=NetworkType.get_info("Network Types:", list_str=True),
-        choices=NetworkType.to_choices(True),
+        choices=NetworkType.to_choices(),
     )
     size = serializers.IntegerField(
         min_value=SIZE_MIN_VALUE,
