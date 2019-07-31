@@ -18,5 +18,6 @@ WORKDIR /app
 ENV KUBECONFIG /app/.kube/config
 ENV FABRIC_CA_CLIENT_TLS_CERTFILES /tmp/crypto/ca-cert.pem
 ENV FABRIC_CA_CLIENT_HOME /tmp/admin
+ENV PYTHONPATH /app:$PATHONPATH
 
 CMD python main.py
