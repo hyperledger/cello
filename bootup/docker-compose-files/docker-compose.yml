@@ -79,6 +79,7 @@ services:
     - API_VERSION=$API_VERSION
     volumes:
     - /var/run/docker.sock:/var/run/docker.sock
+    - /opt/cello/api-engine/media:/var/www/media
 
 
   api-engine-tasks:
