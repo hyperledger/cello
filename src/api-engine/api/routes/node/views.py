@@ -1,6 +1,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
+import json
 import logging
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -27,6 +28,9 @@ from api.models import (
     FabricNodeType,
     FabricCAServerType,
     NodeUser,
+    FabricPeer,
+    PeerCa,
+    PeerCaUser,
 )
 from api.routes.node.serializers import (
     NodeOperationSerializer,
@@ -79,6 +83,11 @@ class NodeViewSet(viewsets.ViewSet):
 
         Filter nodes with query parameters.
         """
+        LOG.info(
+            "addres %s %s",
+            request.META["REMOTE_ADDR"],
+            request.META["HTTP_HOST"],
+        )
         serializer = NodeQuery(data=request.GET)
         if serializer.is_valid(raise_exception=True):
             page = serializer.validated_data.get("page")
@@ -116,6 +125,130 @@ class NodeViewSet(viewsets.ViewSet):
             response = NodeListSerializer({"total": p.count, "data": nodes})
             return Response(data=response.data, status=status.HTTP_200_OK)
 
+    def _save_fabric_ca(self, request, ca=None):
+        if ca is None:
+            return None
+
+        ca_body = {}
+        admin_name = ca.get("admin_name")
+        admin_password = ca.get("admin_password")
+        # If found tls type ca server under this organization,
+        # will cause resource exists error
+        ca_server_type = ca.get("type", FabricCAServerType.Signature.value)
+        if ca_server_type == FabricCAServerType.TLS.value:
+            exist_ca_server = Node.objects.filter(
+                organization=request.user.organization,
+                ca__type=FabricCAServerType.TLS.value,
+            ).count()
+            if exist_ca_server > 0:
+                raise ResourceExists
+        hosts = ca.get("hosts", [])
+        if admin_name:
+            ca_body.update({"admin_name": admin_name})
+        if admin_password:
+            ca_body.update({"admin_password": admin_password})
+        fabric_ca = FabricCA(**ca_body, hosts=hosts, type=ca_server_type)
+        fabric_ca.save()
+
+        return fabric_ca
+
+    def _save_fabric_peer(self, request, peer=None):
+        if peer is None:
+            return None
+        name = peer.get("name")
+        gossip_use_leader_reflection = peer.get("gossip_use_leader_reflection")
+        gossip_org_leader = peer.get("gossip_org_leader")
+        gossip_skip_handshake = peer.get("gossip_skip_handshake")
+        local_msp_id = peer.get("local_msp_id")
+        ca_nodes = peer.get("ca_nodes")
+
+        body = {"name": name, "local_msp_id": local_msp_id}
+        if gossip_use_leader_reflection is not None:
+            body.update(
+                {"gossip_use_leader_reflection": gossip_use_leader_reflection}
+            )
+        if gossip_org_leader is not None:
+            body.update({"gossip_org_leader": gossip_org_leader})
+        if gossip_skip_handshake is not None:
+            body.update({"gossip_skip_handshake": gossip_skip_handshake})
+
+        fabric_peer = FabricPeer(**body)
+        fabric_peer.save()
+
+        ca_nodes_list = []
+        for ca_node in ca_nodes:
+            node = ca_node.get("node")
+            address = ca_node.get("address")
+            certificate = ca_node.get("certificate")
+            ca_type = ca_node.get("type")
+
+            ca_body = {"peer": fabric_peer}
+            ca_node_dict = {}
+            if node is not None:
+                ca_body.update({"node": node})
+                port = Port.objects.filter(node=node, internal=7054).first()
+                if port:
+                    ca_node_dict.update(
+                        {"address": "%s:%s" % (node.agent.ip, port.external)}
+                    )
+                ca_node_dict.update(
+                    {
+                        "type": node.ca.type,
+                        "certificate": request.build_absolute_uri(
+                            node.file.url
+                        ),
+                    }
+                )
+            else:
+                update_body = {
+                    "address": address,
+                    "certificate": certificate,
+                    "type": ca_type,
+                }
+                ca_body.update(update_body)
+                ca_node_dict.update(update_body)
+
+            peer_ca = PeerCa(**ca_body)
+            peer_ca.save()
+            users = ca_node.get("users")
+
+            user_list = []
+            for ca_user in users:
+                ca_user_body = {"peer_ca": peer_ca}
+                user_dict = {}
+                user = ca_user.get("user")
+                username = ca_user.get("username")
+                password = ca_user.get("password")
+                user_type = ca_user.get("type")
+
+                if user is not None:
+                    ca_user_body.update({"user": user})
+                    user_dict.update(
+                        {
+                            "username": user.name,
+                            "password": user.secret,
+                            "type": user.user_type,
+                        }
+                    )
+                else:
+                    update_body = {
+                        "username": username,
+                        "password": password,
+                        "type": user_type,
+                    }
+                    ca_user_body.update(update_body)
+                    user_dict.update(update_body)
+                user_list.append(user_dict)
+
+                ca_user_obj = PeerCaUser(**ca_user_body)
+                ca_user_obj.save()
+
+            ca_node_dict.update({"users": user_list})
+
+            ca_nodes_list.append(ca_node_dict)
+
+        return fabric_peer, ca_nodes_list
+
     @swagger_auto_schema(
         request_body=NodeCreateBody,
         responses=with_common_response(
@@ -136,7 +269,8 @@ class NodeViewSet(viewsets.ViewSet):
             network_version = serializer.validated_data.get("network_version")
             agent = serializer.validated_data.get("agent")
             node_type = serializer.validated_data.get("type")
-            ca = serializer.validated_data.get("ca", {})
+            ca = serializer.validated_data.get("ca")
+            peer = serializer.validated_data.get("peer")
             if agent is None:
                 available_agents = (
                     Agent.objects.annotate(network_num=Count("node__network"))
@@ -162,31 +296,14 @@ class NodeViewSet(viewsets.ViewSet):
                     raise NoResource
 
             fabric_ca = None
+            fabric_peer = None
+            peer_ca_list = []
             if node_type == FabricNodeType.Ca.name.lower():
-                ca_body = {}
-                admin_name = ca.get("admin_name")
-                admin_password = ca.get("admin_password")
-                # If found tls type ca server under this organization,
-                # will cause resource exists error
-                ca_server_type = ca.get(
-                    "type", FabricCAServerType.Signature.value
+                fabric_ca = self._save_fabric_ca(request, ca)
+            elif node_type == FabricNodeType.Peer.name.lower():
+                fabric_peer, peer_ca_list = self._save_fabric_peer(
+                    request, peer
                 )
-                if ca_server_type == FabricCAServerType.TLS.value:
-                    exist_ca_server = Node.objects.filter(
-                        organization=request.user.organization,
-                        ca__type=FabricCAServerType.TLS.value,
-                    ).count()
-                    if exist_ca_server > 0:
-                        raise ResourceExists
-                hosts = ca.get("hosts", [])
-                if admin_name:
-                    ca_body.update({"admin_name": admin_name})
-                if admin_password:
-                    ca_body.update({"admin_password": admin_password})
-                fabric_ca = FabricCA(
-                    **ca_body, hosts=hosts, type=ca_server_type
-                )
-                fabric_ca.save()
             node = Node(
                 network_type=network_type,
                 agent=agent,
@@ -195,6 +312,7 @@ class NodeViewSet(viewsets.ViewSet):
                 organization=request.user.organization,
                 type=node_type,
                 ca=fabric_ca,
+                peer=fabric_peer,
             )
             node.save()
             agent_config_file = request.build_absolute_uri(
@@ -212,6 +330,7 @@ class NodeViewSet(viewsets.ViewSet):
                 agent_config_file=agent_config_file,
                 node_detail_url=node_detail_url,
                 node_file_upload_api=node_file_upload_api,
+                peer_ca_list=json.dumps(peer_ca_list),
             )
             response = NodeIDSerializer({"id": str(node.id)})
             return Response(response.data, status=status.HTTP_201_CREATED)
@@ -358,7 +477,17 @@ class NodeViewSet(viewsets.ViewSet):
             raise ResourceNotFound
         else:
             # Set file url of node
+            server_host = request.META["HTTP_HOST"]
+            server_host = server_host.split(":")[0]
             node.file = request.build_absolute_uri(node.file.url)
+            ports = Port.objects.filter(node=node)
+            node.links = [
+                {
+                    "internal_port": port.internal,
+                    "url": "%s:%s" % (server_host, port.external),
+                }
+                for port in ports
+            ]
             response = NodeInfoSerializer(node)
             return Response(data=response.data, status=status.HTTP_200_OK)
 

@@ -317,6 +317,12 @@ def get_compose_file_path(instance, file):
     )
 
 
+def get_ca_certificate_path(instance, file):
+    return os.path.join(
+        "fabric/ca/certificates/%s" % str(instance.id), file.name
+    )
+
+
 def get_node_file_path(instance, file):
     """
     Get the file path where will be stored in
@@ -355,6 +361,86 @@ class FabricCA(models.Model):
     )
 
 
+class PeerCaUser(models.Model):
+    user = models.ForeignKey(
+        "NodeUser",
+        help_text="User of ca node",
+        null=True,
+        on_delete=models.CASCADE,
+    )
+    username = models.CharField(
+        help_text="If user not set, set username/password",
+        max_length=64,
+        default="",
+    )
+    password = models.CharField(
+        help_text="If user not set, set username/password",
+        max_length=64,
+        default="",
+    )
+    type = models.CharField(
+        help_text="User type of ca",
+        max_length=64,
+        choices=FabricCAUserType.to_choices(),
+        default=FabricCAUserType.User.value,
+    )
+    peer_ca = models.ForeignKey(
+        "PeerCa",
+        help_text="Peer Ca configuration",
+        null=True,
+        on_delete=models.CASCADE,
+    )
+
+
+class PeerCa(models.Model):
+    node = models.ForeignKey(
+        "Node",
+        help_text="CA node of peer",
+        null=True,
+        on_delete=models.CASCADE,
+    )
+    peer = models.ForeignKey(
+        "FabricPeer",
+        help_text="Peer node",
+        null=True,
+        on_delete=models.CASCADE,
+    )
+    address = models.CharField(
+        help_text="Node Address of ca", default="", max_length=128
+    )
+    certificate = models.FileField(
+        help_text="Certificate file for ca node.",
+        max_length=256,
+        upload_to=get_ca_certificate_path,
+        blank=True,
+        null=True,
+    )
+    type = models.CharField(
+        help_text="Type of ca node for peer",
+        choices=FabricCAServerType.to_choices(),
+        max_length=64,
+        default=FabricCAServerType.Signature.value,
+    )
+
+
+class FabricPeer(models.Model):
+    name = models.CharField(
+        help_text="Name of peer node", max_length=64, default=""
+    )
+    gossip_use_leader_reflection = models.BooleanField(
+        help_text="Gossip use leader reflection", default=True
+    )
+    gossip_org_leader = models.BooleanField(
+        help_text="Gossip org leader", default=False
+    )
+    gossip_skip_handshake = models.BooleanField(
+        help_text="Gossip skip handshake", default=True
+    )
+    local_msp_id = models.CharField(
+        help_text="Local msp id of peer node", max_length=64, default=""
+    )
+
+
 class Node(models.Model):
     id = models.UUIDField(
         primary_key=True,
@@ -389,6 +475,12 @@ class Node(models.Model):
     ca = models.ForeignKey(
         FabricCA,
         help_text="CA configuration of node",
+        null=True,
+        on_delete=models.CASCADE,
+    )
+    peer = models.ForeignKey(
+        FabricPeer,
+        help_text="Peer configuration of node",
         null=True,
         on_delete=models.CASCADE,
     )
