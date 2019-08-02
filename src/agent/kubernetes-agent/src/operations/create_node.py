@@ -13,6 +13,7 @@ from utils.env import (
     NODE_ID,
     NODE_DETAIL_URL,
     AGENT_ID,
+    AGENT_IP,
     NETWORK_VERSION,
     NODE_TYPE,
     MAX_QUERY_RETRY,
@@ -21,6 +22,7 @@ from utils.env import (
     NODE_UPLOAD_FILE_URL,
     NETWORK_TYPE,
     NetworkType,
+    FabricNodeType,
 )
 from utils import get_k8s_client
 
@@ -44,6 +46,40 @@ def _upload_ca_crypto(pod):
     r = requests.post(NODE_UPLOAD_FILE_URL, headers=headers, files=files)
 
 
+def _generate_peer_env_from_ports(ports=None):
+    if ports is None:
+        ports = []
+
+    environments = []
+    for port in ports:
+        internal_port = port.get("internal")
+        external_port = port.get("external")
+        if internal_port == 7051:
+            environments += [
+                {
+                    "name": "CORE_PEER_ADDRESS",
+                    "value": "%s:%s" % (AGENT_IP, external_port),
+                },
+                {
+                    "name": "CORE_PEER_GOSSIP_EXTERNALENDPOINT",
+                    "value": "%s:%s" % (AGENT_IP, external_port),
+                },
+            ]
+        elif internal_port == 7052:
+            environments += [
+                {
+                    "name": "CORE_PEER_CHAINCODEADDRESS",
+                    "value": "%s:%s" % (AGENT_IP, external_port),
+                },
+                {
+                    "name": "CORE_PEER_CHAINCODELISTENADDRESS",
+                    "value": "0.0.0.0:%s" % external_port,
+                },
+            ]
+
+    return environments
+
+
 def _create_fabric_node():
     k8s_client = get_k8s_client()
 
@@ -53,17 +89,12 @@ def _create_fabric_node():
         agent_id=AGENT_ID,
         node_id=NODE_ID,
     )
-    config = network.generate_config()
 
-    deployment = config.get("deployment")
-    service = config.get("service")
-    ingress = config.get("ingress")
+    service = network.service()
 
     deploy_name = None
     ports = []
-    if deployment:
-        k8s_client.create_deployment(AGENT_ID, **deployment)
-        deploy_name = deployment.get("name")
+    new_environments = []
     if service:
         success, service_response = k8s_client.create_service(
             AGENT_ID, **service
@@ -74,9 +105,34 @@ def _create_fabric_node():
                 {"external": port.node_port, "internal": port.port}
                 for port in ports
             ]
-    if ingress:
-        k8s_client.create_ingress(AGENT_ID, **ingress)
+            if NODE_TYPE == FabricNodeType.Peer.value:
+                new_environments = _generate_peer_env_from_ports(ports)
+                pass
+            print(ports)
 
+    # add new environments depend on service result
+    if len(new_environments) > 0:
+        network.add_environments(new_environments)
+
+    deployment = network.deployment()
+    for key, value in deployment.items():
+        print(key, value)
+    if deployment:
+        k8s_client.create_deployment(AGENT_ID, **deployment)
+        deploy_name = deployment.get("name")
+    # if service:
+    #     success, service_response = k8s_client.create_service(
+    #         AGENT_ID, **service
+    #     )
+    #     if service.get("service_type") == "NodePort" and success:
+    #         ports = service_response.spec.ports
+    #         ports = [
+    #             {"external": port.node_port, "internal": port.port}
+    #             for port in ports
+    #         ]
+    # if ingress:
+    #     k8s_client.create_ingress(AGENT_ID, **ingress)
+    #
     # The pod of node deployed in kubernetes
     pod = None
     # Query pod status if is Running

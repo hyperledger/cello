@@ -44,6 +44,7 @@ class NodeHandler(object):
         self._node_file_url = kwargs.get("node_file_url")
         self._fabric_ca_user = kwargs.get("fabric_ca_user", {})
         self._user_patch_url = kwargs.get("user_patch_url")
+        self._peer_ca_list = json.loads(kwargs.get("peer_ca_list", "[]"))
 
         self._agent_environment = {
             "DEPLOY_NAME": node.name,
@@ -77,6 +78,20 @@ class NodeHandler(object):
                         }
                     )
                 }
+            )
+
+        if node.peer:
+            peer = node.peer
+            peer_config = {
+                "gossip_use_leader_reflection": peer.gossip_use_leader_reflection,
+                "gossip_org_leader": peer.gossip_org_leader,
+                "gossip_skip_handshake": peer.gossip_skip_handshake,
+                "name": peer.name,
+                "local_msp_id": peer.local_msp_id,
+                "ca_list": self._peer_ca_list,
+            }
+            self._agent_environment.update(
+                {"FABRIC_PEER_CONFIG": json.dumps(peer_config)}
             )
 
     def _launch_agent(self):

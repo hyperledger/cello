@@ -30,15 +30,15 @@ def _delete_fabric_node():
         agent_id=AGENT_ID,
         node_id=NODE_ID,
     )
-    config = network.generate_config()
-
-    deployment = config.get("deployment")
-    service = config.get("service")
-    ingress = config.get("ingress")
+    deployment = network.deployment()
+    service = network.service()
+    # config = network.generate_config()
+    #
+    # deployment = config.get("deployment")
+    # service = config.get("service")
+    # ingress = config.get("ingress")
 
     deploy_name = None
-    if ingress:
-        k8s_client.delete_ingress(namespace=AGENT_ID, name=ingress.get("name"))
     if service:
         k8s_client.delete_service(namespace=AGENT_ID, name=service.get("name"))
     if deployment:

@@ -64,33 +64,12 @@ class KubernetesClient(object):
                         e,
                     )
 
-    def create_deployment(self, namespace=None, *args, **kwargs):
-        containers = kwargs.get("containers", [])
-        volumes_json = kwargs.get("volumes", [])
-        deploy_name = kwargs.get("name")
-        labels = kwargs.get("labels", {})
-        labels.update({"app": deploy_name})
+    def _generate_container_pods(self, containers=None):
+        if containers is None:
+            containers = []
+
         container_pods = []
-        volumes = []
-        for volume in volumes_json:
-            volume_name = volume.get("name")
-            host_path = volume.get("host_path", None)
-            parameters = {}
-            if host_path:
-                host_path = client.V1HostPathVolumeSource(path=host_path)
-                parameters.update({"host_path": host_path})
-            persistent_volume_claim = volume.get("pvc", None)
-            if persistent_volume_claim:
-                persistent_volume_claim = client.V1PersistentVolumeClaimVolumeSource(
-                    claim_name=persistent_volume_claim
-                )
-                parameters.update(
-                    {"persistent_volume_claim": persistent_volume_claim}
-                )
-            volumes.append(client.V1Volume(name=volume_name, **parameters))
         for container in containers:
-            name = container.get("name")
-            image = container.get("image")
             ports = container.get("ports", [])
             environments = container.get("environments", [])
             command = container.get("command", [])
@@ -113,8 +92,8 @@ class KubernetesClient(object):
             ]
             container_pods.append(
                 client.V1Container(
-                    name=name,
-                    image=image,
+                    name=container.get("name"),
+                    image=container.get("image"),
                     env=environments,
                     command=command,
                     args=command_args,
@@ -123,8 +102,47 @@ class KubernetesClient(object):
                     volume_mounts=volume_mounts,
                 )
             )
+
+        return container_pods
+
+    def create_deployment(self, namespace=None, *args, **kwargs):
+        containers = kwargs.get("containers", [])
+        initial_containers = kwargs.get("initial_containers", [])
+        volumes_json = kwargs.get("volumes", [])
+        deploy_name = kwargs.get("name")
+        labels = kwargs.get("labels", {})
+        labels.update({"app": deploy_name})
+        volumes = []
+        for volume in volumes_json:
+            volume_name = volume.get("name")
+            host_path = volume.get("host_path", None)
+            empty_dir = volume.get("empty_dir", None)
+            parameters = {}
+            if host_path:
+                host_path = client.V1HostPathVolumeSource(path=host_path)
+                parameters.update({"host_path": host_path})
+            if empty_dir:
+                empty_dir = client.V1EmptyDirVolumeSource(**empty_dir)
+                parameters.update({"empty_dir": empty_dir})
+            persistent_volume_claim = volume.get("pvc", None)
+            if persistent_volume_claim:
+                persistent_volume_claim = client.V1PersistentVolumeClaimVolumeSource(
+                    claim_name=persistent_volume_claim
+                )
+                parameters.update(
+                    {"persistent_volume_claim": persistent_volume_claim}
+                )
+            volumes.append(client.V1Volume(name=volume_name, **parameters))
+        initial_container_pods = self._generate_container_pods(
+            initial_containers
+        )
+        container_pods = self._generate_container_pods(containers)
         deployment_metadata = client.V1ObjectMeta(name=deploy_name)
-        pod_spec = client.V1PodSpec(containers=container_pods, volumes=volumes)
+        pod_spec = client.V1PodSpec(
+            init_containers=initial_container_pods,
+            containers=container_pods,
+            volumes=volumes,
+        )
         spec_metadata = client.V1ObjectMeta(labels=labels)
         template_spec = client.V1PodTemplateSpec(
             metadata=spec_metadata, spec=pod_spec
@@ -163,7 +181,10 @@ class KubernetesClient(object):
             ports = []
 
         metadata = client.V1ObjectMeta(name=name, labels={"app": name})
-        ports = [client.V1ServicePort(port=port) for port in ports]
+        ports = [
+            client.V1ServicePort(port=port.get("port"), name=port.get("name"))
+            for port in ports
+        ]
         spec = client.V1ServiceSpec(
             ports=ports, selector=selector, type=service_type
         )

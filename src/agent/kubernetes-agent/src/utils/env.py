@@ -36,6 +36,8 @@ PEER_CONFIG = json.loads(os.getenv("FABRIC_PEER_CONFIG", "{}"))
 CA_ADMIN_NAME = CA_CONFIG.get("admin_name", "admin")
 CA_ADMIN_PASSWORD = CA_CONFIG.get("admin_password", "adminpw")
 
+FABRIC_IMAGE_BASE_NAME = "hyperledger/fabric"
+
 headers = {
     "Authorization": "JWT %s" % TOKEN,
     "Content-Type": "application/json",
@@ -65,3 +67,17 @@ class NodeStatus(Enum):
 @unique
 class NetworkType(Enum):
     Fabric = "fabric"
+
+
+@unique
+class FabricNodeType(Enum):
+    Ca = "ca"
+    Orderer = "orderer"
+    Peer = "peer"
+
+
+@unique
+class FabricImages(Enum):
+    Ca = "%s-ca" % FABRIC_IMAGE_BASE_NAME
+    Peer = "%s-peer" % FABRIC_IMAGE_BASE_NAME
+    Orderer = "%s-orderer" % FABRIC_IMAGE_BASE_NAME

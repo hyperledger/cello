@@ -13,7 +13,16 @@ from api.common.enums import (
     HostType,
 )
 from api.common.serializers import PageQuerySerializer
-from api.models import Node, Port, FabricCA, validate_file, NodeUser
+from api.models import (
+    Node,
+    Port,
+    FabricCA,
+    validate_file,
+    NodeUser,
+    FabricPeer,
+    PeerCa,
+    PeerCaUser,
+)
 from api.utils.common import to_form_paras
 
 LOG = logging.getLogger(__name__)
@@ -57,6 +66,99 @@ class FabricCASerializer(serializers.ModelSerializer):
         fields = ("admin_name", "admin_password", "hosts", "type")
 
 
+class PeerCaUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PeerCaUser
+        fields = ("user", "username", "password", "type")
+
+    def validate(self, attrs):
+        user = attrs.get("user")
+        username = attrs.get("username")
+        password = attrs.get("password")
+        user_type = attrs.get("type")
+
+        if user is None and (
+            username is None or password is None or user_type is None
+        ):
+            raise serializers.ValidationError(
+                "Input user or username,password,type"
+            )
+
+        if user is not None and (
+            username is not None
+            or password is not None
+            or user_type is not None
+        ):
+            raise serializers.ValidationError(
+                "Input user or username,password,type"
+            )
+
+        return attrs
+
+
+class PeerCaSerializer(serializers.ModelSerializer):
+    users = PeerCaUserSerializer(
+        help_text="Users of ca node, "
+        "can only set user or set username,password,type together",
+        many=True,
+    )
+
+    class Meta:
+        model = PeerCa
+        fields = ("node", "address", "certificate", "type", "users")
+
+    def validate(self, attrs):
+        node = attrs.get("node")
+        address = attrs.get("address")
+        certificate = attrs.get("certificate")
+        ca_type = attrs.get("type")
+
+        # check ether set node or set address,certificate,type together
+        if (
+            node is None
+            and (address is None or certificate is None or ca_type is None)
+        ) or (
+            node is not None
+            and (
+                address is not None
+                or certificate is not None
+                or ca_type is not None
+            )
+        ):
+            raise serializers.ValidationError(
+                "Input node or address,certificate"
+            )
+
+        return attrs
+
+
+class FabricPeerSerializer(serializers.ModelSerializer):
+    ca_nodes = PeerCaSerializer(
+        help_text="CA nodes for peer node, "
+        "can only set node or set address,certificate,type together",
+        many=True,
+    )
+
+    class Meta:
+        model = FabricPeer
+        fields = (
+            "name",
+            "gossip_use_leader_reflection",
+            "gossip_org_leader",
+            "gossip_skip_handshake",
+            "local_msp_id",
+            "ca_nodes",
+        )
+        extra_kwargs = {
+            "name": {"required": True},
+            "local_msp_id": {"required": True},
+            "ca_nodes": {"required": True},
+            "gossip_use_leader_reflection": {"default": True},
+            "gossip_skip_handshake": {"default": True},
+            "gossip_org_leader": {"default": False},
+        }
+
+
 class NodeInListSerializer(NodeIDSerializer, serializers.ModelSerializer):
     agent_id = serializers.UUIDField(
         help_text="Agent ID", required=False, allow_null=True
@@ -96,11 +198,22 @@ class NodeListSerializer(serializers.Serializer):
     )
 
 
+class NodeUrlSerializer(serializers.Serializer):
+    internal_port = serializers.IntegerField(
+        min_value=1,
+        max_value=65535,
+        required=True,
+        help_text="Port number of node service",
+    )
+    url = serializers.CharField(help_text="Url of node service", required=True)
+
+
 class NodeInfoSerializer(NodeIDSerializer, serializers.ModelSerializer):
     ca = FabricCASerializer(
         help_text="CA configuration for node", required=False, allow_null=True
     )
     file = serializers.URLField(help_text="File url of node", required=False)
+    links = NodeUrlSerializer(help_text="Links of node service", many=True)
 
     class Meta:
         model = Node
@@ -116,6 +229,7 @@ class NodeInfoSerializer(NodeIDSerializer, serializers.ModelSerializer):
             "status",
             "ca",
             "file",
+            "links",
         )
         extra_kwargs = {
             "id": {"required": True, "read_only": False},
@@ -132,6 +246,9 @@ class NodeCreateBody(serializers.ModelSerializer):
     ca = FabricCASerializer(
         help_text="CA configuration for node", required=False
     )
+    peer = FabricPeerSerializer(
+        help_text="Peer configuration for node", required=False
+    )
 
     class Meta:
         model = Node
@@ -142,6 +259,7 @@ class NodeCreateBody(serializers.ModelSerializer):
             "agent_type",
             "agent",
             "ca",
+            "peer",
         )
         extra_kwargs = {
             "network_type": {"required": True},
@@ -155,12 +273,24 @@ class NodeCreateBody(serializers.ModelSerializer):
         network_version = attrs.get("network_version")
         agent_type = attrs.get("agent_type")
         agent = attrs.get("agent")
+        ca = attrs.get("ca")
+        peer = attrs.get("peer")
         if network_type == NetworkType.Fabric.value:
             if network_version not in FabricVersions.values():
                 raise serializers.ValidationError("Not valid fabric version")
             if node_type not in FabricNodeType.names():
                 raise serializers.ValidationError(
                     "Not valid node type for %s" % network_type
+                )
+            if node_type == FabricNodeType.Ca.name.lower() and ca is None:
+                raise serializers.ValidationError(
+                    "Please input ca configuration for ca node"
+                )
+            elif (
+                node_type == FabricNodeType.Peer.name.lower() and peer is None
+            ):
+                raise serializers.ValidationError(
+                    "Please input peer configuration for peer node"
                 )
 
         if agent_type is None and agent is None:
