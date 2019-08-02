@@ -36,6 +36,7 @@ PREV_VERSION?=0.9.0
 # Building image usage
 DOCKER_NS ?= hyperledger
 BASENAME ?= $(DOCKER_NS)/cello
+AGENT_BASENAME ?= $(DOCKER_NS)/cello-agent
 VERSION ?= 0.9.0
 IS_RELEASE=false
 
@@ -58,7 +59,8 @@ SERVER_PUBLIC_IP ?= 127.0.0.1
 LOCAL_STORAGE_PATH=/opt/cello
 
 # Docker images needed to run cello services
-DOCKER_IMAGES = ansible-agent api-engine nginx dashboard
+COMMON_DOCKER_IMAGES = api-engine nginx dashboard
+AGENT_DOCKER_IMAGES = ansible kubernetes
 DUMMY = .$(IMG_TAG)
 
 ifeq ($(DOCKER_BASE), )
@@ -72,16 +74,10 @@ REPLACE_SLASH:=\/
 # deploy method docker-compose/k8s
 export DEPLOY_METHOD?=docker-compose
 
--include .makerc/service
--include .makerc/email
--include .makerc/operator-dashboard
--include .makerc/user-dashboard
--include .makerc/worker-node
--include .makerc/keycloak
--include .makerc/parse-server
 -include .makerc/kubernetes
 -include .makerc/api-engine
 -include .makerc/dashboard
+-include .makerc/functions
 
 export ROOT_PATH = ${PWD}
 ROOT_PATH_REPLACE=$(subst $(SLASH),$(REPLACE_SLASH),$(ROOT_PATH))
@@ -112,21 +108,11 @@ endif
 
 all: check
 
-build/docker/%/$(DUMMY): ##@Build an image locally
-	$(eval TARGET = ${patsubst build/docker/%/$(DUMMY),%,${@}})
-	$(eval IMG_NAME = $(BASENAME)-$(TARGET))
-	@mkdir -p $(@D)
-	@echo "Building docker $(TARGET)"
-	@cat build_image/docker/$(TARGET)/Dockerfile.in \
-		| sed -e 's|_DOCKER_BASE_|$(DOCKER_BASE)|g' \
-		| sed -e 's|_NS_|$(DOCKER_NS)|g' \
-		| sed -e 's|_TAG_|$(IMG_TAG)|g' \
-		> $(@D)/Dockerfile
-	docker build -f $(@D)/Dockerfile \
-		-t $(IMG_NAME) \
-		-t $(IMG_NAME):$(IMG_TAG) \
-		. ;
-	@touch $@ ;
+build/docker/common/%/$(DUMMY): ##@Build an common image locally
+	$(call build_docker_locally,common,$(BASENAME))
+
+build/docker/agent/%/$(DUMMY): ##@Build an agent image locally
+	$(call build_docker_locally,agent,$(AGENT_BASENAME))
 
 build/docker/%/.push: build/docker/%/$(DUMMY)
 	@docker login \
@@ -134,9 +120,17 @@ build/docker/%/.push: build/docker/%/$(DUMMY)
 		--password=$(DOCKER_HUB_PASSWORD)
 	@docker push $(BASENAME)-$(patsubst build/docker/%/.push,%,$@):$(IMG_TAG)
 
-docker: $(patsubst %,build/docker/%/$(DUMMY),$(DOCKER_IMAGES)) ##@Generate docker images locally
+common-docker: $(patsubst %,build/docker/common/%/$(DUMMY),$(COMMON_DOCKER_IMAGES)) ##@Generate docker images locally
 
-docker-operator-dashboard: build/docker/dashboard/$(DUMMY)
+agent-docker: $(patsubst %,build/docker/agent/%/$(DUMMY),$(AGENT_DOCKER_IMAGES)) ##@Generate docker images locally
+
+docker: common-docker agent-docker
+
+common-docker-%:
+	@$(MAKE) build/docker/common/$*/$(DUMMY)
+
+agent-docker-%:
+	@$(MAKE) build/docker/agent/$*/$(DUMMY)
 
 docker-clean: stop image-clean ##@Clean all existing images
 
@@ -159,7 +153,7 @@ dockerhub-pull: ##@Pull service images from dockerhub
 license:
 	scripts/check_license.sh
 
-install: $(patsubst %,build/docker/%/.push,$(DOCKER_IMAGES))
+install: $(patsubst %,build/docker/%/.push,$(COMMON_DOCKER_IMAGES))
 
 check-js: ##@Code Check check js code format
 	docker-compose -f bootup/docker-compose-files/docker-compose-check-js.yaml up

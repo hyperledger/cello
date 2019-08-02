@@ -9,7 +9,7 @@ RUN	cd / && \
 COPY src/api-engine /var/www/server
 COPY src/api-engine/docker/uwsgi/server.ini /etc/uwsgi/apps-enabled/
 COPY src/api-engine/docker/scripts /scripts
-COPY build_image/docker/api-engine/entrypoint.sh /
+COPY build_image/docker/common/api-engine/entrypoint.sh /
 
 RUN cd /var/www/server/api_engine && cp settings.py.initial settings.py && cd .. && python manage.py collectstatic --noinput
 
