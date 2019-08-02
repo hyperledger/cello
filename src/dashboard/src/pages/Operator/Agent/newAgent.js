@@ -113,7 +113,7 @@ class CreateAgent extends PureComponent {
 
   handleSubmit = e => {
     e.preventDefault();
-    const { action, fileList } = this.state;
+    const { action } = this.state;
     const {
       form: { validateFieldsAndScroll },
       dispatch,
@@ -129,13 +129,7 @@ class CreateAgent extends PureComponent {
           const formData = new FormData();
 
           Object.keys(values).forEach(key => {
-            if (key === 'config_file') {
-              if (fileList.length > 0) {
-                formData.append(key, fileList[0]);
-              }
-            } else {
-              formData.append(key, values[key]);
-            }
+            formData.append(key, values[key]);
           });
 
           dispatch({
@@ -154,7 +148,7 @@ class CreateAgent extends PureComponent {
     if (Array.isArray(e)) {
       return e;
     }
-    return e && e.fileList;
+    return e && e.fileList.length > 0 ? e.file : null;
   };
 
   render() {
