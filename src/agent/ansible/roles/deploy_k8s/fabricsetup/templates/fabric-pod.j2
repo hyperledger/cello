@@ -224,10 +224,24 @@ spec:
         - name: task-pv-storage
           persistentVolumeClaim:
             claimName: fabriccerts
+        - name: varlibdocker
+          emptyDir: {}
         - name: rundind
-          hostPath:
-            path: /var/run/dind/
+          emptyDir:
+            medium: Memory
       containers:
+        - name: dind
+          image: docker:dind
+          securityContext:
+            privileged: true
+          args:
+            - dockerd
+            - -H unix:///var/run/docker.sock
+          volumeMounts:
+            - name: varlibdocker
+              mountPath: /var/lib/docker
+            - name: rundind
+              mountPath: /var/run
 {% if fabric.peer_db == 'CouchDB' %}
         - name: couchdb-{{ peer.name }}
           image: {{ fabric.repo.url }}fabric-couchdb:{{ fabric.helper_tag }}
@@ -236,8 +250,6 @@ spec:
 {% else %}
           imagePullPolicy: IfNotPresent
 {% endif %}
-          securityContext:
-            privileged: true
 {% if resourceQuota.couchdb is defined %}
           resources:
 {{ resourceQuota.couchdb | to_nice_yaml | indent(12, True) }}

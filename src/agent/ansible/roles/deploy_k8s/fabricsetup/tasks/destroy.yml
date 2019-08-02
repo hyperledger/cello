@@ -19,7 +19,6 @@
   with_items:
     - "fabric-services.yml"
     - "fabric-pod.yml"
-    - "chainep.yaml"
   ignore_errors: yes
   tags: "fabricdown"
 

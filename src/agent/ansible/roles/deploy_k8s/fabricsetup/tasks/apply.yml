@@ -10,7 +10,6 @@
     - pvc
     - certssetup
     - cli-k8s
-    - chainep
     - namespace
 
 # Create the k8s services so that node addresses become available
@@ -274,13 +273,6 @@
   tags: "deletecertspod"
   when: fabric.generate_certs|default(true) == true
 
-- name: Deploy chaincode container endpoint daemon set
-  command: >-
-    kubectl --kubeconfig kubeconfig apply -f {{ pjrun }}/chainep.yaml
-  args:
-    chdir: "{{ playbook_dir }}/../../vars/"
-  tags: "doendpointdaemonset"
-
 - name: Set orderer profile flag
   set_fact:
     ordererprofile: True
@@ -322,44 +314,24 @@
   retries: 50
   delay: 5
 
-- name: Get number of nodes
-  command: >-
-    kubectl --kubeconfig kubeconfig get nodes --no-headers
-  args:
-    chdir: "{{ playbook_dir }}/../../vars/"
-  register: numberofnodes
-
-- name: Wait for docker endpoint pods to be ready
+- name: Get peer pod names
   command: >-
     kubectl --kubeconfig kubeconfig --namespace {{ namespace }}
-    -o=custom-columns=STATUS:.status.phase
-    get pods -l name=dind --no-headers --field-selector=status.phase=Running
+    -o=custom-columns=STATUS:.metadata.name
+    get pods -l type=peer --no-headers --field-selector=status.phase=Running
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
-  register: podstatus
-  until: (podstatus.stdout_lines|length) == (numberofnodes.stdout_lines|length)
-  when: (allorderers | length > 0) and (allpeers | length > 0)
-  retries: 50
-  delay: 5
-
-- name: Get all the endpoint pods
-  command: >-
-    kubectl --kubeconfig kubeconfig --namespace {{ namespace }}
-    -o=custom-columns=NAME:.metadata.name
-    get pods -l name=dind --no-headers
-  args:
-    chdir: "{{ playbook_dir }}/../../vars/"
-  register: dindpods
+  register: peerpodnames
   tags: "downloadccenv"
-
+  
 - name: Download chaincode container image
   command: >-
     kubectl --kubeconfig kubeconfig --namespace {{ namespace }}
-    exec {{ item }} --
+    exec {{ item }} -c dind --
     docker pull {{ fabric.repo.url }}fabric-ccenv:{{ fabric.baseimage_tag }}
   args:
     chdir: "{{ playbook_dir }}/../../vars/"
-  with_items: "{{ dindpods.stdout_lines }}"
+  with_items: "{{ peerpodnames.stdout_lines }}"
   when: allpeers | length > 0
   tags: "downloadccenv"
 

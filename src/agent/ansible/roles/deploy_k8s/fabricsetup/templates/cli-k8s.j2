@@ -13,9 +13,6 @@ spec:
 {% endif %}
   restartPolicy: Never
   volumes:
-    - name: varrun
-      hostPath:
-        path: /var/run
     - name: task-pv-storage
       persistentVolumeClaim:
         claimName: fabriccerts
@@ -27,11 +24,7 @@ spec:
 {% else %}
       imagePullPolicy: IfNotPresent
 {% endif %}
-      securityContext:
-        privileged: true
       env:
-        - name: CORE_VM_ENDPOINT
-          value: "unix:///host/var/run/docker.sock"
 {% if project_version is version('1.3.0','<') %}
         - name: "CORE_LOGGING_LEVEL"
           value: "DEBUG"
@@ -40,8 +33,6 @@ spec:
           value: "DEBUG"
 {% endif %}
       volumeMounts:
-        - mountPath: /host/var/run
-          name: varrun
         - mountPath: /etc/hyperledger/fabric/artifacts
           name: task-pv-storage
       command: ["/etc/hyperledger/fabric/artifacts/dochannel.sh"]
