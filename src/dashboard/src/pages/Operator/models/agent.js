@@ -1,9 +1,10 @@
-import { listAgent, createAgent, updateAgent, deleteAgent } from '@/services/agent';
+import { listAgent, getAgent, createAgent, updateAgent, deleteAgent } from '@/services/agent';
 
 export default {
   namespace: 'agent',
 
   state: {
+    agent: {},
     agents: [],
     pagination: {
       total: 0,
@@ -32,6 +33,20 @@ export default {
       });
       if (callback) {
         callback();
+      }
+    },
+    *getAgent({ payload, callback }, { call, put }) {
+      const response = yield call(getAgent, payload);
+      yield put({
+        type: 'save',
+        payload: {
+          agent: response,
+        },
+      });
+      if (callback) {
+        callback({
+          ...response,
+        });
       }
     },
     *createAgent({ payload, callback }, { call }) {
@@ -71,6 +86,7 @@ export default {
     },
     clear() {
       return {
+        agent: {},
         agents: [],
         pagination: {
           total: 0,

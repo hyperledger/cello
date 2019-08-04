@@ -40,5 +40,5 @@ export default {
   'app.operator.newAgent.label.image': 'Image name for deploy agent',
   'app.operator.newAgent.required.image': 'Please input the image name of the deployment agent.',
   'app.operator.newAgent.success': 'Create agent {name} success',
-  'app.operator.newAgent.fail': 'Create agent {name} failed',
+  'app.operator.updateAgent.success': 'Update agent success',
 };

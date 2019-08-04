@@ -5,6 +5,10 @@ export async function listAgent(params) {
   return request(`/api/agents?${stringify(params)}`);
 }
 
+export async function getAgent(params) {
+  return request(`/api/agents/${params.id}`);
+}
+
 export async function createAgent(params) {
   return request('/api/agents', {
     method: 'POST',
@@ -14,8 +18,8 @@ export async function createAgent(params) {
 
 export async function updateAgent(params) {
   return request(`/api/agents/${params.id}`, {
-    method: 'PUT',
-    data: params,
+    method: params.requestMethod,
+    data: params.data,
   });
 }
 

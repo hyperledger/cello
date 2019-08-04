@@ -40,5 +40,5 @@ export default {
   'app.operator.newAgent.label.image': '部署代理的镜像名称',
   'app.operator.newAgent.required.image': '请输入部署代理的镜像名称。',
   'app.operator.newAgent.success': '新建代理 {name} 成功',
-  'app.operator.newAgent.fail': '新建代理 {name} 失败',
+  'app.operator.updateAgent.success': '更新代理成功',
 };

@@ -8,6 +8,7 @@ export default {
   'menu.operator.overview': 'Overview',
   'menu.operator.agent': 'Agent',
   'menu.operator.newAgent': 'New Agent',
+  'menu.operator.editAgent': 'Edit Agent',
   'menu.operator.organization': 'Organization',
   'menu.operator.userManagement': 'User Management',
   'menu.operator.node': 'Node',

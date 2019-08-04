@@ -56,6 +56,12 @@ export default [
             hideInMenu: true,
           },
           {
+            path: '/operator/agent/editAgent',
+            name: 'editAgent',
+            component: './Operator/Agent/newAgent',
+            hideInMenu: true,
+          },
+          {
             path: '/operator/userManagement',
             name: 'userManagement',
             component: './Operator/UserManagement',
