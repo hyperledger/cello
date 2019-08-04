@@ -83,11 +83,6 @@ class NodeViewSet(viewsets.ViewSet):
 
         Filter nodes with query parameters.
         """
-        LOG.info(
-            "addres %s %s",
-            request.META["REMOTE_ADDR"],
-            request.META["HTTP_HOST"],
-        )
         serializer = NodeQuery(data=request.GET)
         if serializer.is_valid(raise_exception=True):
             page = serializer.validated_data.get("page")

@@ -107,8 +107,6 @@ def _create_fabric_node():
             ]
             if NODE_TYPE == FabricNodeType.Peer.value:
                 new_environments = _generate_peer_env_from_ports(ports)
-                pass
-            print(ports)
 
     # add new environments depend on service result
     if len(new_environments) > 0:

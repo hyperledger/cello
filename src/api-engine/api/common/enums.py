@@ -130,7 +130,7 @@ class FabricCAServerType(ExtraEnum):
 
 @unique
 class FabricVersions(ExtraEnum):
-    V1_4 = "1.4"
+    V1_4 = "1.4.2"
     V1_5 = "1.5"
 
 

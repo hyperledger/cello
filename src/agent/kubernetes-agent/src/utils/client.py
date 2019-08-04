@@ -65,8 +65,8 @@ class KubernetesClient(object):
                     )
 
     def _generate_container_pods(self, containers=None):
-        if containers is None:
-            containers = []
+        if containers is None or len(containers) == 0:
+            return None
 
         container_pods = []
         for container in containers:
@@ -74,14 +74,18 @@ class KubernetesClient(object):
             environments = container.get("environments", [])
             command = container.get("command", [])
             command_args = container.get("command_args", [])
-            volume_mounts = container.get("volume_mounts", [])
-            volume_mounts = [
-                client.V1VolumeMount(
-                    mount_path=volume_mount.get("path"),
-                    name=volume_mount.get("name"),
-                )
-                for volume_mount in volume_mounts
-            ]
+            volume_mounts = container.get("volume_mounts")
+            volume_mounts = (
+                [
+                    client.V1VolumeMount(
+                        mount_path=volume_mount.get("path"),
+                        name=volume_mount.get("name"),
+                    )
+                    for volume_mount in volume_mounts
+                ]
+                if volume_mounts
+                else None
+            )
 
             environments = [
                 client.V1EnvVar(name=env.get("name"), value=env.get("value"))
@@ -90,28 +94,33 @@ class KubernetesClient(object):
             ports = [
                 client.V1ContainerPort(container_port=port) for port in ports
             ]
-            container_pods.append(
-                client.V1Container(
-                    name=container.get("name"),
-                    image=container.get("image"),
-                    env=environments,
-                    command=command,
-                    args=command_args,
-                    ports=ports,
-                    image_pull_policy="IfNotPresent",
-                    volume_mounts=volume_mounts,
-                )
-            )
+            container_parameter = {
+                "name": container.get("name"),
+                "image": container.get("image"),
+                "image_pull_policy": "IfNotPresent",
+            }
+            if environments is not None and len(environments) > 0:
+                container_parameter.update({"env": environments})
+            if command is not None and len(command) > 0:
+                container_parameter.update({"command": command})
+            if command_args is not None and len(command_args) > 0:
+                container_parameter.update({"args": command_args})
+            if ports is not None and len(ports) > 0:
+                container_parameter.update({"ports": ports})
+            if volume_mounts is not None and len(volume_mounts) > 0:
+                container_parameter.update({"volume_mounts": volume_mounts})
+            container_pods.append(client.V1Container(**container_parameter))
 
         return container_pods
 
-    def create_deployment(self, namespace=None, *args, **kwargs):
+    def _generate_pod_template(self, *args, **kwargs):
         containers = kwargs.get("containers", [])
         initial_containers = kwargs.get("initial_containers", [])
         volumes_json = kwargs.get("volumes", [])
         deploy_name = kwargs.get("name")
         labels = kwargs.get("labels", {})
         labels.update({"app": deploy_name})
+        restart_policy = kwargs.get("restart_policy", "Always")
         volumes = []
         for volume in volumes_json:
             volume_name = volume.get("name")
@@ -137,28 +146,60 @@ class KubernetesClient(object):
             initial_containers
         )
         container_pods = self._generate_container_pods(containers)
-        deployment_metadata = client.V1ObjectMeta(name=deploy_name)
         pod_spec = client.V1PodSpec(
             init_containers=initial_container_pods,
             containers=container_pods,
             volumes=volumes,
+            restart_policy=restart_policy,
         )
         spec_metadata = client.V1ObjectMeta(labels=labels)
         template_spec = client.V1PodTemplateSpec(
             metadata=spec_metadata, spec=pod_spec
         )
-        spec = client.ExtensionsV1beta1DeploymentSpec(template=template_spec)
+
+        return template_spec
+
+    def create_deployment(self, namespace=None, *args, **kwargs):
+        deploy_name = kwargs.get("name")
+        deployment_metadata = client.V1ObjectMeta(name=deploy_name)
+        template_spec = self._generate_pod_template(*args, **kwargs)
         body = client.ExtensionsV1beta1Deployment(
             api_version="extensions/v1beta1",
             kind="Deployment",
             metadata=deployment_metadata,
-            spec=spec,
+            spec=client.ExtensionsV1beta1DeploymentSpec(
+                template=template_spec
+            ),
         )
 
         api_instance = client.ExtensionsV1beta1Api()
 
         try:
             api_instance.create_namespaced_deployment(
+                namespace=namespace, body=body, pretty="true"
+            )
+        except ApiException as e:
+            LOG.error("Exception when call AppsV1beta1Api: %s", e)
+            raise e
+
+        return True
+
+    def create_job(self, namespace=None, *args, **kwargs):
+        job_name = kwargs.get("name")
+        job_metadata = client.V1ObjectMeta(name=job_name)
+        template_spec = self._generate_pod_template(
+            *args, **kwargs, restart_policy="Never"
+        )
+        body = client.V1Job(
+            api_version="batch/v1",
+            kind="Job",
+            metadata=job_metadata,
+            spec=client.V1JobSpec(template=template_spec),
+        )
+        api_instance = client.BatchV1Api()
+
+        try:
+            api_instance.create_namespaced_job(
                 namespace=namespace, body=body, pretty="true"
             )
         except ApiException as e:
@@ -245,6 +286,24 @@ class KubernetesClient(object):
             raise e
 
         return True
+
+    def delete_job(self, namespace=None, name=None):
+        api_instance = client.BatchV1Api()
+        delete_options = client.V1DeleteOptions(
+            propagation_policy="Foreground"
+        )
+        grace_period_seconds = 10
+
+        try:
+            api_instance.delete_namespaced_job(
+                name=name,
+                namespace=namespace,
+                body=delete_options,
+                grace_period_seconds=grace_period_seconds,
+                pretty="true",
+            )
+        except ApiException as e:
+            LOG.error("Exception when call AppsV1beta1Api: %s", e)
 
     def delete_deployment(self, namespace=None, name=None):
         api_instance = client.ExtensionsV1beta1Api()
