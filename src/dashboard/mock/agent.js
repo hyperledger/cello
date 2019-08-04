@@ -19,8 +19,8 @@ const agents = Mock.mock({
     type () { return Mock.Random.pick(['docker', 'kubernetes']) },
     schedulable () { return Mock.Random.pick([true, false]) },
     organization_id () { return Mock.Random.guid() },
-    image: '',
-    config_file () { return Mock.Random.pick(['financial.zip', 'sales.zip', 'customer.zip', 'marketing.zip', 'network.zip']) },
+    image () { return Mock.Random.pick(['financial', 'sales', 'customer', 'marketing', 'network']) },
+    config_file: 'https://github.com/hyperledger/cello/archive/master.zip',
   }],
 });
 
@@ -74,17 +74,81 @@ function createAgent(req, res) {
     capacity: message.capacity,
     node_capacity: message.node_capacity,
     status: 'active',
-    log_level: message.capacity,
+    log_level: message.log_level,
     type: message.type,
-    schedulable: message.schedulable,
+    schedulable: message.schedulable === 'true',
     organization_id: '',
     image: message.image,
-    config_file () { return Mock.Random.pick(['financial.zip', 'sales.zip', 'customer.zip', 'marketing.zip', 'network.zip'])}
+    config_file: req.files.length > 0 ? 'https://github.com/hyperledger/cello/archive/master.zip' : '',
   });
   res.send({id});
+}
+
+function getOneAgent(req, res) {
+  const agent = agents.data.filter(item => item.id === req.params.id);
+
+  if (agent.length > 0) {
+    res.send(agent[0]);
+  } else {
+    res.send({
+      code: 20005,
+      detail: 'The agent not found.'
+    })
+  }
+}
+
+function updateAgentForOperator(req, res) {
+  const message = req.body;
+
+  agents.data.forEach((val, index) => {
+    if (val.id === req.params.id) {
+      if (message.name) {
+        agents.data[index].name = message.name;
+      }
+
+      if (message.capacity) {
+        agents.data[index].capacity = message.capacity;
+      }
+
+      if (message.log_level) {
+        agents.data[index].log_level = message.log_level;
+      }
+
+      if (message.schedulable) {
+        agents.data[index].schedulable = message.schedulable === 'true';
+      }
+    }
+  });
+
+  res.send({});
+}
+
+function updateAgentForOrgAdmin(req, res) {
+  const message = req.body;
+
+  agents.data.forEach((val, index) => {
+    if (val.id === req.params.id) {
+      if (message.name) {
+        agents.data[index].name = message.name;
+      }
+
+      if (message.capacity) {
+        agents.data[index].capacity = message.capacity;
+      }
+
+      if (message.log_level) {
+        agents.data[index].log_level = message.log_level;
+      }
+    }
+  });
+
+  res.send({});
 }
 
 export default {
   'GET /api/agents': getAgents,
   'POST /api/agents': createAgent,
+  'GET /api/agents/:id': getOneAgent,
+  'PUT /api/agents/:id': updateAgentForOperator,
+  'PATCH /api/agents/:id': updateAgentForOrgAdmin,
 };

@@ -82,9 +82,9 @@ class Agent extends PureComponent {
     });
   };
 
-  // TODO: remove these two comment lines after add the functional code
-  // eslint-disable-next-line no-unused-vars
-  editAgent = agent => {};
+  editAgent = agent => {
+    router.push(`/operator/agent/editAgent?action=edit&id=${agent.id}`);
+  };
 
   // TODO: remove these two comment lines after add the functional code
   // eslint-disable-next-line no-unused-vars

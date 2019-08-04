@@ -17,6 +17,7 @@ import router from 'umi/router';
 import withRouter from 'umi/withRouter';
 import { connect } from 'dva';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
+import { getAuthority } from '@/utils/authority';
 
 const FormItem = Form.Item;
 const { Option } = Select;
@@ -25,26 +26,32 @@ const { Option } = Select;
   agent,
   submitting: loading.effects['agent/createAgent'],
   updating: loading.effects['agent/updateAgent'],
+  loadingAgent: loading.effects['agent/getAgent'],
 }))
 @Form.create()
 class CreateAgent extends PureComponent {
-  state = {
-    fileList: [],
-  };
-
   componentDidMount() {
     const { location } = this.props;
     const { query = {} } = location;
     const action = query.action || 'create';
+    const { dispatch } = this.props;
+
     if (action === 'edit') {
-      this.setState({
-        action,
-      });
-    } else {
-      this.setState({
-        action,
+      const id = query.id || '';
+
+      dispatch({
+        type: 'agent/getAgent',
+        payload: { id },
       });
     }
+  }
+
+  componentWillUnmount() {
+    const { dispatch } = this.props;
+
+    dispatch({
+      type: 'agent/clear',
+    });
   }
 
   clickCancel = () => {
@@ -69,42 +76,41 @@ class CreateAgent extends PureComponent {
   };
 
   validateCreateResponse = data => {
-    if (data.id) {
-      message.success(
-        formatMessage(
-          {
-            id: 'app.operator.newAgent.success',
-            defaultMessage: 'Create agent {name} success',
-          },
-          {
-            name: data.payload.formData.get('name'),
-          }
-        )
-      );
-      router.push('/operator/agent');
-    } else {
-      message.error(
-        formatMessage(
-          {
-            id: 'app.operator.newAgent.fail',
-            defaultMessage: 'Create agent {name} failed',
-          },
-          {
-            name: data.payload.formData.get('name'),
-          }
-        )
-      );
-    }
+    message.success(
+      formatMessage(
+        {
+          id: 'app.operator.newAgent.success',
+          defaultMessage: 'Create agent {name} success',
+        },
+        {
+          name: data.payload.formData.get('name'),
+        }
+      )
+    );
+    router.push('/operator/agent');
+  };
+
+  validateUpdateResponse = () => {
+    message.success(
+      formatMessage({
+        id: 'app.operator.updateAgent.success',
+        defaultMessage: 'Update agent success',
+      })
+    );
+    router.push('/operator/agent');
   };
 
   submitCallback = data => {
-    const { action } = this.state;
+    const { location } = this.props;
+    const { query = {} } = location;
+    const action = query.action || 'create';
 
     switch (action) {
       case 'create':
         this.validateCreateResponse(data);
         break;
       case 'edit':
+        this.validateUpdateResponse(data);
         break;
       default:
         break;
@@ -113,7 +119,9 @@ class CreateAgent extends PureComponent {
 
   handleSubmit = e => {
     e.preventDefault();
-    const { action } = this.state;
+    const { location } = this.props;
+    const { query = {} } = location;
+    const action = query.action || 'create';
     const {
       form: { validateFieldsAndScroll },
       dispatch,
@@ -121,9 +129,27 @@ class CreateAgent extends PureComponent {
     validateFieldsAndScroll((err, values) => {
       if (!err) {
         if (action === 'edit') {
+          const formData = new FormData();
+          const userRole = getAuthority()[0];
+          const id = query.id;
+          const requestMethod = userRole === 'operator' ? 'PUT' : 'PATCH';
+
+          formData.append('name', values.name);
+          formData.append('capacity', values.capacity);
+          formData.append('log_level', values.log_level);
+
+          if (userRole === 'operator') {
+            formData.append('schedulable', values.schedulable);
+          }
+
           dispatch({
             type: 'agent/updateAgent',
-            payload: {},
+            payload: {
+              data: formData,
+              id,
+              requestMethod,
+            },
+            callback: this.submitCallback,
           });
         } else {
           const formData = new FormData();
@@ -152,17 +178,19 @@ class CreateAgent extends PureComponent {
   };
 
   render() {
-    const { fileList } = this.state;
-    const {
-      form: { getFieldDecorator },
-      submitting,
-      updating,
-      location,
-    } = this.props;
+    const { location } = this.props;
     const { query = {} } = location;
     const action = query.action || 'create';
-    const currentAgent = {};
-    const schedulable = action === 'edit' ? '' : true;
+    const userRole = getAuthority()[0];
+    const {
+      form: { getFieldDecorator, getFieldValue },
+      agent: { agent },
+      submitting,
+      updating,
+      loadingAgent,
+    } = this.props;
+    const configFile = agent.config_file ? agent.config_file : '';
+    const schedulable = action === 'edit' ? agent.schedulable : true;
     const formItemLayout = {
       labelCol: {
         xs: { span: 24 },
@@ -194,16 +222,14 @@ class CreateAgent extends PureComponent {
       </Option>
     ));
 
-    const selectProps = {
-      onRemove: () => {
-        this.setState({ fileList: [] });
-      },
-      beforeUpload: file => {
-        this.setState({ fileList: [file] });
+    const uploadProps = {
+      onRemove: () => {},
+      beforeUpload: () => {
         return false;
       },
-      fileList,
     };
+
+    const disabledFontColor = { color: '#80837c' };
 
     return (
       <PageHeaderWrapper
@@ -215,7 +241,7 @@ class CreateAgent extends PureComponent {
           )
         }
       >
-        <Card bordered={false}>
+        <Card bordered={false} loading={action === 'edit' ? loadingAgent : false}>
           <Form onSubmit={this.handleSubmit} hideRequiredMark style={{ marginTop: 8 }}>
             <FormItem
               {...formItemLayout}
@@ -224,7 +250,7 @@ class CreateAgent extends PureComponent {
               }
             >
               {getFieldDecorator('name', {
-                initialValue: action === 'create' ? '' : currentAgent.name,
+                initialValue: action === 'create' ? '' : agent.name,
                 rules: [
                   {
                     required: false,
@@ -255,7 +281,7 @@ class CreateAgent extends PureComponent {
               }
             >
               {getFieldDecorator('ip', {
-                initialValue: action === 'create' ? '' : currentAgent.ip,
+                initialValue: action === 'create' ? '' : agent.ip,
                 rules: [
                   {
                     required: true,
@@ -270,7 +296,13 @@ class CreateAgent extends PureComponent {
                     validator: this.validateIp,
                   },
                 ],
-              })(<Input disabled={action === 'update'} placeholder="192.168.0.10" />)}
+              })(
+                <Input
+                  disabled={action === 'edit'}
+                  style={action === 'edit' ? disabledFontColor : {}}
+                  placeholder="192.168.0.10"
+                />
+              )}
             </FormItem>
             <FormItem
               {...formItemLayout}
@@ -282,7 +314,7 @@ class CreateAgent extends PureComponent {
               }
             >
               {getFieldDecorator('image', {
-                initialValue: action === 'create' ? '' : currentAgent.image,
+                initialValue: action === 'create' ? '' : agent.image,
                 rules: [
                   {
                     required: true,
@@ -300,6 +332,8 @@ class CreateAgent extends PureComponent {
                     id: 'app.operator.newAgent.label.image',
                     defaultMessage: 'Image name of deploy agent',
                   })}
+                  disabled={action === 'edit'}
+                  style={action === 'edit' ? disabledFontColor : {}}
                 />
               )}
             </FormItem>
@@ -313,7 +347,7 @@ class CreateAgent extends PureComponent {
               }
             >
               {getFieldDecorator('capacity', {
-                initialValue: action === 'create' ? 1 : currentAgent.capacity,
+                initialValue: action === 'create' ? 1 : agent.capacity,
                 rules: [
                   {
                     required: true,
@@ -346,7 +380,7 @@ class CreateAgent extends PureComponent {
               }
             >
               {getFieldDecorator('node_capacity', {
-                initialValue: action === 'create' ? 10 : currentAgent.node_capacity,
+                initialValue: action === 'create' ? 10 : agent.node_capacity,
                 rules: [
                   {
                     required: true,
@@ -360,12 +394,14 @@ class CreateAgent extends PureComponent {
                 ],
               })(
                 <InputNumber
+                  disabled={action !== 'create'}
                   placeholder={formatMessage({
                     id: 'app.operator.newAgent.label.nodeCapacity',
                     defaultMessage: 'Capacity of nodes',
                   })}
                   min={1}
                   max={600}
+                  style={action === 'edit' ? disabledFontColor : {}}
                 />
               )}
             </FormItem>
@@ -376,7 +412,7 @@ class CreateAgent extends PureComponent {
               }
             >
               {getFieldDecorator('type', {
-                initialValue: action === 'create' ? agentTypeValues[0] : currentAgent.type,
+                initialValue: action === 'create' ? agentTypeValues[0] : agent.type,
                 rules: [
                   {
                     required: true,
@@ -388,7 +424,14 @@ class CreateAgent extends PureComponent {
                     ),
                   },
                 ],
-              })(<Select disabled={action !== 'create'}>{agentTypeOptions}</Select>)}
+              })(
+                <Select
+                  style={action === 'edit' ? disabledFontColor : {}}
+                  disabled={action !== 'create'}
+                >
+                  {agentTypeOptions}
+                </Select>
+              )}
             </FormItem>
             <FormItem
               {...formItemLayout}
@@ -401,19 +444,23 @@ class CreateAgent extends PureComponent {
             >
               {getFieldDecorator('config_file', {
                 getValueFromEvent: this.normFile,
-                initialValue: fileList,
+                initialValue: null,
               })(
-                <Upload {...selectProps}>
-                  <Button disabled={fileList.length > 0}>
-                    <Icon type="upload" />{' '}
-                    {
-                      <FormattedMessage
-                        id="app.operator.newAgent.label.configFileSelect"
-                        defaultMessage="Please select the config file."
-                      />
-                    }
-                  </Button>
-                </Upload>
+                action === 'edit' ? (
+                  <a href={configFile}>{configFile.substring(configFile.lastIndexOf('/') + 1)}</a>
+                ) : (
+                  <Upload {...uploadProps}>
+                    <Button disabled={getFieldValue('config_file')}>
+                      <Icon type="upload" />
+                      {
+                        <FormattedMessage
+                          id="app.operator.newAgent.label.configFileSelect"
+                          defaultMessage="Please select the config file."
+                        />
+                      }
+                    </Button>
+                  </Upload>
+                )
               )}
             </FormItem>
             <FormItem
@@ -426,7 +473,7 @@ class CreateAgent extends PureComponent {
               }
             >
               {getFieldDecorator('log_level', {
-                initialValue: action === 'create' ? logLevelValues[0] : currentAgent.log_level,
+                initialValue: action === 'create' ? logLevelValues[0] : agent.log_level,
                 rules: [
                   {
                     required: false,
@@ -451,7 +498,12 @@ class CreateAgent extends PureComponent {
             >
               {getFieldDecorator('schedulable', {
                 initialValue: schedulable,
-              })(<Switch defaultChecked={schedulable} />)}
+              })(
+                <Switch
+                  disabled={action === 'edit' && userRole !== 'operator'}
+                  defaultChecked={schedulable}
+                />
+              )}
             </FormItem>
             <FormItem {...submitFormLayout} style={{ marginTop: 32 }}>
               <Button onClick={this.clickCancel}>

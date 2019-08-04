@@ -49,6 +49,17 @@ function tokenVerify(req, res) {
           organization: null
         }
       });
+    case 'orgAdmin-token':
+      return res.json({
+        token,
+        user: {
+          id: 'org-administrator',
+          username: 'orgAdmin',
+          role: 'administrator',
+          email: 'administrator@cello.com',
+          organization: null
+        }
+      });
     default:
       return res.json({});
   }
@@ -73,6 +84,19 @@ export default {
           username: 'admin',
           role: 'operator',
           email: 'operator@cello.com',
+          organization: null,
+        }
+      });
+      return;
+    }
+    if (password === 'pass' && username === 'orgAdmin') {
+      res.send({
+        token: 'orgAdmin-token',
+        user: {
+          id: 'org-administrator',
+          username: 'orgAdmin',
+          role: 'administrator',
+          email: 'administrator@cello.com',
           organization: null,
         }
       });
