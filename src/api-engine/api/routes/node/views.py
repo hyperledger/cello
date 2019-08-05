@@ -472,7 +472,8 @@ class NodeViewSet(viewsets.ViewSet):
             raise ResourceNotFound
         else:
             # Set file url of node
-            node.file = request.build_absolute_uri(node.file.url)
+            if node.file:
+                node.file = request.build_absolute_uri(node.file.url)
             ports = Port.objects.filter(node=node)
             node.links = [
                 {
