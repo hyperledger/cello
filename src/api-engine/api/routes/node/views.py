@@ -472,14 +472,12 @@ class NodeViewSet(viewsets.ViewSet):
             raise ResourceNotFound
         else:
             # Set file url of node
-            server_host = request.META["HTTP_HOST"]
-            server_host = server_host.split(":")[0]
             node.file = request.build_absolute_uri(node.file.url)
             ports = Port.objects.filter(node=node)
             node.links = [
                 {
                     "internal_port": port.internal,
-                    "url": "%s:%s" % (server_host, port.external),
+                    "url": "%s:%s" % (node.agent.ip, port.external),
                 }
                 for port in ports
             ]
