@@ -256,7 +256,7 @@ class CreateAgent extends PureComponent {
                     required: false,
                     message: (
                       <FormattedMessage
-                        id="app.operator.newAgent.Required.Name"
+                        id="app.operator.newAgent.required.Name"
                         defaultMessage="Please input name."
                       />
                     ),
@@ -418,7 +418,7 @@ class CreateAgent extends PureComponent {
                     required: true,
                     message: (
                       <FormattedMessage
-                        id="app.operator.newAgent.Required.type"
+                        id="app.operator.newAgent.required.type"
                         defaultMessage="Please select a type."
                       />
                     ),
@@ -479,7 +479,7 @@ class CreateAgent extends PureComponent {
                     required: false,
                     message: (
                       <FormattedMessage
-                        id="app.operator.newAgent.Required.LogLevel"
+                        id="app.operator.newAgent.required.LogLevel"
                         defaultMessage="Please select a log level."
                       />
                     ),

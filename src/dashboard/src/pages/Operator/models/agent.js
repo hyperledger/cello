@@ -1,4 +1,12 @@
-import { listAgent, getAgent, createAgent, updateAgent, deleteAgent } from '@/services/agent';
+import {
+  listAgent,
+  getAgent,
+  createAgent,
+  updateAgent,
+  deleteAgent,
+  applyAgent,
+  releaseAgent,
+} from '@/services/agent';
 
 export default {
   namespace: 'agent',
@@ -58,6 +66,15 @@ export default {
         });
       }
     },
+    *applyAgent({ payload, callback }, { call }) {
+      const response = yield call(applyAgent, payload);
+      if (callback) {
+        callback({
+          payload,
+          ...response,
+        });
+      }
+    },
     *updateAgent({ payload, callback }, { call }) {
       const response = yield call(updateAgent, payload);
       if (callback) {
@@ -68,7 +85,16 @@ export default {
       }
     },
     *deleteAgent({ payload, callback }, { call }) {
-      const response = yield call(deleteAgent, payload.id);
+      const response = yield call(deleteAgent, payload);
+      if (callback) {
+        callback({
+          payload,
+          ...response,
+        });
+      }
+    },
+    *releaseAgent({ payload, callback }, { call }) {
+      const response = yield call(releaseAgent, payload);
       if (callback) {
         callback({
           payload,

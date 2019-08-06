@@ -16,6 +16,13 @@ export async function createAgent(params) {
   });
 }
 
+export async function applyAgent(params) {
+  return request('/api/agents/organization', {
+    method: 'POST',
+    data: params,
+  });
+}
+
 export async function updateAgent(params) {
   return request(`/api/agents/${params.id}`, {
     method: params.requestMethod,
@@ -23,8 +30,14 @@ export async function updateAgent(params) {
   });
 }
 
-export async function deleteAgent(id) {
-  return request(`/api/agents/${id}`, {
+export async function deleteAgent(params) {
+  return request(`/api/agents/${params}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function releaseAgent(params) {
+  return request(`/api/agents/${params}/organization`, {
     method: 'DELETE',
   });
 }

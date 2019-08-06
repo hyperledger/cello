@@ -145,10 +145,69 @@ function updateAgentForOrgAdmin(req, res) {
   res.send({});
 }
 
+function applyAgent(req, res) {
+  const message = req.body;
+
+  if (!message.capacity) {
+    res.send({
+      code: 20001,
+      detail: 'capacity is required'
+    });
+  }
+
+  if (!message.type) {
+    res.send({
+      code: 20001,
+      detail: 'type is required'
+    });
+  }
+
+  agents.data.push({
+    id: Mock.Random.guid(),
+    name: faker.company.companyName(),
+    created_at: new Date(),
+    ip: Mock.Random.ip(),
+    capacity: message.capacity,
+    node_capacity: Math.ceil(Math.random()*10),
+    status: Mock.Random.pick(['inactive', 'active']),
+    log_level: Mock.Random.pick(['info', 'debug']),
+    type: message.type,
+    schedulable: Mock.Random.pick([true, false]),
+    organization_id: Mock.Random.guid(),
+    image: Mock.Random.pick(['financial', 'sales', 'customer', 'marketing', 'network']),
+    config_file: 'https://github.com/hyperledger/cello/archive/master.zip',
+  });
+
+  res.send({id: Mock.Random.guid()});
+}
+
+function deleteAgent(req, res) {
+  agents.data.forEach((val, index) => {
+    if (val.id === req.params.id) {
+      agents.data.splice(index, 1);
+    }
+  });
+
+  res.send({});
+}
+
+function releaseAgent(req, res) {
+  agents.data.forEach((val, index) => {
+    if (val.id === req.params.id) {
+      agents.data.splice(index, 1);
+    }
+  });
+
+  res.send({});
+}
+
 export default {
   'GET /api/agents': getAgents,
   'POST /api/agents': createAgent,
   'GET /api/agents/:id': getOneAgent,
   'PUT /api/agents/:id': updateAgentForOperator,
   'PATCH /api/agents/:id': updateAgentForOrgAdmin,
+  'POST /api/agents/organization': applyAgent,
+  'DELETE /api/agents/:id': deleteAgent,
+  'DELETE /api/agents/:id/organization': releaseAgent,
 };
