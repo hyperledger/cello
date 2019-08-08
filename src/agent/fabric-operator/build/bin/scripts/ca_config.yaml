@@ -1,0 +1,24 @@
+registry:
+  maxenrollments: -1
+
+  identities:
+  - name: $FCO_CA_ADMIN_NAME
+    pass: $FCO_CA_ADMIN_PASSWORD
+    type: client
+    affiliation: ""
+    maxenrollments: -1
+    attrs:
+      hf.Registrar.Roles: "*"
+      hf.Registrar.DelegateRoles: "*"
+      hf.Revoker: true
+      hf.IntermediateCA: true
+      hf.GenCRL: true
+      hf.Registrar.Attributes: "*"
+      hf.AffiliationMgr: true
+ldap:
+  enabled: false
+
+affiliations:
+  none-org:
+  - department1
+  - department2

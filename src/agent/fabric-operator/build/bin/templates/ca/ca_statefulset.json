@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: "<name>"
+spec:
+  serviceName: "<name>"
+  selector:
+    matchLabels:
+      k8s-app: "<name>"
+      type: ca
+  replicas: 1
+  volumeClaimTemplates:
+  - metadata:
+      name: castorage
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "default"
+      resources:
+        requests:
+          storage: "1Gi"
+  template:
+    metadata:
+      labels:
+        k8s-app: "<name>"
+        type: "ca"
+        component: "ca"
+    spec:
+      volumes:
+        - name: cacerts
+          secret:
+            secretName: cacerts
+        - name: toolset
+          configMap:
+            name: fabric-configuration-toolset
+      initContainers:
+        - name: init
+          image: "hfrd/envsubst:latest"
+          env:
+            - name: "FABRIC_CA_HOME"
+              value: "/etc/hyperledger/fabric-ca-server"
+            - name: "PERMISSIONS_UID"
+              value: "1000"
+            - name: "PERMISSIONS_GID"
+              value: "0"
+            - name: "PERMISSIONS_FOLDERS"
+              value: "/etc/hyperledger/fabric-ca-server"
+            - name: "FCO_CA_ADMIN_NAME"
+              valueFrom:
+                secretKeyRef:
+                  name: to-be-replaced
+                  key: adminName
+            - name: "FCO_CA_ADMIN_PASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  name: to-be-replaced
+                  key: adminPassword
+          volumeMounts:
+            - mountPath: "/etc/hyperledger/fabric-ca-server-config"
+              name: castorage
+            - mountPath: "/toolset"
+              name: toolset
+          command: ["/bin/sh"]
+          args:  ["/toolset/ca_config.sh"]
+      containers:
+        - name: ca
+          image: "<image>"
+          imagePullPolicy: Always
+          env:
+            - { name: "FABRIC_CA_HOME", value: "/etc/hyperledger/fabric-ca-server-config" }
+            - { name: "FABRIC_CA_SERVER_CA_NAME", value: "{{ ca.name}}" }
+          volumeMounts:
+            - mountPath: "/etc/hyperledger/fabric-ca-server-config"
+              name: castorage
+            - mountPath: "/certs"
+              name: cacerts  
+          command: ["fabric-ca-server"]
+          args:  ["start", "-b", "admin:adminpw", "-d"]

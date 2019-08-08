@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fabric-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: fabric-operator
+  template:
+    metadata:
+      labels:
+        name: fabric-operator
+    spec:
+      serviceAccountName: fabric-operator
+      containers:
+        - name: fabric-operator
+          # Replace this with the built image name
+          image: REPLACE_IMAGE
+          command:
+          - fabric-operator
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "fabric-operator"
