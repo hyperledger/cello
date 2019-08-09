@@ -1,8 +1,79 @@
 site_name: Hyperledger Cello
-theme: readthedocs
+repo_name: 'hyperledger/cello'
+repo_url: 'https://github.com/hyperledger/cello'
+theme:
+    name: 'material'
+    logo: 'images/favicon.png'
+    favicon: 'images/favicon.png'
+    feature:
+      tabs: true
+    palette:
+      primary: 'light-blue'
+      accent: 'light-blue'
+    font:
+      text: 'Ubuntu'
+      code: 'Ubuntu Mono'
+markdown_extensions:
+  - admonition
+  - codehilite
+  - markdown.extensions.admonition
+  - markdown.extensions.codehilite:
+      guess_lang: false
+  - markdown.extensions.def_list
+  - markdown.extensions.footnotes
+  - markdown.extensions.meta
+  - markdown.extensions.toc:
+      permalink: true
+  - pymdownx.arithmatex
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.critic
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:pymdownx.emoji.to_svg
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
 docs_dir: docs
 nav:
-    - Home: index.md
-    - Get Started: tutorial.md
-    - Setup: setup/setup.md
-    - How to Contribute: contributing.md
+    - Docs:
+        - Overview: index.md
+        - Concepts: concepts.md
+        - Design:
+            - Architecture: design/arch.md
+        - Setup:
+            - Server: setup/server.md
+        - Agent:
+            - Kubernetes: agents/kubernetes.md
+            - Ansible: agents/ansible.md
+        - Operations:
+            - Dashboard:
+                - Operator operations: operations/dashboard/operator.md
+                - Admin operations: operations/dashboard/admin.md
+                - User operations: operations/dashboard/user.md
+        - Reference:
+            - Configuration:
+                - Server Configuration: reference/configuration/server.md
+            - Commands:
+                - make: reference/commands/make.md
+                - cli: reference/commands/cli.md
+        - Contribute: contributing.md
+    - FAQ:
+        - faq.md
+    - Release Notes:
+        - release_note.md
+#plugins:
+#  - search
+#  - minify:
+#      minify_html: true
+#  - pdf-export:
+#      media_type: print
+#      combined: true
+#      enabled_if_env: ENABLE_PDF_EXPORT

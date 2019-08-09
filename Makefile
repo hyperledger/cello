@@ -201,12 +201,6 @@ image-clean: clean ##@Clean all existing images to rebuild
 initial-env: ##@Configuration Initial Configuration for dashboard
 	@envsubst < configs/env.tmpl > .env
 
-initial-keycloak:
-	docker-compose -f bootup/docker-compose-files/docker-compose-initial.yml up --abort-on-container-exit
-
-initial-keycloak-next:
-	docker-compose -f bootup/docker-compose-files/new_version/docker-compose-initial.yml up --abort-on-container-exit
-
 start-docker-compose:
 	docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} up -d --force-recreate
 
