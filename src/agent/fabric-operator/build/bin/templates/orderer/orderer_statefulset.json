@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: "<name>"
+spec:
+  serviceName: "<name>"
+  selector:
+    matchLabels:
+      k8s-app: "<name>"
+      type: orderer
+  volumeClaimTemplates:
+  - metadata:
+      name: ordererstorage
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "default"
+      resources:
+        requests:
+          storage: "1Gi"
+  template:
+    metadata:
+      labels:
+        k8s-app: "<name>"
+        type: "orderer"
+        component: "orderer"
+    spec:
+      volumes:
+        - name: orderercerts
+          secret:
+            secretName: orderercerts
+        - name: toolset
+          configMap:
+            name: fabric-configuration-toolset
+      containers:
+        - name: orderer
+          image: "<image>"
+          imagePullPolicy: Always
+          env:
+            - { name: "ORDERER_CFG_PATH", value: "/etc/hyperledger/" }
+            - { name: "ORDERER_GENERAL_LEDGERTYPE", value: "file" }
+            - { name: "ORDERER_FILELEDGER_LOCATION", value: "/etc/hyperledger/ledger/orderer" }
+            - { name: "ORDERER_GENERAL_LOGLEVEL", value: "debug" }
+          volumeMounts:
+            - mountPath: "/etc/hyperledger/orderer"
+              name: ordererstorage
+            - mountPath: "/certs"
+              name: orderercerts  
+          command: ["orderer"]
+ 

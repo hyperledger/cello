@@ -1,0 +1,29 @@
+apiVersion: fabric.hyperledger.org/v1alpha1
+kind: Peer
+metadata:
+  name: peer01
+spec:
+  # Add fields here
+  storageSize: "1Gi"
+  storageClass: "default"
+  image: "hyperledger/fabric-peer:1.4.1"
+  # Add all the configurable peer parameters as 
+  # name-value pairs
+  configParams:
+    - name: CORE_PEER_ADDRESSAUTODETECT
+      value: "true"
+    - name: CORE_PEER_NETWORKID
+      value: nid1
+    - name: CORE_PEER_ID
+      value: org1peer1
+    - name: CORE_PEER_ADDRESS
+      value: blockchain-org1peer1:30110
+    - name: CORE_PEER_LISTENADDRESS
+      value: 0.0.0.0:30110
+    - name: CORE_PEER_EVENTS_ADDRESS
+      value: 0.0.0.0:30111
+    - name: CORE_PEER_GOSSIP_BOOTSTRAP
+      value: blockchain-org1peer1:30110
+    - name: CORE_PEER_GOSSIP_ORGLEADER
+      value: "false"
+  

@@ -56,5 +56,7 @@ rules:
   - fabric.hyperledger.org
   resources:
   - '*'
+  - peers
+  - orderers
   verbs:
   - '*'

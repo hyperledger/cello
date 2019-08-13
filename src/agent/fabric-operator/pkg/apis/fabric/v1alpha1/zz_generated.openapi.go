@@ -11,9 +11,13 @@ import (
 
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	return map[string]common.OpenAPIDefinition{
-		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CA":       schema_pkg_apis_fabric_v1alpha1_CA(ref),
-		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CASpec":   schema_pkg_apis_fabric_v1alpha1_CASpec(ref),
-		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CAStatus": schema_pkg_apis_fabric_v1alpha1_CAStatus(ref),
+		"./pkg/apis/fabric/v1alpha1.CA":            schema_pkg_apis_fabric_v1alpha1_CA(ref),
+		"./pkg/apis/fabric/v1alpha1.CASpec":        schema_pkg_apis_fabric_v1alpha1_CASpec(ref),
+		"./pkg/apis/fabric/v1alpha1.CAStatus":      schema_pkg_apis_fabric_v1alpha1_CAStatus(ref),
+		"./pkg/apis/fabric/v1alpha1.Orderer":       schema_pkg_apis_fabric_v1alpha1_Orderer(ref),
+		"./pkg/apis/fabric/v1alpha1.OrdererStatus": schema_pkg_apis_fabric_v1alpha1_OrdererStatus(ref),
+		"./pkg/apis/fabric/v1alpha1.Peer":          schema_pkg_apis_fabric_v1alpha1_Peer(ref),
+		"./pkg/apis/fabric/v1alpha1.PeerStatus":    schema_pkg_apis_fabric_v1alpha1_PeerStatus(ref),
 	}
 }
 
@@ -44,19 +48,19 @@ func schema_pkg_apis_fabric_v1alpha1_CA(ref common.ReferenceCallback) common.Ope
 					},
 					"spec": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CASpec"),
+							Ref: ref("./pkg/apis/fabric/v1alpha1.CASpec"),
 						},
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CAStatus"),
+							Ref: ref("./pkg/apis/fabric/v1alpha1.CAStatus"),
 						},
 					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CASpec", "github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CAStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+			"./pkg/apis/fabric/v1alpha1.CASpec", "./pkg/apis/fabric/v1alpha1.CAStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
 	}
 }
 
@@ -114,6 +118,116 @@ func schema_pkg_apis_fabric_v1alpha1_CAStatus(ref common.ReferenceCallback) comm
 					},
 				},
 				Required: []string{"endpoint"},
+			},
+		},
+		Dependencies: []string{},
+	}
+}
+
+func schema_pkg_apis_fabric_v1alpha1_Orderer(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "Orderer is the Schema for the orderers API",
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric.NodeSpec"),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("./pkg/apis/fabric/v1alpha1.OrdererStatus"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"./pkg/apis/fabric/v1alpha1.OrdererStatus", "github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric.NodeSpec", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+	}
+}
+
+func schema_pkg_apis_fabric_v1alpha1_OrdererStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "OrdererStatus defines the observed state of Orderer",
+				Properties:  map[string]spec.Schema{},
+			},
+		},
+		Dependencies: []string{},
+	}
+}
+
+func schema_pkg_apis_fabric_v1alpha1_Peer(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "Peer is the Schema for the peers API",
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric.NodeSpec"),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("./pkg/apis/fabric/v1alpha1.PeerStatus"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"./pkg/apis/fabric/v1alpha1.PeerStatus", "github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric.NodeSpec", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+	}
+}
+
+func schema_pkg_apis_fabric_v1alpha1_PeerStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "PeerStatus defines the observed state of Peer",
+				Properties:  map[string]spec.Schema{},
 			},
 		},
 		Dependencies: []string{},
