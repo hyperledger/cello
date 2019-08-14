@@ -1,7 +1,7 @@
 export default {
   'app.operator.agent.title': 'Agent Management',
   'app.operator.agent.table.header.name': 'Name',
-  'app.operator.agent.table.header.createTime': 'Create Time',
+  'app.operator.agent.table.header.creationTime': 'Creation Time',
   'app.operator.agent.table.header.type': 'Type',
   'app.operator.agent.form.new.title': 'New Agent',
   'app.operator.agent.form.update.title': 'Update Agent',

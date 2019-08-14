@@ -144,10 +144,17 @@ class Agent extends PureComponent {
   }
 
   queryAgentList = () => {
-    const { dispatch } = this.props;
+    const {
+      dispatch,
+      agent: { pagination },
+    } = this.props;
 
     dispatch({
       type: 'agent/listAgent',
+      payload: {
+        per_page: pagination.pageSize,
+        page: pagination.current,
+      },
     });
     dispatch({
       type: 'organization/listOrganization',
@@ -339,8 +346,8 @@ class Agent extends PureComponent {
           <Col span={10}>
             <p>
               <FormattedMessage
-                id="app.operator.agent.table.header.createTime"
-                defaultMessage="Create Time"
+                id="app.operator.agent.table.header.creationTime"
+                defaultMessage="Creation Time"
               />
             </p>
             <p>{moment(createdAt).format('YYYY-MM-DD HH:mm:ss')}</p>

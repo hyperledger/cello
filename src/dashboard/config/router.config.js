@@ -62,6 +62,11 @@ export default [
             hideInMenu: true,
           },
           {
+            path: '/operator/node',
+            name: 'node',
+            component: './Operator/Node/Node',
+          },
+          {
             path: '/operator/userManagement',
             name: 'userManagement',
             component: './Operator/UserManagement',
