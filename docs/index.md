@@ -1,13 +1,13 @@
 Welcome to Hyperledger Cello
 ===
 
-![Typical Scenario](imgs/scenario.png)
+![Typical Scenario](images/scenario.png)
 
 Hyperledger Cello (HLC) is a blockchain provision and operation system, which helps people use and manage blockchains in a more efficient way.
 
 Based on advanced blockchain technologies and modern PaaS tools, Cello provides the following major features:
 
-* Manage the lifecycle of blockchain networks, e.g., `create/start/stop/delete/keep health` automatically.
+* Manage the lifecycle of blockchain networks, e.g., ==create/start/stop/delete/keep health== automatically.
 * Support customized blockchain network config, e.g., network size, consensus type.
 * Support multiple underly infrastructure including bare-metal, virtual machine, vSphere, native [Docker](https://www.docker.com) host, swarm and [Kubernetes](https://kubernetes.io). More supports on the way.
 * Extends with advanced features like monitoring, logging, health and analytics capability by integrating with existing tools like [ElasticStack](https://www.elastic.co).
@@ -19,28 +19,21 @@ Using Cello, blockchain developers can:
 * Check the system status and manage chains, upload smart contract and test... through dashboards.
 * Maintain a pool of running blockchain networks on top of bare-metals, virtual clouds (e.g., virtual machines, vsphere Clouds), container clusters (e.g., Docker, Swarm, Kubernetes).
 
-## [Getting Started](tutorial.md)
+## [Getting Started](setup/server.md)
 
-**For beginners, it is highly recommended to read the [Tutorial](tutorial.md) first**.
+**For beginners, it is highly recommended to read the [Setup](setup/server.md) first**.
 
 ## Operation Guidelines
-* [Terminologies and Concepts](terminology.md)
-* [How to setup Cello](setup/setup.md)
-* [Example Adoption Scenarios](scenario.md)
-* [Manage Cello services](service_management.md)
-* [Use the Operator Dashboard](dashboard_operator.md)
-* [Use the User Dashboard](dashboard_user.md)
-* [Configuration for Production](production_config.md)
+* [Operator operations in dashboard](operations/dashboard/operator.md)
+* [Admin operations in dashboard](operations/dashboard/admin.md)
+* [User operations in dashboard](operations/dashboard/user.md)
 
 ## [Contribute to the Project](contributing.md)
 * [How to Contribute](contributing.md)
-* [Code Style Guide](https://www.python.org/dev/peps/pep-0008/)
-* [Develop Front-end with React-Js](reactjs.md)
+* [Code Style Guide](https://black.readthedocs.io/en/stable/the_black_code_style.html)
 
 ## Design Documentation
-* [Architecture Design](arch.md)
-* [API Engine](api/index.md)
-* [Dashboard](dashboard/index.md)
+* [Architecture Design](design/arch.md)
 
 ## Communication Channels
 
