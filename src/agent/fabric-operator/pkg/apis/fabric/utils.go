@@ -98,3 +98,18 @@ func CheckAndCreateConfigMap(client client.Client, request reconcile.Request) er
 	}
 	return nil
 }
+
+type NodeSpec struct {
+	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
+	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
+	StorageSize  string            `json:"storageSize"`
+	StorageClass string            `json:"storageClass"`
+	Image        string            `json:"image"`
+	ConfigParams   []*ConfigParam   `json:"configParams"`
+}
+
+type ConfigParam struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}

@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    k8s-app: "<name>"
+  name: "<name>"
+spec:
+  selector:
+    k8s-app: "<name>"
+  type: NodePort
+  ports:
+    - name: ordererport
+      port: 7054

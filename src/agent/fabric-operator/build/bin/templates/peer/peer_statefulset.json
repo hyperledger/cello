@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: "<name>"
+spec:
+  serviceName: "<name>"
+  selector:
+    matchLabels:
+      k8s-app: "<name>"
+      type: peer
+  replicas: 1
+  volumeClaimTemplates:
+  - metadata:
+      name: peerstorage
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "default"
+      resources:
+        requests:
+          storage: "1Gi"
+  template:
+    metadata:
+      labels:
+        k8s-app: "<name>"
+        type: "peer"
+        component: "peer"
+    spec:
+      volumes:
+        - name: peercerts
+          secret:
+            secretName: peercerts
+        - name: toolset
+          configMap:
+            name: fabric-configuration-toolset
+      containers:
+        - name: peer
+          image: "<image>"
+          imagePullPolicy: Always
+          env:
+            - { name: "CORE_PEER_ID", value: "org1peer1" }
+            - { name: "CORE_PEER_COMMITTER_ENABLED", value: "true" }
+            - { name: "CORE_VM_ENDPOINT", value: "tcp://docker:2375" }
+            - { name: "CORE_LOGGING_PEER", value: "debug" }
+          volumeMounts:
+            - mountPath: "/etc/hyperledger/peer"
+              name: peerstorage
+            - mountPath: "/certs"
+              name: peercerts  
+          command: ["peer"]
+          args:  ["node", "start"]

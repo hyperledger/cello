@@ -1,0 +1,31 @@
+apiVersion: fabric.hyperledger.org/v1alpha1
+kind: Orderer
+metadata:
+  name: orderer00
+spec:
+  storageSize: "1Gi"
+  storageClass: "default"
+  image: "hyperledger/fabric-orderer:1.4.1"
+  # Add all the configurable peer parameters as 
+  # name-value pairs
+  configParams:
+    - name: ORDERER_CFG_PATH
+      value: /shared/
+    - name: ORDERER_GENERAL_LEDGERTYPE
+      value: file
+    - name: ORDERER_FILELEDGER_LOCATION
+      value: /shared/ledger/orderer
+    - name: ORDERER_GENERAL_BATCHTIMEOUT
+      value: 1s
+    - name: ORDERER_GENERAL_BATCHSIZE_MAXMESSAGECOUNT
+      value: "10"
+    - name: ORDERER_GENERAL_MAXWINDOWSIZE
+      value: "1000"
+    - name: ORDERER_GENERAL_ORDERERTYPE
+      value: solo
+    - name: ORDERER_GENERAL_LISTENADDRESS
+      value: 0.0.0.0
+    - name: ORDERER_GENERAL_LISTENPORT
+      value: "31010"
+    - name: ORDERER_GENERAL_LOGLEVEL
+      value: debug
