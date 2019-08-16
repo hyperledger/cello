@@ -29,34 +29,69 @@ spec:
           type: object
         spec:
           properties:
-            image:
-              type: string
-            secretID:
+            admin:
               description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
                 Important: Run "operator-sdk generate k8s" to regenerate code after
                 modifying this file Add custom validation using kubebuilder tags:
                 https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html'
+              type: string
+            adminPassword:
+              type: string
+            certs:
+              properties:
+                cert:
+                  type: string
+                key:
+                  type: string
+                tlsCert:
+                  type: string
+                tlsKey:
+                  type: string
+              type: object
+            dn:
+              properties:
+                c:
+                  type: string
+                cn:
+                  type: string
+                l:
+                  type: string
+                o:
+                  type: string
+                ou:
+                  type: string
+                st:
+                  type: string
+              required:
+              - c
+              - st
+              - o
+              - ou
+              type: object
+            hosts:
+              items:
+                type: string
+              type: array
+            image:
               type: string
             storageClass:
               type: string
             storageSize:
               type: string
           required:
-          - secretID
-          - storageSize
-          - storageClass
-          - image
+          - admin
+          - adminPassword
           type: object
         status:
           properties:
-            endpoint:
+            accessPoint:
               description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
                 of cluster Important: Run "operator-sdk generate k8s" to regenerate
                 code after modifying this file Add custom validation using kubebuilder
                 tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html'
               type: string
           required:
-          - endpoint
+          - accessPoint
           type: object
   version: v1alpha1
   versions:
