@@ -11,13 +11,17 @@ import (
 
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	return map[string]common.OpenAPIDefinition{
-		"./pkg/apis/fabric/v1alpha1.CA":            schema_pkg_apis_fabric_v1alpha1_CA(ref),
-		"./pkg/apis/fabric/v1alpha1.CASpec":        schema_pkg_apis_fabric_v1alpha1_CASpec(ref),
-		"./pkg/apis/fabric/v1alpha1.CAStatus":      schema_pkg_apis_fabric_v1alpha1_CAStatus(ref),
-		"./pkg/apis/fabric/v1alpha1.Orderer":       schema_pkg_apis_fabric_v1alpha1_Orderer(ref),
-		"./pkg/apis/fabric/v1alpha1.OrdererStatus": schema_pkg_apis_fabric_v1alpha1_OrdererStatus(ref),
-		"./pkg/apis/fabric/v1alpha1.Peer":          schema_pkg_apis_fabric_v1alpha1_Peer(ref),
-		"./pkg/apis/fabric/v1alpha1.PeerStatus":    schema_pkg_apis_fabric_v1alpha1_PeerStatus(ref),
+		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CA":            schema_pkg_apis_fabric_v1alpha1_CA(ref),
+		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CACerts":       schema_pkg_apis_fabric_v1alpha1_CACerts(ref),
+		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CASpec":        schema_pkg_apis_fabric_v1alpha1_CASpec(ref),
+		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CAStatus":      schema_pkg_apis_fabric_v1alpha1_CAStatus(ref),
+		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.ConfigParam":   schema_pkg_apis_fabric_v1alpha1_ConfigParam(ref),
+		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.DNSpec":        schema_pkg_apis_fabric_v1alpha1_DNSpec(ref),
+		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.NodeSpec":      schema_pkg_apis_fabric_v1alpha1_NodeSpec(ref),
+		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.Orderer":       schema_pkg_apis_fabric_v1alpha1_Orderer(ref),
+		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.OrdererStatus": schema_pkg_apis_fabric_v1alpha1_OrdererStatus(ref),
+		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.Peer":          schema_pkg_apis_fabric_v1alpha1_Peer(ref),
+		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.PeerStatus":    schema_pkg_apis_fabric_v1alpha1_PeerStatus(ref),
 	}
 }
 
@@ -48,19 +52,56 @@ func schema_pkg_apis_fabric_v1alpha1_CA(ref common.ReferenceCallback) common.Ope
 					},
 					"spec": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("./pkg/apis/fabric/v1alpha1.CASpec"),
+							Ref: ref("github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CASpec"),
 						},
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("./pkg/apis/fabric/v1alpha1.CAStatus"),
+							Ref: ref("github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CAStatus"),
 						},
 					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"./pkg/apis/fabric/v1alpha1.CASpec", "./pkg/apis/fabric/v1alpha1.CAStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+			"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CASpec", "github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CAStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+	}
+}
+
+func schema_pkg_apis_fabric_v1alpha1_CACerts(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "CACerts defines the desired state of CA",
+				Properties: map[string]spec.Schema{
+					"cert": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"key": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"tlsCert": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"tlsKey": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{},
 	}
 }
 
@@ -70,11 +111,17 @@ func schema_pkg_apis_fabric_v1alpha1_CASpec(ref common.ReferenceCallback) common
 			SchemaProps: spec.SchemaProps{
 				Description: "CASpec defines the desired state of CA",
 				Properties: map[string]spec.Schema{
-					"secretID": {
+					"admin": {
 						SchemaProps: spec.SchemaProps{
 							Description: "INSERT ADDITIONAL SPEC FIELDS - desired state of cluster Important: Run \"operator-sdk generate k8s\" to regenerate code after modifying this file Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html",
 							Type:        []string{"string"},
 							Format:      "",
+						},
+					},
+					"adminPassword": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
 						},
 					},
 					"storageSize": {
@@ -95,11 +142,35 @@ func schema_pkg_apis_fabric_v1alpha1_CASpec(ref common.ReferenceCallback) common
 							Format: "",
 						},
 					},
+					"dn": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.DNSpec"),
+						},
+					},
+					"certs": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CACerts"),
+						},
+					},
+					"hosts": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Type:   []string{"string"},
+										Format: "",
+									},
+								},
+							},
+						},
+					},
 				},
-				Required: []string{"secretID", "storageSize", "storageClass", "image"},
+				Required: []string{"admin", "adminPassword"},
 			},
 		},
-		Dependencies: []string{},
+		Dependencies: []string{
+			"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CACerts", "github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.DNSpec"},
 	}
 }
 
@@ -109,7 +180,7 @@ func schema_pkg_apis_fabric_v1alpha1_CAStatus(ref common.ReferenceCallback) comm
 			SchemaProps: spec.SchemaProps{
 				Description: "CAStatus defines the observed state of CA",
 				Properties: map[string]spec.Schema{
-					"endpoint": {
+					"accessPoint": {
 						SchemaProps: spec.SchemaProps{
 							Description: "INSERT ADDITIONAL STATUS FIELD - define observed state of cluster Important: Run \"operator-sdk generate k8s\" to regenerate code after modifying this file Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html",
 							Type:        []string{"string"},
@@ -117,10 +188,130 @@ func schema_pkg_apis_fabric_v1alpha1_CAStatus(ref common.ReferenceCallback) comm
 						},
 					},
 				},
-				Required: []string{"endpoint"},
+				Required: []string{"accessPoint"},
 			},
 		},
 		Dependencies: []string{},
+	}
+}
+
+func schema_pkg_apis_fabric_v1alpha1_ConfigParam(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Properties: map[string]spec.Schema{
+					"name": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"value": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+				},
+				Required: []string{"name", "value"},
+			},
+		},
+		Dependencies: []string{},
+	}
+}
+
+func schema_pkg_apis_fabric_v1alpha1_DNSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "DNSpec defines the desired state of CA",
+				Properties: map[string]spec.Schema{
+					"cn": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"c": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"st": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"l": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"o": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"ou": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+				},
+				Required: []string{"c", "st", "o", "ou"},
+			},
+		},
+		Dependencies: []string{},
+	}
+}
+
+func schema_pkg_apis_fabric_v1alpha1_NodeSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Properties: map[string]spec.Schema{
+					"storageSize": {
+						SchemaProps: spec.SchemaProps{
+							Description: "INSERT ADDITIONAL SPEC FIELDS - desired state of cluster Important: Run \"operator-sdk generate k8s\" to regenerate code after modifying this file Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"storageClass": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"image": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"configParams": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Ref: ref("github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.ConfigParam"),
+									},
+								},
+							},
+						},
+					},
+				},
+				Required: []string{"storageSize", "storageClass", "image", "configParams"},
+			},
+		},
+		Dependencies: []string{
+			"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.ConfigParam"},
 	}
 }
 
@@ -151,19 +342,19 @@ func schema_pkg_apis_fabric_v1alpha1_Orderer(ref common.ReferenceCallback) commo
 					},
 					"spec": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric.NodeSpec"),
+							Ref: ref("github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.NodeSpec"),
 						},
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("./pkg/apis/fabric/v1alpha1.OrdererStatus"),
+							Ref: ref("github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.OrdererStatus"),
 						},
 					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"./pkg/apis/fabric/v1alpha1.OrdererStatus", "github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric.NodeSpec", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+			"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.NodeSpec", "github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.OrdererStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
 	}
 }
 
@@ -206,19 +397,19 @@ func schema_pkg_apis_fabric_v1alpha1_Peer(ref common.ReferenceCallback) common.O
 					},
 					"spec": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric.NodeSpec"),
+							Ref: ref("github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.NodeSpec"),
 						},
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("./pkg/apis/fabric/v1alpha1.PeerStatus"),
+							Ref: ref("github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.PeerStatus"),
 						},
 					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"./pkg/apis/fabric/v1alpha1.PeerStatus", "github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric.NodeSpec", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+			"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.NodeSpec", "github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.PeerStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
 	}
 }
 

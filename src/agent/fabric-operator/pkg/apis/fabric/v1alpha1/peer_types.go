@@ -1,7 +1,6 @@
 package v1alpha1
 
 import (
-	fabric "github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -25,7 +24,7 @@ type Peer struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   fabric.NodeSpec   `json:"spec,omitempty"`
+	Spec   NodeSpec   `json:"spec,omitempty"`
 	Status PeerStatus `json:"status,omitempty"`
 }
 

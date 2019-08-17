@@ -2,7 +2,8 @@ package ca
 
 import (
 	"context"
-	"encoding/base64"
+	"strconv"
+	"strings"
 
 	fabric "github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric"
 	fabricv1alpha1 "github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1"
@@ -54,9 +55,26 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	// TODO(user): Modify this to be the types you create that are owned by the primary resource
-	// Watch for changes to secondary resource Pods and requeue the owner CA
-	err = c.Watch(&source.Kind{Type: &corev1.Pod{}}, &handler.EnqueueRequestForOwner{
+	// Watch for changes to stateful set that we create
+	err = c.Watch(&source.Kind{Type: &appsv1.StatefulSet{}}, &handler.EnqueueRequestForOwner{
+		IsController: true,
+		OwnerType:    &fabricv1alpha1.CA{},
+	})
+	if err != nil {
+		return err
+	}
+
+	// Watch for changes to secret that we create
+	err = c.Watch(&source.Kind{Type: &corev1.Secret{}}, &handler.EnqueueRequestForOwner{
+		IsController: true,
+		OwnerType:    &fabricv1alpha1.CA{},
+	})
+	if err != nil {
+		return err
+	}
+
+	// Watch for changes to services that we create
+	err = c.Watch(&source.Kind{Type: &corev1.Service{}}, &handler.EnqueueRequestForOwner{
 		IsController: true,
 		OwnerType:    &fabricv1alpha1.CA{},
 	})
@@ -111,17 +129,21 @@ func (r *ReconcileCA) Reconcile(request reconcile.Request) (reconcile.Result, er
 		return reconcile.Result{}, err
 	}
 
+	secretID := request.Name + "-secret"
 	foundSecret := &corev1.Secret{}
 	err = r.client.Get(context.TODO(),
-		types.NamespacedName{Name: instance.Spec.SecretID, Namespace: request.Namespace},
+		types.NamespacedName{Name: secretID, Namespace: request.Namespace},
 		foundSecret)
 	if err != nil && errors.IsNotFound(err) {
-		reqLogger.Error(err, "Failed to retrieve Fabric CA secrets")
-		return reconcile.Result{}, err
+		secret := r.newSecretForCR(instance, request)
+		err = r.client.Create(context.TODO(), secret)
+		if err != nil {
+			reqLogger.Error(err, "Failed to retrieve Fabric CA secrets")
+			return reconcile.Result{}, err
+		}
+		// When we reach here, it means that we have created the secret successfully
+		// and ready to do more
 	}
-	adminName, _ := base64.StdEncoding.DecodeString(string(foundSecret.Data["adminName"]))
-	adminPassword, _ := base64.StdEncoding.DecodeString(string(foundSecret.Data["adminPassword"]))
-	reqLogger.Info("The secret admin name is ", "AdminName", adminName, "AdminPassword", adminPassword)
 
 	foundService := &corev1.Service{}
 	err = r.client.Get(context.TODO(), request.NamespacedName, foundService)
@@ -136,9 +158,28 @@ func (r *ReconcileCA) Reconcile(request reconcile.Request) (reconcile.Result, er
 				service.Namespace, "Service.Name", service.Name)
 			return reconcile.Result{}, err
 		}
+		// Create the service ok, try to get its ports
+		r.client.Get(context.TODO(), request.NamespacedName, foundService)
 	} else if err != nil {
 		reqLogger.Error(err, "Failed to get CA service.")
 		return reconcile.Result{}, err
+	}
+
+	if len(foundService.Spec.Ports) > 0 && instance.Status.AccessPoint == "" {
+		if foundService.Spec.Ports[0].NodePort > 0 {
+			reqLogger.Info("The service port has been found", "Service port", foundService.Spec.Ports[0].NodePort)
+			r.client.Get(context.TODO(), request.NamespacedName, instance)
+			instance.Status.AccessPoint = "https://" + instance.Spec.Hosts[0] + ":" +
+				strconv.FormatInt(int64(foundService.Spec.Ports[0].NodePort), 10)
+			err = r.client.Status().Update(context.TODO(), instance)
+			if err != nil {
+				reqLogger.Error(err, "Failed to update CA status", "Fabric CA namespace",
+					instance.Namespace, "Fabric CA Name", instance.Name)
+				return reconcile.Result{}, err
+			}
+		} else {
+			return reconcile.Result{Requeue: true}, nil
+		}
 	}
 
 	foundSTS := &appsv1.StatefulSet{}
@@ -146,9 +187,6 @@ func (r *ReconcileCA) Reconcile(request reconcile.Request) (reconcile.Result, er
 	if err != nil && errors.IsNotFound(err) {
 		// Define a new StatefulSet object
 		sts := r.newSTSForCR(instance, request)
-		sts.Spec.Template.Spec.Containers[0].Args[2] = string(adminName) + ":" + string(adminPassword)
-		sts.Spec.Template.Spec.InitContainers[0].Env[4].ValueFrom.SecretKeyRef.Name = instance.Spec.SecretID
-		sts.Spec.Template.Spec.InitContainers[0].Env[5].ValueFrom.SecretKeyRef.Name = instance.Spec.SecretID
 		reqLogger.Info("Creating a new set.", "StatefulSet.Namespace", sts.Namespace,
 			"StatefulSet.Name", sts.Name)
 		err = r.client.Create(context.TODO(), sts)
@@ -161,13 +199,33 @@ func (r *ReconcileCA) Reconcile(request reconcile.Request) (reconcile.Result, er
 		reqLogger.Error(err, "Failed to get CA StatefulSet.")
 		return reconcile.Result{}, err
 	}
-	//return reconcile.Result{Requeue: true}, nil
+
 	return reconcile.Result{}, nil
+}
+
+// newSecretForCR returns k8s secret with the name + "-secret" /namespace as the cr
+func (r *ReconcileCA) newSecretForCR(cr *fabricv1alpha1.CA, request reconcile.Request) *corev1.Secret {
+	obj, _, _ := fabric.GetObjectFromTemplate("ca/ca_secret.yaml")
+	secret, ok := obj.(*corev1.Secret)
+	if !ok {
+		secret = nil
+	} else {
+		secret.Name = request.Name + "-secret"
+		secret.Namespace = request.Namespace
+		if cr.Spec.Certs != nil {
+			secret.Data["cert"] = []byte(cr.Spec.Certs.Cert)
+			secret.Data["key"] = []byte(cr.Spec.Certs.Key)
+			secret.Data["tlsCert"] = []byte(cr.Spec.Certs.TLSCert)
+			secret.Data["tlsKey"] = []byte(cr.Spec.Certs.TLSKey)
+		}
+		controllerutil.SetControllerReference(cr, secret, r.scheme)
+	}
+	return secret
 }
 
 // newServiceForCR returns a fabric CA service with the same name/namespace as the cr
 func (r *ReconcileCA) newServiceForCR(cr *fabricv1alpha1.CA, request reconcile.Request) *corev1.Service {
-	obj, _, _ := fabric.GetObjectFromTemplate("ca/ca_service.json")
+	obj, _, _ := fabric.GetObjectFromTemplate("ca/ca_service.yaml")
 	service, ok := obj.(*corev1.Service)
 	if !ok {
 		service = nil
@@ -183,7 +241,7 @@ func (r *ReconcileCA) newServiceForCR(cr *fabricv1alpha1.CA, request reconcile.R
 
 // newPodForCR returns a fabric CA statefulset with the same name/namespace as the cr
 func (r *ReconcileCA) newSTSForCR(cr *fabricv1alpha1.CA, request reconcile.Request) *appsv1.StatefulSet {
-	obj, _, err := fabric.GetObjectFromTemplate("ca/ca_statefulset.json")
+	obj, _, err := fabric.GetObjectFromTemplate("ca/ca_statefulset.yaml")
 	if err != nil {
 		log.Error(err, "Failed to load statefulset.")
 	}
@@ -202,7 +260,41 @@ func (r *ReconcileCA) newSTSForCR(cr *fabricv1alpha1.CA, request reconcile.Reque
 		sts.Spec.Template.Labels["k8s-app"] = sts.Name
 		sts.Spec.Template.Spec.Containers[0].Image =
 			fabric.GetDefault(cr.Spec.Image, "hyperledger/fabric-ca:1.4.1").(string)
-		sts.Spec.Template.Spec.Volumes[0].VolumeSource.Secret.SecretName = cr.Spec.SecretID
+		sts.Spec.Template.Spec.Volumes[0].VolumeSource.Secret.SecretName = request.Name + "-secret"
+
+		sts.Spec.Template.Spec.InitContainers[0].Env[4].Value = cr.Spec.Admin
+		sts.Spec.Template.Spec.InitContainers[0].Env[5].Value = cr.Spec.AdminPassword
+		if cr.Spec.DN == nil {
+			cr.Spec.DN = &fabricv1alpha1.DNSpec{CN: request.Name, C: "US", ST: "North Carolina",
+				L: "", O: "Hyperledger", OU: "Fabric"}
+		}
+		sts.Spec.Template.Spec.InitContainers[0].Env =
+			append(sts.Spec.Template.Spec.InitContainers[0].Env,
+				corev1.EnvVar{Name: "FCO_CN_NAME", Value: cr.Spec.DN.CN},
+				corev1.EnvVar{Name: "FCO_COUNTRY_NAME", Value: cr.Spec.DN.C},
+				corev1.EnvVar{Name: "FCO_STATE_NAME", Value: cr.Spec.DN.ST},
+				corev1.EnvVar{Name: "FCO_TOWN_NAME", Value: cr.Spec.DN.L},
+				corev1.EnvVar{Name: "FCO_ORGANIZATION_NAME", Value: cr.Spec.DN.O},
+				corev1.EnvVar{Name: "FCO_ORGANIZATION_UNIT", Value: cr.Spec.DN.OU},
+			)
+		if len(cr.Spec.Hosts) > 0 {
+			hosts := "[" + strings.Join(cr.Spec.Hosts, ",") + "]"
+			sts.Spec.Template.Spec.InitContainers[0].Env =
+				append(sts.Spec.Template.Spec.InitContainers[0].Env,
+					corev1.EnvVar{Name: "FCO_HOSTS", Value: hosts},
+				)
+		}
+
+		sts.Spec.Template.Spec.Containers[0].Env[1].Value = request.Name
+		if cr.Spec.Certs != nil {
+			sts.Spec.Template.Spec.Containers[0].Env =
+				append(sts.Spec.Template.Spec.Containers[0].Env,
+					corev1.EnvVar{Name: "FABRIC_CA_SERVER_CA_KEYFILE", Value: "/certs/key"},
+					corev1.EnvVar{Name: "FABRIC_CA_SERVER_CA_CERTFILE", Value: "/certs/cert"},
+					corev1.EnvVar{Name: "FABRIC_CA_SERVER_TLS_KEYFILE", Value: "/certs/tlsKey"},
+					corev1.EnvVar{Name: "FABRIC_CA_SERVER_TLS_CERTFILE", Value: "/certs/tlsCert"},
+				)
+		}
 		controllerutil.SetControllerReference(cr, sts, r.scheme)
 	}
 	return sts

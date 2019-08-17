@@ -19,6 +19,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sync"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -73,7 +74,13 @@ func CheckAndCreateConfigMap(client client.Client, request reconcile.Request) er
 		types.NamespacedName{Name: "fabric-configuration-toolset", Namespace: request.Namespace},
 		configmap)
 	if err != nil {
-		if errors.IsNotFound(err) {
+		var mutex = &sync.Mutex{}
+		mutex.Lock()
+		defer mutex.Unlock()
+		err = client.Get(context.TODO(),
+			types.NamespacedName{Name: "fabric-configuration-toolset", Namespace: request.Namespace},
+			configmap)
+		if err != nil && errors.IsNotFound(err) {
 			log.Info("Fabric CA configmap resource not found. We need to create it")
 			configmap.Namespace = request.Namespace
 			configmap.Name = "fabric-configuration-toolset"
@@ -93,23 +100,6 @@ func CheckAndCreateConfigMap(client client.Client, request reconcile.Request) er
 			}
 			return nil
 		}
-		// Error reading the object - requeue the request.
-		log.Error(err, "Failed to get Fabric configMap.")
 	}
 	return nil
-}
-
-type NodeSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
-	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	StorageSize  string            `json:"storageSize"`
-	StorageClass string            `json:"storageClass"`
-	Image        string            `json:"image"`
-	ConfigParams   []*ConfigParam   `json:"configParams"`
-}
-
-type ConfigParam struct {
-	Name  string `json:"name"`
-	Value string `json:"value"`
 }
