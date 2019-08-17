@@ -4,6 +4,13 @@
 
 Hyperledger Cello is a blockchain provision and operation system, which helps manage blockchain networks in an efficient way.
 
+1. [Introduction](#introduction)
+2. [Main Features](#main-features)
+3. [Quick Start](#quick-start)
+4. [Documentation](#documentation-getting-started-and-develop-guideline)
+5. [Why named cello?](#why-named-cello)
+6. [Notice](#incubation-notice)
+
 ## Introduction
 Using Cello, everyone can easily:
 
@@ -15,6 +22,75 @@ Using Cello, everyone can easily:
 A typical usage scenario is illustrated as:
 
 ![Typical Scenario](docs/imgs/scenario.png)
+
+## Quick Start
+
+Environmental preparation:
+
+1. docker [how install](https://get.docker.com)
+2. docker-compose [how install](https://docs.docker.com/compose/install/)
+3. make `all script for cello service management is written in Makefile`
+4. kubernetes (`optional`) [how install](https://kubernetes.io/docs/setup/)
+
+If environment is prepared, then we can start cello service.
+
+* Build essential images for cello service (Optional, because currently the dockerhub image auto build haven't ready, in the future you can ignore this step.)
+
+```bash
+# make docker
+```
+
+* Start cello service, default deployment method is using docker-compose, if you have kubernetes environment,
+you can change deployment method to kubernetes through `DEPLOY_METHOD=k8s make start`.
+
+```bash
+# make start
+```
+
+After service started up, if use docker-compose method, you can see output:
+
+```bash
+CONTAINER ID        IMAGE                          COMMAND                  CREATED             STATUS              PORTS
+       NAMES
+ddf938ed927e        hyperledger/cello-dashboard    "bash -c '/config-ng…"   2 days ago          Up 2 days           0.0.0.0:8081->80/tcp
+       cello-dashboard
+41ab47784b28        hyperledger/cello-api-engine   "/bin/sh -c 'bash /e…"   2 days ago          Up 2 days           0.0.0.0:8085->8080/tcp
+       cello-api-engine
+073a5f46276e        hyperledger/cello-api-engine   "bash -c 'celery -A …"   2 days ago          Up 2 days
+       cello-api-engine-tasks
+54d2c615d7d9        postgres:11.1                  "docker-entrypoint.s…"   2 days ago          Up 2 days           5432/tcp
+       cello-postgres-server
+1e0fc6386891        redis:4.0.13                   "docker-entrypoint.s…"   2 days ago          Up 2 days           6379/tcp
+       cello-redis
+```
+
+If use kubernetes method to deploy, the output is:
+
+```bash
+NAME                                     READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.extensions/api-engine         1/1     1            1           7s
+deployment.extensions/api-engine-tasks   1/1     1            1           7s
+deployment.extensions/postgres           1/1     1            1           8s
+deployment.extensions/redis              1/1     1            1           8s
+
+NAME                                    READY   STATUS    RESTARTS   AGE
+pod/api-engine-5844d7d9d4-zqw9k         1/1     Running   0          7s
+pod/api-engine-tasks-74484d6f45-jj6p9   1/1     Running   0          7s
+pod/postgres-774d5cd5f-p5j5l            1/1     Running   0          8s
+pod/redis-6bf574b8c5-p2dnl              1/1     Running   0          7s
+
+NAME                                    HOSTS   ADDRESS   PORTS   AGE
+ingress.extensions/ingress-api-engine   *                 80      7s
+```
+
+If you visit the dashboard through 8081 port, the default username/password is `admin/pass`.
+
+* Stop cello service, same as start, need set the `DEPLOY_METHOD` variable.
+
+```bash
+# make stop
+```
+
 
 ## Main Features
 * Manage the lifecycle of blockchains, e.g., create/start/stop/delete/keep health automatically.
