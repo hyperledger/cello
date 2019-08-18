@@ -14,3 +14,13 @@ define build_docker_locally
 		. ;
 	@touch $@ ;
 endef
+
+define build_docker_hub
+	dir=$*; \
+	IMG=hyperledger/$(2)-$$dir; \
+	echo "Building $$IMG"; \
+	docker build \
+	-t $$IMG \
+	-t $$IMG:x86_64-latest \
+	build_image/dockerhub/latest/$(1)/$$dir
+endef

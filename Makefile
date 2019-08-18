@@ -134,18 +134,21 @@ agent-docker-%:
 
 docker-clean: stop image-clean ##@Clean all existing images
 
-DOCKERHUB_IMAGES = baseimage engine operator-dashboard user-dashboard watchdog ansible-agent parse-server
+DOCKERHUB_COMMON_IMAGES = api-engine dashboard
 
-dockerhub: $(patsubst %,dockerhub-%,$(DOCKERHUB_IMAGES))  ##@Building latest docker images as hosted in dockerhub
+dockerhub-common: $(patsubst %,dockerhub-common-%,$(DOCKERHUB_COMMON_IMAGES))  ##@Building latest docker images as hosted in dockerhub
 
-dockerhub-%: ##@Building latest images with dockerhub materials, to valid them
-	dir=$*; \
-	IMG=hyperledger/cello-$$dir; \
-	echo "Building $$IMG"; \
-	docker build \
-	-t $$IMG \
-	-t $$IMG:x86_64-latest \
-	build_image/dockerhub/latest/$$dir
+dockerhub-common-%: ##@Building latest images with dockerhub materials, to valid them
+	$(call build_docker_hub,common,$(BASENAME))
+
+DOCKERHUB_AGENT_IMAGES = ansible kubernetes
+
+dockerhub-agent: $(patsubst %,dockerhub-agent-%,$(DOCKERHUB_AGENT_IMAGES))  ##@Building latest docker images as hosted in dockerhub
+
+dockerhub-agent-%: ##@Building latest images with dockerhub materials, to valid them
+	$(call build_docker_hub,agent,$(AGENT_BASENAME))
+
+dockerhub: dockerhub-common dockerhub-agent
 
 dockerhub-pull: ##@Pull service images from dockerhub
 	cd scripts/master_node && bash download_images.sh
