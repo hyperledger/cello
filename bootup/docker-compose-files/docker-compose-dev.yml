@@ -82,10 +82,10 @@ services:
     - ADMIN_TOKEN=$API_ENGINE_ADMIN_TOKEN
     - CELERY_BROKER_URL=redis://redis
     - API_VERSION=$API_VERSION
+    - RUN_MODE=task
     volumes:
     - $ROOT_PATH/src/api-engine:/var/www/server
     - /var/run/docker.sock:/var/run/docker.sock
-    command: bash -c "celery -A api_engine worker -l info"
 
   dashboard:
     image: hyperledger/cello-dashboard

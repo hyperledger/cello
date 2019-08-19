@@ -15,4 +15,6 @@ RUN cd /var/www/server/api_engine && cp settings.py.initial settings.py && cd ..
 
 WORKDIR /var/www/server
 
+ENV RUN_MODE server
+
 CMD bash /entrypoint.sh

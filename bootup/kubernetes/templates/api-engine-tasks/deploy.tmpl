@@ -13,14 +13,14 @@ spec:
       - name: api-engine-tasks
         image: hyperledger/cello-api-engine
         imagePullPolicy: IfNotPresent
-        command: ["celery"]
-        args: ["-A", "api_engine", "worker", "--autoscale=20,6", "-l", "info"]
         envFrom:
         - configMapRef:
             name: ${CONFIG_API_ENGINE_NAME}
         env:
         - name: DEBUG
           value: "True"
+        - name: RUN_MODE
+          value: "task"
         volumeMounts:
         - name: api-engine
           mountPath: /var/www/server
