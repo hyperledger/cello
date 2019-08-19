@@ -54,7 +54,6 @@ services:
       - ADMIN_USERNAME=$API_ENGINE_ADMIN_USERNAME
       - ADMIN_PASSWORD=$API_ENGINE_ADMIN_PASSWORD
       - ADMIN_EMAIL=$API_ENGINE_ADMIN_EMAIL
-      - DOCKER_HOST=$DOCKER_HOST
       - API_VERSION=$API_VERSION
     ports:
       - "${API_ENGINE_SERVICE_PORT}:8080"
@@ -83,6 +82,7 @@ services:
     - CELERY_BROKER_URL=redis://redis
     - API_VERSION=$API_VERSION
     - RUN_MODE=task
+    - DOCKER_HOST=$API_DOCKER_HOST
     volumes:
     - $ROOT_PATH/src/api-engine:/var/www/server
     - /var/run/docker.sock:/var/run/docker.sock
