@@ -48,36 +48,40 @@ spec:
                 tlsKey:
                   type: string
               type: object
-            dn:
+            nodeSpec:
               properties:
-                c:
+                configParams:
+                  items:
+                    properties:
+                      name:
+                        type: string
+                      value:
+                        type: string
+                    required:
+                    - name
+                    - value
+                    type: object
+                  type: array
+                hosts:
+                  items:
+                    type: string
+                  type: array
+                image:
+                  description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+                    Important: Run "operator-sdk generate k8s" to regenerate code
+                    after modifying this file Add custom validation using kubebuilder
+                    tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html'
                   type: string
-                cn:
+                resources:
+                  type: object
+                storageClass:
                   type: string
-                l:
-                  type: string
-                o:
-                  type: string
-                ou:
-                  type: string
-                st:
+                storageSize:
                   type: string
               required:
-              - c
-              - st
-              - o
-              - ou
+              - image
+              - configParams
               type: object
-            hosts:
-              items:
-                type: string
-              type: array
-            image:
-              type: string
-            storageClass:
-              type: string
-            storageSize:
-              type: string
           required:
           - admin
           - adminPassword

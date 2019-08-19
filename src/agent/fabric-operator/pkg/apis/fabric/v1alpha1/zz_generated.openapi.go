@@ -16,7 +16,6 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CASpec":        schema_pkg_apis_fabric_v1alpha1_CASpec(ref),
 		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CAStatus":      schema_pkg_apis_fabric_v1alpha1_CAStatus(ref),
 		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.ConfigParam":   schema_pkg_apis_fabric_v1alpha1_ConfigParam(ref),
-		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.DNSpec":        schema_pkg_apis_fabric_v1alpha1_DNSpec(ref),
 		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.NodeSpec":      schema_pkg_apis_fabric_v1alpha1_NodeSpec(ref),
 		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.Orderer":       schema_pkg_apis_fabric_v1alpha1_Orderer(ref),
 		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.OrdererStatus": schema_pkg_apis_fabric_v1alpha1_OrdererStatus(ref),
@@ -124,45 +123,14 @@ func schema_pkg_apis_fabric_v1alpha1_CASpec(ref common.ReferenceCallback) common
 							Format: "",
 						},
 					},
-					"storageSize": {
-						SchemaProps: spec.SchemaProps{
-							Type:   []string{"string"},
-							Format: "",
-						},
-					},
-					"storageClass": {
-						SchemaProps: spec.SchemaProps{
-							Type:   []string{"string"},
-							Format: "",
-						},
-					},
-					"image": {
-						SchemaProps: spec.SchemaProps{
-							Type:   []string{"string"},
-							Format: "",
-						},
-					},
-					"dn": {
-						SchemaProps: spec.SchemaProps{
-							Ref: ref("github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.DNSpec"),
-						},
-					},
 					"certs": {
 						SchemaProps: spec.SchemaProps{
 							Ref: ref("github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CACerts"),
 						},
 					},
-					"hosts": {
+					"nodeSpec": {
 						SchemaProps: spec.SchemaProps{
-							Type: []string{"array"},
-							Items: &spec.SchemaOrArray{
-								Schema: &spec.Schema{
-									SchemaProps: spec.SchemaProps{
-										Type:   []string{"string"},
-										Format: "",
-									},
-								},
-							},
+							Ref: ref("github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.NodeSpec"),
 						},
 					},
 				},
@@ -170,7 +138,7 @@ func schema_pkg_apis_fabric_v1alpha1_CASpec(ref common.ReferenceCallback) common
 			},
 		},
 		Dependencies: []string{
-			"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CACerts", "github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.DNSpec"},
+			"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CACerts", "github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.NodeSpec"},
 	}
 }
 
@@ -220,78 +188,16 @@ func schema_pkg_apis_fabric_v1alpha1_ConfigParam(ref common.ReferenceCallback) c
 	}
 }
 
-func schema_pkg_apis_fabric_v1alpha1_DNSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
-	return common.OpenAPIDefinition{
-		Schema: spec.Schema{
-			SchemaProps: spec.SchemaProps{
-				Description: "DNSpec defines the desired state of CA",
-				Properties: map[string]spec.Schema{
-					"cn": {
-						SchemaProps: spec.SchemaProps{
-							Type:   []string{"string"},
-							Format: "",
-						},
-					},
-					"c": {
-						SchemaProps: spec.SchemaProps{
-							Type:   []string{"string"},
-							Format: "",
-						},
-					},
-					"st": {
-						SchemaProps: spec.SchemaProps{
-							Type:   []string{"string"},
-							Format: "",
-						},
-					},
-					"l": {
-						SchemaProps: spec.SchemaProps{
-							Type:   []string{"string"},
-							Format: "",
-						},
-					},
-					"o": {
-						SchemaProps: spec.SchemaProps{
-							Type:   []string{"string"},
-							Format: "",
-						},
-					},
-					"ou": {
-						SchemaProps: spec.SchemaProps{
-							Type:   []string{"string"},
-							Format: "",
-						},
-					},
-				},
-				Required: []string{"c", "st", "o", "ou"},
-			},
-		},
-		Dependencies: []string{},
-	}
-}
-
 func schema_pkg_apis_fabric_v1alpha1_NodeSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Properties: map[string]spec.Schema{
-					"storageSize": {
+					"image": {
 						SchemaProps: spec.SchemaProps{
 							Description: "INSERT ADDITIONAL SPEC FIELDS - desired state of cluster Important: Run \"operator-sdk generate k8s\" to regenerate code after modifying this file Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html",
 							Type:        []string{"string"},
 							Format:      "",
-						},
-					},
-					"storageClass": {
-						SchemaProps: spec.SchemaProps{
-							Type:   []string{"string"},
-							Format: "",
-						},
-					},
-					"image": {
-						SchemaProps: spec.SchemaProps{
-							Type:   []string{"string"},
-							Format: "",
 						},
 					},
 					"configParams": {
@@ -306,12 +212,42 @@ func schema_pkg_apis_fabric_v1alpha1_NodeSpec(ref common.ReferenceCallback) comm
 							},
 						},
 					},
+					"hosts": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Type:   []string{"string"},
+										Format: "",
+									},
+								},
+							},
+						},
+					},
+					"resources": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/api/core/v1.ResourceRequirements"),
+						},
+					},
+					"storageClass": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"storageSize": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
 				},
-				Required: []string{"storageSize", "storageClass", "image", "configParams"},
+				Required: []string{"image", "configParams"},
 			},
 		},
 		Dependencies: []string{
-			"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.ConfigParam"},
+			"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.ConfigParam", "k8s.io/api/core/v1.ResourceRequirements"},
 	}
 }
 

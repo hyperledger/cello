@@ -159,7 +159,7 @@ func (r *ReconcileOrderer) Reconcile(request reconcile.Request) (reconcile.Resul
 
 // newServiceForCR returns a fabric Orderer service with the same name/namespace as the cr
 func (r *ReconcileOrderer) newServiceForCR(cr *fabricv1alpha1.Orderer, request reconcile.Request) *corev1.Service {
-	obj, _, _ := fabric.GetObjectFromTemplate("orderer/orderer_service.json")
+	obj, _, _ := fabric.GetObjectFromTemplate("orderer/orderer_service.yaml")
 	service, ok := obj.(*corev1.Service)
 	if !ok {
 		service = nil
@@ -175,7 +175,7 @@ func (r *ReconcileOrderer) newServiceForCR(cr *fabricv1alpha1.Orderer, request r
 
 // newPodForCR returns a fabric Orderer statefulset with the same name/namespace as the cr
 func (r *ReconcileOrderer) newSTSForCR(cr *fabricv1alpha1.Orderer, request reconcile.Request) *appsv1.StatefulSet {
-	obj, _, err := fabric.GetObjectFromTemplate("orderer/orderer_statefulset.json")
+	obj, _, err := fabric.GetObjectFromTemplate("orderer/orderer_statefulset.yaml")
 	if err != nil {
 		log.Error(err, "Failed to load statefulset.")
 	}
@@ -196,15 +196,12 @@ func (r *ReconcileOrderer) newSTSForCR(cr *fabricv1alpha1.Orderer, request recon
 			fabric.GetDefault(cr.Spec.Image, "hyperledger/fabric-orderer:1.4.1").(string)
 		containerEnvs := []corev1.EnvVar{}
 		for _, e := range cr.Spec.ConfigParams {
-			envName := e.Name
-			envValue := e.Value
-			env := corev1.EnvVar{
-				Name:  envName,
-				Value: envValue,
-			}
-			containerEnvs = append(containerEnvs, env)
+			containerEnvs = append(containerEnvs, corev1.EnvVar{
+				Name: e.Name, Value: e.Value,
+			})
 		}
 		sts.Spec.Template.Spec.Containers[0].Env = containerEnvs
+		sts.Spec.Template.Spec.Containers[0].Resources = cr.Spec.Resources
 		controllerutil.SetControllerReference(cr, sts, r.scheme)
 	}
 	return sts

@@ -7,17 +7,6 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-// DNSpec defines the desired state of CA
-// +k8s:openapi-gen=true
-type DNSpec struct {
-	CN string `json:"cn,omitempty"`
-	C  string `json:"c"`
-	ST string `json:"st"`
-	L  string `json:"l,omitempty"`
-	O  string `json:"o"`
-	OU string `json:"ou"`
-}
-
 // CACerts defines the desired state of CA
 // +k8s:openapi-gen=true
 type CACerts struct {
@@ -35,12 +24,8 @@ type CASpec struct {
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 	Admin         string   `json:"admin"`
 	AdminPassword string   `json:"adminPassword"`
-	StorageSize   string   `json:"storageSize,omitempty"`
-	StorageClass  string   `json:"storageClass,omitempty"`
-	Image         string   `json:"image,omitempty"`
-	DN            *DNSpec  `json:"dn,omitempty"`
 	Certs         *CACerts `json:"certs,omitempty"`
-	Hosts         []string `json:"hosts,omitempty"`
+	NodeSpec      `json:"nodeSpec,omitempty"`
 }
 
 // CAStatus defines the observed state of CA

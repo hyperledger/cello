@@ -68,13 +68,16 @@ func GetDefault(p interface{}, v interface{}) interface{} {
 	return p
 }
 
+// global mutex to ensure that not trying to create configmaps many times
+var mutex = &sync.Mutex{}
+
+// CheckAndCreateConfigMap - Try to check if the configmap exists, if not, create one
 func CheckAndCreateConfigMap(client client.Client, request reconcile.Request) error {
 	configmap := &corev1.ConfigMap{}
 	err := client.Get(context.TODO(),
 		types.NamespacedName{Name: "fabric-configuration-toolset", Namespace: request.Namespace},
 		configmap)
 	if err != nil {
-		var mutex = &sync.Mutex{}
 		mutex.Lock()
 		defer mutex.Unlock()
 		err = client.Get(context.TODO(),
@@ -102,4 +105,21 @@ func CheckAndCreateConfigMap(client client.Client, request reconcile.Request) er
 		}
 	}
 	return nil
+}
+
+func GetNodeIPaddress(c client.Client) ([]string, error) {
+
+	nodeList := &corev1.NodeList{}
+	err := c.List(context.TODO(), &client.ListOptions{}, nodeList)
+	addresses := []string{}
+	if err == nil {
+		for _, node := range nodeList.Items {
+			for _, address := range node.Status.Addresses {
+				if address.Type == corev1.NodeExternalIP {
+					addresses = append(addresses, address.Address)
+				}
+			}
+		}
+	}
+	return addresses, err
 }

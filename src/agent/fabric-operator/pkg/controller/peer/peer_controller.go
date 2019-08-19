@@ -159,7 +159,7 @@ func (r *ReconcilePeer) Reconcile(request reconcile.Request) (reconcile.Result, 
 
 // newServiceForCR returns a fabric Peer service with the same name/namespace as the cr
 func (r *ReconcilePeer) newServiceForCR(cr *fabricv1alpha1.Peer, request reconcile.Request) *corev1.Service {
-	obj, _, _ := fabric.GetObjectFromTemplate("peer/peer_service.json")
+	obj, _, _ := fabric.GetObjectFromTemplate("peer/peer_service.yaml")
 	service, ok := obj.(*corev1.Service)
 	if !ok {
 		service = nil
@@ -175,7 +175,7 @@ func (r *ReconcilePeer) newServiceForCR(cr *fabricv1alpha1.Peer, request reconci
 
 // newPodForCR returns a fabric Peer statefulset with the same name/namespace as the cr
 func (r *ReconcilePeer) newSTSForCR(cr *fabricv1alpha1.Peer, request reconcile.Request) *appsv1.StatefulSet {
-	obj, _, err := fabric.GetObjectFromTemplate("peer/peer_statefulset.json")
+	obj, _, err := fabric.GetObjectFromTemplate("peer/peer_statefulset.yaml")
 	if err != nil {
 		log.Error(err, "Failed to load statefulset.")
 	}
@@ -196,15 +196,12 @@ func (r *ReconcilePeer) newSTSForCR(cr *fabricv1alpha1.Peer, request reconcile.R
 			fabric.GetDefault(cr.Spec.Image, "hyperledger/fabric-peer:1.4.1").(string)
 		containerEnvs := []corev1.EnvVar{}
 		for _, e := range cr.Spec.ConfigParams {
-			envName := e.Name
-			envValue := e.Value
-			env := corev1.EnvVar{
-				Name:  envName,
-				Value: envValue,
-			}
-			containerEnvs = append(containerEnvs, env)
+			containerEnvs = append(containerEnvs, corev1.EnvVar{
+				Name: e.Name, Value: e.Value,
+			})
 		}
 		sts.Spec.Template.Spec.Containers[0].Env = containerEnvs
+		sts.Spec.Template.Spec.Containers[0].Resources = cr.Spec.Resources
 		controllerutil.SetControllerReference(cr, sts, r.scheme)
 	}
 	return sts

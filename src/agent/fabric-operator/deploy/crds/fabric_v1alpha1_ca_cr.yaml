@@ -8,16 +8,45 @@ spec:
   # you have the k8s secret created.
   admin: "sampleadmin"
   adminPassword: "samplepassword"
+
+  # Specify Fabric binaries to be used to setup the fabric CA
+  image: "hyperledger/fabric-ca:1.4.1"
+
+  # Specify storage being used by this Certificate Authority.
   storageSize: "1Gi"
   storageClass: "default"
-  image: "hyperledger/fabric-ca:1.4.1"
-  dn:
-    cn: "sample-ca"
-    c: "US"
-    st: "North Carolina"
-    o: "sample org"
-    ou: "sample org unit"
-  hosts:
-    - "169.60.199.123"
-    - "169.60.199.120"
 
+  # If you have an set of certs that you like to use instead of
+  # generating a set by Fabric CA, you can specify as the following.
+  # Certificates and private keys have all to be base64 encoded as
+  # the values of the each item below.
+  # certs:
+  #   cert: "The base64 encoded certificate"
+  #   key: "The base64 encoded private key"
+  #   tlsCert: "The base64 encoded tls certificate"
+  #   tlsKey: "The base64 encoded tls private key"
+
+  # Optionally, FQDN can also be specified
+  # hosts: ["ca.sample.com", "169.45.20.0"]
+
+  # To specify resource limits for this CA node,
+  # use kubernetes resource requirements spec
+  # resources:
+  #   requests:
+  #     memory: "32Mi"
+  #     cpu: "200m"
+  #   limits:
+  #     memory: "1024mi"
+  #     cpu: "250"
+
+  # To specify more environment variables for Fabric CA, use the
+  # following parameters:
+  # configParams:
+  #   FABRIC_CA_SERVER_PORT: 7054
+  #   FABRIC_CA_SERVER_DEBUG: false
+  #   FABRIC_CA_SERVER_CSR_HOSTS: []
+  #   FABRIC_CA_SERVER_CSR_NAMES_0_C: US
+  #   FABRIC_CA_SERVER_CSR_NAMES_0_ST: "North Carolina"
+  #   FABRIC_CA_SERVER_CSR_NAMES_0_L: "Cary"
+  #   FABRIC_CA_SERVER_CSR_NAMES_0_O: "Sample Org"
+  #   FABRIC_CA_SERVER_CSR_NAMES_0_OU: "Sample Org Unit"

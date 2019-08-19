@@ -169,8 +169,19 @@ func (r *ReconcileCA) Reconcile(request reconcile.Request) (reconcile.Result, er
 		if foundService.Spec.Ports[0].NodePort > 0 {
 			reqLogger.Info("The service port has been found", "Service port", foundService.Spec.Ports[0].NodePort)
 			r.client.Get(context.TODO(), request.NamespacedName, instance)
-			instance.Status.AccessPoint = "https://" + instance.Spec.Hosts[0] + ":" +
-				strconv.FormatInt(int64(foundService.Spec.Ports[0].NodePort), 10)
+
+			allHostIPs, _ := fabric.GetNodeIPaddress(r.client)
+			publicIPs := append(instance.Spec.Hosts, allHostIPs...)
+
+			if len(publicIPs) > 0 {
+				// Got some public IPs, set access point accordingly
+				instance.Status.AccessPoint = "https://:" + publicIPs[0] + ":" +
+					strconv.FormatInt(int64(foundService.Spec.Ports[0].NodePort), 10)
+			} else {
+				// Not getting any public accessible IPs, only expose port
+				instance.Status.AccessPoint =
+					strconv.FormatInt(int64(foundService.Spec.Ports[0].NodePort), 10)
+			}
 			err = r.client.Status().Update(context.TODO(), instance)
 			if err != nil {
 				reqLogger.Error(err, "Failed to update CA status", "Fabric CA namespace",
@@ -264,28 +275,23 @@ func (r *ReconcileCA) newSTSForCR(cr *fabricv1alpha1.CA, request reconcile.Reque
 
 		sts.Spec.Template.Spec.InitContainers[0].Env[4].Value = cr.Spec.Admin
 		sts.Spec.Template.Spec.InitContainers[0].Env[5].Value = cr.Spec.AdminPassword
-		if cr.Spec.DN == nil {
-			cr.Spec.DN = &fabricv1alpha1.DNSpec{CN: request.Name, C: "US", ST: "North Carolina",
-				L: "", O: "Hyperledger", OU: "Fabric"}
-		}
+		clusterIPs, _ := fabric.GetNodeIPaddress(r.client)
+		cr.Spec.Hosts = append(cr.Spec.Hosts, clusterIPs...)
+		hosts := "[" + strings.Join(cr.Spec.Hosts, ",") + "]"
 		sts.Spec.Template.Spec.InitContainers[0].Env =
 			append(sts.Spec.Template.Spec.InitContainers[0].Env,
-				corev1.EnvVar{Name: "FCO_CN_NAME", Value: cr.Spec.DN.CN},
-				corev1.EnvVar{Name: "FCO_COUNTRY_NAME", Value: cr.Spec.DN.C},
-				corev1.EnvVar{Name: "FCO_STATE_NAME", Value: cr.Spec.DN.ST},
-				corev1.EnvVar{Name: "FCO_TOWN_NAME", Value: cr.Spec.DN.L},
-				corev1.EnvVar{Name: "FCO_ORGANIZATION_NAME", Value: cr.Spec.DN.O},
-				corev1.EnvVar{Name: "FCO_ORGANIZATION_UNIT", Value: cr.Spec.DN.OU},
+				corev1.EnvVar{Name: "FCO_HOSTS", Value: hosts},
 			)
-		if len(cr.Spec.Hosts) > 0 {
-			hosts := "[" + strings.Join(cr.Spec.Hosts, ",") + "]"
-			sts.Spec.Template.Spec.InitContainers[0].Env =
-				append(sts.Spec.Template.Spec.InitContainers[0].Env,
-					corev1.EnvVar{Name: "FCO_HOSTS", Value: hosts},
-				)
+
+		sts.Spec.Template.Spec.Containers[0].Resources = cr.Spec.Resources
+		sts.Spec.Template.Spec.Containers[0].Env[1].Value = request.Name
+		for _, configParam := range cr.Spec.ConfigParams {
+			sts.Spec.Template.Spec.Containers[0].Env =
+				append(sts.Spec.Template.Spec.Containers[0].Env, corev1.EnvVar{
+					Name: configParam.Name, Value: configParam.Value,
+				})
 		}
 
-		sts.Spec.Template.Spec.Containers[0].Env[1].Value = request.Name
 		if cr.Spec.Certs != nil {
 			sts.Spec.Template.Spec.Containers[0].Env =
 				append(sts.Spec.Template.Spec.Containers[0].Env,
@@ -295,6 +301,7 @@ func (r *ReconcileCA) newSTSForCR(cr *fabricv1alpha1.CA, request reconcile.Reque
 					corev1.EnvVar{Name: "FABRIC_CA_SERVER_TLS_CERTFILE", Value: "/certs/tlsCert"},
 				)
 		}
+
 		controllerutil.SetControllerReference(cr, sts, r.scheme)
 	}
 	return sts

@@ -6,6 +6,17 @@ spec:
   storageSize: "1Gi"
   storageClass: "default"
   image: "hyperledger/fabric-orderer:1.4.1"
+
+  # To specify resource limits for this orderer node,
+  # use kubernetes resource requirements spec
+  # resources:
+  #   requests:
+  #     memory: "32Mi"
+  #     cpu: "200m"
+  #   limits:
+  #     memory: "1024mi"
+  #     cpu: "250"
+
   # Add all the configurable peer parameters as 
   # name-value pairs
   configParams:

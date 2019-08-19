@@ -5,15 +5,21 @@
 // +groupName=fabric.hyperledger.org
 package v1alpha1
 
+import (
+	corev1 "k8s.io/api/core/v1"
+)
+
 // +k8s:openapi-gen=true
 type NodeSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	StorageSize  string        `json:"storageSize"`
-	StorageClass string        `json:"storageClass"`
-	Image        string        `json:"image"`
-	ConfigParams []ConfigParam `json:"configParams"`
+	Image        string                      `json:"image"`
+	ConfigParams []ConfigParam               `json:"configParams"`
+	Hosts        []string                    `json:"hosts,omitempty"`
+	Resources    corev1.ResourceRequirements `json:"resources,omitempty"`
+	StorageClass string                      `json:"storageClass,omitempty"`
+	StorageSize  string                      `json:"storageSize,omitempty"`
 }
 
 // +k8s:openapi-gen=true

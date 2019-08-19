@@ -19,15 +19,8 @@ ldap:
   enabled: false
 
 csr:
-  cn: $FCO_CN_NAME
   keyrequest:
     algo: ecdsa
     size: 256
   serialnumber:
-  names:
-    - C: $FCO_COUNTRY_NAME
-      ST: $FCO_STATE_NAME
-      L: $FCO_TOWN_NAME
-      O: $FCO_ORGANIZATION_NAME
-      OU: $FCO_ORGANIZATION_UNIT
   hosts: $FCO_HOSTS

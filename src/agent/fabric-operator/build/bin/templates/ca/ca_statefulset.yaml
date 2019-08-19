@@ -45,15 +45,9 @@ spec:
             - name: "PERMISSIONS_FOLDERS"
               value: "/etc/hyperledger/fabric-ca-server"
             - name: "FCO_CA_ADMIN_NAME"
-              valueFrom:
-                secretKeyRef:
-                  name: to-be-replaced
-                  key: adminName
+              value: ""
             - name: "FCO_CA_ADMIN_PASSWORD"
-              valueFrom:
-                secretKeyRef:
-                  name: to-be-replaced
-                  key: adminPassword
+              value: ""
           volumeMounts:
             - mountPath: "/etc/hyperledger/fabric-ca-server-config"
               name: castorage
@@ -67,11 +61,10 @@ spec:
           imagePullPolicy: Always
           env:
             - { name: "FABRIC_CA_HOME", value: "/etc/hyperledger/fabric-ca-server-config" }
-            - { name: "FABRIC_CA_SERVER_CA_NAME", value: "{{ ca.name}}" }
+            - { name: "FABRIC_CA_SERVER_CA_NAME", value: "name" }
+            - { name: "FABRIC_CA_SERVER_TLS_ENABLED", value: "true" }
           volumeMounts:
             - mountPath: "/etc/hyperledger/fabric-ca-server-config"
               name: castorage
             - mountPath: "/certs"
               name: cacerts  
-          command: ["fabric-ca-server"]
-          args:  ["start", "-b", "admin:adminpw", "-d"]
