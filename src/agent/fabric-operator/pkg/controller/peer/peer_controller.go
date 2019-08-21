@@ -2,6 +2,7 @@ package peer
 
 import (
 	"context"
+	"strconv"
 
 	fabric "github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric"
 	fabricv1alpha1 "github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1"
@@ -131,9 +132,38 @@ func (r *ReconcilePeer) Reconcile(request reconcile.Request) (reconcile.Result, 
 				service.Namespace, "Service.Name", service.Name)
 			return reconcile.Result{}, err
 		}
+		r.client.Get(context.TODO(), request.NamespacedName, foundService)
 	} else if err != nil {
 		reqLogger.Error(err, "Failed to get Peer service.")
 		return reconcile.Result{}, err
+	}
+
+	if len(foundService.Spec.Ports) > 0 && instance.Status.AccessPoint == "" {
+		if foundService.Spec.Ports[0].NodePort > 0 {
+			reqLogger.Info("The service port has been found", "Service port", foundService.Spec.Ports[0].NodePort)
+			r.client.Get(context.TODO(), request.NamespacedName, instance)
+
+			allHostIPs, _ := fabric.GetNodeIPaddress(r.client)
+			publicIPs := append(instance.Spec.Hosts, allHostIPs...)
+
+			if len(publicIPs) > 0 {
+				// Got some public IPs, set access point accordingly
+				instance.Status.AccessPoint = "https://:" + publicIPs[0] + ":" +
+					strconv.FormatInt(int64(foundService.Spec.Ports[0].NodePort), 10)
+			} else {
+				// Not getting any public accessible IPs, only expose port
+				instance.Status.AccessPoint =
+					strconv.FormatInt(int64(foundService.Spec.Ports[0].NodePort), 10)
+			}
+			err = r.client.Status().Update(context.TODO(), instance)
+			if err != nil {
+				reqLogger.Error(err, "Failed to update Peer status", "Fabric Peer namespace",
+					instance.Namespace, "Fabric Peer Name", instance.Name)
+				return reconcile.Result{}, err
+			}
+		} else {
+			return reconcile.Result{Requeue: true}, nil
+		}
 	}
 
 	foundSTS := &appsv1.StatefulSet{}

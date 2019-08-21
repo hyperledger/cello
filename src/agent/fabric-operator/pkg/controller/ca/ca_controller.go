@@ -4,6 +4,7 @@ import (
 	"context"
 	"strconv"
 	"strings"
+	"time"
 
 	fabric "github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric"
 	fabricv1alpha1 "github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1"
@@ -13,6 +14,8 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -38,7 +41,7 @@ func Add(mgr manager.Manager) error {
 
 // newReconciler returns a new reconcile.Reconciler
 func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &ReconcileCA{client: mgr.GetClient(), scheme: mgr.GetScheme()}
+	return &ReconcileCA{client: mgr.GetClient(), scheme: mgr.GetScheme(), kubeconfig: mgr.GetConfig()}
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
@@ -92,8 +95,9 @@ var _ reconcile.Reconciler = &ReconcileCA{}
 type ReconcileCA struct {
 	// This client, initialized using mgr.Client() above, is a split client
 	// that reads objects from the cache and writes to the apiserver
-	client client.Client
-	scheme *runtime.Scheme
+	client     client.Client
+	scheme     *runtime.Scheme
+	kubeconfig *rest.Config
 }
 
 // Reconcile reads that state of the cluster for a CA object and makes changes based on the state read
@@ -305,4 +309,29 @@ func (r *ReconcileCA) newSTSForCR(cr *fabricv1alpha1.CA, request reconcile.Reque
 		controllerutil.SetControllerReference(cr, sts, r.scheme)
 	}
 	return sts
+}
+
+func (r *ReconcileCA) getCerts(request reconcile.Request) string {
+
+	kubeclient := kubernetes.NewForConfigOrDie(r.kubeconfig)
+	if kubeclient == nil {
+		log.Info("The client is empty", "the name space is ", request.Namespace, "the name is ", request.Name)
+	} else {
+		timeout, _ := time.ParseDuration("30s")
+		execRequest := kubeclient.CoreV1().RESTClient().Post().Resource("pods").Timeout(timeout).
+			Name(request.Name+"-0").Namespace(request.Namespace).SubResource("exec").
+			Param("container", "ca").Param("command", "ls").Param("stdin", "false").
+			Param("stdout", "false").Param("stderr", "false").Param("tty", "false")
+		result := execRequest.Do()
+		if result.Error() != nil {
+			log.Error(result.Error(), "Execution failed", "request.Namespace", request.Namespace, "request.Name", request.Name)
+			return ""
+		}
+
+		buf, _ := result.Raw()
+		log.Info("The content of the exec result is ", string(buf))
+		log.Info("The client is not empty", "the name space is ", request.Namespace, "the name is ", request.Name)
+		return string(buf)
+	}
+	return ""
 }

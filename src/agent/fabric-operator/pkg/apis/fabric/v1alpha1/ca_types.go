@@ -28,15 +28,6 @@ type CASpec struct {
 	NodeSpec      `json:"nodeSpec,omitempty"`
 }
 
-// CAStatus defines the observed state of CA
-// +k8s:openapi-gen=true
-type CAStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
-	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-	AccessPoint string `json:"accessPoint"`
-}
-
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // CA is the Schema for the cas API
@@ -46,8 +37,8 @@ type CA struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   CASpec   `json:"spec,omitempty"`
-	Status CAStatus `json:"status,omitempty"`
+	Spec   CASpec     `json:"spec,omitempty"`
+	Status NodeStatus `json:"status,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

@@ -11,16 +11,14 @@ import (
 
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	return map[string]common.OpenAPIDefinition{
-		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CA":            schema_pkg_apis_fabric_v1alpha1_CA(ref),
-		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CACerts":       schema_pkg_apis_fabric_v1alpha1_CACerts(ref),
-		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CASpec":        schema_pkg_apis_fabric_v1alpha1_CASpec(ref),
-		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CAStatus":      schema_pkg_apis_fabric_v1alpha1_CAStatus(ref),
-		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.ConfigParam":   schema_pkg_apis_fabric_v1alpha1_ConfigParam(ref),
-		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.NodeSpec":      schema_pkg_apis_fabric_v1alpha1_NodeSpec(ref),
-		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.Orderer":       schema_pkg_apis_fabric_v1alpha1_Orderer(ref),
-		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.OrdererStatus": schema_pkg_apis_fabric_v1alpha1_OrdererStatus(ref),
-		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.Peer":          schema_pkg_apis_fabric_v1alpha1_Peer(ref),
-		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.PeerStatus":    schema_pkg_apis_fabric_v1alpha1_PeerStatus(ref),
+		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CA":          schema_pkg_apis_fabric_v1alpha1_CA(ref),
+		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CACerts":     schema_pkg_apis_fabric_v1alpha1_CACerts(ref),
+		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CASpec":      schema_pkg_apis_fabric_v1alpha1_CASpec(ref),
+		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.ConfigParam": schema_pkg_apis_fabric_v1alpha1_ConfigParam(ref),
+		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.NodeSpec":    schema_pkg_apis_fabric_v1alpha1_NodeSpec(ref),
+		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.NodeStatus":  schema_pkg_apis_fabric_v1alpha1_NodeStatus(ref),
+		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.Orderer":     schema_pkg_apis_fabric_v1alpha1_Orderer(ref),
+		"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.Peer":        schema_pkg_apis_fabric_v1alpha1_Peer(ref),
 	}
 }
 
@@ -56,14 +54,14 @@ func schema_pkg_apis_fabric_v1alpha1_CA(ref common.ReferenceCallback) common.Ope
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CAStatus"),
+							Ref: ref("github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.NodeStatus"),
 						},
 					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CASpec", "github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CAStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+			"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CASpec", "github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.NodeStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
 	}
 }
 
@@ -139,27 +137,6 @@ func schema_pkg_apis_fabric_v1alpha1_CASpec(ref common.ReferenceCallback) common
 		},
 		Dependencies: []string{
 			"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.CACerts", "github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.NodeSpec"},
-	}
-}
-
-func schema_pkg_apis_fabric_v1alpha1_CAStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
-	return common.OpenAPIDefinition{
-		Schema: spec.Schema{
-			SchemaProps: spec.SchemaProps{
-				Description: "CAStatus defines the observed state of CA",
-				Properties: map[string]spec.Schema{
-					"accessPoint": {
-						SchemaProps: spec.SchemaProps{
-							Description: "INSERT ADDITIONAL STATUS FIELD - define observed state of cluster Important: Run \"operator-sdk generate k8s\" to regenerate code after modifying this file Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-				},
-				Required: []string{"accessPoint"},
-			},
-		},
-		Dependencies: []string{},
 	}
 }
 
@@ -251,6 +228,27 @@ func schema_pkg_apis_fabric_v1alpha1_NodeSpec(ref common.ReferenceCallback) comm
 	}
 }
 
+func schema_pkg_apis_fabric_v1alpha1_NodeStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "NodeStatus defines the observed state of CA",
+				Properties: map[string]spec.Schema{
+					"accessPoint": {
+						SchemaProps: spec.SchemaProps{
+							Description: "INSERT ADDITIONAL STATUS FIELD - define observed state of cluster Important: Run \"operator-sdk generate k8s\" to regenerate code after modifying this file Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+				},
+				Required: []string{"accessPoint"},
+			},
+		},
+		Dependencies: []string{},
+	}
+}
+
 func schema_pkg_apis_fabric_v1alpha1_Orderer(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
@@ -283,26 +281,14 @@ func schema_pkg_apis_fabric_v1alpha1_Orderer(ref common.ReferenceCallback) commo
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.OrdererStatus"),
+							Ref: ref("github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.NodeStatus"),
 						},
 					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.NodeSpec", "github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.OrdererStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
-	}
-}
-
-func schema_pkg_apis_fabric_v1alpha1_OrdererStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
-	return common.OpenAPIDefinition{
-		Schema: spec.Schema{
-			SchemaProps: spec.SchemaProps{
-				Description: "OrdererStatus defines the observed state of Orderer",
-				Properties:  map[string]spec.Schema{},
-			},
-		},
-		Dependencies: []string{},
+			"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.NodeSpec", "github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.NodeStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
 	}
 }
 
@@ -338,25 +324,13 @@ func schema_pkg_apis_fabric_v1alpha1_Peer(ref common.ReferenceCallback) common.O
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.PeerStatus"),
+							Ref: ref("github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.NodeStatus"),
 						},
 					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.NodeSpec", "github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.PeerStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
-	}
-}
-
-func schema_pkg_apis_fabric_v1alpha1_PeerStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
-	return common.OpenAPIDefinition{
-		Schema: spec.Schema{
-			SchemaProps: spec.SchemaProps{
-				Description: "PeerStatus defines the observed state of Peer",
-				Properties:  map[string]spec.Schema{},
-			},
-		},
-		Dependencies: []string{},
+			"github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.NodeSpec", "github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1.NodeStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
 	}
 }
