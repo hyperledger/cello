@@ -158,9 +158,6 @@ license:
 
 install: $(patsubst %,build/docker/%/.push,$(COMMON_DOCKER_IMAGES))
 
-check-js: ##@Code Check check js code format
-	docker-compose -f bootup/docker-compose-files/docker-compose-check-js.yaml up
-
 check: ##@Code Check code format
 	@$(MAKE) license
 	find ./docs -type f -name "*.md" -exec egrep -l " +$$" {} \;
@@ -201,9 +198,6 @@ image-clean: clean ##@Clean all existing images to rebuild
 	echo "Clean all cello related images, may need to remove all containers before"
 	docker images | grep "hyperledger/cello-" | awk '{print $3}' | xargs docker rmi -f
 
-initial-env: ##@Configuration Initial Configuration for dashboard
-	@envsubst < configs/env.tmpl > .env
-
 start-docker-compose:
 	docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} up -d --force-recreate
 
@@ -227,7 +221,7 @@ start-k8s:
 test-api:
 	@$(MAKE) -C tests/postman/ test-api
 
-check-dashboard: initial-env
+check-dashboard:
 	docker-compose -f tests/dashboard/docker-compose.yml up --abort-on-container-exit || (echo "check dashboard failed $$?"; exit 1)
 
 stop-k8s:
@@ -259,13 +253,6 @@ setup-master: ##@Environment Setup dependency for master node
 
 setup-worker: ##@Environment Setup dependency for worker node
 	cd scripts/worker_node && bash setup.sh $(WORKER_TYPE)
-
-build-admin-js: ##@Nodejs Build admin dashboard js files
-	@$(MAKE) initial-env
-	bash scripts/master_node/build_js.sh
-
-build-user-dashboard-js: ##@Nodejs Build user dashboard js files
-	@$(MAKE) -C src/user-dashboard/ build-js
 
 help: ##@other Show this help.
 	@perl -e '$(HELP_FUN)' $(MAKEFILE_LIST)

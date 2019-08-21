@@ -67,7 +67,6 @@ services:
     - ADMIN_USERNAME=$API_ENGINE_ADMIN_USERNAME
     - ADMIN_PASSWORD=$API_ENGINE_ADMIN_PASSWORD
     - ADMIN_EMAIL=$API_ENGINE_ADMIN_EMAIL
-    - DOCKER_HOST=$DOCKER_HOST
     - API_VERSION=$API_VERSION
     volumes:
     - /var/run/docker.sock:/var/run/docker.sock
@@ -93,6 +92,7 @@ services:
     - ADMIN_TOKEN=$API_ENGINE_ADMIN_TOKEN
     - CELERY_BROKER_URL=redis://redis
     - API_VERSION=$API_VERSION
+    - DOCKER_HOST=$API_DOCKER_HOST
     - RUN_MODE=task
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
