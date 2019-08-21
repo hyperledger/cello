@@ -1,7 +1,7 @@
 export default {
   'app.operator.agent.title': '代理管理',
   'app.operator.agent.table.header.name': '名称',
-  'app.operator.agent.table.header.createTime': '创建时间',
+  'app.operator.agent.table.header.creationTime': '创建时间',
   'app.operator.agent.table.header.type': '类型',
   'app.operator.agent.form.new.title': '新建代理',
   'app.operator.agent.form.update.title': '更新代理',
