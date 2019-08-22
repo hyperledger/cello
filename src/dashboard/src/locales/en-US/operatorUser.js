@@ -21,6 +21,7 @@ export default {
   'app.operator.user.form.password.required': 'Please input password',
   'app.operator.user.form.passwordConfirm.label': 'Password Confirm',
   'app.operator.user.form.passwordConfirm.noValid': 'Inconsistent password input twice',
+  'app.operator.user.form.passwordConfirm.organization': 'Organization',
   'app.operator.user.create.success': 'Create user {name} success',
   'app.operator.user.create.fail': 'Create user {name} failed',
   'app.operator.user.delete.success': 'Delete user {name} success',

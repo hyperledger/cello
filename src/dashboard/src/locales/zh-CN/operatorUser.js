@@ -21,6 +21,7 @@ export default {
   'app.operator.user.form.password.required': '请输入密码',
   'app.operator.user.form.passwordConfirm.label': '密码确认',
   'app.operator.user.form.passwordConfirm.noValid': '两次密码输入不一致',
+  'app.operator.user.form.organization.label': '组织',
   'app.operator.user.create.success': '创建用户 {name} 成功',
   'app.operator.user.create.fail': '创建用户 {name} 失败',
   'app.operator.user.delete.success': '删除用户 {name} 成功',
