@@ -1,5 +1,4 @@
 import moment from 'moment';
-import React from 'react';
 import nzh from 'nzh/cn';
 import { parse, stringify } from 'qs';
 
@@ -149,46 +148,3 @@ const reg = /(((^https?:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+(?::\d+)?|(
 export function isUrl(path) {
   return reg.test(path);
 }
-
-export function formatWan(val) {
-  const v = val * 1;
-  if (!v) return '';
-
-  let result = val;
-  if (val > 10000) {
-    result = Math.floor(val / 10000);
-    result = (
-      <span>
-        {result}
-        <span
-          style={{
-            position: 'relative',
-            top: -2,
-            fontSize: 14,
-            fontStyle: 'normal',
-            marginLeft: 2,
-          }}
-        >
-          万
-        </span>
-      </span>
-    );
-  }
-  return result;
-}
-
-// 给官方演示站点用，用于关闭真实开发环境不需要使用的特性
-export function isAntdPro() {
-  return window.location.hostname === 'preview.pro.ant.design';
-}
-
-export const importCDN = (url, name) =>
-  new Promise(resolve => {
-    const dom = document.createElement('script');
-    dom.src = url;
-    dom.type = 'text/javascript';
-    dom.onload = () => {
-      resolve(window[name]);
-    };
-    document.head.appendChild(dom);
-  });

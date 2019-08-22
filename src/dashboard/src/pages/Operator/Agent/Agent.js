@@ -120,9 +120,10 @@ const ApplyAgentForm = Form.create()(props => {
   );
 });
 
-@connect(({ agent, organization, loading }) => ({
+@connect(({ agent, organization, user, loading }) => ({
   agent,
   organization,
+  user,
   loadingAgents: loading.effects['agent/listAgent'],
   applyingAgent: loading.effects['agent/applyAgent'],
 }))
@@ -148,6 +149,7 @@ class Agent extends PureComponent {
       dispatch,
       agent: { pagination },
     } = this.props;
+    const userRole = getAuthority()[0];
 
     dispatch({
       type: 'agent/listAgent',
@@ -156,9 +158,11 @@ class Agent extends PureComponent {
         page: pagination.current,
       },
     });
-    dispatch({
-      type: 'organization/listOrganization',
-    });
+    if (userRole === 'operator') {
+      dispatch({
+        type: 'organization/listOrganization',
+      });
+    }
   };
 
   applyCallback = () => {
@@ -298,12 +302,16 @@ class Agent extends PureComponent {
       organization: { organizations },
       loadingAgents,
       applyingAgent,
+      user: {
+        currentUser: { organization = {} },
+      },
     } = this.props;
 
     const { modalVisible } = this.state;
+    const userRole = getAuthority()[0];
 
     const filterOrgName = organizationId => {
-      const orgs = organizations.filter(organization => organizationId === organization.id);
+      const orgs = organizations.filter(org => organizationId === org.id);
       if (orgs.length > 0) {
         return orgs[0].name;
       }
@@ -413,7 +421,9 @@ class Agent extends PureComponent {
                             defaultMessage="Organization"
                           />
                           {' : '}
-                          {filterOrgName(item.organization_id)}
+                          {userRole === 'operator'
+                            ? filterOrgName(item.organization_id)
+                            : organization.name || ''}
                         </p>
                       </div>
                     }
