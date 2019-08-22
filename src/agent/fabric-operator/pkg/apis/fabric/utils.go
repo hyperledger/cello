@@ -96,7 +96,7 @@ func CheckAndCreateConfigMap(client client.Client, request reconcile.Request) er
 				return nil
 			})
 			err = client.Create(context.TODO(), configmap)
-			if err != nil {
+			if err != nil && !errors.IsAlreadyExists(err) {
 				log.Error(err, "Failed to create Fabric configMap", "Service.Namespace",
 					configmap.Namespace, "Service.Name", configmap.Name)
 				return err

@@ -26,9 +26,6 @@ spec:
         component: "peer"
     spec:
       volumes:
-        - name: peercerts
-          secret:
-            secretName: peercerts
         - name: toolset
           configMap:
             name: fabric-configuration-toolset
@@ -44,7 +41,5 @@ spec:
           volumeMounts:
             - mountPath: "/etc/hyperledger/peer"
               name: peerstorage
-            - mountPath: "/certs"
-              name: peercerts  
           command: ["peer"]
           args:  ["node", "start"]

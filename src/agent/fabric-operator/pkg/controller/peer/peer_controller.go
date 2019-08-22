@@ -148,7 +148,7 @@ func (r *ReconcilePeer) Reconcile(request reconcile.Request) (reconcile.Result, 
 
 			if len(publicIPs) > 0 {
 				// Got some public IPs, set access point accordingly
-				instance.Status.AccessPoint = "https://:" + publicIPs[0] + ":" +
+				instance.Status.AccessPoint = "https://" + publicIPs[0] + ":" +
 					strconv.FormatInt(int64(foundService.Spec.Ports[0].NodePort), 10)
 			} else {
 				// Not getting any public accessible IPs, only expose port
