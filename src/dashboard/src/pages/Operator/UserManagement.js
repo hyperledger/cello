@@ -3,19 +3,44 @@
 */
 import React, { PureComponent, Fragment } from 'react';
 import { connect } from 'dva';
-import { Card, Button, Form, Modal, Input, Select, message, Dropdown, Icon, Menu } from 'antd';
+import {
+  Card,
+  Button,
+  Form,
+  Modal,
+  Input,
+  Select,
+  message,
+  Dropdown,
+  Icon,
+  Menu,
+  AutoComplete,
+} from 'antd';
 import moment from 'moment';
 import { FormattedMessage, formatMessage } from 'umi-plugin-react/locale';
 import isEmail from 'validator/lib/isEmail';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import StandardTable from '@/components/StandardTable';
+import { getAuthority } from '@/utils/authority';
 import styles from './styles.less';
 
 const FormItem = Form.Item;
 const Option = Select.Option;
+const AutoCompleteOption = AutoComplete.Option;
+const userRole = getAuthority()[0];
 
 const CreateUpdateForm = Form.create()(props => {
-  const { visible, form, method, handleSubmit, handleModalVisible, confirmLoading, user } = props;
+  const {
+    visible,
+    form,
+    method,
+    handleSubmit,
+    handleModalVisible,
+    confirmLoading,
+    user,
+    organizations,
+    onSearchOrganization,
+  } = props;
   const { getFieldValue } = form;
   const onSubmit = () => {
     form.validateFields((err, fieldsValue) => {
@@ -34,6 +59,14 @@ const CreateUpdateForm = Form.create()(props => {
       );
     }
     callback();
+  };
+  const organizationOptions = organizations.map(org => (
+    <AutoCompleteOption key={org.id}>{org.name}</AutoCompleteOption>
+  ));
+  const onSelectOrganization = value => {
+    form.setFieldsValue({
+      organization: value,
+    });
   };
 
   const validatePasswordConfirm = (rule, value, callback) => {
@@ -206,12 +239,36 @@ const CreateUpdateForm = Form.create()(props => {
           />
         )}
       </FormItem>
+      {userRole === 'operator' && (
+        <Form.Item
+          labelCol={{ span: 5 }}
+          wrapperCol={{ span: 15 }}
+          label={formatMessage({
+            id: 'app.operator.user.form.organization.label',
+            defaultMessage: 'Organization',
+          })}
+        >
+          {form.getFieldDecorator('organization', {})(
+            <AutoComplete
+              onSearch={onSearchOrganization}
+              onSelect={onSelectOrganization}
+              placeholder={formatMessage({
+                id: 'form.input.placeholder',
+                defaultMessage: 'Please input',
+              })}
+            >
+              {organizationOptions}
+            </AutoComplete>
+          )}
+        </Form.Item>
+      )}
     </Modal>
   );
 });
 
-@connect(({ user, loading }) => ({
+@connect(({ user, organization, loading }) => ({
   user,
+  organization,
   loadingUsers: loading.effects['user/fetch'],
   creatingUser: loading.effects['user/createUser'],
 }))
@@ -347,10 +404,19 @@ class UserManagement extends PureComponent {
   };
 
   handleSubmit = (method, values) => {
-    const { dispatch } = this.props;
+    const {
+      dispatch,
+      user: {
+        currentUser: { organization = {} },
+      },
+    } = this.props;
 
     // eslint-disable-next-line no-param-reassign
     delete values.passwordConfirm;
+    if (userRole === 'administrator' && organization.id) {
+      // eslint-disable-next-line no-param-reassign
+      values.organization = organization.id;
+    }
     switch (method) {
       case 'create':
         dispatch({
@@ -405,8 +471,10 @@ class UserManagement extends PureComponent {
     const { modalVisible, modalMethod, selectedRows } = this.state;
     const {
       user: { users, pagination, currentUser },
+      organization: { organizations },
       loadingUsers,
       creatingUser,
+      dispatch,
     } = this.props;
     const data = users.map(user => ({
       ...user,
@@ -466,6 +534,15 @@ class UserManagement extends PureComponent {
       handleModalVisible: this.handleModalVisible,
       handleSubmit: this.handleSubmit,
       confirmLoading: creatingUser,
+      organizations,
+      onSearchOrganization(value) {
+        dispatch({
+          type: 'organization/listOrganization',
+          payload: {
+            name: value,
+          },
+        });
+      },
     };
     const menu = (
       <Menu onClick={this.handleMenuClick} selectedKeys={[]}>
