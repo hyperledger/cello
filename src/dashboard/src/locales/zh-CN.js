@@ -12,6 +12,7 @@ import operatorUser from './zh-CN/operatorUser';
 import form from './zh-CN/form';
 import operatorAgent from './zh-CN/operatorAgent';
 import operatorNode from './zh-CN/operatorNode';
+import fabricCa from './zh-CN/fabric/ca';
 
 export default {
   'navBar.lang': '语言',
@@ -33,4 +34,5 @@ export default {
   ...operatorUser,
   ...form,
   ...operatorNode,
+  ...fabricCa,
 };

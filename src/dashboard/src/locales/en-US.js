@@ -12,6 +12,7 @@ import operatorUser from './en-US/operatorUser';
 import form from './en-US/form';
 import operatorAgent from './en-US/operatorAgent';
 import operatorNode from './en-US/operatorNode';
+import fabricCa from './en-US/fabric/ca';
 
 export default {
   'navBar.lang': 'Languages',
@@ -33,4 +34,5 @@ export default {
   ...operatorUser,
   ...form,
   ...operatorNode,
+  ...fabricCa,
 };

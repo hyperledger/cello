@@ -13,4 +13,6 @@ export default {
   'form.button.submit': '提交',
   'form.button.add': '添加',
   'form.button.back': '返回',
+  'form.button.prev': '上一步',
+  'form.button.next': '下一步',
 };

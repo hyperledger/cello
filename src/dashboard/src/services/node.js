@@ -5,6 +5,13 @@ export async function listNode(params) {
   return request(`/api/nodes?${stringify(params)}`);
 }
 
+export async function createNode(params) {
+  return request('/api/nodes', {
+    method: 'POST',
+    data: params,
+  });
+}
+
 export async function getNode(params) {
   return request(`/api/nodes/${stringify(params)}`);
 }
