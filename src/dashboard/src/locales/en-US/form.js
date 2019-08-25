@@ -13,4 +13,6 @@ export default {
   'form.button.submit': 'Submit',
   'form.button.add': 'Add',
   'form.button.back': 'Back',
+  'form.button.prev': 'Prev',
+  'form.button.next': 'Next',
 };

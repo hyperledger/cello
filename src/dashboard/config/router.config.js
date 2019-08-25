@@ -67,6 +67,28 @@ export default [
             component: './Operator/Node/Node',
           },
           {
+            path: '/operator/node/new',
+            name: 'newNode',
+            hideInMenu: true,
+            component: './Operator/Node/New/index',
+            routes: [
+              {
+                path: '/operator/node/new',
+                redirect: '/operator/node/new/basic-info',
+              },
+              {
+                path: '/operator/node/new/basic-info',
+                name: 'basicInfo',
+                component: './Operator/Node/New/basicInfo',
+              },
+              {
+                path: '/operator/node/new/node-info',
+                name: 'nodeInfo',
+                component: './Operator/Node/New/nodeInfo',
+              },
+            ],
+          },
+          {
             path: '/operator/userManagement',
             name: 'userManagement',
             component: './Operator/UserManagement',

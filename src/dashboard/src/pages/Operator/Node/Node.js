@@ -3,6 +3,7 @@
 */
 import React, { PureComponent, Fragment } from 'react';
 import { connect } from 'dva';
+import router from 'umi/router';
 import { FormattedMessage, formatMessage } from 'umi-plugin-react/locale';
 import {
   Card,
@@ -453,9 +454,15 @@ class Node extends PureComponent {
         title: (
           <FormattedMessage id="app.operator.node.table.header.status" defaultMessage="Status" />
         ),
-        render: (text, record) => (
-          <Badge status={badgeStatus(record.status)} text={record.status} />
+        render: text => (
+          <Badge
+            status={badgeStatus(text)}
+            text={formatMessage({
+              id: `app.operator.node.status.${text}`,
+            })}
+          />
         ),
+        dataIndex: 'status',
       },
       {
         title: <FormattedMessage id="form.table.header.operation" defaultMessage="Operation" />,
@@ -478,7 +485,7 @@ class Node extends PureComponent {
         <Card bordered={false}>
           <div className={styles.tableList}>
             <div className={styles.tableListOperator}>
-              <Button icon="plus" type="primary">
+              <Button icon="plus" type="primary" onClick={() => router.push('/operator/node/new')}>
                 <FormattedMessage id="form.button.new" defaultMessage="New" />
               </Button>
             </div>

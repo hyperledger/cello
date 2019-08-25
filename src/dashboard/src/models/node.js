@@ -1,4 +1,11 @@
-import { listNode, getNode, registerUserToNode, deleteNode, operateNode } from '@/services/node';
+import {
+  listNode,
+  getNode,
+  registerUserToNode,
+  deleteNode,
+  operateNode,
+  createNode,
+} from '@/services/node';
 
 export default {
   namespace: 'node',
@@ -32,6 +39,15 @@ export default {
       });
       if (callback) {
         callback();
+      }
+    },
+    *createNode({ payload, callback }, { call }) {
+      const response = yield call(createNode, payload);
+      if (callback) {
+        callback({
+          ...response,
+          ...payload,
+        });
       }
     },
     *getNode({ payload, callback }, { call, put }) {
