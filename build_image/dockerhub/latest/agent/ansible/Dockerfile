@@ -32,7 +32,8 @@ RUN apt-get update                                                 && \
     echo "  UserKnownHostsFile /dev/null" >> config
 
 COPY --from=build /tmp/cello/src/agent/ansible /opt/agent
-ADD https://storage.googleapis.com/kubernetes-release/release/v1.15.0/bin/linux/amd64/kubectl /usr/local/bin/kubectl
+RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && \
+    mv kubectl /usr/local/bin/kubectl
 RUN chown -R ${uid}:${gid} /opt/agent                              && \
     chmod 755 /usr/local/bin/kubectl
 
