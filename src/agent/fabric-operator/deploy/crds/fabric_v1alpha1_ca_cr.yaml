@@ -8,24 +8,22 @@ spec:
   # you have the k8s secret created.
   admin: "sampleadmin"
   adminPassword: "samplepassword"
-
-  # Specify Fabric binaries to be used to setup the fabric CA
-  image: "hyperledger/fabric-ca:1.4.1"
-
   # Specify storage being used by this Certificate Authority.
-  storageSize: "1Gi"
-  storageClass: "default"
+  #storageClass: "default"
+  #storageSize: "1Gi"
 
   # If you have an set of certs that you like to use instead of
   # generating a set by Fabric CA, you can specify as the following.
   # Certificates and private keys have all to be base64 encoded as
   # the values of the each item below.
-  # certs:
-  #   cert: "The base64 encoded certificate"
-  #   key: "The base64 encoded private key"
-  #   tlsCert: "The base64 encoded tls certificate"
-  #   tlsKey: "The base64 encoded tls private key"
-
+  #certs:
+  #  cert: 
+  #  key: 
+  #  tlsCert: 
+  #  tlsKey: 
+  nodeSpec:
+    # Specify Fabric binaries to be used to setup the fabric CA
+    image: "hyperledger/fabric-ca:1.4.1"
   # Optionally, FQDN can also be specified
   # hosts: ["ca.sample.com", "169.45.20.0"]
 

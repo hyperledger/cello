@@ -25,6 +25,9 @@ spec:
         component: "orderer"
     spec:
       volumes:
+        - name: orderercerts
+          secret:
+            secretName: orderercerts
         - name: toolset
           configMap:
             name: fabric-configuration-toolset
@@ -40,5 +43,6 @@ spec:
           volumeMounts:
             - mountPath: "/etc/hyperledger/orderer"
               name: ordererstorage
+            - mountPath: "/certs"
+              name: orderercerts
           command: ["orderer"]
- 

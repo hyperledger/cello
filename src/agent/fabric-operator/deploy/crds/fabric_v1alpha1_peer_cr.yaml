@@ -1,40 +1,54 @@
 apiVersion: fabric.hyperledger.org/v1alpha1
 kind: Peer
 metadata:
-  name: peer01
+  name: peer001
 spec:
-  # Add fields here
-  storageSize: "1Gi"
-  storageClass: "default"
-  image: "hyperledger/fabric-peer:1.4.1"
-
-  # To specify resource limits for this Peer node,
-  # use kubernetes resource requirements spec
-  # resources:
-  #   requests:
-  #     memory: "32Mi"
-  #     cpu: "200m"
-  #   limits:
-  #     memory: "1024mi"
-  #     cpu: "250"
-
-  # Add all the configurable peer parameters as 
-  # name-value pairs
-  configParams:
-    - name: CORE_PEER_ADDRESSAUTODETECT
-      value: "true"
-    - name: CORE_PEER_NETWORKID
-      value: nid1
-    - name: CORE_PEER_ID
-      value: org1peer1
-    - name: CORE_PEER_ADDRESS
-      value: blockchain-org1peer1:30110
-    - name: CORE_PEER_LISTENADDRESS
-      value: 0.0.0.0:30110
-    - name: CORE_PEER_EVENTS_ADDRESS
-      value: 0.0.0.0:30111
-    - name: CORE_PEER_GOSSIP_BOOTSTRAP
-      value: blockchain-org1peer1:30110
-    - name: CORE_PEER_GOSSIP_ORGLEADER
-      value: "false"
-  
+  # If you have an set of certs that you like to use instead of
+  # generating a set by Fabric CA, you can specify as the following.
+  # Certificates and private keys have all to be base64 encoded as
+  # the values of the each item below.
+  #certs:
+  #  tlsCerts:
+  #    tlsPrivatekey:
+  #    tlsCert:
+  #    tlsRootcert:
+  #  msp:
+  #    adminCerts:
+  #    caCerts:
+  #    keyStore:
+  #    signCerts:
+  #    tlsCacerts:
+  nodeSpec:
+    # To specify resource limits for this Peer node,
+    # use kubernetes resource requirements spec
+    # resources:
+    #   requests:
+    #     memory: "32Mi"
+    #     cpu: "200m"
+    #   limits:
+    #     memory: "1024mi"
+    #     cpu: "250"
+    storageSize: "1Gi"
+    storageClass: "default"
+    image: "hyperledger/fabric-peer:1.4.1"
+    # Add all the configurable peer parameters as
+    # name-value pairs
+    configParams:
+      - name: CORE_PEER_ADDRESSAUTODETECT
+        value: "true"
+      - name: CORE_PEER_NETWORKID
+        value: nid1
+      - name: CORE_PEER_ID
+        value: org1peer1
+      - name: CORE_PEER_ADDRESS
+        value: blockchain-org1peer1:30110
+      - name: CORE_PEER_LISTENADDRESS
+        value: 0.0.0.0:30110
+      - name: CORE_PEER_EVENTS_ADDRESS
+        value: 0.0.0.0:30111
+      - name: CORE_PEER_GOSSIP_BOOTSTRAP
+        value: blockchain-org1peer1:30110
+      - name: CORE_PEER_GOSSIP_ORGLEADER
+        value: "false"
+      - name: CORE_PEER_TLS_ENABLED
+        value: "true"
