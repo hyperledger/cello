@@ -5,13 +5,12 @@ RUN wget https://storage.googleapis.com/kubernetes-release/release/\
 /bin/linux/amd64/kubectl && chmod +x kubectl && \
 mv kubectl /usr/local/bin/kubectl && \
 apk update && \
-apk add jq gettext curl
+apk add jq gettext curl wget bash
 
-COPY deploy/ /app/deploy
-COPY agent/ /app
+ENV HOME /home
+COPY deploy/ /home/app/deploy
+COPY agent/ /home/app
+WORKDIR /home/app
+ENV KUBECONFIG /home/.kube/config
 
-WORKDIR /app
-
-ENV KUBECONFIG /app/.kube/config
-
-CMD sh /app/deploy_cr.sh
+CMD bash /home/app/deploy_cr.sh
