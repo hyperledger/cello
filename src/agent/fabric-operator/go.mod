@@ -1,13 +1,13 @@
 module github.com/hyperledger/cello/src/agent/fabric-operator
 
 require (
-	github.com/NYTimes/gziphandler v1.0.1 // indirect
+	github.com/go-openapi/spec v0.19.0
 	github.com/operator-framework/operator-sdk v0.9.1-0.20190806200632-6c7039c37324
 	github.com/spf13/pflag v1.0.3
 	k8s.io/api v0.0.0-20190612125737-db0771252981
 	k8s.io/apimachinery v0.0.0-20190612125636-6a5db36e93ad
 	k8s.io/client-go v11.0.0+incompatible
-	k8s.io/kube-openapi v0.0.0-20190603182131-db7b694dc208 // indirect
+	k8s.io/kube-openapi v0.0.0-20190603182131-db7b694dc208
 	sigs.k8s.io/controller-runtime v0.1.12
 	sigs.k8s.io/controller-tools v0.1.10
 )
@@ -28,3 +28,5 @@ replace (
 )
 
 replace github.com/operator-framework/operator-sdk => github.com/operator-framework/operator-sdk v0.9.0
+
+go 1.13

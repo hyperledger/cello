@@ -29,37 +29,95 @@ spec:
           type: object
         spec:
           properties:
-            configParams:
-              items:
-                properties:
-                  name:
-                    type: string
-                  value:
-                    type: string
-                required:
-                - name
-                - value
-                type: object
-              type: array
-            hosts:
-              items:
-                type: string
-              type: array
-            image:
+            certs:
               description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
                 Important: Run "operator-sdk generate k8s" to regenerate code after
                 modifying this file Add custom validation using kubebuilder tags:
                 https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html'
-              type: string
-            resources:
+              properties:
+                msp:
+                  properties:
+                    adminCerts:
+                      items:
+                        type: string
+                      type: array
+                    caCerts:
+                      items:
+                        type: string
+                      type: array
+                    intermediateCerts:
+                      items:
+                        type: string
+                      type: array
+                    keyStore:
+                      type: string
+                    signCerts:
+                      type: string
+                    tlsCacerts:
+                      items:
+                        type: string
+                      type: array
+                    tlsIntermediatecerts:
+                      items:
+                        type: string
+                      type: array
+                  required:
+                  - adminCerts
+                  - caCerts
+                  - keyStore
+                  - signCerts
+                  type: object
+                tlsCerts:
+                  properties:
+                    tlsCert:
+                      type: string
+                    tlsPrivatekey:
+                      type: string
+                    tlsRootcas:
+                      items:
+                        type: string
+                      type: array
+                    tlsRootcert:
+                      type: string
+                  type: object
+              required:
+              - msp
+              - tlsCerts
               type: object
-            storageClass:
-              type: string
-            storageSize:
-              type: string
-          required:
-          - image
-          - configParams
+            nodeSpec:
+              properties:
+                configParams:
+                  items:
+                    properties:
+                      name:
+                        type: string
+                      value:
+                        type: string
+                    required:
+                    - name
+                    - value
+                    type: object
+                  type: array
+                hosts:
+                  items:
+                    type: string
+                  type: array
+                image:
+                  description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+                    Important: Run "operator-sdk generate k8s" to regenerate code
+                    after modifying this file Add custom validation using kubebuilder
+                    tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html'
+                  type: string
+                resources:
+                  type: object
+                storageClass:
+                  type: string
+                storageSize:
+                  type: string
+              required:
+              - image
+              - configParams
+              type: object
           type: object
         status:
           properties:

@@ -12,6 +12,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -56,6 +57,15 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 
 	// Watch for changes to stateful set that we create
 	err = c.Watch(&source.Kind{Type: &appsv1.StatefulSet{}}, &handler.EnqueueRequestForOwner{
+		IsController: true,
+		OwnerType:    &fabricv1alpha1.CA{},
+	})
+	if err != nil {
+		return err
+	}
+
+	// Watch for changes to secret that we create
+	err = c.Watch(&source.Kind{Type: &corev1.Secret{}}, &handler.EnqueueRequestForOwner{
 		IsController: true,
 		OwnerType:    &fabricv1alpha1.CA{},
 	})
@@ -119,6 +129,23 @@ func (r *ReconcilePeer) Reconcile(request reconcile.Request) (reconcile.Result, 
 		return reconcile.Result{}, err
 	}
 
+	secret := &corev1.Secret{}
+	secretID := request.Name + "-secret"
+	foundSecret := &corev1.Secret{}
+	err = r.client.Get(context.TODO(),
+		types.NamespacedName{Name: secretID, Namespace: request.Namespace},
+		foundSecret)
+	if err != nil && errors.IsNotFound(err) {
+		secret = r.newSecretForCR(instance, request)
+		err = r.client.Create(context.TODO(), secret)
+		if err != nil {
+			reqLogger.Error(err, "Failed to retrieve Fabric Peer secrets")
+			return reconcile.Result{}, err
+		}
+		// When we reach here, it means that we have created the secret successfully
+		// and ready to do more
+	}
+
 	foundService := &corev1.Service{}
 	err = r.client.Get(context.TODO(), request.NamespacedName, foundService)
 	if err != nil && errors.IsNotFound(err) {
@@ -170,7 +197,7 @@ func (r *ReconcilePeer) Reconcile(request reconcile.Request) (reconcile.Result, 
 	err = r.client.Get(context.TODO(), request.NamespacedName, foundSTS)
 	if err != nil && errors.IsNotFound(err) {
 		// Define a new StatefulSet object
-		sts := r.newSTSForCR(instance, request)
+		sts := r.newSTSForCR(secret, instance, request)
 		reqLogger.Info("Creating a new set.", "StatefulSet.Namespace", sts.Namespace,
 			"StatefulSet.Name", sts.Name)
 		err = r.client.Create(context.TODO(), sts)
@@ -185,6 +212,47 @@ func (r *ReconcilePeer) Reconcile(request reconcile.Request) (reconcile.Result, 
 	}
 
 	return reconcile.Result{}, nil
+}
+
+// newSecretForCR returns k8s secret with the name + "-secret" /namespace as the cr
+func (r *ReconcilePeer) newSecretForCR(cr *fabricv1alpha1.Peer, request reconcile.Request) *corev1.Secret {
+	obj, _, _ := fabric.GetObjectFromTemplate("peer/peer_secret.yaml")
+	secret, ok := obj.(*corev1.Secret)
+	if !ok {
+		secret = nil
+	} else {
+		secret.Name = request.Name + "-secret"
+		secret.Namespace = request.Namespace
+		if cr.Spec.Certs != nil {
+			// Add MSP certs as kubernetes secret
+			for i, adminCert := range cr.Spec.Certs.Msp.AdminCerts {
+				secret.Data["adminCert"+strconv.Itoa(i)] = []byte(adminCert)
+			}
+			for i, caCert := range cr.Spec.Certs.Msp.CaCerts {
+				secret.Data["caCert"+strconv.Itoa(i)] = []byte(caCert)
+			}
+			secret.Data["keyStore"] = []byte(cr.Spec.Certs.Msp.KeyStore)
+			secret.Data["signCerts"] = []byte(cr.Spec.Certs.Msp.SignCerts)
+			for i, tlsCacerts := range cr.Spec.Certs.Msp.TLSCacerts {
+				secret.Data["tlsCacerts"+strconv.Itoa(i)] = []byte(tlsCacerts)
+			}
+			// Add TLS certs as kubernetes secret
+			value := ""
+			for _, param := range cr.Spec.ConfigParams {
+				if param.Name == "CORE_PEER_TLS_ENABLED" {
+					value = param.Value
+					break;
+				}
+			}
+			if value != "" && value == "true" && cr.Spec.Certs.TLSCerts != nil {
+				secret.Data["tlsKey"] = []byte(cr.Spec.Certs.TLSCerts.TLSPrivatekey)
+				secret.Data["tlsCert"] = []byte(cr.Spec.Certs.TLSCerts.TLSCert)
+				secret.Data["tlsRootcert"] = []byte(cr.Spec.Certs.TLSCerts.TLSRootcert)
+			}
+		}
+		controllerutil.SetControllerReference(cr, secret, r.scheme)
+	}
+	return secret
 }
 
 // newServiceForCR returns a fabric Peer service with the same name/namespace as the cr
@@ -204,7 +272,7 @@ func (r *ReconcilePeer) newServiceForCR(cr *fabricv1alpha1.Peer, request reconci
 }
 
 // newPodForCR returns a fabric Peer statefulset with the same name/namespace as the cr
-func (r *ReconcilePeer) newSTSForCR(cr *fabricv1alpha1.Peer, request reconcile.Request) *appsv1.StatefulSet {
+func (r *ReconcilePeer) newSTSForCR(secret *corev1.Secret, cr *fabricv1alpha1.Peer, request reconcile.Request) *appsv1.StatefulSet {
 	obj, _, err := fabric.GetObjectFromTemplate("peer/peer_statefulset.yaml")
 	if err != nil {
 		log.Error(err, "Failed to load statefulset.")
@@ -222,14 +290,73 @@ func (r *ReconcilePeer) newSTSForCR(cr *fabricv1alpha1.Peer, request reconcile.R
 		storageSize := fabric.GetDefault(cr.Spec.StorageSize, "5Gi").(string)
 		sts.Spec.VolumeClaimTemplates[0].Spec.Resources.Requests["storage"] = resource.MustParse(storageSize)
 		sts.Spec.Template.Labels["k8s-app"] = sts.Name
-		sts.Spec.Template.Spec.Containers[0].Image =
-			fabric.GetDefault(cr.Spec.Image, "hyperledger/fabric-peer:1.4.1").(string)
 		containerEnvs := []corev1.EnvVar{}
 		for _, e := range cr.Spec.ConfigParams {
 			containerEnvs = append(containerEnvs, corev1.EnvVar{
 				Name: e.Name, Value: e.Value,
 			})
 		}
+		sts.Spec.Template.Spec.Containers[0].Image =
+			fabric.GetDefault(cr.Spec.Image, "hyperledger/fabric-peer:1.4.1").(string)
+
+		if secret != nil {
+			sts.Spec.Template.Spec.Volumes[0].VolumeSource.Secret.SecretName = request.Name + "-secret"
+			secretItems := []corev1.KeyToPath{}
+
+			// Add MSP certificates
+			for i, _ := range cr.Spec.Certs.Msp.AdminCerts {
+				secretName := "adminCert"+strconv.Itoa(i)+".pem"
+				secretItems = append(secretItems, corev1.KeyToPath{
+					Key: secretName, Path: "/certs/msp/admincerts/" + secretName,
+				})
+			}
+
+			for i, _ := range cr.Spec.Certs.Msp.CaCerts {
+				secretName := "caCert"+strconv.Itoa(i)+".pem"
+				secretItems = append(secretItems, corev1.KeyToPath{
+					Key: secretName, Path: "/certs/msp/cacerts/" + secretName,
+				})
+			}
+
+			secretItems = append(secretItems,
+				corev1.KeyToPath{Key: "keyStore", Path: "/certs/msp/keystore"},
+				corev1.KeyToPath{Key: "signCerts", Path: "/certs/msp/signCerts.pem"},
+			)
+
+			for i, _ := range cr.Spec.Certs.Msp.TLSCacerts {
+				secretName := "tlsCacerts"+strconv.Itoa(i)+".pem"
+				secretItems = append(secretItems, corev1.KeyToPath{
+					Key: secretName, Path: "/certs/msp/tlscacerts/" + secretName,
+				})
+			}
+			containerEnvs = append(containerEnvs,
+				corev1.EnvVar{Name: "CORE_PEER_MSPCONFIGPATH", Value: "/certs/msp/"},
+			)
+
+			// Add tls certificates
+			value := ""
+			for _, param := range cr.Spec.ConfigParams {
+				if param.Name == "CORE_PEER_TLS_ENABLED" {
+					value = param.Value
+					break;
+				}
+			}
+			if value != "" && value == "true" && cr.Spec.Certs.TLSCerts != nil {
+				secretItems = append(secretItems,
+					corev1.KeyToPath{Key: "tlsKey", Path: "/certs/tls/server.key"},
+					corev1.KeyToPath{Key: "tlsCert", Path: "/certs/tls/server.crt"},
+					corev1.KeyToPath{Key: "tlsRootcert", Path: "/certs/tls/ca.crt"},
+				)
+				containerEnvs = append(containerEnvs,
+					corev1.EnvVar{Name: "CORE_PEER_TLS_CERT_FILE", Value: "/certs/tls/server.key"},
+					corev1.EnvVar{Name: "CORE_PEER_TLS_KEY_FILE", Value: "/certs/tls/server.crt"},
+					corev1.EnvVar{Name: "CORE_PEER_TLS_ROOTCERT_FILE", Value: "/certs/tls/ca.crt"},
+				)
+			}
+
+			sts.Spec.Template.Spec.Volumes[0].VolumeSource.Secret.Items = secretItems
+		}
+
 		sts.Spec.Template.Spec.Containers[0].Env = containerEnvs
 		sts.Spec.Template.Spec.Containers[0].Resources = cr.Spec.Resources
 		controllerutil.SetControllerReference(cr, sts, r.scheme)

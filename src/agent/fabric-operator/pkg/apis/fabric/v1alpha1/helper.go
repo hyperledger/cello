@@ -10,6 +10,28 @@ import (
 )
 
 // +k8s:openapi-gen=true
+type Certs struct {
+	Msp *Msp `json:"msp"`
+	TLSCerts *TLSCerts `json:"tlsCerts"`
+}
+
+type Msp        struct {
+ AdminCerts []string `json:"adminCerts,required"`
+ CaCerts  []string `json:"caCerts,required"`
+ IntermediateCerts []string `json:"intermediateCerts,omitempty"`
+ KeyStore string `json:"keyStore,required"`
+ SignCerts string `json:"signCerts,required"`
+ TLSCacerts []string `json:"tlsCacerts,omitempty"`
+ TLSIntermediatecerts []string `json:"tlsIntermediatecerts,omitempty"`
+}
+
+type TLSCerts struct {
+	TLSPrivatekey       string `json:"tlsPrivatekey,omitempty"`
+	TLSCert 	 string `json:"tlsCert,omitempty"`
+	TLSRootcert  string `json:"tlsRootcert,omitempty"`
+	TLSRootcas  []string `json:"tlsRootcas,omitempty"`
+}
+// +k8s:openapi-gen=true
 type NodeSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file

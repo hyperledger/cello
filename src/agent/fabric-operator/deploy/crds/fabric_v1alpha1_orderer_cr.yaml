@@ -3,40 +3,56 @@ kind: Orderer
 metadata:
   name: orderer00
 spec:
-  storageSize: "1Gi"
-  storageClass: "default"
-  image: "hyperledger/fabric-orderer:1.4.1"
-
-  # To specify resource limits for this orderer node,
-  # use kubernetes resource requirements spec
-  # resources:
-  #   requests:
-  #     memory: "32Mi"
-  #     cpu: "200m"
-  #   limits:
-  #     memory: "1024mi"
-  #     cpu: "250"
-
-  # Add all the configurable peer parameters as 
+  # If you have an set of certs that you like to use instead of
+  # generating a set by Fabric CA, you can specify as the following.
+  # Certificates and private keys have all to be base64 encoded as
+  # the values of the each item below.
+  #certs:
+  #  tlsCerts:
+  #    tlsPrivatekey:
+  #    tlsCert:
+  #    tlsRootcas:
+  #  msp:
+  #    adminCerts:
+  #    caCerts:
+  #    keyStore:
+  #    signCerts:
+  #    tlsCacerts:
+  nodeSpec:
+    # To specify resource limits for this orderer node,
+    # use kubernetes resource requirements spec
+    # resources:
+    #   requests:
+    #     memory: "32Mi"
+    #     cpu: "200m"
+    #   limits:
+    #     memory: "1024mi"
+    #     cpu: "250"
+    storageSize: "1Gi"
+    storageClass: "default"
+    image: "hyperledger/fabric-orderer:1.4.1"
+  # Add all the configurable peer parameters as
   # name-value pairs
-  configParams:
-    - name: ORDERER_CFG_PATH
-      value: /shared/
-    - name: ORDERER_GENERAL_LEDGERTYPE
-      value: file
-    - name: ORDERER_FILELEDGER_LOCATION
-      value: /shared/ledger/orderer
-    - name: ORDERER_GENERAL_BATCHTIMEOUT
-      value: 1s
-    - name: ORDERER_GENERAL_BATCHSIZE_MAXMESSAGECOUNT
-      value: "10"
-    - name: ORDERER_GENERAL_MAXWINDOWSIZE
-      value: "1000"
-    - name: ORDERER_GENERAL_ORDERERTYPE
-      value: solo
-    - name: ORDERER_GENERAL_LISTENADDRESS
-      value: 0.0.0.0
-    - name: ORDERER_GENERAL_LISTENPORT
-      value: "31010"
-    - name: ORDERER_GENERAL_LOGLEVEL
-      value: debug
+    configParams:
+      - name: ORDERER_CFG_PATH
+        value: /shared/
+      - name: ORDERER_GENERAL_LEDGERTYPE
+        value: file
+      - name: ORDERER_FILELEDGER_LOCATION
+        value: /shared/ledger/orderer
+      - name: ORDERER_GENERAL_BATCHTIMEOUT
+        value: 1s
+      - name: ORDERER_GENERAL_BATCHSIZE_MAXMESSAGECOUNT
+        value: "10"
+      - name: ORDERER_GENERAL_MAXWINDOWSIZE
+        value: "1000"
+      - name: ORDERER_GENERAL_ORDERERTYPE
+        value: solo
+      - name: ORDERER_GENERAL_LISTENADDRESS
+        value: 0.0.0.0
+      - name: ORDERER_GENERAL_LISTENPORT
+        value: "31010"
+      - name: ORDERER_GENERAL_LOGLEVEL
+        value: debug
+      - name: ORDERER_GENERAL_TLS_ENABLED
+        value: "true"
