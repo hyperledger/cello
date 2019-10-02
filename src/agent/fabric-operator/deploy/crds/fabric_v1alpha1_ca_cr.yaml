@@ -23,7 +23,7 @@ spec:
   #  tlsKey: 
   nodeSpec:
     # Specify Fabric binaries to be used to setup the fabric CA
-    image: "hyperledger/fabric-ca:1.4.1"
+    image: "hyperledger/fabric-ca:1.4.3"
   # Optionally, FQDN can also be specified
   # hosts: ["ca.sample.com", "169.45.20.0"]
 

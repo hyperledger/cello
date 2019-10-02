@@ -29,60 +29,38 @@ spec:
           type: object
         spec:
           properties:
-            certs:
+            msp:
               description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
                 Important: Run "operator-sdk generate k8s" to regenerate code after
                 modifying this file Add custom validation using kubebuilder tags:
                 https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html'
               properties:
-                msp:
-                  properties:
-                    adminCerts:
-                      items:
-                        type: string
-                      type: array
-                    caCerts:
-                      items:
-                        type: string
-                      type: array
-                    intermediateCerts:
-                      items:
-                        type: string
-                      type: array
-                    keyStore:
-                      type: string
-                    signCerts:
-                      type: string
-                    tlsCacerts:
-                      items:
-                        type: string
-                      type: array
-                    tlsIntermediatecerts:
-                      items:
-                        type: string
-                      type: array
-                  required:
-                  - adminCerts
-                  - caCerts
-                  - keyStore
-                  - signCerts
-                  type: object
-                tlsCerts:
-                  properties:
-                    tlsCert:
-                      type: string
-                    tlsPrivatekey:
-                      type: string
-                    tlsRootcas:
-                      items:
-                        type: string
-                      type: array
-                    tlsRootcert:
-                      type: string
-                  type: object
+                adminCerts:
+                  description: Administrator's certificates
+                  items:
+                    type: string
+                  type: array
+                caCerts:
+                  description: CA certificates
+                  items:
+                    type: string
+                  type: array
+                keyStore:
+                  description: node private key
+                  type: string
+                signCerts:
+                  description: node certificate
+                  type: string
+                tlsCacerts:
+                  description: ca tls certificates
+                  items:
+                    type: string
+                  type: array
               required:
-              - msp
-              - tlsCerts
+              - adminCerts
+              - caCerts
+              - keyStore
+              - signCerts
               type: object
             nodeSpec:
               properties:
@@ -103,10 +81,6 @@ spec:
                     type: string
                   type: array
                 image:
-                  description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-                    Important: Run "operator-sdk generate k8s" to regenerate code
-                    after modifying this file Add custom validation using kubebuilder
-                    tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html'
                   type: string
                 resources:
                   type: object
@@ -118,6 +92,21 @@ spec:
               - image
               - configParams
               type: object
+            tls:
+              properties:
+                tlsCert:
+                  description: node certificate
+                  type: string
+                tlsKey:
+                  description: node private key
+                  type: string
+              required:
+              - tlsCert
+              - tlsKey
+              type: object
+          required:
+          - msp
+          - tls
           type: object
         status:
           properties:
@@ -130,6 +119,8 @@ spec:
           required:
           - accessPoint
           type: object
+      required:
+      - spec
   version: v1alpha1
   versions:
   - name: v1alpha1

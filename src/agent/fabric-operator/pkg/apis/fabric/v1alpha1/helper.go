@@ -9,33 +9,31 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+// The corresponding msp structure for node such as orderer or peer
 // +k8s:openapi-gen=true
-type Certs struct {
-	Msp *Msp `json:"msp"`
-	TLSCerts *TLSCerts `json:"tlsCerts"`
+type MSP struct {
+	// Administrator's certificates
+	AdminCerts []string `json:"adminCerts,required"`
+	// CA certificates
+	CaCerts []string `json:"caCerts,required"`
+	// node private key
+	KeyStore string `json:"keyStore,required"`
+	// node certificate
+	SignCerts string `json:"signCerts,required"`
+	// ca tls certificates
+	TLSCacerts []string `json:"tlsCacerts,omitempty"`
 }
 
-type Msp        struct {
- AdminCerts []string `json:"adminCerts,required"`
- CaCerts  []string `json:"caCerts,required"`
- IntermediateCerts []string `json:"intermediateCerts,omitempty"`
- KeyStore string `json:"keyStore,required"`
- SignCerts string `json:"signCerts,required"`
- TLSCacerts []string `json:"tlsCacerts,omitempty"`
- TLSIntermediatecerts []string `json:"tlsIntermediatecerts,omitempty"`
+// +k8s:openapi-gen=true
+type TLS struct {
+	// node certificate
+	TLSCert string `json:"tlsCert,required"`
+	// node private key
+	TLSKey string `json:"tlsKey,required"`
 }
 
-type TLSCerts struct {
-	TLSPrivatekey       string `json:"tlsPrivatekey,omitempty"`
-	TLSCert 	 string `json:"tlsCert,omitempty"`
-	TLSRootcert  string `json:"tlsRootcert,omitempty"`
-	TLSRootcas  []string `json:"tlsRootcas,omitempty"`
-}
 // +k8s:openapi-gen=true
 type NodeSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
-	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 	Image        string                      `json:"image"`
 	ConfigParams []ConfigParam               `json:"configParams"`
 	Hosts        []string                    `json:"hosts,omitempty"`
@@ -51,6 +49,16 @@ type NodeStatus struct {
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
 	AccessPoint string `json:"accessPoint"`
+}
+
+// +k8s:openapi-gen=true
+type CommonSpec struct {
+	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
+	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
+	MSP      `json:"msp"`
+	TLS      `json:"tls"`
+	NodeSpec `json:"nodeSpec,omitempty"`
 }
 
 // +k8s:openapi-gen=true

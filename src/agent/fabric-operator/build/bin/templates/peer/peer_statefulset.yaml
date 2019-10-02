@@ -32,19 +32,51 @@ spec:
         - name: toolset
           configMap:
             name: fabric-configuration-toolset
+        - name: rundind
+          emptyDir:
+            medium: Memory
+      initContainers:
+        - name: init
+          image: "hfrd/envsubst:latest"
+          volumeMounts:
+          - mountPath: "/var/peer"
+            name: peerstorage
+          - mountPath: "/toolset"
+            name: toolset
+          - mountPath: "/certs"
+            name: peercerts
+          command: ["/bin/bash"]
+          args:  ["/toolset/peer_config.sh"]
       containers:
         - name: peer
           image: "<image>"
           imagePullPolicy: Always
           env:
-            - { name: "CORE_PEER_ID", value: "org1peer1" }
-            - { name: "CORE_PEER_COMMITTER_ENABLED", value: "true" }
-            - { name: "CORE_VM_ENDPOINT", value: "tcp://docker:2375" }
-            - { name: "CORE_LOGGING_PEER", value: "debug" }
+          - { name: "CORE_PEER_LOCALMSPID", valueFrom: { secretKeyRef: { name: "<TobeReplaced>", key: "mspid" }}}
+          - { name: "CORE_PEER_MSPCONFIGPATH", value: "/etc/hyperledger/fabric/msp" }
+          - { name: "CORE_VM_ENDPOINT", value: "unix:///var/run/docker.sock" }
+          - { name: "FABRIC_LOGGING_SPEC", value: "DEBUG" }
           volumeMounts:
-            - mountPath: "/etc/hyperledger/peer"
-              name: peerstorage
-            - mountPath: "/certs"
-              name: peercerts
+          - mountPath: "/var/hyperledger/production"
+            name: peerstorage
+            subPath: production
+          - mountPath: "/etc/hyperledger/fabric/msp"
+            name: peerstorage
+            subPath: msp
+          - mountPath: "/etc/hyperledger/fabric/tls"
+            name: peerstorage
+            subPath: tls
+          - mountPath: "/var/run"
+            name: rundind
           command: ["peer"]
           args:  ["node", "start"]
+        - name: dind
+          image: docker:dind
+          securityContext:
+            privileged: true
+          args:
+            - dockerd
+            - -H unix:///var/run/docker.sock
+          volumeMounts:
+            - name: rundind
+              mountPath: /var/run

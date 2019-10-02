@@ -205,8 +205,8 @@ func (r *ReconcileCA) Reconcile(request reconcile.Request) (reconcile.Result, er
 		reqLogger.Info("Creating a new set.", "StatefulSet.Namespace", sts.Namespace,
 			"StatefulSet.Name", sts.Name)
 		err = r.client.Create(context.TODO(), sts)
-		if err != nil {
-			reqLogger.Error(err, "Failed to create new statefulset for CA.", "StatefulSet.Namespace",
+		if err != nil && !errors.IsAlreadyExists(err) {
+			reqLogger.Error(err, "Failed creating new statefulset for CA.", "StatefulSet.Namespace",
 				sts.Namespace, "StatefulSet.Name", sts.Name)
 			return reconcile.Result{}, err
 		}
@@ -227,6 +227,7 @@ func (r *ReconcileCA) newSecretForCR(cr *fabricv1alpha1.CA, request reconcile.Re
 	} else {
 		secret.Name = request.Name + "-secret"
 		secret.Namespace = request.Namespace
+		secret.Data = make(map[string][]byte)
 		if cr.Spec.Certs != nil {
 			secret.Data["cert"] = []byte(cr.Spec.Certs.Cert)
 			secret.Data["key"] = []byte(cr.Spec.Certs.Key)
@@ -254,7 +255,7 @@ func (r *ReconcileCA) newServiceForCR(cr *fabricv1alpha1.CA, request reconcile.R
 	return service
 }
 
-// newPodForCR returns a fabric CA statefulset with the same name/namespace as the cr
+// newStatefulSetForCR returns a fabric CA statefulset with the same name/namespace as the cr
 func (r *ReconcileCA) newSTSForCR(cr *fabricv1alpha1.CA, request reconcile.Request) *appsv1.StatefulSet {
 	obj, _, err := fabric.GetObjectFromTemplate("ca/ca_statefulset.yaml")
 	if err != nil {
@@ -274,7 +275,7 @@ func (r *ReconcileCA) newSTSForCR(cr *fabricv1alpha1.CA, request reconcile.Reque
 		sts.Spec.VolumeClaimTemplates[0].Spec.Resources.Requests["storage"] = resource.MustParse(storageSize)
 		sts.Spec.Template.Labels["k8s-app"] = sts.Name
 		sts.Spec.Template.Spec.Containers[0].Image =
-			fabric.GetDefault(cr.Spec.Image, "hyperledger/fabric-ca:1.4.1").(string)
+			fabric.GetDefault(cr.Spec.Image, "hyperledger/fabric-ca:1.4.3").(string)
 		sts.Spec.Template.Spec.Volumes[0].VolumeSource.Secret.SecretName = request.Name + "-secret"
 
 		sts.Spec.Template.Spec.InitContainers[0].Env[4].Value = cr.Spec.Admin
