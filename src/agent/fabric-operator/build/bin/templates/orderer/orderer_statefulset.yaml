@@ -27,22 +27,54 @@ spec:
       volumes:
         - name: orderercerts
           secret:
-            secretName: orderercerts
+            secretName: <orderercerts>
         - name: toolset
           configMap:
             name: fabric-configuration-toolset
+      initContainers:
+        - name: init
+          image: "hfrd/envsubst:latest"
+          env:
+          - name: "REAL_ORG"
+            valueFrom:
+              secretKeyRef:
+                name: orderercerts
+                key: mspid
+          volumeMounts:
+          - mountPath: "/var/orderer"
+            name: ordererstorage
+          - mountPath: "/toolset"
+            name: toolset
+          - mountPath: "/certs"
+            name: orderercerts
+          command: ["/bin/bash"]
+          args:  ["/toolset/orderer_config.sh"]
       containers:
         - name: orderer
           image: "<image>"
           imagePullPolicy: Always
           env:
-            - { name: "ORDERER_CFG_PATH", value: "/etc/hyperledger/" }
-            - { name: "ORDERER_GENERAL_LEDGERTYPE", value: "file" }
-            - { name: "ORDERER_FILELEDGER_LOCATION", value: "/etc/hyperledger/ledger/orderer" }
-            - { name: "ORDERER_GENERAL_LOGLEVEL", value: "debug" }
+          - { name: "ORDERER_GENERAL_LOCALMSPID", valueFrom: { secretKeyRef: { name: "<TobeReplaced>", key: "mspid" }}}
+          - { name: "ORDERER_GENERAL_LOCALMSPDIR", value: "/etc/hyperledger/fabric/msp" }
+          - { name: "ORDERER_CFG_PATH", value: "/etc/hyperledger/" }
+          - { name: "ORDERER_GENERAL_LEDGERTYPE", value: "file" }
+          - { name: "ORDERER_GENERAL_GENESISMETHOD", value: "provisional" }
+          - { name: "ORDERER_GENERAL_GENESISPROFILE", value: "EtcdRaft" }
+          - { name: "ORDERER_GENERAL_FILELEDGER_LOCATION", value: "/var/hyperledger/production/orderer" }
+          - { name: "ORDERER_GENERAL_SYSTEMCHANNEL", value: "systemchannel" }
+          - { name: "ORDERER_GENERAL_TLS_ENABLED", value: "true" }
+          - { name: "FABRIC_LOGGING_SPEC", value: "ERROR" }
           volumeMounts:
-            - mountPath: "/etc/hyperledger/orderer"
-              name: ordererstorage
-            - mountPath: "/certs"
-              name: orderercerts
+          - mountPath: "/var/hyperledger/production"
+            name: ordererstorage
+            subPath: production
+          - mountPath: "/etc/hyperledger/fabric/msp"
+            name: ordererstorage
+            subPath: msp
+          - mountPath: "/etc/hyperledger/fabric/tls"
+            name: ordererstorage
+            subPath: tls
+          - mountPath: "/etc/hyperledger/fabric/configtx.yaml"
+            name: ordererstorage
+            subPath: configtx.yaml
           command: ["orderer"]

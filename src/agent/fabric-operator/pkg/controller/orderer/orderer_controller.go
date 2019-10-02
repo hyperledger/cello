@@ -2,8 +2,10 @@ package orderer
 
 import (
 	"context"
+	"crypto/x509"
+	"encoding/base64"
+	"encoding/pem"
 	"strconv"
-	"strings"
 
 	fabric "github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric"
 	fabricv1alpha1 "github.com/hyperledger/cello/src/agent/fabric-operator/pkg/apis/fabric/v1alpha1"
@@ -198,12 +200,12 @@ func (r *ReconcileOrderer) Reconcile(request reconcile.Request) (reconcile.Resul
 	err = r.client.Get(context.TODO(), request.NamespacedName, foundSTS)
 	if err != nil && errors.IsNotFound(err) {
 		// Define a new StatefulSet object
-		sts := r.newSTSForCR(secret, instance, request)
+		sts := r.newSTSForCR(instance, request)
 		reqLogger.Info("Creating a new set.", "StatefulSet.Namespace", sts.Namespace,
 			"StatefulSet.Name", sts.Name)
 		err = r.client.Create(context.TODO(), sts)
-		if err != nil {
-			reqLogger.Error(err, "Failed to create new statefulset for Orderer.", "StatefulSet.Namespace",
+		if err != nil && !errors.IsAlreadyExists(err) {
+			reqLogger.Error(err, "Failed creating new statefulset for Orderer.", "StatefulSet.Namespace",
 				sts.Namespace, "StatefulSet.Name", sts.Name)
 			return reconcile.Result{}, err
 		}
@@ -224,33 +226,47 @@ func (r *ReconcileOrderer) newSecretForCR(cr *fabricv1alpha1.Orderer, request re
 	} else {
 		secret.Name = request.Name + "-secret"
 		secret.Namespace = request.Namespace
-		if cr.Spec.Certs != nil {
-			for i, adminCert := range cr.Spec.Certs.Msp.AdminCerts {
-				secret.Data["adminCert"+strconv.Itoa(i)] = []byte(adminCert)
-			}
-			for i, caCert := range cr.Spec.Certs.Msp.CaCerts {
-				secret.Data["caCert"+strconv.Itoa(i)] = []byte(caCert)
-			}
-			secret.Data["keyStore"] = []byte(cr.Spec.Certs.Msp.KeyStore)
-			secret.Data["signCerts"] = []byte(cr.Spec.Certs.Msp.SignCerts)
-			for i, tlsCacerts := range cr.Spec.Certs.Msp.TLSCacerts {
-				secret.Data["tlsCacerts"+strconv.Itoa(i)] = []byte(tlsCacerts)
-			}
-			value := ""
-			for _, param := range cr.Spec.ConfigParams {
-				if param.Name == "ORDERER_GENERAL_TLS_ENABLED" {
-					value = param.Value
-					break;
-				}
-			}
-			if value != "" && value == "true" && cr.Spec.Certs.TLSCerts != nil {
-				secret.Data["tlsPrivatekey"] = []byte(cr.Spec.Certs.TLSCerts.TLSPrivatekey)
-				secret.Data["tlsCert"] = []byte(cr.Spec.Certs.TLSCerts.TLSCert)
-				for i, tlsRootcas := range cr.Spec.Certs.TLSCerts.TLSRootcas {
-					secret.Data["tlsRootcas"+strconv.Itoa(i)] = []byte(tlsRootcas)
+		secret.Data = make(map[string][]byte)
+
+		if cr.Spec.AdminCerts == nil || len(cr.Spec.AdminCerts) == 0 ||
+			cr.Spec.CaCerts == nil || len(cr.Spec.CaCerts) == 0 ||
+			len(cr.Spec.KeyStore) == 0 || len(cr.Spec.SignCerts) == 0 ||
+			cr.Spec.TLSCacerts == nil || len(cr.Spec.TLSCacerts) == 0 ||
+			len(cr.Spec.TLS.TLSCert) == 0 || len(cr.Spec.TLS.TLSKey) == 0 {
+			log.Error(errors.NewBadRequest("All entries under MSP and TLS in the request are required."),
+				"Orderer creation", "Provide all certs under msp and tls in the request")
+			return nil
+		}
+
+		for i, adminCert := range cr.Spec.AdminCerts {
+			secret.Data["admincert"+strconv.Itoa(i)], _ = base64.StdEncoding.DecodeString(adminCert)
+		}
+		for i, caCert := range cr.Spec.CaCerts {
+			secret.Data["cacert"+strconv.Itoa(i)], _ = base64.StdEncoding.DecodeString(caCert)
+		}
+		secret.Data["keystore"], _ = base64.StdEncoding.DecodeString(cr.Spec.KeyStore)
+		secret.Data["signcert"], _ = base64.StdEncoding.DecodeString(cr.Spec.SignCerts)
+		// Try to find the organization name to be used as mspid
+		block, _ := pem.Decode(secret.Data["signcert"])
+		secret.Data["mspid"] = []byte("SampleOrgMSPID")
+		if block != nil {
+			cert, err := x509.ParseCertificate(block.Bytes)
+			if err != nil {
+				log.Error(err, "Failed to parse certificate")
+			} else {
+				if len(cert.Subject.Organization) > 0 {
+					secret.Data["mspid"] = []byte(cert.Subject.Organization[0])
+				} else if len(cert.Issuer.Organization) > 0 {
+					secret.Data["mspid"] = []byte(cert.Issuer.Organization[0])
 				}
 			}
 		}
+		for i, tlsCacerts := range cr.Spec.TLSCacerts {
+			secret.Data["tlscacert"+strconv.Itoa(i)], _ = base64.StdEncoding.DecodeString(tlsCacerts)
+		}
+
+		secret.Data["tlscert"], _ = base64.StdEncoding.DecodeString(cr.Spec.TLS.TLSCert)
+		secret.Data["tlskey"], _ = base64.StdEncoding.DecodeString(cr.Spec.TLS.TLSKey)
 		controllerutil.SetControllerReference(cr, secret, r.scheme)
 	}
 	return secret
@@ -272,8 +288,8 @@ func (r *ReconcileOrderer) newServiceForCR(cr *fabricv1alpha1.Orderer, request r
 	return service
 }
 
-// newPodForCR returns a fabric Orderer statefulset with the same name/namespace as the cr
-func (r *ReconcileOrderer) newSTSForCR(secret *corev1.Secret, cr *fabricv1alpha1.Orderer, request reconcile.Request) *appsv1.StatefulSet {
+// newStatefulSetForCR returns a fabric Orderer statefulset with the same name/namespace as the cr
+func (r *ReconcileOrderer) newSTSForCR(cr *fabricv1alpha1.Orderer, request reconcile.Request) *appsv1.StatefulSet {
 	obj, _, err := fabric.GetObjectFromTemplate("orderer/orderer_statefulset.yaml")
 	if err != nil {
 		log.Error(err, "Failed to load statefulset.")
@@ -291,82 +307,20 @@ func (r *ReconcileOrderer) newSTSForCR(secret *corev1.Secret, cr *fabricv1alpha1
 		storageSize := fabric.GetDefault(cr.Spec.StorageSize, "5Gi").(string)
 		sts.Spec.VolumeClaimTemplates[0].Spec.Resources.Requests["storage"] = resource.MustParse(storageSize)
 		sts.Spec.Template.Labels["k8s-app"] = sts.Name
-		containerEnvs := []corev1.EnvVar{}
+		sts.Spec.Template.Spec.Containers[0].Image =
+			fabric.GetDefault(cr.Spec.Image, "hyperledger/fabric-orderer:1.4.3").(string)
+		sts.Spec.Template.Spec.Volumes[0].VolumeSource.Secret.SecretName = request.Name + "-secret"
+		sts.Spec.Template.Spec.InitContainers[0].Env[0].ValueFrom.SecretKeyRef.Name = request.Name + "-secret"
+		sts.Spec.Template.Spec.Containers[0].Env[0].ValueFrom.SecretKeyRef.Name = request.Name + "-secret"
+
+		containerEnvs := sts.Spec.Template.Spec.Containers[0].Env
+
 		for _, e := range cr.Spec.ConfigParams {
 			containerEnvs = append(containerEnvs, corev1.EnvVar{
 				Name: e.Name, Value: e.Value,
 			})
 		}
-		sts.Spec.Template.Spec.Containers[0].Image =
-			fabric.GetDefault(cr.Spec.Image, "hyperledger/fabric-orderer:1.4.1").(string)
 
-		if secret != nil {
-			sts.Spec.Template.Spec.Volumes[0].VolumeSource.Secret.SecretName = request.Name + "-secret"
-			secretItems := []corev1.KeyToPath{}
-
-			// Add MSP Certificates
-			for i, _ := range cr.Spec.Certs.Msp.AdminCerts {
-				secretName := "adminCert"+strconv.Itoa(i)+".pem"
-				secretItems = append(secretItems, corev1.KeyToPath{
-					Key: secretName, Path: "/certs/msp/admincerts/" + secretName,
-				})
-			}
-
-			for i, _ := range cr.Spec.Certs.Msp.CaCerts {
-				secretName := "caCert"+strconv.Itoa(i)+".pem"
-				secretItems = append(secretItems, corev1.KeyToPath{
-					Key: secretName, Path: "/certs/msp/cacerts/" + secretName,
-				})
-			}
-
-			secretItems = append(secretItems,
-				corev1.KeyToPath{Key: "keyStore", Path: "/certs/msp/keystore"},
-				corev1.KeyToPath{Key: "signCerts", Path: "/certs/msp/signCerts.pem"},
-			)
-
-			for i, _ := range cr.Spec.Certs.Msp.TLSCacerts {
-				secretName := "tlsCacerts"+strconv.Itoa(i)+".pem"
-				secretItems = append(secretItems, corev1.KeyToPath{
-					Key: secretName, Path: "/certs/msp/tlscacerts/" + secretName,
-				})
-			}
-			containerEnvs = append(containerEnvs, corev1.EnvVar{
-				Name: "ORDERER_GENERAL_LOCALMSPDIR", Value: "/certs/msp/",
-			})
-
-			// Add tls certificates
-			value := ""
-			for _, param := range cr.Spec.ConfigParams {
-				if param.Name == "ORDERER_GENERAL_TLS_ENABLED" {
-					value = param.Value
-					break;
-				}
-			}
-			if value != "" && value == "true" && cr.Spec.Certs.TLSCerts != nil {
-				secretItems = append(secretItems,
-					corev1.KeyToPath{Key: "tlsPrivatekey", Path: "/certs/tls/server.key"},
-					corev1.KeyToPath{Key: "tlsCert", Path: "/certs/tls/server.crt"},
-				)
-
-				tlsRootcasList := []string{}
-
-				for i, _ := range cr.Spec.Certs.TLSCerts.TLSRootcas {
-				secretName := "tlsRootcas"+strconv.Itoa(i)+".crt"
-				tlsRootcasList = append(tlsRootcasList, "/certs/tls/" + secretName)
-				secretItems = append(secretItems, corev1.KeyToPath{
-					Key: secretName, Path: "/certs/msp/" + secretName,
-				})
-				}
-
-				containerEnvs = append(containerEnvs,
-					corev1.EnvVar{Name: "ORDERER_GENERAL_TLS_PRIVATEKEY", Value: "/certs/tls/server.key"},
-					corev1.EnvVar{Name: "ORDERER_GENERAL_TLS_CERTIFICATE", Value: "/certs/tls/server.crt"},
-					corev1.EnvVar{Name: "ORDERER_GENERAL_TLS_ROOTCAS", Value: "[" + strings.Join(tlsRootcasList, ",") + "]" },
-				)
-			}
-
-			sts.Spec.Template.Spec.Volumes[0].VolumeSource.Secret.Items = secretItems
-		}
 		sts.Spec.Template.Spec.Containers[0].Env = containerEnvs
 		sts.Spec.Template.Spec.Containers[0].Resources = cr.Spec.Resources
 		controllerutil.SetControllerReference(cr, sts, r.scheme)

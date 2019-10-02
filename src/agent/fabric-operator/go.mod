@@ -1,6 +1,7 @@
 module github.com/hyperledger/cello/src/agent/fabric-operator
 
 require (
+	github.com/NYTimes/gziphandler v1.0.1 // indirect
 	github.com/go-openapi/spec v0.19.0
 	github.com/operator-framework/operator-sdk v0.9.1-0.20190806200632-6c7039c37324
 	github.com/spf13/pflag v1.0.3

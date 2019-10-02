@@ -1,0 +1,149 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+---
+Organizations:
+- &$REAL_ORG
+    Name: $REAL_ORG
+    ID: $REAL_ORG
+    MSPDir: msp
+    Policies: &OrgPolicies
+      Readers:
+        Type: Signature
+        Rule: "OR('$REAL_ORG.member')"
+      Writers:
+        Type: Signature
+        Rule: "OR('$REAL_ORG.member')"
+      Admins:
+        Type: Signature
+        Rule: "OR('$REAL_ORG.admin')"
+    OrdererEndpoints:
+    - "127.0.0.1:7050"
+    AnchorPeers:
+    - Host: 127.0.0.1
+      Port: 7051
+Capabilities:
+  Channel: &ChannelCapabilities
+    V1_4_3: true
+    V1_3: false
+    V1_1: false
+  Orderer: &OrdererCapabilities
+    V1_4_2: true
+    V1_1: false
+  Application: &ApplicationCapabilities
+    V1_4_2: true
+    V1_3: false
+    V1_2: false
+    V1_1: false
+Application: &ApplicationDefaults
+  ACLs: &ACLsDefault
+    lscc/ChaincodeExists: /Channel/Application/Readers
+    lscc/GetDeploymentSpec: /Channel/Application/Readers
+    lscc/GetChaincodeData: /Channel/Application/Readers
+    lscc/GetInstantiatedChaincodes: /Channel/Application/Readers
+    qscc/GetChainInfo: /Channel/Application/Readers
+    qscc/GetBlockByNumber: /Channel/Application/Readers
+    qscc/GetBlockByHash: /Channel/Application/Readers
+    qscc/GetTransactionByID: /Channel/Application/Readers
+    qscc/GetBlockByTxID: /Channel/Application/Readers
+    cscc/GetConfigBlock: /Channel/Application/Readers
+    cscc/GetConfigTree: /Channel/Application/Readers
+    cscc/SimulateConfigTreeUpdate: /Channel/Application/Readers
+    peer/Propose: /Channel/Application/Writers
+    peer/ChaincodeToChaincode: /Channel/Application/Readers
+    event/Block: /Channel/Application/Readers
+    event/FilteredBlock: /Channel/Application/Readers
+  Organizations:
+  Policies: &ApplicationDefaultPolicies
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+  Capabilities:
+    <<: *ApplicationCapabilities
+Orderer: &OrdererDefaults
+  Addresses:
+  BatchTimeout: 2s
+  BatchSize:
+    MaxMessageCount: 500
+    AbsoluteMaxBytes: 10 MB
+    PreferredMaxBytes: 2 MB
+  MaxChannels: 0
+  EtcdRaft:
+    Consenters:
+    - Host: raft0.example.com
+      Port: 7050
+      ClientTLSCert: /etc/hyperledger/fabric/tls/server.crt
+      ServerTLSCert: /etc/hyperledger/fabric/tls/server.crt
+    Options:
+      TickInterval: 500ms
+      ElectionTick: 10
+      HeartbeatTick: 1
+      MaxInflightBlocks: 5
+      SnapshotIntervalSize: 20 MB
+  Organizations:
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+    BlockValidation:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+  Capabilities:
+    <<: *OrdererCapabilities
+Channel: &ChannelDefaults
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+  Capabilities:
+    <<: *ChannelCapabilities
+Profiles:
+  EtcdRaft:
+    <<: *ChannelDefaults
+    Orderer:
+      <<: *OrdererDefaults
+      OrdererType: etcdraft
+      Organizations:
+      - <<: *$REAL_ORG
+        Policies:
+          <<: *OrgPolicies
+          Admins:
+            Type: Signature
+            Rule: "OR('$REAL_ORG.member')"
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - <<: *$REAL_ORG
+          Policies:
+            <<: *OrgPolicies
+            Admins:
+              Type: Signature
+              Rule: "OR('$REAL_ORG.member')"
+    Consortiums:
+      SampleConsortium:
+        Organizations:
+          - <<: *$REAL_ORG
+            Policies:
+              <<: *OrgPolicies
+              Admins:
+                Type: Signature
+                Rule: "OR('$REAL_ORG.member')"
