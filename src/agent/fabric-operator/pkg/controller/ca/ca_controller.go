@@ -169,7 +169,12 @@ func (r *ReconcileCA) Reconcile(request reconcile.Request) (reconcile.Result, er
 		return reconcile.Result{}, err
 	}
 
-	if len(foundService.Spec.Ports) > 0 && instance.Status.AccessPoint == "" {
+	if len(foundService.Spec.Ports) == 0 {
+		// if no ports yet, we need to wait.
+		return reconcile.Result{Requeue: true}, nil
+	}
+
+	if instance.Status.AccessPoint == "" {
 		if foundService.Spec.Ports[0].NodePort > 0 {
 			reqLogger.Info("The service port has been found", "Service port", foundService.Spec.Ports[0].NodePort)
 			r.client.Get(context.TODO(), request.NamespacedName, instance)

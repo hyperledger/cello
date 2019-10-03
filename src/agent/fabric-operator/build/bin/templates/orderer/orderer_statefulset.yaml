@@ -30,7 +30,7 @@ spec:
             secretName: <orderercerts>
         - name: toolset
           configMap:
-            name: fabric-configuration-toolset
+            name: fabric-toolset
       initContainers:
         - name: init
           image: "hfrd/envsubst:latest"

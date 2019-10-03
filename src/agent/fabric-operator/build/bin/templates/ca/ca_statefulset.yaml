@@ -31,7 +31,7 @@ spec:
             secretName: cacerts
         - name: toolset
           configMap:
-            name: fabric-configuration-toolset
+            name: fabric-toolset
       initContainers:
         - name: init
           image: "hfrd/envsubst:latest"
@@ -63,6 +63,7 @@ spec:
             - { name: "FABRIC_CA_HOME", value: "/etc/hyperledger/fabric-ca-server-config" }
             - { name: "FABRIC_CA_SERVER_CA_NAME", value: "name" }
             - { name: "FABRIC_CA_SERVER_TLS_ENABLED", value: "true" }
+            - { name: "FABRIC_LOGGING_SPEC", value: "ERROR" }
           volumeMounts:
             - mountPath: "/etc/hyperledger/fabric-ca-server-config"
               name: castorage

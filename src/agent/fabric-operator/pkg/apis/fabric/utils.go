@@ -36,6 +36,7 @@ var (
 	// TemplateRoot is the root directory where all needed templates live
 	TemplateRootDir = "/usr/local/bin/templates/"
 	ScriptRoodDir   = "/usr/local/bin/scripts"
+	ToolSetName     = "fabric-toolset"
 )
 
 var log = logf.Log.WithName("fabric_util")
@@ -75,18 +76,18 @@ var mutex = &sync.Mutex{}
 func CheckAndCreateConfigMap(client client.Client, request reconcile.Request) error {
 	configmap := &corev1.ConfigMap{}
 	err := client.Get(context.TODO(),
-		types.NamespacedName{Name: "fabric-configuration-toolset", Namespace: request.Namespace},
+		types.NamespacedName{Name: ToolSetName, Namespace: request.Namespace},
 		configmap)
 	if err != nil {
 		mutex.Lock()
 		defer mutex.Unlock()
 		err = client.Get(context.TODO(),
-			types.NamespacedName{Name: "fabric-configuration-toolset", Namespace: request.Namespace},
+			types.NamespacedName{Name: ToolSetName, Namespace: request.Namespace},
 			configmap)
 		if err != nil && errors.IsNotFound(err) {
-			log.Info("Fabric CA configmap resource not found. We need to create it")
+			log.Info("Fabric operator configmap resource not found. We need to create it")
 			configmap.Namespace = request.Namespace
-			configmap.Name = "fabric-configuration-toolset"
+			configmap.Name = ToolSetName
 			configmap.Data = map[string]string{}
 			filepath.Walk(ScriptRoodDir, func(path string, info os.FileInfo, err error) error {
 				if !info.IsDir() {

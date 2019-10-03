@@ -168,7 +168,12 @@ func (r *ReconcilePeer) Reconcile(request reconcile.Request) (reconcile.Result, 
 		return reconcile.Result{}, err
 	}
 
-	if len(foundService.Spec.Ports) > 0 && instance.Status.AccessPoint == "" {
+	if len(foundService.Spec.Ports) == 0 {
+		// if no ports yet, we need to wait.
+		return reconcile.Result{Requeue: true}, nil
+	}
+
+	if instance.Status.AccessPoint == "" {
 		if foundService.Spec.Ports[0].NodePort > 0 {
 			reqLogger.Info("The service port has been found", "Service port", foundService.Spec.Ports[0].NodePort)
 			r.client.Get(context.TODO(), request.NamespacedName, instance)
@@ -313,9 +318,11 @@ func (r *ReconcilePeer) newSTSForCR(cr *fabricv1alpha1.Peer, request reconcile.R
 		sts.Spec.Template.Spec.Containers[0].Env[0].ValueFrom.SecretKeyRef.Name = request.Name + "-secret"
 
 		containerEnvs := sts.Spec.Template.Spec.Containers[0].Env
-		containerEnvs = append(containerEnvs,
-			corev1.EnvVar{Name: "CORE_PEER_GOSSIP_EXTERNALENDPOINT", Value: cr.Status.AccessPoint})
-
+		if len(cr.Status.AccessPoint) > 9 {
+			ep := string(cr.Status.AccessPoint[8:len(cr.Status.AccessPoint)])
+			containerEnvs = append(containerEnvs,
+				corev1.EnvVar{Name: "CORE_PEER_GOSSIP_EXTERNALENDPOINT", Value: ep})
+		}
 		for _, e := range cr.Spec.ConfigParams {
 			containerEnvs = append(containerEnvs, corev1.EnvVar{
 				Name: e.Name, Value: e.Value,

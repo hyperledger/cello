@@ -31,7 +31,7 @@ spec:
             secretName: peercerts
         - name: toolset
           configMap:
-            name: fabric-configuration-toolset
+            name: fabric-toolset
         - name: rundind
           emptyDir:
             medium: Memory
@@ -55,7 +55,7 @@ spec:
           - { name: "CORE_PEER_LOCALMSPID", valueFrom: { secretKeyRef: { name: "<TobeReplaced>", key: "mspid" }}}
           - { name: "CORE_PEER_MSPCONFIGPATH", value: "/etc/hyperledger/fabric/msp" }
           - { name: "CORE_VM_ENDPOINT", value: "unix:///var/run/docker.sock" }
-          - { name: "FABRIC_LOGGING_SPEC", value: "DEBUG" }
+          - { name: "FABRIC_LOGGING_SPEC", value: "ERROR" }
           volumeMounts:
           - mountPath: "/var/hyperledger/production"
             name: peerstorage
