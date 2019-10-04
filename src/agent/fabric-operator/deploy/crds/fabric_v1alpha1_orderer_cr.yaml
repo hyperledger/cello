@@ -3,10 +3,12 @@ kind: Orderer
 metadata:
   name: orderer1st
 spec:
-  # If you have an set of certs that you like to use instead of
-  # generating a set by Fabric CA, you can specify as the following.
-  # Certificates and private keys have all to be base64 encoded as
-  # the values of the each item below.
+  # To set up an orderer node, a set of certs must be provided.
+  # You may choose a set from your company's CA issued certs or
+  # use Fabric CA to generate a set of certs. All fields of msp
+  # and tls are required.
+  # Certificates and private keys have to be base64 encoded
+  # The values in this file are examples.
   msp:
     adminCerts: ["LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNCakNDQWEyZ0F3SUJBZ0lRSlFMZXZHczUyajZWaXdvNml2UFNlVEFLQmdncWhrak9QUVFEQWpCbk1Rc3cKQ1FZRFZRUUdFd0pWVXpFVE1CRUdBMVVFQ0JNS1EyRnNhV1p2Y201cFlURVdNQlFHQTFVRUJ4TU5VMkZ1SUVaeQpZVzVqYVhOamJ6RVRNQkVHQTFVRUNoTUtiM0prWlhKbGNtOXlaekVXTUJRR0ExVUVBeE1OWTJFdWIzSmtaWEpsCmNtOXlaekFlRncweE9UQTVNalV4TWpNMU1EQmFGdzB5T1RBNU1qSXhNak0xTURCYU1GVXhDekFKQmdOVkJBWVQKQWxWVE1STXdFUVlEVlFRSUV3cERZV3hwWm05eWJtbGhNUll3RkFZRFZRUUhFdzFUWVc0Z1JuSmhibU5wYzJOdgpNUmt3RndZRFZRUUREQkJCWkcxcGJrQnZjbVJsY21WeWIzSm5NRmt3RXdZSEtvWkl6ajBDQVFZSUtvWkl6ajBECkFRY0RRZ0FFSTJvRWZ5akcwakZ5dFRKRHFFc2FoekE4aXlNSng1Vml2TFl1SjAvWGZPMGpDd1hhM0JEN0l2NEgKYjZQWmN5SUFOcjNhK1VnR2x5Zi8wNmR4UC8zdXk2Tk5NRXN3RGdZRFZSMFBBUUgvQkFRREFnZUFNQXdHQTFVZApFd0VCL3dRQ01BQXdLd1lEVlIwakJDUXdJb0FnVmRkSTVCUWlZRW1QMkR3UnlJR1RpaGptTG9ITHBpUk93T21kCkI5eW9kNHN3Q2dZSUtvWkl6ajBFQXdJRFJ3QXdSQUlnTm52SzNhRUJYdWNneDlyYURIc1pUOTJzMFJpNUg1REkKTWJlTTg2Q2NRMnNDSUVuZzVTbzdaNzdKN2xHT0s2WEJ6WjRyYnArWGxMbXZvWnBEQ2hiQUI2aEQKLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo="]
     caCerts: ["LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNPVENDQWVDZ0F3SUJBZ0lSQU9MSEplb05VR0Vaa1ZUS0ZXb1JiZ3d3Q2dZSUtvWkl6ajBFQXdJd1p6RUwKTUFrR0ExVUVCaE1DVlZNeEV6QVJCZ05WQkFnVENrTmhiR2xtYjNKdWFXRXhGakFVQmdOVkJBY1REVk5oYmlCRwpjbUZ1WTJselkyOHhFekFSQmdOVkJBb1RDbTl5WkdWeVpYSnZjbWN4RmpBVUJnTlZCQU1URFdOaExtOXlaR1Z5ClpYSnZjbWN3SGhjTk1Ua3dPVEkxTVRJek5UQXdXaGNOTWprd09USXlNVEl6TlRBd1dqQm5NUXN3Q1FZRFZRUUcKRXdKVlV6RVRNQkVHQTFVRUNCTUtRMkZzYVdadmNtNXBZVEVXTUJRR0ExVUVCeE1OVTJGdUlFWnlZVzVqYVhOagpiekVUTUJFR0ExVUVDaE1LYjNKa1pYSmxjbTl5WnpFV01CUUdBMVVFQXhNTlkyRXViM0prWlhKbGNtOXlaekJaCk1CTUdCeXFHU000OUFnRUdDQ3FHU000OUF3RUhBMElBQkxabURySVhkNjNHQXRLWitSTWcwTmExbk9YOGRZZ3MKRzZXUGhvcjM3ZTlJSjBVeUl3bDhlZDdKRWsveFRrVFVtQXBZNStCMEJJRVRPc1dNWGF6M1VpYWpiVEJyTUE0RwpBMVVkRHdFQi93UUVBd0lCcGpBZEJnTlZIU1VFRmpBVUJnZ3JCZ0VGQlFjREFnWUlLd1lCQlFVSEF3RXdEd1lEClZSMFRBUUgvQkFVd0F3RUIvekFwQmdOVkhRNEVJZ1FnVmRkSTVCUWlZRW1QMkR3UnlJR1RpaGptTG9ITHBpUk8Kd09tZEI5eW9kNHN3Q2dZSUtvWkl6ajBFQXdJRFJ3QXdSQUlnUmFlOWhNZVp4cGsxVm5KUzRpQ29tMCtCNjVlMApmclJKV1ZtOW5TTFR1ajBDSUNtUDJZMWh4WWt5T2xSbC9kUnhGUmlDM3FRL3J0clE4N3ZZL0hRTWFaNDMKLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo="]
@@ -29,8 +31,7 @@ spec:
     storageSize: "1Gi"
     storageClass: "default"
     image: "hyperledger/fabric-orderer:1.4.3"
-  # Add all the configurable peer parameters as
-  # name-value pairs
+  # Add any configurable orderer parameters as name-value pairs
     configParams:
       - name: ORDERER_GENERAL_TLS_ENABLED
         value: "true"
