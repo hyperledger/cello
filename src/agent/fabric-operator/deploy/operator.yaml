@@ -16,7 +16,7 @@ spec:
       containers:
         - name: fabric-operator
           # Replace this with the built image name
-          image: REPLACE_IMAGE
+          image: hyperledger/fabric-operator:latest
           command:
           - fabric-operator
           imagePullPolicy: Always
