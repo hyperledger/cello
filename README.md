@@ -1,6 +1,6 @@
 **Note:** This is a **read-only mirror** of the formal [Gerrit](https://gerrit.hyperledger.org/r/#/admin/projects/cello) repository. Find more details at [Cello Wiki](https://wiki.hyperledger.org/projects/cello).
 
-![Cello](docs/imgs/logo.png)
+![Cello](docs/images/logo.png)
 
 Hyperledger Cello is a blockchain provision and operation system, which helps manage blockchain networks in an efficient way.
 
@@ -21,7 +21,7 @@ Using Cello, everyone can easily:
 
 A typical usage scenario is illustrated as:
 
-![Typical Scenario](docs/imgs/scenario.png)
+![Typical Scenario](docs/images/scenario.png)
 
 ## Quick Start
 
