@@ -1,4 +1,4 @@
-![Cello](docs/images/logo.png)
+![Cello](docs/images/favicon.png)
 
 Hyperledger Cello is a blockchain provision and operation system, which helps manage blockchain networks in an efficient way.
 
