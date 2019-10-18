@@ -115,4 +115,8 @@ kubectl delete orderer orderer1st
 [peer_spec]:https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/deploy/crds/fabric_v1alpha1_peer_cr.yaml?raw=true
 [orderer_spec]:https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/deploy/crds/fabric_v1alpha1_orderer_cr.yaml?raw=true
 
+## Fabric Operator from the API / Dashboard
+
+To run the operator using the cello API or dashboard follow the instructions here :- [Fabric Operator Agent README](https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/README.md)
+
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
