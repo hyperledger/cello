@@ -45,7 +45,7 @@ http {
         #access_log  logs/host.access.log  main;
 
         location $URL_PREFIX/static {
-            alias /var/www/server/static;
+            alias /var/www/static;
         }
 
         location $URL_PREFIX {
