@@ -1,0 +1,12 @@
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+steps:
+  - script: |
+      set -eu -o pipefail
+      sudo pip install --upgrade pip
+      sudo pip install wheel
+      sudo pip install tox
+      make check
+    displayName: 'make check'

@@ -6,14 +6,11 @@
 trigger:
 - master
 
-pool:
-  vmImage: 'ubuntu-latest'
-
-steps:
-- script: |
-    set -eu -o pipefail
-    sudo pip install --upgrade pip
-    sudo pip install wheel
-    sudo pip install tox
-    make check
-  displayName: 'make check'
+jobs:
+  - job: check
+    displayName: Check code
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+      - template: ci/check.yml
+    condition: and(always(), eq(variables['Build.Reason'], 'PullRequest'))
