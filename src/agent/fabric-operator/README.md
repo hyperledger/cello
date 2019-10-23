@@ -30,9 +30,13 @@ customresourcedefinition.apiextensions.k8s.io/peers.fabric.hyperledger.org creat
 ```
 Once the operator crds get created, start up the controller using the following command
 ```
-kubectl apply -f https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/deploy/operator.yaml?raw=true
+kubectl apply \
+  -f https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/deploy/service_account.yaml?raw=true \
+  -f https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/deploy/role.yaml?raw=true \
+  -f https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/deploy/role_binding.yaml?raw=true \
+  -f https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/deploy/operator.yaml?raw=true
 ```
-The above command starts up the fabric operator controller in your k8s cluster. If your k8s cluster already have the controller running, you can skip these steps.
+The above command starts up the fabric operator controller in your k8s cluster. If your k8s cluster already has the controller running, you can skip this step.
 
 ### [Stand up a Fabric CA node](#startupca)
 
