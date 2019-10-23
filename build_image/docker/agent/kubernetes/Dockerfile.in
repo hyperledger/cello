@@ -10,6 +10,6 @@ COPY src/agent/kubernetes-agent/src /app
 WORKDIR /app
 
 ENV KUBECONFIG /app/.kube/config
-ENV PYTHONPATH /app:$PATHONPATH
+ENV PYTHONPATH /app:/usr/local/lib/python3.6:/usr/local/lib/python3.6/lib-dynload:/usr/local/lib/python3.6/site-packages
 
 CMD python main.py
