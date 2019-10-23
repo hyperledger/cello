@@ -19,7 +19,7 @@ ARG uid=1000
 ARG gid=1000
 
 RUN apt-get update                                                 && \
-    apt-get install -y bash python-pip sudo                        && \
+    apt-get install -y bash python-pip sudo curl                   && \
     pip install --upgrade pip ansible pyyaml                       && \
     groupadd -g ${gid} ${user}                                     && \
     useradd -d /opt/agent -u ${uid} -g ${user} ${user}             && \
