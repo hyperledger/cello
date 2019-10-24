@@ -137,7 +137,7 @@ def _create_fabric_node():
     node_status = NodeStatus.Error.value
     for i in range(1, MAX_QUERY_RETRY):
         pod = k8s_client.get_pod(AGENT_ID, deploy_name)
-        if pod.status.phase == "Running":
+        if pod and pod.status.phase == "Running":
             node_status = NodeStatus.Running.value
             break
         sleep(5)
