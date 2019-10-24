@@ -26,6 +26,8 @@ services:
     environment:
     - UWSGI_SERVER_HOST=api-engine
     - URL_PREFIX=${API_ENGINE_WEBROOT}
+    volumes:
+      - /opt/cello/api-engine/media:/var/www/media
 
   postgres-server:
     image: postgres:11.1

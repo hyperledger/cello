@@ -48,6 +48,10 @@ http {
             alias /var/www/static;
         }
 
+        location $URL_PREFIX/media {
+            alias /var/www/media;
+        }
+
         location $URL_PREFIX {
                 include         uwsgi_params;
                 uwsgi_pass      api_server;
