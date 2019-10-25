@@ -106,5 +106,6 @@ services:
       - nginx
     environment:
       - API_PROXY=http://nginx:80/engine
+      - SERVICE_PORT=$API_ENGINE_SERVICE_PORT
     ports:
       - "${DASHBOARD_SERVICE_PORT}:80"
