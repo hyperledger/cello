@@ -19,7 +19,7 @@ spec:
           image: hyperledger/cello-fabric-operator:latest
           command:
           - fabric-operator
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           env:
             - name: WATCH_NAMESPACE
               valueFrom:
