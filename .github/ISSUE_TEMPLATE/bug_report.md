@@ -29,10 +29,15 @@ assignees: ''
 ## Context (Environment)
 <!--- How has this issue affected you? What are you trying to accomplish? -->
 <!--- Providing context helps us come up with a solution that is most useful in the real world -->
+* OS:
+* Architecture:
+* Docker version:
+* Docker compose version:
+* Kubernetes version:
 
 <!--- Provide a general summary of the issue in the Title above -->
 
-## Detailed Description
+## Detailed Description and log
 <!--- Provide a detailed description of the change or addition you are proposing -->
 
 ## Possible Implementation
