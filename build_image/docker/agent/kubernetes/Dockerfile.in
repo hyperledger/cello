@@ -10,6 +10,7 @@ COPY src/agent/kubernetes-agent/src /app
 WORKDIR /app
 
 ENV KUBECONFIG /app/.kube/config
-ENV PYTHONPATH /app:/usr/local/lib/python3.6:/usr/local/lib/python3.6/lib-dynload:/usr/local/lib/python3.6/site-packages
+CMD export PYTHON_VER=${PYTHON_VERSION:0:3}
+ENV PYTHONPATH /app:/usr/local/lib/python${PYTHON_VER}:/usr/local/lib/python${PTYHON_VER}/lib-dynload:/usr/local/lib/python${PATHON_VER}/site-packages
 
 CMD python main.py
