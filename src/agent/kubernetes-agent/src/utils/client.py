@@ -15,6 +15,8 @@ class KubernetesClient(object):
         self._config_file = config_file
         config.load_kube_config(config_file)
 
+        self._major, self._minor = self._get_version_code()
+
     def list_pods(self):
         v1 = client.CoreV1Api()
         print("Listing pods with their IPs:")
@@ -24,6 +26,20 @@ class KubernetesClient(object):
                 "%s\t%s\t%s"
                 % (i.status.pod_ip, i.metadata.namespace, i.metadata.name)
             )
+
+    def _get_version_code(self):
+        version_api = client.VersionApi()
+        major = 1
+        minor = 16
+
+        try:
+            api_response = version_api.get_code()
+            major = int(api_response.major)
+            minor = int(api_response.minor)
+        except ApiException as e:
+            LOG.error("Exception when calling VersionApi->get_code: %s", e)
+
+        return major, minor
 
     def get_pod(self, namespace=None, deploy_name=None):
         v1 = client.CoreV1Api()
@@ -157,22 +173,27 @@ class KubernetesClient(object):
             metadata=spec_metadata, spec=pod_spec
         )
 
+        LOG.info("template spec %s", template_spec)
+
         return template_spec
 
     def create_deployment(self, namespace=None, *args, **kwargs):
         deploy_name = kwargs.get("name")
         deployment_metadata = client.V1ObjectMeta(name=deploy_name)
         template_spec = self._generate_pod_template(*args, **kwargs)
-        body = client.ExtensionsV1beta1Deployment(
-            api_version="extensions/v1beta1",
+        body = client.V1Deployment(
+            api_version="apps/v1",
             kind="Deployment",
             metadata=deployment_metadata,
-            spec=client.ExtensionsV1beta1DeploymentSpec(
+            spec=client.V1DeploymentSpec(
+                selector=client.V1LabelSelector(match_labels={
+                    "app": kwargs.get("name"),
+                }),
                 template=template_spec
             ),
         )
 
-        api_instance = client.ExtensionsV1beta1Api()
+        api_instance = client.AppsV1Api()
 
         try:
             api_instance.create_namespaced_deployment(
@@ -306,7 +327,7 @@ class KubernetesClient(object):
             LOG.error("Exception when call AppsV1beta1Api: %s", e)
 
     def delete_deployment(self, namespace=None, name=None):
-        api_instance = client.ExtensionsV1beta1Api()
+        api_instance = client.AppsV1Api()
         delete_options = client.V1DeleteOptions(
             propagation_policy="Foreground"
         )
