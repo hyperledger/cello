@@ -47,6 +47,13 @@
     chdir: "{{ fabricworkdir }}/keyfiles/{{ item }}/tlsca"
   with_items: "{{ allorgs }}"
 
+- name: Add admin cert onto org msp directory
+  shell: >-
+    cp users/Admin@{{ item }}/msp/signcerts/* msp/admincerts
+  args:
+    chdir: "{{ fabricworkdir }}/keyfiles/{{ item }}"
+  with_items: "{{ allorgs }}"
+
 - include_tasks: "{{ playbook_dir }}/pubconn/tasks/apply.yml"
   when: fabric.k8s.exposeserviceport == true
 

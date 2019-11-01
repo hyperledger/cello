@@ -50,7 +50,9 @@ Organizations:
 {% if project_version is version_compare('1.1.0','>=') or 'stable' in project_version or project_version == 'latest' %}
 Capabilities:
   Global: &ChannelCapabilities
-{%   if project_version is version_compare('1.3.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+{%   if project_version is version_compare('1.4.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+    V1_4: true
+{%   elif project_version is version_compare('1.3.0','>=') and project_version is version_compare('1.4.0','<') %}
     V1_3: true
 {%   elif project_version is version_compare('1.1.0','>=') and project_version is version_compare('1.3.0','<') %}
     V1_1: true
@@ -60,7 +62,9 @@ Capabilities:
     V1_1: true
 
   Application: &ApplicationCapabilities
-{%   if project_version is version_compare('1.3.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+{%   if project_version is version_compare('1.4.0','>=') or 'stable' in project_version or project_version == 'latest' %}
+    V1_4: true
+{%   elif project_version is version_compare('1.3.0','>=') and project_version is version_compare('1.4.0','<') %}
     V1_3: true
 {%   elif project_version is version_compare('1.2.0','>=') and project_version is version_compare('1.3.0','<') %}
     V1_2: true
