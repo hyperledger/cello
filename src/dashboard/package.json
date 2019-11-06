@@ -83,6 +83,7 @@
     "umi": "^2.4.4",
     "umi-plugin-react": "^1.7.2",
     "umi-request": "^1.0.5",
+    "cello-paginator": "^1.0.1",
     "validator": "^11.0.0"
   },
   "devDependencies": {

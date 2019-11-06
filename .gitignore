@@ -239,3 +239,5 @@ screenshot
 .temp
 
 src/dashboard/dist
+src/dashboard/functions
+src/dashboard/lambda/mock/index.js

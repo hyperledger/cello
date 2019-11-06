@@ -1,31 +1,51 @@
 import Mock from 'mockjs';
 import faker from 'faker';
-import { paginator } from './_utils';
+import paginator from 'cello-paginator';
 
 const nodes = Mock.mock({
-  'data|11': [{
-    id () {
-      return Mock.Random.guid()
+  'data|11': [
+    {
+      id() {
+        return Mock.Random.guid();
+      },
+      name() {
+        return faker.company.companyName();
+      },
+      created_at: '@datetime',
+      type() {
+        return Mock.Random.pick(['ca', 'orderer', 'peer']);
+      },
+      network_type() {
+        return Mock.Random.pick(['fabric']);
+      },
+      network_version() {
+        return Mock.Random.pick(['1.4.2', '1.5']);
+      },
+      status() {
+        return Mock.Random.pick([
+          'deploying',
+          'running',
+          'stopped',
+          'deleting',
+          'error',
+          'deleted',
+        ]);
+      },
+      agent_id() {
+        return Mock.Random.guid();
+      },
+      network_id() {
+        return Mock.Random.guid();
+      },
+      ca() {
+        return {
+          admin_name: Mock.mock('@name'),
+          admin_password: Mock.mock(/[a-z0-9]{6}/),
+          hosts: [faker.company.companyName(), faker.company.companyName()],
+        };
+      },
     },
-    name () {
-      return faker.company.companyName();
-    },
-    created_at: '@datetime',
-    type () { return Mock.Random.pick(['ca', 'orderer', 'peer']) },
-    network_type () { return Mock.Random.pick(['fabric']) },
-    network_version () { return Mock.Random.pick(['1.4.2', '1.5']) },
-    status () { return Mock.Random.pick(['deploying', 'running', 'stopped', 'deleting', 'error', 'deleted']) },
-    agent_id () { return Mock.Random.guid() },
-    network_id () { return Mock.Random.guid() },
-    ca () {return {
-      admin_name: Mock.mock('@name'),
-      admin_password: Mock.mock(/[a-z0-9]{6}/),
-      hosts: [
-        faker.company.companyName(),
-        faker.company.companyName(),
-      ],
-    }},
-  }],
+  ],
 });
 
 function getNodes(req, res) {
@@ -44,25 +64,25 @@ function registerUserToNode(req, res) {
   if (!message.name) {
     res.send({
       code: 20001,
-      detail: 'name is required'
+      detail: 'name is required',
     });
   }
 
   if (!message.user_type) {
     res.send({
       code: 20001,
-      detail: 'user_type is required'
+      detail: 'user_type is required',
     });
   }
 
   if (!message.secret) {
     res.send({
       code: 20001,
-      detail: 'secret is required'
+      detail: 'secret is required',
     });
   }
 
-  res.send({id: Mock.Random.guid()});
+  res.send({ id: Mock.Random.guid() });
 }
 
 function deleteNode(req, res) {
