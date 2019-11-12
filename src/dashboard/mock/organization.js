@@ -1,17 +1,19 @@
 import Mock from 'mockjs';
 import faker from 'faker';
-import { paginator } from './_utils';
+import paginator from 'cello-paginator';
 
 const organizations = Mock.mock({
-  'data|11': [{
-    id () {
-      return Mock.Random.guid()
+  'data|11': [
+    {
+      id() {
+        return Mock.Random.guid();
+      },
+      name() {
+        return faker.company.companyName();
+      },
+      created_at: '@datetime',
     },
-    name () {
-      return faker.company.companyName();
-    },
-    created_at: '@datetime',
-  }],
+  ],
 });
 
 function getOrgs(req, res) {

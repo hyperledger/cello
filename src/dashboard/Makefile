@@ -8,3 +8,6 @@ start:
 start-no-mock:
 	echo $(PROXY)
 	PROXY=$(PROXY) npm run start:no-mock
+
+generate-mock:
+	npm run generateMock

@@ -1,27 +1,29 @@
 import Mock from 'mockjs';
 import faker from 'faker';
-import { paginator } from './_utils';
+import paginator from 'cello-paginator';
 
 const users = Mock.mock({
-  'data|11': [{
-    id () {
-      return Mock.Random.guid()
-    },
-    username: '@name',
-    role () {
-      return Mock.Random.pick(['administrator', 'user'])
-    },
-    'organization|1': [
-      {
-        id () {
-          return Mock.Random.guid()
-        },
-        name () {
-          return faker.company.companyName()
-        }
+  'data|11': [
+    {
+      id() {
+        return Mock.Random.guid();
       },
-    ]
-  }],
+      username: '@name',
+      role() {
+        return Mock.Random.pick(['administrator', 'user']);
+      },
+      'organization|1': [
+        {
+          id() {
+            return Mock.Random.guid();
+          },
+          name() {
+            return faker.company.companyName();
+          },
+        },
+      ],
+    },
+  ],
 });
 
 function tokenVerify(req, res) {
@@ -35,8 +37,8 @@ function tokenVerify(req, res) {
           username: 'admin',
           role: 'operator',
           email: 'admin@cello.com',
-          organization: null
-        }
+          organization: null,
+        },
       });
     case 'user-token':
       return res.json({
@@ -46,8 +48,8 @@ function tokenVerify(req, res) {
           username: 'user',
           role: 'user',
           email: 'user@cello.com',
-          organization: null
-        }
+          organization: null,
+        },
       });
     case 'orgAdmin-token':
       return res.json({
@@ -57,8 +59,8 @@ function tokenVerify(req, res) {
           username: 'orgAdmin',
           role: 'administrator',
           email: 'administrator@cello.com',
-          organization: null
-        }
+          organization: null,
+        },
       });
     default:
       return res.json({});
@@ -85,7 +87,7 @@ export default {
           role: 'operator',
           email: 'operator@cello.com',
           organization: null,
-        }
+        },
       });
       return;
     }
@@ -98,7 +100,7 @@ export default {
           role: 'administrator',
           email: 'administrator@cello.com',
           organization: null,
-        }
+        },
       });
       return;
     }
@@ -111,7 +113,7 @@ export default {
           role: 'user',
           email: 'user@cello.com',
           organization: null,
-        }
+        },
       });
       return;
     }

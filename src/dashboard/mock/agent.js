@@ -1,27 +1,47 @@
 import Mock from 'mockjs';
 import faker from 'faker';
-import { paginator } from './_utils';
+import paginator from 'cello-paginator';
 
 const agents = Mock.mock({
-  'data|11': [{
-    id () {
-      return Mock.Random.guid()
+  'data|11': [
+    {
+      id() {
+        return Mock.Random.guid();
+      },
+      name() {
+        return faker.company.companyName();
+      },
+      created_at: '@datetime',
+      ip() {
+        return Mock.Random.ip();
+      },
+      capacity() {
+        return Math.ceil(Math.random() * 10);
+      },
+      node_capacity() {
+        return Math.ceil(Math.random() * 10);
+      },
+      status() {
+        return Mock.Random.pick(['inactive', 'active']);
+      },
+      log_level() {
+        return Mock.Random.pick(['info', 'debug']);
+      },
+      type() {
+        return Mock.Random.pick(['docker', 'kubernetes']);
+      },
+      schedulable() {
+        return Mock.Random.pick([true, false]);
+      },
+      organization_id() {
+        return Mock.Random.guid();
+      },
+      image() {
+        return Mock.Random.pick(['financial', 'sales', 'customer', 'marketing', 'network']);
+      },
+      config_file: 'https://github.com/hyperledger/cello/archive/master.zip',
     },
-    name () {
-      return faker.company.companyName();
-    },
-    created_at: '@datetime',
-    ip () { return Mock.Random.ip() },
-    capacity () { return Math.ceil(Math.random()*10) },
-    node_capacity () { return Math.ceil(Math.random()*10) },
-    status () { return Mock.Random.pick(['inactive', 'active']) },
-    log_level () { return Mock.Random.pick(['info', 'debug']) },
-    type () { return Mock.Random.pick(['docker', 'kubernetes']) },
-    schedulable () { return Mock.Random.pick([true, false]) },
-    organization_id () { return Mock.Random.guid() },
-    image () { return Mock.Random.pick(['financial', 'sales', 'customer', 'marketing', 'network']) },
-    config_file: 'https://github.com/hyperledger/cello/archive/master.zip',
-  }],
+  ],
 });
 
 function getAgents(req, res) {
@@ -39,28 +59,28 @@ function createAgent(req, res) {
   if (!message.capacity) {
     res.send({
       code: 20001,
-      detail: 'capacity is required'
+      detail: 'capacity is required',
     });
   }
 
   if (!message.node_capacity) {
     res.send({
       code: 20001,
-      detail: 'node_capacity is required'
+      detail: 'node_capacity is required',
     });
   }
 
   if (!message.type) {
     res.send({
       code: 20001,
-      detail: 'type is required'
+      detail: 'type is required',
     });
   }
 
   if (!message.ip) {
     res.send({
       code: 20001,
-      detail: 'ip is required'
+      detail: 'ip is required',
     });
   }
 
@@ -79,9 +99,10 @@ function createAgent(req, res) {
     schedulable: message.schedulable === 'true',
     organization_id: '',
     image: message.image,
-    config_file: req.files.length > 0 ? 'https://github.com/hyperledger/cello/archive/master.zip' : '',
+    config_file:
+      req.files.length > 0 ? 'https://github.com/hyperledger/cello/archive/master.zip' : '',
   });
-  res.send({id});
+  res.send({ id });
 }
 
 function getOneAgent(req, res) {
@@ -92,8 +113,8 @@ function getOneAgent(req, res) {
   } else {
     res.send({
       code: 20005,
-      detail: 'The agent not found.'
-    })
+      detail: 'The agent not found.',
+    });
   }
 }
 
@@ -151,14 +172,14 @@ function applyAgent(req, res) {
   if (!message.capacity) {
     res.send({
       code: 20001,
-      detail: 'capacity is required'
+      detail: 'capacity is required',
     });
   }
 
   if (!message.type) {
     res.send({
       code: 20001,
-      detail: 'type is required'
+      detail: 'type is required',
     });
   }
 
@@ -168,7 +189,7 @@ function applyAgent(req, res) {
     created_at: new Date(),
     ip: Mock.Random.ip(),
     capacity: message.capacity,
-    node_capacity: Math.ceil(Math.random()*10),
+    node_capacity: Math.ceil(Math.random() * 10),
     status: Mock.Random.pick(['inactive', 'active']),
     log_level: Mock.Random.pick(['info', 'debug']),
     type: message.type,
@@ -178,7 +199,7 @@ function applyAgent(req, res) {
     config_file: 'https://github.com/hyperledger/cello/archive/master.zip',
   });
 
-  res.send({id: Mock.Random.guid()});
+  res.send({ id: Mock.Random.guid() });
 }
 
 function deleteAgent(req, res) {

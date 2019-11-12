@@ -234,6 +234,9 @@ start-dashboard-dev:
 		make -C src/dashboard start-no-mock; \
 	fi
 
+generate-mock:
+	make -C src/dashboard generate-mock
+
 stop: ##@Service Stop service
 	if [ "$(DEPLOY_METHOD)" = "docker-compose" ]; then \
 		make stop-docker-compose; \
