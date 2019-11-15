@@ -1,7 +1,8 @@
 #!/bin/bash
 
 #Download kubernetes config
-source download_config.sh
+echo "Downloading Necessary Files..."
+source download_files.sh
 
 #Check if the namespace exists
 NAMESPACE_EXISTS=`kubectl get namespaces | grep $AGENT_ID`

@@ -1,4 +1,25 @@
-echo "Creating Node"
+function __wait-until-pods-created() {
+  local period interval i pod
+
+  period="$1"
+  interval="$2"
+  pod="$3"
+
+  for ((i=0; i<$period; i+=$interval)); do
+    STATUS=$(kubectl get pods $pod -o json | jq .status.phase )
+    if [[ $STATUS ]]; then
+      return 0
+    fi
+
+    echo "Waiting for pods to be created..."
+    sleep "$interval"
+  done
+
+  echo "Waited for $period seconds, but pods are not created yet."
+  return 1
+}
+
+echo "Creating Node..."
 
 if [ "$NODE_TYPE" =  "ca" ]
 then
@@ -12,17 +33,25 @@ metadata:
 spec:
   admin: `jq '.admin_name' <<< "$FABRIC_CA_CONFIG"`
   adminPassword: `jq '.admin_password' <<< "$FABRIC_CA_CONFIG"`
-  storageSize: "1Gi"
-  storageClass: "default"
-  image: "hyperledger/fabric-ca:1.4.1"
-  hosts: [`jq '.hosts' <<< "$FABRIC_CA_CONFIG"`]
-  configParams:
-    - name: FABRIC_CA_HOME
-      value: "/etc/hyperledger/fabric-ca-server"
-    - name: FABRIC_CA_SERVER_HOME
-      value: "/etc/hyperledger/fabric-ca-server/crypto"
-    - name: FABRIC_CA_SERVER_TLS_ENABLED
-      value: "true"
+  certs:
+    cert: `jq '.spec.certs.cert' <<< cat config.json`
+    key: `jq '.spec.certs.key' <<< cat config.json`
+    tlsCert: `jq '.spec.certs.tlsCert' <<< cat config.json`
+    TLSKey: `jq '.spec.certs.tlsKey' <<< cat config.json`
+  nodeSpec:
+    storageSize: `jq '.spec.nodeSpec.storageSize' <<< cat config.json`
+    storageClass: `jq '.spec.nodeSpec.storageClass' <<< cat config.json`
+    image: `jq '.spec.nodeSpec.image' <<< cat config.json`
+    hosts: [`jq '.hosts' <<< "$FABRIC_CA_CONFIG"`]
+    resources:
+      requests:
+        memory: `jq '.spec.nodeSpec.resources.requests.memory' <<< cat config.json`
+        cpu: `jq '.spec.nodeSpec.resources.requests.cpu' <<< cat config.json`
+      limits:
+        memory: `jq '.spec.nodeSpec.resources.limits.memory' <<< cat config.json`
+        cpu: `jq '.spec.nodeSpec.resources.limits.cpu' <<< cat config.json`
+    configParams:
+`jq -r '.spec.nodeSpec.configParams[] | "      - name: \(.name)\n        value: \"\(.value)\""' config.json`
 EOL
 
 elif [ "$NODE_TYPE" = "peer" ]
@@ -35,14 +64,29 @@ kind: Peer
 metadata:
   name: $CR_NAME
 spec:
-  storageSize: "1Gi"
-  storageClass: "default"
-  image: "hyperledger/fabric-peer:1.4.1"
-  configParams:
-    - name: CORE_PEER_ADDRESSAUTODETECT
-      value: "true"
-    - name: CORE_PEER_NETWORKID
-      value: nid1
+  msp:
+    adminCerts: `jq -c '.spec.msp.adminCerts' <<< cat config.json`
+    caCerts: `jq -c '.spec.msp.caCerts' <<< cat config.json`
+    keyStore: `jq -c '.spec.msp.keyStore' <<< cat config.json`
+    signCerts: `jq -c '.spec.msp.signCerts' <<< cat config.json`
+    tlsCacerts: `jq -c '.spec.msp.tlsCacerts' <<< cat config.json`
+  tls:
+    tlsCert: `jq -c '.spec.tls.tlsCert' <<< cat config.json`
+    tlsKey: `jq -c '.spec.tls.tlsKey' <<< cat config.json`
+  nodeSpec:
+    storageSize: `jq '.spec.nodeSpec.storageSize' <<< cat config.json`
+    storageClass: `jq '.spec.nodeSpec.storageClass' <<< cat config.json`
+    image: `jq '.spec.nodeSpec.image' <<< cat config.json `
+    hosts: [`jq '.hosts' <<< "$FABRIC_CA_CONFIG"`]
+    resources:
+      requests:
+        memory: `jq '.spec.nodeSpec.resources.requests.memory' <<< cat config.json`
+        cpu: `jq '.spec.nodeSpec.resources.requests.cpu' <<< cat config.json`
+      limits:
+        memory: `jq '.spec.nodeSpec.resources.limits.memory' <<< cat config.json`
+        cpu: `jq '.spec.nodeSpec.resources.limits.cpu' <<< cat config.json`
+    configParams:
+`jq -r '.spec.nodeSpec.configParams[] | "      - name: \(.name)\n        value: \"\(.value)\""' config.json`
 EOL
 
 elif [ "$NODE_TYPE" = "orderer" ]
@@ -54,34 +98,58 @@ apiVersion: fabric.hyperledger.org/v1alpha1
 kind: Orderer
 metadata:
   name: $CR_NAME
-spec:
-  storageSize: "1Gi"
-  storageClass: "default"
-  image: "hyperledger/fabric-orderer:1.4.1"
-  configParams:
-    - name: ORDERER_CFG_PATH
-      value: /shared/
-    - name: ORDERER_GENERAL_LEDGERTYPE
-      value: file
+  spec:
+    msp:
+      adminCerts: `jq '.spec.msp.adminCerts' <<< cat config.json`
+      caCerts: `jq '.spec.msp.caCerts' <<< cat config.json`
+      keyStore: `jq '.spec.msp.keyStore' <<< cat config.json`
+      signCerts: `jq '.spec.msp.signCerts' <<< cat config.json`
+      tlsCacerts: `jq '.spec.msp.tlsCacerts' <<< cat config.json`
+    tls:
+      tlsCert: `jq '.spec.tls.tlsCert' <<< cat config.json`
+      tlsKey: `jq '.spec.tls.tlsKey' <<< cat config.json`
+    nodeSpec:
+      storageSize: `jq '.spec.nodeSpec.storageSize' <<< cat config.json`
+      storageClass: `jq '.spec.nodeSpec.storageClass' <<< cat config.json`
+      image: `jq '.spec.nodeSpec.image' <<< cat config.json `
+      hosts: [`jq '.hosts' <<< "$FABRIC_CA_CONFIG"`]
+      resources:
+        requests:
+          memory: `jq '.spec.nodeSpec.resources.requests.memory' <<< cat config.json`
+          cpu: `jq '.spec.nodeSpec.resources.requests.cpu' <<< cat config.json`
+        limits:
+          memory: `jq '.spec.nodeSpec.resources.limits.memory' <<< cat config.json`
+          cpu: `jq '.spec.nodeSpec.resources.limits.cpu' <<< cat config.json`
+      configParams:
+  `jq -r '.spec.nodeSpec.configParams[] | "      - name: \(.name)\n        value: \"\(.value)\""' config.json`
 EOL
 else
-  echo "Invalid node type"
+  echo "Node Type Sent is Invalid/Not Supported"
   exit 1
 fi
 
 #Deploying Operator image
-kubectl apply -f deploy/service_account.yaml
-kubectl apply -f deploy/role.yaml
-kubectl apply -f deploy/role_binding.yaml
 kubectl apply -f deploy/operator.yaml
+kubectl apply -f deploy/fabric-operator.yaml
 
 #Creating the Custom Resource
 kubectl apply -f cr_config.yaml
 
-#Get Status of pod
-STATUS=$(kubectl get pods "$CR_NAME-0" -o json | jq .status.phase )
+STATUS="Pending"
+NODE_STATUS="deploying"
+
+# Waiting for the Pods to be created
+__wait-until-pods-created 20 3 "$CR_NAME-0"
+
+if [ "$STATUS" = "\"Pending\"" ]; then
+  NODE_STATUS="deploying"
+elif [ "$STATUS" = "\"Running\"" ]; then
+  NODE_STATUS="running"
+fi
+
 #Get ports of the service created
-PORTS=$(kubectl get svc "name" -o json | jq -r '[.spec.ports[] | { external: .nodePort, internal: .port }]')
+PORTS=$(kubectl get svc $CR_NAME -o json | jq -r '[.spec.ports[] | { external: .nodePort, internal: .port }]')
 
 #Update node api
-curl $NODE_DETAIL_URL -X 'PUT' -H 'Authorization: JWT $TOKEN' -H 'Content-Type: application/json' --data '{"status":"$STATUS","ports":$PORTS}'
+echo "Updating the Node Status in the API Backend"
+curl $NODE_DETAIL_URL -X "PUT" -H "Authorization: JWT ${TOKEN}" -H 'Content-Type: application/json' -H "accept: application/json" -d "{ \"status\": \"$NODE_STATUS\", \"ports\": ${PORTS} }"

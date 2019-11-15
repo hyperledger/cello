@@ -19,10 +19,14 @@ else
   exit 1
 fi
 
+STATUS="deleting"
+
 #Get Status of pod
 STATUS=$(kubectl get pods "$CR_NAME-0" -o json | jq .status.phase )
-#Get ports of the service created
-PORTS=$(kubectl get svc "$CR_NAME" -o json | jq -r '[.spec.ports[] | { external: .nodePort, internal: .port }]')
 
-#Update node api
-curl $NODE_DETAIL_URL -X 'PUT' -H 'Authorization: JWT $TOKEN' -H 'Content-Type: application/json' --data '{"status":"$STATUS","ports":$PORTS}'
+if [ $STATUS = "deleting" ]; then
+    NODE_STATUS="deleted"
+    #Update node api
+    echo "Updating the Node Status in the API Backend"
+    curl $NODE_DETAIL_URL -X "PUT" -H "Authorization: JWT ${TOKEN}" -H 'Content-Type: application/json' -H "accept: application/json" -d "{ \"status\": \"$NODE_STATUS\"}"
+fi
