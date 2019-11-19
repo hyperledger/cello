@@ -23,6 +23,7 @@ import moment from 'moment';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import StandardTable from '@/components/StandardTable';
 import styles from '../styles.less';
+import { getAuthority } from '@/utils/authority';
 
 const FormItem = Form.Item;
 const { Option } = Select;
@@ -350,6 +351,8 @@ class Node extends PureComponent {
   render() {
     const { selectedRows, registerUserFormVisible, targetNodeId } = this.state;
 
+    const userRole = getAuthority()[0];
+
     const {
       node: { nodes, pagination },
       loadingNodes,
@@ -485,9 +488,12 @@ class Node extends PureComponent {
         <Card bordered={false}>
           <div className={styles.tableList}>
             <div className={styles.tableListOperator}>
-              <Button icon="plus" type="primary" onClick={() => router.push('/operator/node/new')}>
-                <FormattedMessage id="form.button.new" defaultMessage="New" />
-              </Button>
+              {
+                userRole !== 'operator' &&
+                <Button icon="plus" type="primary" onClick={() => router.push('/operator/node/new')}>
+                  <FormattedMessage id="form.button.new" defaultMessage="New" />
+                </Button>
+              }
             </div>
             <StandardTable
               selectedRows={selectedRows}
