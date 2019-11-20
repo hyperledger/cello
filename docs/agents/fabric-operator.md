@@ -18,18 +18,34 @@ The k8s configuration file is needed to gain access to a k8s cluster. Many cloud
 
 The config file allows you to put in details like node name, allocate k8s resources such as cpu and memory, and the certificates needed for that.
 
-[Download sample config.yaml file](https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/agent/config.yaml)
+[Download sample config.yaml file](https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/agent/samples/peer_config.yaml)
 
-Follow the below process to prepare for setting up your fabric network:
+Follow the below process to prepare zip files for setting up your fabric network:
+
+### Kubernetes Agent Zip
 
 ```
-   1. Create a directory named config, any file mentioned must be in this directory
+   1. Create a directory named kubeconfig, any file mentioned must be in this directory
    2. Name your k8s configuration file config and put it in .kube folder
-   3. Download the sample config file and change it to put your desired values
-   4. Create a zip for the folder with the same name
+   3. Put .kube folder into kubeconfig folder and create a .zip file for the same
 ```
 
-The zip file created in the above process is to be uploaded during the node creation.
+The zip file created in the above process is to be uploaded during the `Agent` creation.
+
+### Node File with config parameters
+
+```
+   1. Download the sample config file and change it to put your desired values
+   2. Create a zip for the folder with the same name
+```
+Commands for the same :-
+
+```
+wget https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/agent/samples/peer_config.yaml?raw=true
+tar -czvf peer_config.tgz peer_config.json
+```
+
+The file created in the above process is to be uploaded during the `Node` creation.
 
 ## Running the Fabric Operator Manually
 
