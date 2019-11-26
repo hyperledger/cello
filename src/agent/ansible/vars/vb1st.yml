@@ -4,6 +4,7 @@ fabric: {
 
   # options are "goleveldb", "CouchDB", default is goleveldb
   peer_db: "goleveldb",
+  consensus_type: "etcdraft",
   # options are "true", "false", "client" default is true
   tls: false,
   generate_certs: true,
@@ -11,12 +12,15 @@ fabric: {
   k8s: {
     exposeserviceport: True,
     storageclass: "default",
-    storagecapacity: "2Gi",
+    storagecapacity: "20Gi",
     shared_storage: false,
     mem_req: "512Mi",
     mem_limit: "1024Mi",
     cpu_req: "0.1",
-    cpu_limit: "0.2"
+    cpu_limit: "0.2",
+    # only used when exposeserviceport set to be true
+    # the value could be NodePort or LoadBalancer
+    servicetype: NodePort
   },
   orderersettings: {
     BatchTimeout: 2s,
@@ -43,19 +47,13 @@ fabric: {
   # all names must be in lower case. Numeric characters cannot be used to start
   # or end a name. Character dot (.) can only be used in names of peers and orderers.
   network: {
-    fabric001: {
-      cas: [],
-      peers: ["anchor@peer1st.orga", "anchor@peer1st.orgb"],
-      orderers: ["orderer1st.orgc"],
+    components: {
+      cas: ["ca1st.orga", "ca1st.orgb", "ca1st.orgc"],
+      peers: ["anchor@peer1st.orga", "anchor@peer1st.orgb",
+              "worker@peer2nd.orga", "worker@peer2nd.orgb"],
+      orderers: ["orderer1st.orgc","orderer2nd.orgc"],
       zookeepers: ["zookeeper1st"],
       kafkas: ["kafka1st"]
-    },
-    fabric002: {
-      cas: ["ca1st.orga", "ca1st.orgb", "ca1st.orgc"],
-      peers: ["worker@peer2nd.orga", "worker@peer2nd.orgb"],
-      orderers: ["orderer2nd.orgc"],
-      zookeepers: [],
-      kafkas: []
     }
   },
 

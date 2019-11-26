@@ -10,7 +10,7 @@ OrdererOrgs:
       - Hostname: {{ item.name }}
 {% if fabric.k8s.exposeserviceport == true%}
         SANS:
-{%   for anip in allips %}
+{%   for anip in uniquehosts %}
           - {{ anip }}
 {%   endfor%}
 {%   for anode in k8snodes %}
@@ -37,7 +37,7 @@ PeerOrgs:
       - Hostname: {{ item.name }}
 {% if fabric.k8s.exposeserviceport == true%}
         SANS:
-{%   for anip in allips %}
+{%   for anip in uniquehosts %}
           - {{ anip }}
 {%   endfor%}
 {%   for anode in k8snodes %}

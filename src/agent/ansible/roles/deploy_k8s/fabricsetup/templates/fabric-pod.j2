@@ -423,7 +423,7 @@ spec:
             - { name: "ORDERER_OPERATIONS_TLS_ENABLED", value: "false" }
             - { name: "ORDERER_METRICS_PROVIDER", value: "prometheus" }
 {% endif %}
-{% if fabric.orderersettings is defined and fabric.orderersettings.ordererenv is defined %}
+{% if fabric.orderersettings is defined and fabric.orderersettings.ordererenv is defined and fabric.orderersettings.ordererenv is not none %}
 {% for pkey, pvalue in fabric.orderersettings.ordererenv.items() %}
             - { name: "{{ pkey }}", value: "{{ pvalue }}" }
 {% endfor %}

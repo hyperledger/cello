@@ -1,13 +1,13 @@
 ---
 {% for orderer in allorderers %}
 - targets:
-  - {{ allips|random }}:{{ k8sports[orderer.name+':8443'] }}
+  - {{ k8shosts[orderer.name] }}:{{ k8sports[orderer.name+':8443'] }}
   labels:
     hostname: "{{ orderer.name }}"
 {% endfor %}
 {% for peer in allpeers %}
 - targets:
-  - {{ allips|random }}:{{ k8sports[peer.name+':9443'] }}
+  - {{ k8shosts[peer.name] }}:{{ k8sports[peer.name+':9443'] }}
   labels:
     hostname: "{{ peer.name }}"
 {% endfor %}

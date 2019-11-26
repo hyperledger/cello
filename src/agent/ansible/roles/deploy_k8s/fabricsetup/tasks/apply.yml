@@ -33,6 +33,19 @@
     chdir: "{{ playbook_dir }}/../../vars/"
   tags: "fabricup"
 
+- name: Wait for services to be ready
+  command: >-
+    kubectl --kubeconfig kubeconfig --namespace {{ namespace }}
+    get services -l service-type=fabric
+  args:
+    chdir: "{{ playbook_dir }}/../../vars/"
+  register: servicestatus
+  until: servicestatus.stdout.find("pending") < 0
+  retries: 10
+  delay: 10
+  tags: "queryservices"
+  when: fabric.k8s.exposeserviceport == true
+
 # Wait for metrics daemon set to be ready
 - name: Wait for metric daemon set to be ready
   command: >-
@@ -57,7 +70,8 @@
   when: fabric.metrics is defined and fabric.metrics
   register: dsstatus
 
-- set_fact:
+- name: Set daemon set nodes
+  set_fact:
     dsnodes: >-
       {{ '[' + dsstatus.stdout[0:(dsstatus.stdout|length|int-1)] + ']' }}
   when: fabric.metrics is defined and fabric.metrics
@@ -73,7 +87,16 @@
   with_list: "{{ dsnodes }}"
 
 - include_tasks: "{{ playbook_dir }}/../common/publicports.yml"
-  when: fabric.k8s.exposeserviceport == True
+  when: >-
+    fabric.k8s.exposeserviceport == True and
+    (fabric.k8s.servicetype is not defined or
+     fabric.k8s.servicetype == 'NodePort')
+
+- include_tasks: "{{ playbook_dir }}/../common/publiclbports.yml"
+  when: >-
+    fabric.k8s.exposeserviceport == True and
+    fabric.k8s.servicetype is defined and
+    fabric.k8s.servicetype == 'LoadBalancer'
 
 - name: Initialize profileNode
   set_fact:
@@ -101,9 +124,6 @@
     src: "{{ playbook_dir }}/../deploy_k8s/fabricsetup/templates/bndsamplerconfig.j2"
     dest: "{{ fabricworkdir }}/keyfiles/bndsamplerconfig.json"
   when: profilenodes | length > 0
-
-- include_tasks: "{{ playbook_dir }}/../common/publicports.yml"
-  when: fabric.k8s.exposeserviceport == True
 
 - name: Create peer org member string
   set_fact:

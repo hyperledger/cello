@@ -14,6 +14,9 @@ fabric:
     mem_limit: "1024Mi"
     cpu_req: "0.1"
     cpu_limit: "0.2"
+    # only used when exposeserviceport set to be true
+    # the value could be NodePort or LoadBalancer
+    servicetype: NodePort
 
   network:
     fabric001:
@@ -23,15 +26,15 @@ fabric:
       zookeepers: ["zookeeper1st","zookeeper2nd","zookeeper3rd"]
       kafkas: ["kafka1st","kafka2nd","kafka3rd"]
 
-  baseimage_tag: "1.4.1"
-  helper_tag: "0.4.15"
+  baseimage_tag: "1.4.4"
+  helper_tag: "0.4.18"
   ca:
     admin: "admin"
     adminpw: "adminpw"
-    image_tag: "1.4.1"
+    image_tag: "1.4.4"
 
   repo:
     url: "hyperledger/"
     username: ""
     password: ""
-    bin: "https://nexus.hyperledger.org/content/repositories/snapshots/org/hyperledger/fabric/hyperledger-fabric-1.4.1-stable/linux-amd64.1.4.1-stable-SNAPSHOT/hyperledger-fabric-1.4.1-stable-linux-amd64.1.4.1-stable-20190418.020851-42.tar.gz"
+    bin: "https://nexus.hyperledger.org/content/repositories/releases/org/hyperledger/fabric/hyperledger-fabric/linux-amd64-1.4.4/hyperledger-fabric-linux-amd64-1.4.4.tar.gz"
