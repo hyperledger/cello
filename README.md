@@ -1,5 +1,7 @@
 ![Cello](docs/images/favicon.png)
 
+[![Build Status](https://dev.azure.com/Hyperledger/Cello/_apis/build/status/hyperledger.cello?branchName=master)](https://dev.azure.com/Hyperledger/Cello/_build/latest?definitionId=27&branchName=master)
+
 Hyperledger Cello is a blockchain provision and operation system, which helps manage blockchain networks in an efficient way.
 
 1. [Introduction](#introduction)
