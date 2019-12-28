@@ -76,7 +76,7 @@
     "pro-download": "^1.0.1",
     "redbox-react": "^1.5.0",
     "regenerator-runtime": "^0.11.1",
-    "roadhog": "^2.3.0",
+    "roadhog": "^2.5.0-beta.4",
     "roadhog-api-doc": "^0.3.4",
     "stylelint": "^8.4.0",
     "stylelint-config-prettier": "^3.0.4",

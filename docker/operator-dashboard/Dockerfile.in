@@ -1,9 +1,9 @@
+FROM node:8.9 as build_js
+MAINTAINER haitao yue "hightall@me.com"
+COPY src/static /var/www
+RUN cd /var/www/dashboard && npm install --registry https://registry.npm.taobao.org/ && npm run build
+
 FROM hyperledger/cello-baseimage:latest
 
-COPY src /app
-COPY src/celery.conf /etc/supervisor/conf.d/
-RUN	cd /app/ && \
-	pip install -r requirements.txt && \
-	rm -rf /tmp/cello
-
+COPY --from=build_js /var/www/dist /app/static/dist
 CMD /etc/init.d/supervisor start && if [ "$DEBUG" = "True" ]; then python dashboard.py ; else gunicorn -w 1 --worker-class eventlet -b 0.0.0.0:8080 dashboard:app ;fi

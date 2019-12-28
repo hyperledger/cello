@@ -16,11 +16,11 @@ FROM node:8.9
 MAINTAINER haitao yue "hightall@me.com"
 COPY user-dashboard/src/package.json /
 COPY user-dashboard/src/yarn.lock /
-RUN cd / && yarn install -g --verbose
+RUN cd / && yarn install -g --verbose --registry https://registry.npm.taobao.org/
 ENV PATH ${PATH}:/node_modules/.bin
 COPY user-dashboard/src/packages /packages
-RUN cd /packages/fabric-1.0 && yarn install
-RUN cd /packages/fabric-1.2 && yarn install
+RUN cd /packages/fabric-1.0 && yarn install --registry https://registry.npm.taobao.org/
+RUN cd /packages/fabric-1.2 && yarn install --registry https://registry.npm.taobao.org/
 COPY user-dashboard/src /var/www
 RUN cd /var/www && ln -sf /node_modules . && npm run build
 WORKDIR /var/www

@@ -16,4 +16,5 @@ export default {
   ignoreMomentLocale: true,
   outputPath: 'app/assets/public',
   hash: false,
+  es5ImcompatibleVersions: true,
 };
