@@ -43,7 +43,7 @@ For additional helps, feel free to take the following channels:
 * [Mail List](mailto:hyperledger-cello@lists.hyperledger.org): General technical topics with Cello project.
 * [RocketChat Room](https://chat.hyperledger.org/channel/cello): Real-time online discussions.
 * [Jira Board](https://jira.hyperledger.org/projects/CE/issues): Find development status, report bug, or help [contribute code](contributing.md).
-* [Gerrit](https://gerrit.hyperledger.org/r/#/q/project:cello): Development related code and patchsets, welcome to [contribute](contributing.md).
+* [GitHub](https://github.com/hyperledger/cello): Development related code and patchsets, welcome to [contribute](contributing.md).
 * [Stack Overflow](https://stackoverflow.com/questions/tagged/hyperledger-cello): Stack overflow discussion questions about cello.
 
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.

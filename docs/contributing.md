@@ -1,4 +1,4 @@
-Any kind of contribution is encouraged, e.g., [Jira items](https://jira.hyperledger.org/projects/CE/issues) or [patchsets](https://gerrit.hyperledger.org/r/#/admin/projects/cello).
+Any kind of contribution is encouraged, e.g., [Jira items](https://jira.hyperledger.org/projects/CE/issues) or [patchsets](https://github.com/hyperledger/cello).
 
 ## 1. LF ID Application
 
@@ -25,14 +25,14 @@ In brief, if you want to contribute, create or find some `To Do` item, and assig
 
 ## 4. Code Commit Steps
 
-The project employs [Gerrit](https://gerrit.hyperledger.org) as the code commit/review system.
+The project employs [GitHub](https://github.com/hyperledger/cello) as the code commit/review system.
 
 *Before committing code, please go to [Jira](https://jira.hyperledger.org/projects/CE) to create a new task or check if there's related existing one, then assign yourself as the assignee. Notice each task will get a Jira number like [CE-26](https://jira.hyperledger.org/browse/CE-26).
 
 * Clone the project to your working directory with your `LFID`.
 
 ```bash
-$ git clone ssh://LFID@gerrit.hyperledger.org:29418/cello && scp -p -P 29418 LFID@gerrit.hyperledger.org:hooks/commit-msg cello/.git/hooks/
+$ git clone git@github.com:hyperledger/cello.git
 ```
 
 (Optionally) Config your git name and email if not setup previously.
