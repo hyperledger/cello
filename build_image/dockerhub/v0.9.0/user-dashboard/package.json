@@ -55,5 +55,5 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "hightall",
-  "license": "ISC"
+  "license": "Apache-2.0"
 }
