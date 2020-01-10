@@ -10,7 +10,7 @@
     "express-session": "^1.15.2",
     "gridfs-stream": "^1.1.1",
     "mongodb": "^2.2.26",
-    "mongoose": "^4.13.2",
+    "mongoose": "^5.7.5",
     "multer": "^1.3.0",
     "multer-gridfs-storage": "^1.1.1",
     "node-uuid": "^1.4.8",
