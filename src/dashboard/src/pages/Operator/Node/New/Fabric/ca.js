@@ -5,7 +5,10 @@ import classNames from 'classnames';
 import styles from '../styles.less';
 
 const SelectOption = Select.Option;
-const caTypes = [{ name: 'TLS', value: 'tls' }, { name: 'Signature', value: 'signature' }];
+const caTypes = [
+  { name: 'TLS', value: 'tls' },
+  { name: 'Signature', value: 'signature' },
+];
 
 const formItemLayout = {
   labelCol: {
