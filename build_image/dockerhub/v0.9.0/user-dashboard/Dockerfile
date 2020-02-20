@@ -5,11 +5,11 @@
 FROM busybox as builder
 ENV FABRIC_VERSION_1_0 1.0.5
 RUN cd /tmp && ARCH=$(echo "$(uname -s|tr '[:upper:]' '[:lower:]'|sed 's/mingw64_nt.*/windows/')-$(uname -m | sed 's/x86_64/amd64/g')" | awk '{print tolower($0)}') && \
-    echo $ARCH &&wget -c https://nexus.hyperledger.org/content/repositories/releases/org/hyperledger/fabric/hyperledger-fabric/${ARCH}-${FABRIC_VERSION_1_0}/hyperledger-fabric-${ARCH}-${FABRIC_VERSION_1_0}.tar.gz && \
+    echo $ARCH && wget --no-check-certificate --content-disposition https://github.com/hyperledger/fabric/releases/download/v${FABRIC_VERSION_1_0}/hyperledger-fabric-${ARCH}-${FABRIC_VERSION_1_0}.tar.gz && \
     mkdir fabric-1.0 && tar -zxvf hyperledger-fabric-${ARCH}-${FABRIC_VERSION_1_0}.tar.gz -C fabric-1.0
 ENV FABRIC_VERSION_1_2 1.2.0
 RUN cd /tmp && ARCH=$(echo "$(uname -s|tr '[:upper:]' '[:lower:]'|sed 's/mingw64_nt.*/windows/')-$(uname -m | sed 's/x86_64/amd64/g')" | awk '{print tolower($0)}') && \
-    echo $ARCH &&wget -c https://nexus.hyperledger.org/content/repositories/releases/org/hyperledger/fabric/hyperledger-fabric/${ARCH}-${FABRIC_VERSION_1_2}/hyperledger-fabric-${ARCH}-${FABRIC_VERSION_1_2}.tar.gz && \
+    echo $ARCH && wget --no-check-certificate --content-disposition https://github.com/hyperledger/fabric/releases/download/v${FABRIC_VERSION_1_2}/hyperledger-fabric-${ARCH}-${FABRIC_VERSION_1_2}.tar.gz && \
     mkdir fabric-1.2 && tar -zxvf hyperledger-fabric-${ARCH}-${FABRIC_VERSION_1_2}.tar.gz -C fabric-1.2
 RUN cd /tmp && wget -c https://github.com/hyperledger/cello/archive/v0.9.0.zip && unzip v0.9.0.zip && mv cello-0.9.0 cello
 
