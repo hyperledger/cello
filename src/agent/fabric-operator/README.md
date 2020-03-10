@@ -9,6 +9,7 @@ fabric CA, Orderer and Peer node using kubectl
 
 - [kubectl][kubectl_tool] v1.11.3+
 - Access to a Kubernetes v1.11.3+ cluster
+- A PersistentVolume storage location for each ca, peer, and orderer.
 
 ## Getting Started
 
