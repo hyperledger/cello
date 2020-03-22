@@ -120,13 +120,13 @@ build/docker/%/.push: build/docker/%/$(DUMMY)
 		--password=$(DOCKER_HUB_PASSWORD)
 	@docker push $(BASENAME)-$(patsubst build/docker/%/.push,%,$@):$(IMG_TAG)
 
-common-docker: $(patsubst %,build/docker/common/%/$(DUMMY),$(COMMON_DOCKER_IMAGES)) ##@Generate docker images locally
+docker-common: $(patsubst %,build/docker/common/%/$(DUMMY),$(COMMON_DOCKER_IMAGES)) ##@Generate docker images locally
 
 agent-docker: $(patsubst %,build/docker/agent/%/$(DUMMY),$(AGENT_DOCKER_IMAGES)) ##@Generate docker images locally
 
-docker: common-docker agent-docker
+docker: docker-common agent-docker
 
-common-docker-%:
+docker-common-%:
 	@$(MAKE) build/docker/common/$*/$(DUMMY)
 
 agent-docker-%:
@@ -271,6 +271,9 @@ HELP_FUN = \
 			print "  ${YELLOW}$$_->[0]${RESET}$$sep${GREEN}$$_->[1]${RESET}\n"; \
 	}; \
 	print "\n"; }
+
+api-engine: # for debug only now
+	docker build -t hyperledger/cello-api-engine:latest -f build_image/docker/common/api-engine/Dockerfile.in ./
 
 .PHONY: \
 	all \
