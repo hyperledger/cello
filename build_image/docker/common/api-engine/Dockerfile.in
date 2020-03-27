@@ -14,7 +14,7 @@ WORKDIR /var/www/server
 COPY src/api-engine ./
 
 # Install python dependencies
-RUN	pip install --no-cache-dir -r requirements.txt
+RUN	pip install -r requirements.txt
 
 # Add uwsgi configuration file
 COPY build_image/docker/common/api-engine/server.ini /etc/uwsgi/apps-enabled/
