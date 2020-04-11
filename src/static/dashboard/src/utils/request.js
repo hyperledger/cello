@@ -177,6 +177,10 @@ export default function request(url, options) {
       }
       if (status >= 404 && status < 422) {
         dispatch(routerRedux.push('/exception/404'));
+        return;
+      }
+      if (status === 400){
+
       }
     });
 }

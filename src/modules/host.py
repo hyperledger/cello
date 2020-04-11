@@ -19,7 +19,7 @@ from common import \
     log_handler, \
     FabricV1NetworkConfig, utils, \
     LOG_LEVEL, CLUSTER_LOG_TYPES, CLUSTER_LOG_LEVEL, \
-    NETWORK_SIZE_FABRIC_V1, NETWORK_TYPE_FABRIC_V1, \
+    NETWORK_SIZE_FABRIC_V1, NETWORK_TYPE_FABRIC_V1_1, \
     CLUSTER_PORT_START, CLUSTER_PORT_STEP, \
     CONSENSUS_PLUGINS_FABRIC_V1, CONSENSUS_PLUGIN_SOLO, \
     WORKER_TYPES, VCENTER, VCUSERNAME, VCPWD, \
@@ -29,11 +29,11 @@ from common import \
     WORKER_TYPE_DOCKER, WORKER_TYPE_SWARM, WORKER_TYPE_VSPHERE, \
     WORKER_TYPE_K8S, HOST_STATUS, HOST_STATUS_PENDING
 
-from agent import DockerHost, VsphereHost, KubernetesHost
+from agent import DockerHost, KubernetesHost
 from modules import cluster
-from modules.models import Host as HostModel
-from modules.models import Cluster as ClusterModel
-from modules.models import HostSchema
+from modules.models.host import Host as HostModel
+from modules.models.host import Cluster as ClusterModel
+from modules.models.host import HostSchema
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
@@ -58,12 +58,12 @@ class HostHandler(object):
     def __init__(self):
         self.host_agents = {
             'docker': DockerHost("docker"),
-            'swarm': DockerHost("swarm"),
+            #'swarm': DockerHost("swarm"),
             'kubernetes': KubernetesHost(),
-            'vsphere': VsphereHost()
+            #'vsphere': VsphereHost()
         }
 
-    def create(self, name, worker_api, host_type, capacity=1,
+    def create(self, name, worker_api, host_type, create_ts, capacity=1,
                log_level=CLUSTER_LOG_LEVEL[0],
                log_type=CLUSTER_LOG_TYPES[0], log_server="", autofill="false",
                schedulable="false", params=None):
@@ -117,7 +117,8 @@ class HostHandler(object):
                          log_type=log_type,
                          log_server=log_server,
                          autofill=autofill == "true",
-                         schedulable=schedulable == "true"
+                         schedulable=schedulable == "true",
+                         create_ts=create_ts
                          )
 
         if (host_type == WORKER_TYPE_DOCKER or
@@ -321,7 +322,7 @@ class HostHandler(object):
             config = FabricV1NetworkConfig(
                 consensus_plugin=CONSENSUS_PLUGIN_SOLO,
                 size=cluster_size)
-            config.network_type = NETWORK_TYPE_FABRIC_V1
+            config.network_type = NETWORK_TYPE_FABRIC_V1_1
             cid = cluster.cluster_handler.create(name=cluster_name,
                                                  host_id=id, config=config,
                                                  start_port=start_port)
@@ -395,24 +396,18 @@ class HostHandler(object):
         :return: Updated host
         """
         host = self.get_by_id(id)
+        ins = HostModel.objects.get(id=id)
         if not host:
             logger.warning("No host found with id=" + id)
             return False
-        if host.type == WORKER_TYPE_K8S:
-            if not self.host_agents[host.type]\
-                    .refresh_status(host.k8s_param):
-                logger.warning("Host {} is inactive".format(id))
-                self.db_set_by_id(id, **{"status": "inactive"})
-                return False
+        if not self.host_agents[host.type]\
+                .refresh_status(ins.k8s_param):
+            logger.warning("Host {} is inactive".format(id))
+            self.db_set_by_id(id, **{"status": "inactive"})
+            return False
         else:
-            if not self.host_agents[host.type]\
-                    .refresh_status(host.worker_api):
-                logger.warning("Host {} is inactive".format(id))
-                self.db_set_by_id(id, **{"status": "inactive"})
-                return False
-
-        self.db_set_by_id(id, **{"status": "active"})
-        return True
+            self.db_set_by_id(id, **{"status": "active"})
+            return True
 
     def is_active(self, host_id):
         """
@@ -438,7 +433,7 @@ class HostHandler(object):
         try:
             host = HostModel.objects.get(id=id)
         except Exception:
-            logger.warning("No active host found with id=" + id)
+            logger.error("No active host found with id=" + id)
             return None
         return host
 

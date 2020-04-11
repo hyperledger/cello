@@ -2,38 +2,25 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-FROM busybox as builder
-ENV FABRIC_VERSION_1_0 1.0.5
-RUN cd /tmp && ARCH=$(echo "$(uname -s|tr '[:upper:]' '[:lower:]'|sed 's/mingw64_nt.*/windows/')-$(uname -m | sed 's/x86_64/amd64/g')" | awk '{print tolower($0)}') && \
-    echo $ARCH &&wget -c https://nexus.hyperledger.org/content/repositories/releases/org/hyperledger/fabric/hyperledger-fabric/${ARCH}-${FABRIC_VERSION_1_0}/hyperledger-fabric-${ARCH}-${FABRIC_VERSION_1_0}.tar.gz && \
-    mkdir fabric-1.0 && tar -zxvf hyperledger-fabric-${ARCH}-${FABRIC_VERSION_1_0}.tar.gz -C fabric-1.0
-ENV FABRIC_VERSION_1_2 1.2.0
-RUN cd /tmp && ARCH=$(echo "$(uname -s|tr '[:upper:]' '[:lower:]'|sed 's/mingw64_nt.*/windows/')-$(uname -m | sed 's/x86_64/amd64/g')" | awk '{print tolower($0)}') && \
-    echo $ARCH &&wget -c https://nexus.hyperledger.org/content/repositories/releases/org/hyperledger/fabric/hyperledger-fabric/${ARCH}-${FABRIC_VERSION_1_2}/hyperledger-fabric-${ARCH}-${FABRIC_VERSION_1_2}.tar.gz && \
-    mkdir fabric-1.2 && tar -zxvf hyperledger-fabric-${ARCH}-${FABRIC_VERSION_1_2}.tar.gz -C fabric-1.2
+FROM node:8.11.3
+MAINTAINER h3c "@h3c.com"
 
-FROM node:8.9
-MAINTAINER haitao yue "hightall@me.com"
-COPY user-dashboard/src/package.json /
-COPY user-dashboard/src/yarn.lock /
-RUN cd / && yarn install -g --verbose --registry https://registry.npm.taobao.org/
-ENV PATH ${PATH}:/node_modules/.bin
-COPY user-dashboard/src/packages /packages
-RUN cd /packages/fabric-1.0 && yarn install --registry https://registry.npm.taobao.org/
-RUN cd /packages/fabric-1.2 && yarn install --registry https://registry.npm.taobao.org/
 COPY user-dashboard/src /var/www
-RUN cd /var/www && ln -sf /node_modules . && npm run build
+RUN cd /var/www && yarn install && npm run build
+RUN cd /var/www/packages/fabric-1.4 && npm install
 WORKDIR /var/www
 EXPOSE 8081
 
-COPY --from=builder /tmp/fabric-1.0/bin/configtxgen /usr/local/bin/fabric-1.0/configtxgen
-COPY --from=builder /tmp/fabric-1.2/bin/configtxgen /usr/local/bin/fabric-1.2/configtxgen
-COPY user-dashboard/fabric/fabric-1.0 /etc/hyperledger/fabric-1.0
-ENV FABRIC_CFG_PATH /etc/hyperledger/fabric-1.0
-COPY user-dashboard/fabric/fabric-1.2 /etc/hyperledger/fabric-1.2
-COPY user-dashboard/src/app/lib/fabric/fixtures/channel/v1.2/crypto-config /etc/hyperledger/fabric-1.2/crypto-config
+RUN mkdir -p /opt/fabric_tools/v1_4
+COPY jq-linux64 /usr/bin/jq
+RUN chmod +x /usr/bin/jq
+ENV FABRIC_VERSION 1.0.5
+COPY hyperledger-fabric-linux-amd64-1.4.0.tar.gz /tmp
+RUN cd /tmp \
+ && tar -zxvf hyperledger-fabric-linux-amd64-1.4.0.tar.gz && cp bin/* /opt/fabric_tools/v1_4 && mv bin/configtxgen /usr/local/bin/configtxgen
+COPY user-dashboard/fabric/fabric /etc/hyperledger/fabric
 ENV MONGO_PORT 27017
+COPY start.sh /root/start.sh
+RUN chmod +x /root/start.sh
 
-RUN sed -i 's/.\/ecdsa\/key.js/fabric-client\/lib\/impl\/ecdsa\/key.js/g' /packages/fabric-1.2/node_modules/fabric-ca-client/lib/impl/CryptoSuite_ECDSA_AES.js
-
-CMD ln -sf /node_modules . && npm run start
+CMD ["/bin/bash","/root/start.sh"]

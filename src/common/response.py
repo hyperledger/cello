@@ -42,4 +42,7 @@ def make_fail_resp(error="Invalid request", data={},
     response_fail['code'] = code
     response_fail["error"] = error
     response_fail["data"] = data
-    return jsonify(response_fail), CODE_BAD_REQUEST
+    return jsonify(response_fail), code
+
+def make_ok_my_resp(resource,result):
+    return jsonify({resource:result}),CODE_OK

@@ -1,5 +1,5 @@
 ---
 - name: Make sure that working directory is clean
   file:
-    path: "{{ pjroot }}/vars/{{ env }}/fabric/run"
+    path: "/opt/gopath/{{ env }}/fabric/run"
     state: "absent"

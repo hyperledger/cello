@@ -18,7 +18,7 @@ import atexit
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from common import log_handler, LOG_LEVEL, db, utils
 from agent import setup_container_host
-from modules.models import Host as HostModel
+from modules.models.host import Host as HostModel
 
 context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
 context.verify_mode = ssl.CERT_NONE
@@ -437,6 +437,6 @@ class VsphereOperation():
                 timeout -= 5
                 sk.connect((vmip, vmport))
                 return True
-            except Exception:
+            except Exception as e:
                 pass
         return False

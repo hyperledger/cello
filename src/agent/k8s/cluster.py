@@ -19,8 +19,8 @@ from common import NETWORK_TYPES, CONSENSUS_PLUGINS_FABRIC_V1, \
 
 from ..cluster_base import ClusterBase
 
-from modules.models import Cluster as ClusterModel
-from modules.models import Container, ServicePort
+from modules.models.host import Cluster as ClusterModel
+from modules.models.host import Container, ServicePort
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
@@ -58,13 +58,10 @@ class ClusterOnKubernetes(ClusterBase):
                 consensus = self._get_cluster_info(cid, config)
 
             operation = K8sClusterOperation(kube_config)
-            cluster_name = self.trim_cluster_name(cluster_name)
-
             containers = operation.deploy_cluster(cluster_name,
                                                   ports_index,
                                                   nfsServer_ip,
-                                                  consensus,
-                                                  config.get('network_type'))
+                                                  consensus)
         except Exception as e:
             logger.error("Failed to create Kubernetes Cluster: {}".format(e))
             return None
@@ -76,12 +73,10 @@ class ClusterOnKubernetes(ClusterBase):
                 consensus = self._get_cluster_info(cid, config)
 
             operation = K8sClusterOperation(kube_config)
-            cluster_name = self.trim_cluster_name(cluster_name)
             operation.delete_cluster(cluster_name,
                                      ports_index,
                                      nfsServer_ip,
-                                     consensus,
-                                     config.get('network_type'))
+                                     consensus)
 
             # delete ports for clusters
             cluster_ports = ServicePort.objects(cluster=cluster)
@@ -103,12 +98,11 @@ class ClusterOnKubernetes(ClusterBase):
             cluster = ClusterModel.objects.get(id=cid)
 
             cluster_name = cluster.name
-            kube_config = \
-                KubernetesOperation()._get_config_from_params(cluster.host
-                                                              .k8s_param)
+            kube_config = KubernetesOperation()._get_config_from_params(cluster
+                                                                 .host
+                                                                 .k8s_param)
 
             operation = K8sClusterOperation(kube_config)
-            cluster_name = self.trim_cluster_name(cluster_name)
             services_urls = operation.get_services_urls(cluster_name)
         except Exception as e:
             logger.error("Failed to get Kubernetes services's urls: {}"
@@ -123,17 +117,14 @@ class ClusterOnKubernetes(ClusterBase):
                 consensus = self._get_cluster_info(name, config)
 
             operation = K8sClusterOperation(kube_config)
-            cluster_name = self.trim_cluster_name(cluster_name)
             containers = operation.start_cluster(cluster_name, ports_index,
-                                                 nfsServer_ip, consensus,
-                                                 config.get('network_type'))
+                                                 nfsServer_ip, consensus)
 
             if not containers:
                 logger.warning("failed to start cluster={}, stop it again."
                                .format(cluster_name))
                 operation.stop_cluster(cluster_name, ports_index,
-                                       nfsServer_ip, consensus,
-                                       config.get('network_type'))
+                                       nfsServer_ip, consensus)
                 return None
 
             service_urls = self.get_services_urls(name)
@@ -159,12 +150,10 @@ class ClusterOnKubernetes(ClusterBase):
                 consensus = self._get_cluster_info(name, config)
 
             operation = K8sClusterOperation(kube_config)
-            cluster_name = self.trim_cluster_name(cluster_name)
             operation.stop_cluster(cluster_name,
                                    ports_index,
                                    nfsServer_ip,
-                                   consensus,
-                                   config.get('network_type'))
+                                   consensus)
 
             cluster_ports = ServicePort.objects(cluster=cluster)
             for ports in cluster_ports:
@@ -188,8 +177,3 @@ class ClusterOnKubernetes(ClusterBase):
         else:
             logger.error("Failed to Restart Kubernetes Cluster")
             return None
-
-    def trim_cluster_name(self, cluster_name):
-        if cluster_name.find("_") != -1:
-            cluster_name = cluster_name.replace("_", "-")
-        return cluster_name.lower()

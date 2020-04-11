@@ -18,8 +18,8 @@ export default {
   },
   ignoreMomentLocale: true,
   theme: './src/theme.js',
-  outputPath: '/var/www/dist/',
-  publicPath: '/static/dist/',
+  outputPath: '../dist/',
+  publicPath: 'static/dist/',
   hash: false,
   es5ImcompatibleVersions: true,
 };

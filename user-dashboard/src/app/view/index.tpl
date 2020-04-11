@@ -12,6 +12,7 @@
   window.webRoot = "{{webRoot}}";
   window.csrf = "{{ ctx.csrf |  safe }}";
   localStorage.setItem('cello-authority', "{{ authority }}");
+  localStorage.setItem('cello-token', "{{ token }}");
   window.id = "{{ id }}";
   window.username = "{{ username }}";
 </script>

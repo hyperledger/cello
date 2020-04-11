@@ -4,6 +4,9 @@
 'use strict';
 
 module.exports = {
+  get getChannelNameTest(){
+    return this.app.getChannelNameTest;
+  },
   get fabricHelper() {
     return this.app.fabricHelper;
   },
@@ -22,6 +25,17 @@ module.exports = {
   get joinChannel() {
     return this.app.joinChannel;
   },
+
+  get instantiateChainCode() {
+    return this.app.instantiateChainCode;
+  },
+  get upgradeChainCode() {
+      return this.app.upgradeChainCode;
+  },
+  get installChainCode() {
+    return this.app.installChainCode;
+  },
+
   get installSmartContract() {
     return this.app.installSmartContract;
   },
@@ -40,9 +54,6 @@ module.exports = {
   get getChannelHeight() {
     return this.app.getChannelHeight;
   },
-  get getBlockByNumber() {
-    return this.app.getBlockByNumber;
-  },
   get getRecentBlock() {
     return this.app.getRecentBlock;
   },
@@ -58,7 +69,58 @@ module.exports = {
   get sleep() {
     return this.app.sleep;
   },
-  get getRegisteredUserV1_2() {
-    return this.app.getRegisteredUserV1_2;
+  get getPeersForChannel() {
+    return this.app.getPeersForChannel;
   },
+  get getPeersForOrg() {
+    return this.app.getPeersForOrg;
+  },
+  get getRegisteredUserV1_4() {
+    return this.app.getRegisteredUserV1_4;
+  },
+  get enrollAdmin() {
+    return this.app.enrollAdmin;
+  },
+  get registerUser() {
+    return this.app.registerUser;
+  },
+  get deleteUser() {
+    return this.app.deleteUser;
+  },
+  get getUserIdentity() {
+    return this.app.getUserIdentity;
+  },
+  get reenrollUser() {
+    return this.app.reenrollUser;
+  },
+  get createUserAffiliation() {
+    return this.app.createUserAffiliation;
+  },
+  get getUserAffiliations() {
+    return this.app.getUserAffiliations;
+  },
+  get delUserAffiliations() {
+    return this.app.delUserAffiliations;
+  },
+  get updateUserAffiliation() {
+    return this.app.updateUserAffiliation;
+  },  
+  get signUpdate() {
+      return this.app.signUpdate;
+  },
+  get applyUpdate() {
+      return this.app.applyUpdate;
+    },
+  get removeOrgFromChannel() {
+      return this.app.removeOrgFromChannel;
+  },
+  get generateCRL() {
+      return this.app.generateCRL;
+  },
+  get getChannelInfo(){
+      return this.app.getChannelInfo;
+  },
+  get getChannelOrdererInfo(){
+      return this.app.getChannelOrdererInfo;
+  }
 };

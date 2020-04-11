@@ -1,0 +1,114 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: $networkName
+  name: $podName
+spec:
+  replicas: 1
+  strategy: {}
+  selector:
+    matchLabels:
+      app: hyperledger
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+       app: hyperledger
+       role: peer
+       peer-id: $peerID
+       domain: $orgDomain
+    spec:
+      containers:
+      - name: $podName
+        image: hyperledger/fabric-peer:$fabVersion
+        env:
+        - name: CORE_VM_ENDPOINT
+          value: "unix:///host/var/run/docker.sock"
+        - name: FABRIC_LOGGING_SPEC
+          value: "DEBUG"
+        - name: CORE_PEER_TLS_ENABLED
+          value: "true"
+        - name: CORE_PEER_GOSSIP_USELEADERELECTION
+          value: "true"
+        - name: CORE_PEER_GOSSIP_ORGLEADER
+          value: "false"
+        - name: CORE_PEER_TLS_CERT_FILE
+          value: "/etc/hyperledger/fabric/tls/server.crt"
+        - name: CORE_PEER_TLS_KEY_FILE
+          value: "/etc/hyperledger/fabric/tls/server.key"
+        - name: CORE_PEER_TLS_ROOTCERT_FILE
+          value: "/etc/hyperledger/fabric/tls/ca.crt"
+        - name: CORE_PEER_CHAINCODELISTENADDRESS
+          value: "0.0.0.0:7052"
+        - name: CORE_PEER_ADDRESSAUTODETECT
+          value: "true"
+        - name: CORE_PEER_ID
+          value: $corePeerID
+        - name: CORE_PEER_ADDRESS
+          value: $peerAddress
+        - name: CORE_PEER_GOSSIP_EXTERNALENDPOINT
+          value: $peerAddress
+        - name: CORE_PEER_LOCALMSPID
+          value: $localMSPID
+        - name: CORE_LOGGING_GRPC
+          value: debug
+        - name: GODEBUG
+          value: netdns=go
+        workingDir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+        ports:
+         - containerPort: 7051
+         - containerPort: 7052
+         - containerPort: 7053
+        command: ["peer"]
+        args: ["node","start"]
+        volumeMounts:
+         - mountPath: /etc/hyperledger/fabric/msp
+           name: certificate
+           subPath: $mspPath
+         - mountPath: /etc/hyperledger/fabric/tls
+           name: certificate
+           subPath: $tlsPath
+         - mountPath: /var/hyperledger/production
+           name: peerdata
+           subPath: $dataPath
+         - mountPath: /host/var/run/
+           name: run
+         - mountPath: /etc/localtime
+           name: host-time
+      volumes:
+       - name: certificate
+         persistentVolumeClaim:
+             claimName: $credentialPV
+       - name: peerdata
+         persistentVolumeClaim:
+             claimName: $dataPV
+       - name: run
+         hostPath:
+           path: /var/run
+       - name: host-time
+         hostPath:
+            path: /etc/localtime
+---
+apiVersion: v1
+kind: Service
+metadata:
+   namespace: $networkName
+   name: $peerSvcName
+spec:
+ selector:
+   app: hyperledger
+   role: peer
+   peer-id: $peerID
+   domain: $orgDomain
+ type: NodePort
+ ports:
+   - name: externale-listen-endpoint
+     protocol: TCP
+     port: 7051
+     targetPort: 7051
+     nodePort: $nodePort1
+   - name: event-listen
+     protocol: TCP
+     port: 7053
+     targetPort: 7053
+     nodePort: $nodePort2
