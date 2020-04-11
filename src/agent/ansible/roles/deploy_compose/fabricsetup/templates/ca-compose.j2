@@ -6,7 +6,7 @@ services:
 {% for ca in cas %}
   {{ ca.name }}:
     container_name: {{ ca.name}}
-    image: {{ fabric.repo.url }}fabric-ca:{{ fabric.ca.image_tag | default(fabric.baseimage_tag) }}
+    image: {{ fabric.repo.url }}fabric-ca:{{ fabric.ca.image_tag | default(thetag) }}
     network_mode: bridge
     hostname: {{ ca.name}}
     environment:
@@ -14,7 +14,7 @@ services:
       - FABRIC_CA_SERVER_CA_NAME={{ ca.name}}
       - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/ca/ca_private.key
       - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca/ca.{{ ca.org }}-cert.pem
-{% if tls %}
+{% if fabric.tls %}
       - FABRIC_CA_SERVER_TLS_ENABLED=true
       - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/tlsca/tlsca_private.key
       - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/tlsca/tlsca.{{ ca.org }}-cert.pem

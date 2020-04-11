@@ -27,7 +27,3 @@ export async function createChain(params) {
     body: params,
   });
 }
-
-export async function getChain(id) {
-  return request(`${urls.cluster.crud}/${id}`)
-}

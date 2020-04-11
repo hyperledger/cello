@@ -1,11 +1,8 @@
 FROM _DOCKER_BASE_
 COPY docker/baseimage /tmp/baseimage
 RUN cd /tmp/baseimage && \
-    bash install.sh && \
 rm -rf /tmp/baseimage
 COPY src /app
-COPY pip /root/.pip
 RUN	cd /app/ && \
-	pip install -r requirements.txt && \
 	rm -rf /tmp/cello
 WORKDIR /app

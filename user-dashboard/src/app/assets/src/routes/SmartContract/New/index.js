@@ -16,6 +16,7 @@ const { TextArea } = Input;
 @connect(({ smartContract }) => ({
   smartContract,
 }))
+
 @Form.create()
 class NewSmartContract extends PureComponent {
   static contextTypes = {
@@ -50,7 +51,7 @@ class NewSmartContract extends PureComponent {
     } else if (info.file.status === 'error') {
       message.error('Upload smart contract file failed.')
     }
-  };
+ };
   submitCallback = ({ payload, success }) => {
     this.setState({
       submitting: false,
@@ -98,6 +99,7 @@ class NewSmartContract extends PureComponent {
       }
     });
   };
+
   normFile = () => {
     return this.state.smartContractCodeId;
   };
@@ -120,7 +122,7 @@ class NewSmartContract extends PureComponent {
       labelCol: {
         xs: { span: 24 },
         sm: { span: 7 },
-      },
+    },
       wrapperCol: {
         xs: { span: 24 },
         sm: { span: 12 },
@@ -141,7 +143,7 @@ class NewSmartContract extends PureComponent {
       onChange: this.onUploadFile,
       onRemove: this.onRemoveFile,
       beforeUpload() {
-        return smartContractCodeId === '';
+      return smartContractCodeId === '';
       },
     };
 

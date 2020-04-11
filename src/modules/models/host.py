@@ -8,9 +8,10 @@ import datetime
 import logging
 from mongoengine import Document, StringField, \
     BooleanField, DateTimeField, IntField, \
-    ReferenceField, DictField, ListField, LongField, CASCADE
+    ReferenceField, DictField, ListField, CASCADE
 from enum import Enum
 from marshmallow import Schema, fields
+
 
 logger = logging.getLogger(__name__)
 
@@ -132,7 +133,9 @@ class HostSchema(Schema):
     autofill = fields.Method("format_autofill", dump_only=True)
     schedulable = fields.Method("format_schedulable", dump_only=True)
     clusters = fields.Method("get_clusters", dump_only=True)
+    blockchain_networks = fields.Method("get_blockchain_networks")
     capacity = fields.Integer()
+    k8s_param = fields.Dict()
 
     def format_autofill(self, host):
         return "true" if host.autofill else "false"
@@ -147,3 +150,9 @@ class HostSchema(Schema):
         clusters = Cluster.objects(host=host)
 
         return [str(cluster.id) for cluster in clusters]
+    def get_blockchain_networks(self, host):
+        from modules.models import modelv2
+        blockchain_networks = modelv2.BlockchainNetwork.objects(host=host)
+        return [str(network.id) for network in blockchain_networks]
+
+

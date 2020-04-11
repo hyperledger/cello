@@ -44,7 +44,7 @@ class VsphereHost(HostBase):
             connection = si.RetrieveContent()
             vc_resources = params.get(VCENTER)
 
-        except Exception:
+        except Exception as e:
             error_msg = (
                 "Cannot complete login due"
                 "to an incorrect user name or password."

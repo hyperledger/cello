@@ -14,6 +14,7 @@ export default {
     components: path.resolve(__dirname, 'app/assets/src/components/'),
   },
   ignoreMomentLocale: true,
+  theme:'app/assets/src/theme.js',
   outputPath: 'app/assets/public',
   hash: false,
   es5ImcompatibleVersions: true,

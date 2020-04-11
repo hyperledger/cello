@@ -24,3 +24,12 @@ class DevelopmentConfig(Config):
     MONGODB_USERNAME = os.getenv('MONGODB_USERNAME', '')
     MONGODB_PASSWORD = os.getenv('MONGODB_PASSWORD', '')
     SALT = '$2b$12$e9UeM1mU0RahYaC4Ikn1Ce'
+    JOBS = [
+        {
+            'id': 'blockchain_healthy_check',
+            'func': 'modules.blockchain_network:health_check',
+            'args': None,
+            'trigger': 'interval',
+            'seconds': 30,
+        }
+    ]

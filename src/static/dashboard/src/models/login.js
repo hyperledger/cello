@@ -5,29 +5,29 @@ import { login } from "../services/user";
 import { setAuthority } from "../utils/authority";
 
 export default {
-  namespace: "login",
-
-  state: {
-    status: undefined,
-  },
-
-  effects: {
-    *login({ payload }, { call }) {
-      const response = yield call(login, payload);
-      if (response && response.success) {
-        window.location = response.next;
-      }
+    namespace: "login",
+    
+    state: {
+        status: undefined,
     },
-  },
-
-  reducers: {
-    changeLoginStatus(state, { payload }) {
-      setAuthority(payload.currentAuthority);
-      return {
-        ...state,
-        status: payload.status,
-        type: payload.type,
-      };
+    
+    effects: {
+        *login({ payload }, { call }) {
+            const response = yield call(login, payload);
+            if (response && response.success) {
+                window.location = response.next;
+            }
+        },
     },
-  },
+    
+    reducers: {
+        changeLoginStatus(state, { payload }) {
+            setAuthority(payload.currentAuthority);
+            return {
+                ...state,
+                status: payload.status,
+                type: payload.type,
+            };
+        },
+    },
 };

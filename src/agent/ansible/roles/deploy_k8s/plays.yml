@@ -1,5 +1,5 @@
 ---
-- name: get fabric crypto tool
+- name: generate certificates
   hosts: cloud
   connection: local
   become: true
@@ -7,7 +7,7 @@
   vars_files:
     - "./../../vars/{{ env }}.yml"
   tasks:
-    - include_tasks: "../deploy_compose/getbin/tasks/{{ mode }}.yml"
+    - include_tasks: "getbin/tasks/{{ mode }}.yml"
   tags: "getbin"
 
 - name: generate certificates
@@ -19,7 +19,6 @@
     - "./../../vars/{{ env }}.yml"
   tasks:
     - include_tasks: "../deploy_compose/certsetup/tasks/{{ mode }}.yml"
-      when: fabric.generate_certs == true
   tags: "certsetup"
 
 - name: setup fabric network
@@ -32,18 +31,6 @@
   tasks:
     - include_tasks: "fabricsetup/tasks/{{ mode }}.yml"
   tags: "fabricsetup"
-
-- name: Generate connection profile using public IPs
-  hosts: cloud
-  connection: local
-  become: true
-  become_user: root
-  vars_files:
-    - "./../../vars/{{ env }}.yml"
-  tasks:
-    - include_tasks: "pubconn/tasks/{{ mode }}.yml"
-      when: fabric.k8s.exposeserviceport == True
-  tags: "conngen"
 
 - name: setup composer
   hosts: cloud

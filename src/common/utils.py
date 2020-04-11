@@ -5,19 +5,20 @@
 import json
 import os
 
+OPERATOR_SERVICE_PORT = 8071
+
 CLUSTER_NETWORK = "cello_net"
 
 NETWORK_SIZE_FABRIC_PRE_V1 = [4, 6]
 NETWORK_SIZE_FABRIC_V1 = [4]
 
 # first port that can be assigned as cluster API
-CLUSTER_PORT_START = int(os.getenv("CLUSTER_PORT_START", 7050))
+CLUSTER_PORT_START = int(os.getenv("CLUSTER_PORT_START", 30000))
 
 # Fabric image related varible
 # should be the same with scripts/worker_node/download_images.sh
 HLF_VERSION = '1.0.5'
 HLF_VERSION_1_1 = '1.1.0'
-HLF_VERSION_1_2 = '1.2.0'
 
 # vSphere requires this
 ARCH = 'x86_64'
@@ -42,8 +43,16 @@ HOST_STATUS = 'status'
 HOST_STATUS_ACTIVE = 'active'
 HOST_STATUS_PENDING = 'pending'
 
+KAFKA_NODE_NUM = 4
+ZOOKEEPER_NODE_NUM = 3
+
+PROMETHEUS_EXPOSED_PORT = '29090'
+PROMETHEUS_NAMESPACE = 'monitoring'
+PROMETHEUS_NODE_EXPORTER_POD_PORT = '9100'
+
+
 # number of port allocated to each cluster in case collision
-CLUSTER_PORT_STEP = 100
+CLUSTER_PORT_STEP = 1
 
 PEER_SERVICE_PORTS = {
     'rest': 7050,  # this is the reference starter for cluster port step
@@ -75,9 +84,7 @@ SERVICE_PORTS = dict(list(PEER_SERVICE_PORTS.items()) +
 NETWORK_TYPE_FABRIC_PRE_V1 = 'fabric-0.6'  # TODO: deprecate 0.6 support soon
 NETWORK_TYPE_FABRIC_V1 = 'fabric-1.0'
 NETWORK_TYPE_FABRIC_V1_1 = 'fabric-1.1'
-NETWORK_TYPE_FABRIC_V1_2 = 'fabric-1.2'
-NETWORK_TYPES = [NETWORK_TYPE_FABRIC_V1, NETWORK_TYPE_FABRIC_V1_1,
-                 NETWORK_TYPE_FABRIC_V1_2]
+NETWORK_TYPES = [NETWORK_TYPE_FABRIC_V1, NETWORK_TYPE_FABRIC_V1_1]
 # only support fabric v1.x now
 
 CONSENSUS_PLUGIN_NOOPS = 'noops'
@@ -108,9 +115,8 @@ WORKER_TYPE_DOCKER = 'docker'
 WORKER_TYPE_SWARM = 'swarm'
 WORKER_TYPE_K8S = 'kubernetes'
 WORKER_TYPE_VSPHERE = 'vsphere'
-WORKER_TYPES = [WORKER_TYPE_DOCKER, WORKER_TYPE_SWARM, WORKER_TYPE_K8S,
-                WORKER_TYPE_VSPHERE]
-
+# WORKER_TYPES = [WORKER_TYPE_DOCKER, WORKER_TYPE_SWARM, WORKER_TYPE_K8S, WORKER_TYPE_VSPHERE]
+WORKER_TYPES = [WORKER_TYPE_DOCKER, WORKER_TYPE_K8S]
 # TODO: might deprecate as can use agent to collect log seperately
 CLUSTER_LOG_TYPES = ['local']  # TODO: we may remove this option
 CLUSTER_LOG_LEVEL = ['DEBUG', 'INFO', 'NOTICE', 'WARNING', 'ERROR',

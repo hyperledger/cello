@@ -9,10 +9,12 @@ import sys
 import os
 from flask import current_app as app
 import bcrypt
+import datetime
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 from common import log_handler, LOG_LEVEL
 from modules.user.user import User
+from modules.operator_log import OperatorLogHandler
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL)
@@ -28,9 +30,9 @@ user_password_fields = {
 }
 
 user_password_parser = reqparse.RequestParser()
-user_password_parser.add_argument('origin_password', required=True,
+user_password_parser.add_argument('old_password', required=True,
                                   location='form',
-                                  help='Origin Password')
+                                  help='Old Password')
 user_password_parser.add_argument('new_password', required=True,
                                   location='form',
                                   help='New Password')
@@ -43,16 +45,43 @@ class ChangePassword(Resource):
     def post(self, user_id):
         args = user_password_parser.parse_args()
         origin_password, new_password = \
-            args["origin_password"], args["new_password"]
+            args["old_password"], args["new_password"]
+
+        op_log_handler = OperatorLogHandler()
+        opName = 'ChangePassword'
+        opObject = "User"
+
+        opDetails = {}
+        cur_time = datetime.datetime.utcnow()
 
         user_obj = User()
         user = user_obj.get_by_id(user_id)
+        operator = user.username
+
         if not user:
+            error_msg = "No such User"
+            op_log_handler.record_operating_log(
+                opDate=cur_time,
+                opName=opName,
+                opObject=opObject,
+                resCode=400,
+                operator=operator,
+                errorMsg=error_msg,
+                opDetails=opDetails)
             return {"error": "No such User", "success": False}, 400
         salt = app.config.get("SALT", b"")
         password = bcrypt.hashpw(origin_password.encode('utf8'),
                                  bytes(salt.encode()))
         if not password.decode() == user.dbUser.password:
+            error_msg = "Invalid origin password"
+            op_log_handler.record_operating_log(
+                opDate=cur_time,
+                opName=opName,
+                opObject=opObject,
+                resCode=400,
+                operator=operator,
+                errorMsg=error_msg,
+                opDetails=opDetails)
             return {"error": "Invalid origin password", "success": False}, 400
         new_password = bcrypt.hashpw(new_password.encode('utf8'),
                                      bytes(salt.encode()))
@@ -62,5 +91,12 @@ class ChangePassword(Resource):
         data = {
             "success": True
         }
+        op_log_handler.record_operating_log(
+            opDate=cur_time,
+            opName=opName,
+            opObject=opObject,
+            resCode=200,
+            operator=operator,
+            opDetails=opDetails)
 
         return data, 200
