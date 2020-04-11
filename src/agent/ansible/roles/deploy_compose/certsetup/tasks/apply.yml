@@ -16,7 +16,7 @@
     dest: "{{ fabricworkdir }}/crypto-config.yml"
 
 - name: Create the certificate files
-  command: "{{ fabricpath }}/bin/cryptogen generate --config crypto-config.yml --output keyfiles"
+  command: "{{ fabricpath }}/build/bin/cryptogen generate --config crypto-config.yml --output keyfiles"
   args:
     chdir: "{{ fabricworkdir }}"
 
@@ -34,24 +34,21 @@
     src: "{{ playbook_dir }}/../deploy_compose/certsetup/templates/connection.j2"
     dest: "{{ fabricworkdir }}/keyfiles/{{ item }}/connection.json"
   with_items: "{{ allorgs }}"
-
-- name: Create yaml connection profiles
-  template:
-    src: "{{ playbook_dir }}/../deploy_compose/certsetup/templates/connyaml.j2"
-    dest: "{{ fabricworkdir }}/keyfiles/{{ item }}/connection.yml"
-  with_items: "{{ allorgs }}"
+  tags: "composer"
 
 - name: Create endorsement policy file
   template:
     src: "{{ playbook_dir }}/../deploy_compose/certsetup/templates/policy.j2"
     dest: "{{ fabricworkdir }}/keyfiles/policy.json"
+  tags: "composer"
 
 - name: Rename admin private key
   shell: >-
-    ls *_sk | cat -n | while read n f; do cp "$f" "admin_private.key"; done
+    ls *_sk | cat -n | while read n f; do mv "$f" "admin_private.key"; done
   args:
     chdir: "{{ fabricworkdir }}/keyfiles/{{ item }}/users/Admin@{{ item }}/msp/keystore"
   with_items: "{{ allorgs }}"
+  tags: "composer"
 
 - name: Rename ca private key
   shell: >-
@@ -59,6 +56,7 @@
   args:
     chdir: "{{ fabricworkdir }}/keyfiles/{{ item }}/ca"
   with_items: "{{ allorgs }}"
+  tags: "composer"
 
 - name: Rename ca tls private key
   shell: >-
@@ -66,6 +64,7 @@
   args:
     chdir: "{{ fabricworkdir }}/keyfiles/{{ item }}/tlsca"
   with_items: "{{ allorgs }}"
+  tags: "composer"
 
 - name: Upload bna file
   copy:
@@ -73,6 +72,7 @@
     dest: "{{ fabricworkdir }}/keyfiles/"
   with_fileglob:
       - "{{ playbook_dir }}/../../secrets/networks/*.bna"
+  tags: "composer"
 
 - name: Create core.yml file for every peer
   template:
@@ -88,26 +88,34 @@
 - name: Create the gensis block and channel transaction
   shell: >-
     export FABRIC_CFG_PATH={{ fabricworkdir }} &&
-    {{ fabricpath }}/bin/configtxgen -profile OrdererGenesis
+    {{ fabricpath }}/build/bin/configtxgen -profile OrdererGenesis
     -outputBlock keyfiles/genesis.block -channelID orderersystemchannel &&
-    {{ fabricpath }}/bin/configtxgen -profile OrgChannel
+    {{ fabricpath }}/build/bin/configtxgen -profile OrgChannel
     -outputCreateChannelTx keyfiles/firstchannel.tx -channelID firstchannel
   args:
     chdir: "{{ fabricworkdir }}"
   when: allorderers | length > 0
 
-- name: Change file permissions
-  file:
-    path: "{{ fabricworkdir }}"
-    owner: 1000
-    group: 1000
-    recurse: yes
+- name: Define the anchor peer for organizations
+  shell: >-
+    export FABRIC_CFG_PATH={{ fabricworkdir }} &&
+    {{ fabricpath }}/build/bin/configtxgen -profile OrgChannel
+    -outputAnchorPeersUpdate keyfiles/{{ item }}.anchor.tx
+    -channelID firstchannel -asOrg {{ item }}
+  args:
+    chdir: "{{ fabricworkdir }}"
+  with_items: "{{ peerorgs }}"
 
-- name: Create ca config file
-  template:
-    src: "{{ playbook_dir }}/../deploy_compose/certsetup/templates/fabric-ca-server-config.j2"
-    dest: "{{ fabricworkdir }}/run/keyfiles/{{ item.org }}/ca/fabric-ca-server-config.yaml"
-  with_items: "{{ cas }}"
+- name: Duplicate genesis and transaction block to each peer
+  shell: >-
+    cp {{ fabricworkdir }}/keyfiles/genesis.block
+    {{ fabricworkdir }}/keyfiles/{{ item.org }}/peers/{{ item.name }}.{{ item.org }} &&
+    cp {{ fabricworkdir }}/keyfiles/firstchannel.tx
+    {{ fabricworkdir }}/keyfiles/{{ item.org }}/peers/{{ item.name }}.{{ item.org }}
+  args:
+    chdir: "{{ fabricworkdir }}"
+  when: allorderers | length > 0
+  with_items: "{{ allpeers }}"
 
 - name: Create a zip file of all certificates
   archive:

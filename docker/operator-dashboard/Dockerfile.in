@@ -1,9 +1,23 @@
-FROM node:8.9 as build_js
-MAINTAINER haitao yue "hightall@me.com"
-COPY src/static /var/www
-RUN cd /var/www/dashboard && npm install --registry https://registry.npm.taobao.org/ && npm run build
+FROM _NS_/cello-baseimage:_TAG_
 
-FROM hyperledger/cello-baseimage:latest
+COPY src /app
+RUN  apt-get update && apt-get install -y python3-pip libtool libltdl-dev
+RUN mkdir /root/.pip
+COPY pip.conf /root/.pip
+COPY node-v8.11.3-linux-x64.tar.xz /root/node-v8.11.3-linux-x64.tar.xz
+RUN     cd /app/ && \
+	pip3 install -r requirements.txt && \
+        rm -rf /tmp/cello
+RUN  mkdir -p /opt/fabric_tools/v1_4
+COPY hyperledger-fabric-linux-amd64-1.4.0.tar.gz /tmp
+RUN cd /tmp \
+ && tar -zxvf hyperledger-fabric-linux-amd64-1.4.0.tar.gz && cp bin/* /opt/fabric_tools/v1_4
+RUN cd /root && tar xf node-v8.11.3-linux-x64.tar.xz && \
+	mv node-v8.11.3-linux-x64 /usr/local/node && \
+	ln -s /usr/local/node/bin/node /usr/bin && \
+	ln -s /usr/local/node/bin/npm /usr/bin && \
+	ln -s /usr/local/node/bin/npx /usr/bin
+RUN  cd /app/static/dashboard && \
+      npm install && npm run build
 
-COPY --from=build_js /var/www/dist /app/static/dist
-CMD /etc/init.d/supervisor start && if [ "$DEBUG" = "True" ]; then python dashboard.py ; else gunicorn -w 1 --worker-class eventlet -b 0.0.0.0:8080 dashboard:app ;fi
+CMD if [ "$DEBUG" = "True" ]; then python dashboard.py ; else gunicorn -w 1 --worker-class eventlet --no-sendfile  -b 0.0.0.0:8071 dashboard:app --timeout 120;fi

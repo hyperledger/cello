@@ -10,6 +10,9 @@ import sys
 import os
 from flask import current_app as app
 import bcrypt
+import datetime
+
+from modules.operator_log import OperatorLogHandler
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 from common import log_handler, LOG_LEVEL
@@ -47,8 +50,18 @@ class CreateUser(Resource):
     @login_required
     @marshal_with(user_create_fields)
     def post(self, **kwargs):
+
+        # add operating log
+        cur_time = datetime.datetime.utcnow()
+        opName = 'CreateUser'
+        opObject = "User"
+        operator = "admin"
+        opDetails = {}
+        op_log_handler = OperatorLogHandler()
+
         args = user_create_parser.parse_args()
         username, password = args["username"], args["password"]
+        opDetails['username'] = username
         role, active = args["role"], args["active"]
         balance = args["balance"]
         active = active == "true"
@@ -62,8 +75,27 @@ class CreateUser(Resource):
                         role=role, active=active, balance=balance)
             user.save()
             user_id = user.id
+
+            op_log_handler.record_operating_log(
+                opDate=cur_time,
+                opName=opName,
+                opObject=opObject,
+                resCode=200,
+                operator=operator,
+                opDetails=opDetails)
+
         except Exception as exc:
             logger.error("exc %s", exc)
+            error_msg = "Fail to create user"
             status = "FAIL"
+            op_log_handler.record_operating_log(
+                opDate=cur_time,
+                opName=opName,
+                opObject=opObject,
+                resCode=500,
+                operator=operator,
+                errorMsg=error_msg,
+                opDetails=opDetails)
+
 
         return {"status": status, "id": user_id}, 200

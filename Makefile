@@ -15,15 +15,12 @@
 #   - dockerhub-pull: Pulling service images from dockerhub
 #   - license:		    Checks sourrce files for Apache license header
 #   - help:           Output the help instructions for each command
-#   - log:            Check the recent log output of given service
-#   - logs:           Check the recent log output of all services
+#   - log:            Check the recent log output of all services
 #   - restart:        Stop the cello service and then start
 #   - setup-master:   Setup the host as a master node, install pkg and download docker images
 #   - setup-worker:   Setup the host as a worker node, install pkg and download docker images
 #   - start:          Start the cello service
 #   - stop:           Stop the cello service, and remove all service containers
-#   - start-nfs:      Start the cello nfs service
-#   - stop-nfs:       Stop the cello nfs service
 
 GREEN  := $(shell tput -Txterm setaf 2)
 WHITE  := $(shell tput -Txterm setaf 7)
@@ -32,29 +29,29 @@ RESET  := $(shell tput -Txterm sgr0)
 ARCH   := $(shell uname -m)
 
 # changelog specific version tags
-PREV_VERSION?=0.9.0
+PREV_VERSION?=0.8.0
 
 # Building image usage
 DOCKER_NS ?= hyperledger
 BASENAME ?= $(DOCKER_NS)/cello
-VERSION ?= 0.9.0
+VERSION ?= latest
 IS_RELEASE=false
 
-DOCKER_BASE_x86_64=python:3.6
-DOCKER_BASE_ppc64le=ppc64le/python:3.6
-DOCKER_BASE_s390x=s390x/python:3.6
+DOCKER_BASE_x86_64=ubuntu:xenial
+DOCKER_BASE_ppc64le=ppc64le/ubuntu:xenial
+DOCKER_BASE_s390x=s390x/debian:jessie
 DOCKER_BASE=$(DOCKER_BASE_$(ARCH))
 BASE_VERSION ?= $(ARCH)-$(VERSION)
 
 ifeq ($(IS_RELEASE),false)
 	EXTRA_VERSION ?= snapshot-$(shell git rev-parse --short HEAD)
-	IMG_TAG=$(BASE_VERSION)-$(EXTRA_VERSION)
+	IMG_TAG=$(BASE_VERSION)
 else
 	IMG_TAG=$(BASE_VERSION)
 endif
 
 # Docker images needed to run cello services
-DOCKER_IMAGES = baseimage mongo engine operator-dashboard watchdog user-dashboard
+DOCKER_IMAGES =baseimage operator-dashboard user-dashboard
 DUMMY = .$(IMG_TAG)
 
 ifeq ($(DOCKER_BASE), )
@@ -101,18 +98,6 @@ else
 	START_OPTIONS = initial-env $(BUILD_JS)
 endif
 
-# Specify what type the worker node is setup as
-WORKER_TYPE ?= docker
-
-# Specify the running mode, prod or dev
-MODE ?= prod
-ifeq ($(MODE),prod)
-	COMPOSE_FILE=docker-compose-files/docker-compose.yml
-else
-	COMPOSE_FILE=docker-compose-files/docker-compose-dev.yml
-endif
-
-
 all: check
 
 build/docker/baseimage/$(DUMMY): build/docker/baseimage/$(DUMMY)
@@ -120,7 +105,7 @@ build/docker/nginx/$(DUMMY): build/docker/nginx/$(DUMMY)
 build/docker/mongo/$(DUMMY): build/docker/mongo/$(DUMMY)
 build/docker/engine/$(DUMMY): build/docker/engine/$(DUMMY)
 build/docker/operator-dashboard/$(DUMMY): build/docker/operator-dashboard/$(DUMMY)
-build/docker/ansible-agent/$(DUMMY): build/docker/ansible-agent/$(DUMMY)
+#build/docker/ansible-agent/$(DUMMY): build/docker/ansible-agent/$(DUMMY)
 build/docker/watchdog/$(DUMMY): build/docker/watchdog/$(DUMMY)
 build/docker/user-dashboard/$(DUMMY): build/docker/user-dashboard/$(DUMMY)
 
@@ -149,11 +134,11 @@ build/docker/%/.push: build/docker/%/$(DUMMY)
 docker: $(patsubst %,build/docker/%/$(DUMMY),$(DOCKER_IMAGES)) ##@Generate docker images locally
 
 docker-operator-dashboard: build/docker/operator-dashboard/$(DUMMY)
+docker-user-dashboard: build/docker/user-dashboard/$(DUMMY)
 
 docker-clean: stop image-clean ##@Clean all existing images
 
-DOCKERHUB_IMAGES = baseimage engine operator-dashboard user-dashboard watchdog ansible-agent
-
+DOCKERHUB_IMAGES = engine operator-dashboard user-dashboard watchdog 
 dockerhub: $(patsubst %,dockerhub-%,$(DOCKERHUB_IMAGES))  ##@Building latest images with dockerhub materials, to valid them
 
 dockerhub-%: ##@Building latest images with dockerhub materials, to valid them
@@ -174,7 +159,7 @@ license:
 install: $(patsubst %,build/docker/%/.push,$(DOCKER_IMAGES))
 
 check-js: ##@Code Check check js code format
-	docker-compose -f docker-compose-files/docker-compose-check-js.yaml up
+	docker-compose -f docker-compose-check-js.yaml up
 
 check: setup-master docker-operator-dashboard ##@Code Check code format
 	@$(MAKE) license
@@ -203,10 +188,10 @@ doc: ##@Create local online documentation and start serve
 
 # Use like "make log service=dashboard"
 log: ##@Log tail special service log, Use like "make log service=dashboard"
-	docker-compose -f ${COMPOSE_FILE} logs --tail=200 -f ${service}
+	docker-compose logs --tail=200 -f ${service}
 
 logs: ##@Log tail for all service log
-	docker-compose -f ${COMPOSE_FILE} logs -f --tail=200
+	docker-compose logs -f --tail=200
 
 image-clean: clean ##@Clean all existing images to rebuild
 	echo "Clean all cello related images, may need to remove all containers before"
@@ -217,19 +202,14 @@ initial-env: ##@Configuration Initial Configuration for dashboard
 
 start: ##@Service Start service
 	@$(MAKE) $(START_OPTIONS)
-	echo "Start all services with ${COMPOSE_FILE}... docker images must exist local now, otherwise, run 'make setup-master first' !"
-	if [ "$(MODE)" = "dev" ]; then \
-		make build-admin-js; \
-	fi
-	docker-compose -f ${COMPOSE_FILE} up -d --no-recreate
-	echo "Now you can visit operator-dashboard at localhost:8080, or user-dashboard at localhost:8081"
-	@$(MAKE) start-nfs
+	echo "Start all services... docker images must exist local now, otherwise, run 'make setup-master first' !"
+	docker-compose -f ${DEPLOY_COMPOSE_FILE} up -d --no-recreate
 
 stop: ##@Service Stop service
-	echo "Stop all services with ${COMPOSE_FILE}..."
-	docker-compose -f ${COMPOSE_FILE} stop
-	echo "Remove all services with ${COMPOSE_FILE}..."
-	docker-compose -f ${COMPOSE_FILE} rm -f -a
+	echo "Stop all services..."
+	docker-compose -f ${DEPLOY_COMPOSE_FILE} stop
+	echo "Remove all services..."
+	docker-compose rm -f -a
 
 restart: stop start ##@Service Restart service
 
@@ -237,7 +217,7 @@ setup-master: ##@Environment Setup dependency for master node
 	cd scripts/master_node && bash setup.sh
 
 setup-worker: ##@Environment Setup dependency for worker node
-	cd scripts/worker_node && bash setup.sh $(WORKER_TYPE)
+	cd scripts/worker_node && bash setup.sh
 
 build-admin-js: ##@Nodejs Build admin dashboard js files
 	@$(MAKE) initial-env
@@ -255,12 +235,6 @@ npm-install: ##@Nodejs Install modules with npm package management
 
 help: ##@other Show this help.
 	@perl -e '$(HELP_FUN)' $(MAKEFILE_LIST)
-
-start-nfs: ##@Service start nfs service
-	docker-compose -f docker-compose-files/docker-compose-nfs.yml up -d --no-recreate
-
-stop-nfs: ##@Service stop nfs service
-	docker-compose -f docker-compose-files/docker-compose-nfs.yml down
 
 HELP_FUN = \
 	%help; \

@@ -6,7 +6,6 @@ import { connect } from 'dva';
 import { defineMessages, injectIntl, FormattedMessage } from 'react-intl';
 import { List, Card, Button, Dropdown, Menu, Icon, Badge, Modal, Radio } from 'antd';
 import { routerRedux } from 'dva/router';
-import moment from 'moment';
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
 import styles from './style.less';
 
@@ -65,18 +64,6 @@ const messages = defineMessages({
       id: 'Chain.Label.CreateTime',
       defaultMessage: 'Create Time',
     },
-    status: {
-      id: 'Chain.Label.Status',
-      defaultMessage: 'Status',
-    },
-    health: {
-      id: 'Chain.Label.Health',
-      defaultMessage: 'Health',
-    },
-    host: {
-      id: 'Chain.Create.Label.Host',
-      defaultMessage: 'Host',
-    },
   },
   radio: {
     option: {
@@ -107,32 +94,15 @@ const messages = defineMessages({
 class Chain extends PureComponent {
   componentDidMount() {
     this.props.dispatch({
-      type: 'chain/setCanQuery',
-      payload: {
-        canQueryChain: true,
-      },
+      type: 'chain/fetchChains',
     });
-    this.loadChains();
   }
-  componentWillUnmount() {
-    this.props.dispatch({
-      type: 'chain/setCanQuery',
-      payload: {
-        canQueryChain: false,
-      },
-    });
-  };
   onClickAddChain = () => {
     this.props.dispatch(
       routerRedux.push({
         pathname: '/create-chain',
       })
     );
-  };
-  loadChains = () => {
-    this.props.dispatch({
-      type: 'chain/fetchChains',
-    });
   };
   changeChainType = e => {
     this.props.dispatch({
@@ -191,27 +161,15 @@ class Chain extends PureComponent {
       switch (status) {
         case 'running':
           return 'success';
-        case 'creating':
-        case 'deleting':
-          return 'processing';
-        case 'stopped':
-        default:
-          return 'default';
-      }
-    }
-    function badgeHealth(health) {
-      switch (health) {
-        case 'OK':
-          return 'success';
-        case 'FAIL':
+        case 'error':
           return 'error';
-        case '':
-          return 'processing';
-        default:
+        case 'stopped':
           return 'default';
+        default:
+          break;
       }
     }
-    const ListContent = ({ data: { user_id, create_ts, health, status } }) => (
+    const ListContent = ({ data: { user_id, create_ts, status } }) => (
       <div className={styles.listContent}>
         <div className={styles.listContentItem}>
           <span>
@@ -223,23 +181,10 @@ class Chain extends PureComponent {
           <span>
             <FormattedMessage {...messages.label.createTime} />
           </span>
-          <p>{moment(create_ts).format("YYYY-MM-DD HH:mm:ss")}</p>
+          <p>{create_ts}</p>
         </div>
         <div className={styles.listContentItem}>
-          <span>
-            <FormattedMessage {...messages.label.status} />
-          </span>
-          <p>
-            <Badge className={styles['status-badge']} status={badgeStatus(status)} text={status} />
-          </p>
-        </div>
-        <div className={styles.listContentItem}>
-          <span>
-            <FormattedMessage {...messages.label.health} />
-          </span>
-          <p>
-            <Badge className={styles['status-badge']} status={badgeHealth(health)} text={health === '' ? 'Waiting' : health} />
-          </p>
+          <Badge className={styles['status-badge']} status={badgeStatus(status)} text={status} />
         </div>
       </div>
     );
@@ -257,7 +202,7 @@ class Chain extends PureComponent {
         <Menu.Item key="release" chain={chainItem}>
           <FormattedMessage {...messages.button.release} />
         </Menu.Item>
-        <Menu.Item disabled={chainItem.user_id !== ''} key="delete" chain={chainItem}>
+        <Menu.Item key="delete" chain={chainItem}>
           <span className={styles['delete-button']}>
             <FormattedMessage {...messages.button.delete} />
           </span>
@@ -273,7 +218,6 @@ class Chain extends PureComponent {
     );
     const extraContent = (
       <div className={styles.extraContent}>
-        <Button type="primary" style={{marginRight: 10}} icon="reload" onClick={this.loadChains} />
         <RadioGroup defaultValue="active" onChange={this.changeChainType}>
           <RadioButton value="active">
             <FormattedMessage {...messages.radio.option.active} />
@@ -316,7 +260,6 @@ class Chain extends PureComponent {
                     description={
                       <div>
                         <p>
-                          <FormattedMessage {...messages.label.host} />: {item.host} &nbsp;&nbsp;
                           <FormattedMessage {...messages.label.networkType} />: {item.network_type}
                         </p>
                         <p>

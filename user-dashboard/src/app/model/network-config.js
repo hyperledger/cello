@@ -5,8 +5,9 @@ module.exports = app => {
   const Schema = mongoose.Schema;
 
   const NetworkConfigSchema = new Schema({
+    id: {type: String},
     user: { type: Schema.Types.ObjectId, ref: 'User' },
-    chain: { type: Schema.Types.ObjectId, ref: 'Chain' },
+    channel: { type: Schema.Types.ObjectId, ref: 'channel' },
   });
 
   return mongoose.model('NetworkConfig', NetworkConfigSchema);

@@ -7,33 +7,36 @@ import config from '../utils/config';
 
 const { urls } = config;
 export async function queryHosts(params) {
-  return request(`${urls.host.list}?${stringify(params)}`);
+    return request(`${urls.host.list}?${stringify(params)}`);
+}
+export async function queryHost(params) {
+    return request(`${urls.host.crud}/${params.id}`);
 }
 
 export async function createHost(params) {
-  return request(urls.host.crud, {
-    method: 'POST',
-    body: params,
-  });
+    return request(urls.host.crud, {
+        method: 'POST',
+        body: params,
+    });
 }
 
 export async function deleteHost(params) {
-  return request(urls.host.crud, {
-    method: 'DELETE',
-    body: JSON.stringify(params),
-  });
+    return request(urls.host.crud, {
+        method: 'DELETE',
+        body: JSON.stringify(params),
+    });
 }
 
 export async function operateHost(params) {
-  return request(urls.host.operate, {
-    method: 'POST',
-    body: params,
-  })
+    return request(urls.host.operate, {
+        method: 'POST',
+        body: params,
+    })
 }
 
 export async function updateHost(params) {
-  return request(urls.host.crud, {
-    method: 'PUT',
-    body: params,
-  })
+    return request(urls.host.crud, {
+        method: 'PUT',
+        body: params,
+    })
 }

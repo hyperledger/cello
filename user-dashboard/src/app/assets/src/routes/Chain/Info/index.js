@@ -46,7 +46,7 @@ export default class Index extends PureComponent {
         .replace(/^./, (str) => { return str.toUpperCase(); });
       const { success } = item;
       return (
-        <List.Item key={item._id}>
+        <List.Item key={item.id}>
           <List.Item.Meta
             avatar={<Avatar
               icon={success ? "check-circle-o" : "close-circle-o"}
@@ -78,7 +78,6 @@ export default class Index extends PureComponent {
   render() {
     const { chain, loadingSummary } = this.props;
     const { currentChain, deploys, height, recentBlock, recentTransaction, channels, installedChainCodes, instantiatedChainCodes } = chain;
-    const newRecentTransaction = recentTransaction.filter((item) => item !== null);
     const pageHeaderContent = (
       <div className={styles.pageHeaderContent}>
         <div className={styles.avatar}>
@@ -125,7 +124,7 @@ export default class Index extends PureComponent {
             </Tooltip>
           </p>
           <p>
-            {instantiatedChainCodes ? instantiatedChainCodes.length : 0}<span> / {installedChainCodes ? installedChainCodes.length : 0}</span>
+            {instantiatedChainCodes.length}<span> / {installedChainCodes.length}</span>
           </p>
         </div>
       </div>
@@ -212,7 +211,7 @@ export default class Index extends PureComponent {
                 loading={loadingSummary}
                 dataSource={recentBlock}
                 renderItem={item => (
-                  <List.Item key={item.id}>
+                  <List.Item>
                     <List.Item.Meta
                       title={
                         <Ellipsis lines={2}>
@@ -229,9 +228,9 @@ export default class Index extends PureComponent {
               <List
                 className={styles["card-list"]}
                 loading={loadingSummary}
-                dataSource={newRecentTransaction || []}
+                dataSource={recentTransaction}
                 renderItem={item => (
-                  <List.Item key={item.id}>
+                  <List.Item>
                     <List.Item.Meta
                       title={
                         <Ellipsis lines={2}>

@@ -5,7 +5,7 @@
     "login": "./login/index.js"
   },
   "dependencies": {
-    "antd": "^2.6.0",
+    "antd": "^3.9.4",
     "classnames": "^2.2.5",
     "dva": "^1.1.0",
     "dva-loading": "^0.2.0",
@@ -18,8 +18,7 @@
     "echarts-for-react": "^1.1.6",
     "react-draft-wysiwyg": "^1.8.1",
     "react-helmet": "^5.0.0",
-    "echarts": "^3.4.0",
-    "moment": "^2.22.2"
+    "echarts": "^3.4.0"
   },
   "devDependencies": {
     "atool-build": "^0.7.6",
