@@ -36,14 +36,6 @@ services:
   #    - PORT=8080
   #    - USERNAME=admin
   #    - PASSWORD=pass
-  rabbitmq:
-    image: rabbitmq
-    restart: unless-stopped
-    container_name: cello-dashboard_rabbitmq
-    environment:
-    - RABBITMQ_DEFAULT_USER=$RABBITMQ_DEFAULT_USER
-    - RABBITMQ_DEFAULT_PASS=$RABBITMQ_DEFAULT_PASS
-    - RABBITMQ_DEFAULT_VHOST=$RABBITMQ_DEFAULT_VHOST
 
   # cello dashboard service for network operator
   operator-dashboard:
@@ -56,17 +48,19 @@ services:
       - MONGO_HOST=mongo
       - MONGO_DB=dev
       - MONGODB_PORT=27017
-      - DEBUG=False    # in debug mode, service will auto-restart
+      - DEBUG=$DEV    # in debug mode, service will auto-restart
       - LOG_LEVEL=$LOG_LEVEL  # what level log will be output
       - STATIC_FOLDER=$STATIC_FOLDER
       - TEMPLATE_FOLDER=$TEMPLATE_FOLDER
       - ENABLE_EMAIL_ACTIVE=$ENABLE_EMAIL_ACTIVE
-      - BROKER=amqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672/$RABBITMQ_DEFAULT_VHOST
-      - BACKEND=amqp://$RABBITMQ_DEFAULT_USER:$RABBITMQ_DEFAULT_PASS@rabbitmq:5672/$RABBITMQ_DEFAULT_VHOST
     ports:
-      - "8080:8080"
+      - "8071:8071"
     volumes:
-      - $ROOT_PATH/src/agent/docker/_compose_files:/cello
+    #  - ./src:/app
+      - ./src/agent/docker/_compose_files:/cello
+      - /opt/fabric:/opt/fabric
+      - /etc/timezone:/etc/timezone
+      - /etc/localtime:/etc/localtime 
 
  #TODO: need to follow other images to put at dockerhub
   user-dashboard:
@@ -81,10 +75,10 @@ services:
       - "8081:8081"
     environment:
       - NODE_ENV=production
-      - RESTFUL_SERVER=operator-dashboard:8080
+      - RESTFUL_SERVER=operator-dashboard:8071
       - DEBUG=node:*
       - DEV=$DEV
-      - LOG_LEVEL=INFO
+      - LOG_LEVEL=$LOG_LEVEL
       - ENABLE_EMAIL_ACTIVE=$ENABLE_EMAIL_ACTIVE
       - SMTP_SERVER=$SMTP_SERVER
       - SMTP_PORT=$SMTP_PORT
@@ -94,39 +88,11 @@ services:
       - MONGO_DB=user_dashboard
       - FROM_EMAIL=$FROM_EMAIL
       - WEBROOT=$USER_DASHBOARD_WEBROOT
-      - FABRIC_CFG_PATH=/etc/hyperledger/fabric
     volumes:
-      - /opt/cello/baas:/opt/data
-
-  # cello engine service
-  engine:
-    image: hyperledger/cello-engine
-    container_name: cello-engine
-    hostname: cello-engine
-    restart: unless-stopped
-    environment:
-      - MONGO_URL=mongodb://cello-mongo:27017  # used by pymongo, deprecate soon
-      - MONGO_HOST=mongo
-      - MONGO_DB=dev
-      - MONGODB_PORT=27017
-      - DEBUG=$DEV    # in debug mode, service will auto-restart
-      - LOG_LEVEL=$LOG_LEVEL  # what level log will be output
-    ports:
-      - "80:80"
-
-  # cello watchdog service
-  watchdog:
-    image: hyperledger/cello-watchdog
-    container_name: cello-watchdog
-    hostname: cello-watchdog
-    restart: unless-stopped
-    environment:
-      - MONGO_URL=mongodb://mongo:27017  # used by pymongo, deprecate soon
-      - MONGO_HOST=mongo
-      - MONGO_DB=dev
-      - MONGODB_PORT=27017
-      - DEBUG=$DEV    # in debug mode, service will auto-restart
-      - LOG_LEVEL=$LOG_LEVEL  # what level log will be output
+      - /opt/cellodb/baas:/opt/data
+      - /opt/fabric:/opt/fabric 
+      - /etc/timezone:/etc/timezone
+      - /etc/localtime:/etc/localtime 
 
   # mongo database, may use others in future
   mongo:
@@ -149,7 +115,9 @@ services:
     environment:
       - NO_USED=0
     volumes:
-      - /opt/cello/mongo:/data/db
+      - /opt/cellodb/mongo:/data/db
+      - /etc/timezone:/etc/timezone
+      - /etc/localtime:/etc/localtime 
 
   # TODO: we may use one mongo instance, that should be enough
   dashboard_mongo:
@@ -160,4 +128,16 @@ services:
     environment:
       - NO_USED=0
     volumes:
-      - /opt/cello/dashboard_mongo:/data/db
+      - /opt/cellodb/dashboard_mongo:/data/db
+
+  nfs:
+    image: itsthenetwork/nfs-server-alpine:9
+    restart: unless-stopped
+    environment:
+      - SHARED_DIRECTORY=/cello
+    volumes:
+      - /opt/fabric:/cello
+      - /etc/timezone:/etc/timezone
+      - /etc/localtime:/etc/localtime 
+    privileged: true
+    network_mode: host
