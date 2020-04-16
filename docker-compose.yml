@@ -37,7 +37,9 @@ services:
   #    - USERNAME=admin
   #    - PASSWORD=pass
 
-  # cello dashboard service for network operator
+
+
+# cello dashboard service for network operator
   operator-dashboard:
     image: hyperledger/cello-operator-dashboard
     container_name: cello-operator-dashboard
@@ -59,14 +61,16 @@ services:
     #  - ./src:/app
       - ./src/agent/docker/_compose_files:/cello
       - /opt/fabric:/opt/fabric
-      - /etc/timezone:/etc/timezone
+      - /opt/secret:/opt/secret
       - /etc/localtime:/etc/localtime 
+ 
 
  #TODO: need to follow other images to put at dockerhub
   user-dashboard:
     image: hyperledger/cello-user-dashboard
     container_name: cello-user-dashboard
     hostname: cello-user-dashboard
+    restart: unless-stopped
     links:
       - mongo:dashboard_mongo
       - dashboard_mongo
@@ -91,8 +95,9 @@ services:
     volumes:
       - /opt/cellodb/baas:/opt/data
       - /opt/fabric:/opt/fabric 
-      - /etc/timezone:/etc/timezone
-      - /etc/localtime:/etc/localtime 
+      - /opt/secret:/opt/secret
+      - /etc/localtime:/etc/localtime
+      - /opt/SSOConfig:/opt/SSOConfig
 
   # mongo database, may use others in future
   mongo:
@@ -116,7 +121,6 @@ services:
       - NO_USED=0
     volumes:
       - /opt/cellodb/mongo:/data/db
-      - /etc/timezone:/etc/timezone
       - /etc/localtime:/etc/localtime 
 
   # TODO: we may use one mongo instance, that should be enough
@@ -137,7 +141,8 @@ services:
       - SHARED_DIRECTORY=/cello
     volumes:
       - /opt/fabric:/cello
-      - /etc/timezone:/etc/timezone
       - /etc/localtime:/etc/localtime 
     privileged: true
     network_mode: host
+
+
