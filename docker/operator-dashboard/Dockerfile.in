@@ -1,7 +1,7 @@
 FROM _NS_/cello-baseimage:_TAG_
 
 COPY src /app
-RUN  apt-get update && apt-get install -y python3-pip libtool libltdl-dev
+RUN  apt-get update && apt-get install -y python3-pip libtool libltdl-dev ssh
 RUN mkdir /root/.pip
 COPY pip.conf /root/.pip
 COPY node-v8.11.3-linux-x64.tar.xz /root/node-v8.11.3-linux-x64.tar.xz
