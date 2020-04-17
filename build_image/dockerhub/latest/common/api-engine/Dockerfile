@@ -1,27 +1,25 @@
-FROM busybox as downloader
-
-RUN cd /tmp && wget -c https://github.com/hyperledger/cello/archive/master.zip && \
-    unzip master.zip
-
 FROM python:3.6
 
-LABEL maintainer="github.com/hyperledger/cello"
+# Install software
+RUN apt-get update \
+	&& apt-get install -y gettext-base graphviz libgraphviz-dev \
+	&& apt-get autoclean \
+	&& apt-get clean \
+	&& apt-get autoremove && rm -rf /var/cache/apt/
 
-RUN apt-get update && apt-get install -y gettext-base graphviz libgraphviz-dev && \
-	apt-get autoclean && apt-get clean && apt-get autoremove && rm -rf /var/cache/apt/
-COPY --from=downloader /tmp/cello-master/src/api-engine/requirements.txt /
-RUN	cd / && \
-	pip install -r requirements.txt
-
-COPY --from=downloader /tmp/cello-master/src/api-engine /var/www/server
-COPY --from=downloader /tmp/cello-master/src/api-engine/docker/uwsgi/server.ini /etc/uwsgi/apps-enabled/
-COPY --from=downloader /tmp/cello-master/src/api-engine/docker/scripts /scripts
-COPY --from=downloader /tmp/cello-master/build_image/docker/common/api-engine/entrypoint.sh /
-
-RUN cd /var/www/server/api_engine && cp settings.py.initial settings.py && cd .. && python manage.py collectstatic --noinput
-
+# Set the working dir
 WORKDIR /var/www/server
+
+# Copy source code to the working dir
+COPY src/api-engine ./
+
+# Install python dependencies
+RUN	pip install -r requirements.txt
+
+# Add uwsgi configuration file
+COPY build_image/docker/common/api-engine/server.ini /etc/uwsgi/apps-enabled/
 
 ENV RUN_MODE server
 
+COPY build_image/docker/common/api-engine/entrypoint.sh /
 CMD bash /entrypoint.sh
