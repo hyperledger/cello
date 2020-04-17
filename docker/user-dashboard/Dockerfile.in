@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-FROM node:8.9
+FROM node:8.11.3
 MAINTAINER h3c "@h3c.com"
 
 COPY user-dashboard/src /var/www
