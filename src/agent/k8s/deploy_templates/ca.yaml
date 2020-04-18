@@ -1,0 +1,82 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: $networkName
+  name: $podName
+spec:
+  replicas: 1
+  strategy: {}
+  selector:
+    matchLabels:
+      app: hyperledger
+  template:
+    metadata:
+      labels:
+       app: hyperledger
+       role: ca
+       domain: $orgDomain
+       name: ca
+    spec:
+     containers:
+       - name: $podName
+         image: hyperledger/fabric-ca:$fabVersion
+         env:
+         - name: FABRIC_CA_HOME
+           value: /etc/hyperledger/fabric-ca-server
+         - name: FABRIC_CA_SERVER_CA_NAME
+           value: ca
+         - name: FABRIC_CA_SERVER_CA_CERTFILE
+           value: $tlsCert
+         - name: FABRIC_CA_SERVER_CA_KEYFILE
+           value: $tlsKey
+         - name: FABRIC_CA_SERVER_TLS_ENABLED
+           value: "true"
+         - name: FABRIC_CA_SERVER_TLS_CERTFILE
+           value: $tlsCert
+         - name: FABRIC_CA_SERVER_TLS_KEYFILE
+           value: $tlsKey
+         - name: GODEBUG
+           value: netdns=go
+         ports:
+          - containerPort: 7054
+         command: ["sh"]
+         args: ["-c", $command]
+         volumeMounts:
+          - mountPath: /etc/hyperledger/fabric-ca-server-config
+            name: certificate
+            subPath: $caPath
+          - mountPath: /etc/hyperledger/fabric-ca-server
+            name: cadata
+            subPath: $caDataPath
+          - mountPath: /etc/localtime
+            name: host-time
+     volumes:
+       - name: certificate
+         persistentVolumeClaim:
+            claimName: $credentialPV
+       - name: cadata
+         persistentVolumeClaim:
+            claimName: $dataPV
+       - name: host-time
+         hostPath:
+            path: /etc/localtime
+---
+apiVersion: v1
+kind: Service
+metadata:
+   namespace: $networkName
+   name: $caSvcName
+spec:
+ selector:
+   app: hyperledger
+   role: ca
+   domain: $orgDomain
+   name: ca
+ type: NodePort
+ ports:
+   - name: endpoint
+     protocol: TCP
+     port: 7054
+     targetPort: 7054
+     nodePort: $nodePort
