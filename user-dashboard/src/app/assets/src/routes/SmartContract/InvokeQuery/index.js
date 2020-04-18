@@ -53,7 +53,7 @@ export default class AdvancedProfile extends Component {
   };
 
   componentDidMount() {
-    const { location, dispatch } = this.props;
+   /* const { location, dispatch } = this.props;
     const info = pathToRegexp('/smart-contract/invoke-query/:id').exec(location.pathname);
     if (info) {
       const id = info[1];
@@ -68,12 +68,12 @@ export default class AdvancedProfile extends Component {
       })
     }
     this.setStepDirection();
-    window.addEventListener('resize', this.setStepDirection);
+    window.addEventListener('resize', this.setStepDirection);  */
   }
 
   componentWillUnmount() {
-    window.removeEventListener('resize', this.setStepDirection);
-    this.setStepDirection.cancel();
+  /*  window.removeEventListener('resize', this.setStepDirection);
+    this.setStepDirection.cancel();  */
   }
 
   onOperationTabChange = key => {
@@ -148,14 +148,12 @@ export default class AdvancedProfile extends Component {
       operation: 'invoke',
       onSubmit: this.operateAPI,
       submitting: operating,
-      currentDeploy,
     };
     const queryProps = {
       operation: 'query',
       onSubmit: this.operateAPI,
       submitting: operating,
       result: queryResult,
-      currentDeploy,
     };
 
     const contentList = {

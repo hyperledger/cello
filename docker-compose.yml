@@ -1,0 +1,148 @@
+# This compose file will deploy the services, and bootup a mongo server.
+
+# Copyright IBM Corp., All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+# Local `/opt/cello/mongo` will be used for the db storage.
+
+#  cello-nginx: proxy to access operator dashboard service, listen on 8080
+#  cello-operator-dashboard: dashboard service for operators
+#  cello-user-dashboard: user service of cello, listen on 8081
+#  engine: engine service of cello to provide RESTful APIs, listen on 80
+#  cello-mongo: mongo db
+
+version: '3.2'
+services:
+  # nginx as front end for the services, disable now
+  #nginx:
+  #  image: hyperledger/cello-nginx
+  #  hostname: cello-nginx
+  #  container_name: cello-nginx
+  #  restart: always
+  #  deploy:
+  #    resources:
+  #      limits:
+  #        cpus: '0.50'
+  #        memory: 2048M
+  #      reservations:
+  #        cpus: '0.10'
+  #        memory: 256M
+  #  ports:
+  #    - "80:80"
+  #    - "8080:8080"
+  #  environment:
+  #    - BACKEND=cello-operator-dashboard
+  #    - PORT=8080
+  #    - USERNAME=admin
+  #    - PASSWORD=pass
+
+
+
+# cello dashboard service for network operator
+  operator-dashboard:
+    image: hyperledger/cello-operator-dashboard
+    container_name: cello-operator-dashboard
+    hostname: cello-operator-dashboard
+    restart: unless-stopped
+    environment:
+      - MONGO_URL=mongodb://cello-mongo:27017  # used by pymongo, deprecate soon
+      - MONGO_HOST=mongo
+      - MONGO_DB=dev
+      - MONGODB_PORT=27017
+      - DEBUG=$DEV    # in debug mode, service will auto-restart
+      - LOG_LEVEL=$LOG_LEVEL  # what level log will be output
+      - STATIC_FOLDER=$STATIC_FOLDER
+      - TEMPLATE_FOLDER=$TEMPLATE_FOLDER
+      - ENABLE_EMAIL_ACTIVE=$ENABLE_EMAIL_ACTIVE
+    ports:
+      - "8071:8071"
+    volumes:
+    #  - ./src:/app
+      - ./src/agent/docker/_compose_files:/cello
+      - /opt/fabric:/opt/fabric
+      - /opt/secret:/opt/secret
+      - /etc/localtime:/etc/localtime 
+ 
+
+ #TODO: need to follow other images to put at dockerhub
+  user-dashboard:
+    image: hyperledger/cello-user-dashboard
+    container_name: cello-user-dashboard
+    hostname: cello-user-dashboard
+    restart: unless-stopped
+    links:
+      - mongo:dashboard_mongo
+      - dashboard_mongo
+      - operator-dashboard
+    ports:
+      - "8081:8081"
+    environment:
+      - NODE_ENV=production
+      - RESTFUL_SERVER=operator-dashboard:8071
+      - DEBUG=node:*
+      - DEV=$DEV
+      - LOG_LEVEL=$LOG_LEVEL
+      - ENABLE_EMAIL_ACTIVE=$ENABLE_EMAIL_ACTIVE
+      - SMTP_SERVER=$SMTP_SERVER
+      - SMTP_PORT=$SMTP_PORT
+      - SMTP_AUTH_USERNAME=$SMTP_AUTH_USERNAME
+      - SMTP_AUTH_PASSWORD=$SMTP_AUTH_PASSWORD
+      - MONGO_HOST=dashboard_mongo
+      - MONGO_DB=user_dashboard
+      - FROM_EMAIL=$FROM_EMAIL
+      - WEBROOT=$USER_DASHBOARD_WEBROOT
+    volumes:
+      - /opt/cellodb/baas:/opt/data
+      - /opt/fabric:/opt/fabric 
+      - /opt/secret:/opt/secret
+      - /etc/localtime:/etc/localtime
+      - /opt/SSOConfig:/opt/SSOConfig
+
+  # mongo database, may use others in future
+  mongo:
+    image: mongo:3.4.10
+    hostname: cello-mongo
+    container_name: cello-mongo
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 2048M
+        reservations:
+          cpus: '0.10'
+          memory: 256M
+    ports:
+      #- "27017:27017"  # use follow line instead in production env
+      - "127.0.0.1:27017:27017"
+      - "127.0.0.1:27018:27018"
+    environment:
+      - NO_USED=0
+    volumes:
+      - /opt/cellodb/mongo:/data/db
+      - /etc/localtime:/etc/localtime 
+
+  # TODO: we may use one mongo instance, that should be enough
+  dashboard_mongo:
+    image: mongo:3.4.10
+    hostname: cello-dashboard_mongo
+    container_name: cello-dashboard_mongo
+    restart: unless-stopped
+    environment:
+      - NO_USED=0
+    volumes:
+      - /opt/cellodb/dashboard_mongo:/data/db
+
+  nfs:
+    image: itsthenetwork/nfs-server-alpine:9
+    restart: unless-stopped
+    environment:
+      - SHARED_DIRECTORY=/cello
+    volumes:
+      - /opt/fabric:/cello
+      - /etc/localtime:/etc/localtime 
+    privileged: true
+    network_mode: host
+
+

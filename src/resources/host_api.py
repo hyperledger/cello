@@ -1,16 +1,17 @@
-
 # Copyright IBM Corp, All Rights Reserved.
 #
 # SPDX-License-Identifier: Apache-2.0
 #
 import logging
+import datetime
 import os
 import sys
 import uuid
 
 from flask import jsonify, Blueprint, render_template
 from flask import request as r
-import json
+
+from modules.operator_log import OperatorLogHandler
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from common import log_handler, LOG_LEVEL, \
@@ -21,8 +22,8 @@ from common import log_handler, LOG_LEVEL, \
 from common.utils import K8S_CRED_TYPE
 
 from modules import host_handler
-from modules.models import Cluster as ClusterModel
-from modules.models import Host as HostModel
+from modules.models.host import Cluster as ClusterModel
+from modules.models.host import Host as HostModel
 from agent import detect_daemon_type
 
 logger = logging.getLogger(__name__)
@@ -54,7 +55,7 @@ def host_query(host_id):
     else:
         error_msg = "host not found with id=" + host_id
         logger.warning(error_msg)
-        return make_fail_resp(error=error_msg, data=r.form)
+        return make_fail_resp(error=error_msg, data=r.form, code=404)
 
 
 @bp_host_api.route('/host', methods=['POST'])
@@ -64,6 +65,18 @@ def host_create():
         body = dict(r.get_json(force=True, silent=True))
     else:
         body = r.form
+
+    # add operating log
+    cur_time = datetime.datetime.utcnow()
+    opName = sys._getframe().f_code.co_name
+    opObject = "Host"
+    operator = "admin"
+    opResult = {}
+    op_log_handler = OperatorLogHandler()
+    opDetails = body
+
+
+
     name, worker_api, capacity, log_type, log_server, log_level, host_type = \
         body['name'], body['worker_api'], body['capacity'], \
         body['log_type'], body.get('log_server', ''), body['log_level'], \
@@ -142,13 +155,23 @@ def host_create():
                                      log_type=log_type,
                                      log_server=log_server,
                                      host_type=host_type,
-                                     params=vsphere_param)
+                                     params=vsphere_param,
+                                     create_ts = cur_time
+                                     )
 
     elif host_type == 'kubernetes':
         worker_api = body['worker_api']
-        k8s_param = create_k8s_host(name, capacity, log_type, body)
+        k8s_param, error_msg = create_k8s_host(name, capacity, log_type, body)
         if len(k8s_param) == 0:
-            return make_fail_resp(error=error_msg, data=r.form)
+            opResult['resDes'] = "ERROR"
+            opResult['resCode'] = 400
+            opResult['errorMsg'] = error_msg
+            op_log_handler.create(opDate=cur_time,
+                                  opName=opName,
+                                  opObject=opObject,
+                                  opResult=opResult,
+                                  operator=operator)
+            return make_fail_resp(error=error_msg, data=r.form, code=400)
 
         logger.debug("name={}, worker_api={},  capacity={},"
                      "fillup={}, schedulable={}, log={}/{}, k8s_param={}".
@@ -163,7 +186,8 @@ def host_create():
                                      log_type=log_type,
                                      log_server=log_server,
                                      host_type=host_type,
-                                     params=k8s_param)
+                                     params=k8s_param,
+                                     create_ts=cur_time)
 
     else:
         logger.debug("name={}, worker_api={}, capacity={}"
@@ -173,7 +197,18 @@ def host_create():
         if not name or not worker_api or not capacity or not log_type:
             error_msg = "host POST without enough data"
             logger.warning(error_msg)
-            return make_fail_resp(error=error_msg, data=body)
+
+            opResult['resDes'] = "ERROR"
+            opResult['resCode'] = 400
+            opResult['errorMsg'] = error_msg
+            op_log_handler.create(opDate = cur_time,
+                                       opName = opName,
+                                       opObject = opObject,
+                                       opResult = opResult,
+                                       operator = operator,
+                                  opDetails = opDetails)
+
+            return make_fail_resp(error=error_msg, data=body, code=400)
         else:
             host_type = host_type if host_type \
                 else detect_daemon_type(worker_api)
@@ -184,20 +219,53 @@ def host_create():
                                          log_level=log_level,
                                          log_type=log_type,
                                          log_server=log_server,
-                                         host_type=host_type)
+                                         host_type=host_type,
+                                         create_ts=cur_time)
     logger.debug("result.msg={}".format(result.get('msg')))
     if (host_type == "vsphere") and ('msg' in result):
         vsphere_errmsg = result.get('msg')
         error_msg = "Failed to create vsphere host {}".format(vsphere_errmsg)
         logger.warning(error_msg)
-        return make_fail_resp(error=error_msg)
+
+        #add operator log
+        opResult['resDes'] = "ERROR"
+        opResult['resCode'] = 500
+        opResult['errorMsg'] = error_msg
+        op_log_handler.create(opDate=cur_time,
+                              opName=opName,
+                              opObject=opObject,
+                              opResult=opResult,
+                              operator=operator,
+                              opDetails=opDetails)
+
+        return make_fail_resp(error=error_msg, data=body, code=500)
     elif result:
         logger.debug("host creation successfully")
+        opResult['resDes'] = "OK"
+        opResult['resCode'] = 200
+        opResult['errorMsg'] = ""
+        op_log_handler.create(opDate=cur_time,
+                              opName=opName,
+                              opObject=opObject,
+                              opResult=opResult,
+                              operator=operator,
+                              opDetails=opDetails)
         return make_ok_resp(code=CODE_CREATED)
     else:
         error_msg = "Failed to create host {}".format(body["name"])
         logger.warning(error_msg)
-        return make_fail_resp(error=error_msg)
+
+        opResult['resDes'] = "ERROR"
+        opResult['resCode'] = 500
+        opResult['errorMsg'] = error_msg
+        op_log_handler.create(opDate=cur_time,
+                              opName=opName,
+                              opObject=opObject,
+                              opResult=opResult,
+                              operator=operator,
+                              opDetails=opDetails)
+
+        return make_fail_resp(error=error_msg, data=body, code=500)
 
 
 @bp_host_api.route('/host', methods=['PUT'])
@@ -207,11 +275,32 @@ def host_update():
         body = dict(r.get_json(force=True, silent=True))
     else:
         body = r.form
+
+    # add operating log
+    cur_time = datetime.datetime.utcnow()
+    opName = sys._getframe().f_code.co_name
+    opObject = "Host"
+    operator = "admin"
+    opResult = {}
+    op_log_handler = OperatorLogHandler()
+    opDetails = body
+
     if "id" not in body:
         error_msg = "host PUT without enough data"
         logger.warning(error_msg)
+
+        opResult['resDes'] = "ERROR"
+        opResult['resCode'] = 404
+        opResult['errorMsg'] = error_msg
+        op_log_handler.create(opDate=cur_time,
+                              opName=opName,
+                              opObject=opObject,
+                              opResult=opResult,
+                              operator=operator,
+                              opDetails=opDetails)
+
         return make_fail_resp(error=error_msg,
-                              data=body)
+                              data=body, code=404)
     else:
         id, d = body["id"], {}
         for k in body:
@@ -220,33 +309,99 @@ def host_update():
         result = host_handler.update(id, d)
         if result:
             logger.debug("host PUT successfully")
+
+            opResult['resDes'] = "OK"
+            opResult['resCode'] = 200
+            opResult['errorMsg'] = ''
+            op_log_handler.create(opDate=cur_time,
+                                  opName=opName,
+                                  opObject=opObject,
+                                  opResult=opResult,
+                                  operator=operator,
+                                  opDetails=opDetails)
+
             return make_ok_resp()
         else:
             error_msg = "Failed to update host {}".format(result.get("name"))
             logger.warning(error_msg)
-            return make_fail_resp(error=error_msg)
+
+            opResult['resDes'] = "ERROR"
+            opResult['resCode'] = 500
+            opResult['errorMsg'] = error_msg
+            op_log_handler.create(opDate=cur_time,
+                                  opName=opName,
+                                  opObject=opObject,
+                                  opResult=opResult,
+                                  operator=operator,
+                                  opDetails=opDetails)
+
+            return make_fail_resp(error=error_msg, data=body, code=500)
 
 
 @bp_host_api.route('/host', methods=['PUT', 'DELETE'])
 def host_delete():
     request_debug(r, logger)
     request_data = r.get_json(force=True, silent=True)
+
+    # add operating log
+    cur_time = datetime.datetime.utcnow()
+    opName = sys._getframe().f_code.co_name
+    opObject = "Host"
+    operator = "admin"
+    opResult = {}
+    op_log_handler = OperatorLogHandler()
+    opDetails = {}
+
     if "id" in r.form:
         host_id = r.form["id"]
     elif "id" in request_data:
         host_id = request_data.get("id")
+        opDetails['host_id'] = host_id
+
     else:
         error_msg = "host delete without enough data"
         logger.warning(error_msg)
-        return make_fail_resp(error=error_msg, data=r.form)
+
+        opResult['resDes'] = "ERROR"
+        opResult['resCode'] = 404
+        opResult['errorMsg'] = error_msg
+        op_log_handler.create(opDate=cur_time,
+                              opName=opName,
+                              opObject=opObject,
+                              opResult=opResult,
+                              operator=operator)
+
+        return make_fail_resp(error=error_msg, data=r.form, code=404)
 
     logger.debug("host delete with id={0}".format(host_id))
     if host_handler.delete(id=host_id):
+
+        opResult['resDes'] = "OK"
+        opResult['resCode'] = 200
+        opResult['errorMsg'] = ''
+        op_log_handler.create(opDate=cur_time,
+                              opName=opName,
+                              opObject=opObject,
+                              opResult=opResult,
+                              operator=operator,
+                              opDetails=opDetails)
+
         return make_ok_resp()
     else:
         error_msg = "Failed to delete host {}".format(host_id)
         logger.warning(error_msg)
-        return make_fail_resp(error=error_msg)
+
+        opResult['resDes'] = "ERROR"
+        opResult['resCode'] = 500
+        opResult['errorMsg'] = error_msg
+        op_log_handler.create(opDate=cur_time,
+                              opName=opName,
+                              opObject=opObject,
+                              opResult=opResult,
+                              operator=operator,
+                              opDetails=opDetails)
+
+        return make_fail_resp(error=error_msg, code=500)
 
 
 @bp_host_api.route('/host_op', methods=['POST'])
@@ -313,6 +468,11 @@ def create_k8s_host(name, capacity, log_type, request):
     request['use_ssl'] = k8s_ssl
     request['use_ssl_ca'] = k8s_ssl_ca
 
+    k8s_params = {}
+    if 'k8s_node_vip' in request.keys():
+        k8s_params['K8SNodeVip'] = request['k8s_node_vip']
+
+
     k8s_must_have_params = {
         'Name': name,
         'Capacity': capacity,
@@ -322,6 +482,7 @@ def create_k8s_host(name, capacity, log_type, request):
         'K8SNfsServer': request['k8s_nfs_server'],
         'K8SUseSsl': request['use_ssl'],
         'K8SSslCert': request['use_ssl_ca']
+
     }
 
     if k8s_must_have_params['K8SCredType'] == K8S_CRED_TYPE['account']:
@@ -337,6 +498,9 @@ def create_k8s_host(name, capacity, log_type, request):
         if k8s_must_have_params[key] == '':
             error_msg = "host POST without {} data".format(key)
             logger.warning(error_msg)
-            return []
+            return ({}, error_msg)
 
-    return k8s_must_have_params
+    k8s_params.update(k8s_must_have_params)
+
+    error_msg = ''
+    return (k8s_params, error_msg)

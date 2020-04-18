@@ -19,5 +19,5 @@ ifeq (${DEV}, True)
     DEPLOY_COMPOSE_FILE:=docker-compose-files/docker-compose-dev.yml
 else
     export LOG_LEVEL:=INFO
-    DEPLOY_COMPOSE_FILE:=docker-compose-files/docker-compose.yml
+    DEPLOY_COMPOSE_FILE:=docker-compose.yml
 endif
