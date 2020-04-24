@@ -10,6 +10,7 @@ LABEL maintainer="github.com/hyperledger/cello"
 WORKDIR /usr/src/app/
 USER root
 COPY --from=downloader /tmp/cello-master/src/dashboard/package.json ./
+ENV HUSKY_SKIP_INSTALL=1
 RUN yarn
 COPY --from=downloader /tmp/cello-master/src/dashboard ./
 RUN npm run build
