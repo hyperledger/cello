@@ -426,7 +426,7 @@ class NodeViewSet(viewsets.ViewSet):
 
     @swagger_auto_schema(
         methods=["post"],
-        manual_parameters=NodeFileCreateSerializer().to_form_paras(),
+        request_body=NodeFileCreateSerializer,
         responses=with_common_response({status.HTTP_202_ACCEPTED: "Accepted"}),
     )
     @action(methods=["post"], detail=True, url_path="files", url_name="files")

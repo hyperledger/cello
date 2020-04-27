@@ -118,7 +118,7 @@ class AgentViewSet(viewsets.ViewSet):
                 )
 
     @swagger_auto_schema(
-        manual_parameters=AgentCreateBody().to_form_paras(),
+        request_body=AgentCreateBody,
         responses=with_common_response(
             {status.HTTP_201_CREATED: AgentIDSerializer}
         ),
