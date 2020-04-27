@@ -56,13 +56,13 @@ SchemaView = get_schema_view(
 
 # define and register routers of api
 router = DefaultRouter(trailing_slash=False)
-router.register("networks", NetworkViewSet, base_name="network")
-router.register("agents", AgentViewSet, base_name="agent")
-router.register("nodes", NodeViewSet, base_name="node")
-router.register("organizations", OrganizationViewSet, base_name="organization")
-router.register("users", UserViewSet, base_name="user")
-router.register("files", FileViewSet, base_name="file")
-# router.register("clusters", ClusterViewSet, base_name="cluster")
+router.register("networks", NetworkViewSet, basename="network")
+router.register("agents", AgentViewSet, basename="agent")
+router.register("nodes", NodeViewSet, basename="node")
+router.register("organizations", OrganizationViewSet, basename="organization")
+router.register("users", UserViewSet, basename="user")
+router.register("files", FileViewSet, basename="file")
+# router.register("clusters", ClusterViewSet, basename="cluster")
 
 urlpatterns = router.urls
 

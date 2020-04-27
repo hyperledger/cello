@@ -488,12 +488,15 @@ class Node extends PureComponent {
         <Card bordered={false}>
           <div className={styles.tableList}>
             <div className={styles.tableListOperator}>
-              {
-                userRole !== 'operator' &&
-                <Button icon="plus" type="primary" onClick={() => router.push('/operator/node/new')}>
+              {userRole !== 'operator' && (
+                <Button
+                  icon="plus"
+                  type="primary"
+                  onClick={() => router.push('/operator/node/new')}
+                >
                   <FormattedMessage id="form.button.new" defaultMessage="New" />
                 </Button>
-              }
+              )}
             </div>
             <StandardTable
               selectedRows={selectedRows}

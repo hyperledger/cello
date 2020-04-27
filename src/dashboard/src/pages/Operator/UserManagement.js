@@ -248,7 +248,10 @@ const CreateUpdateForm = Form.create()(props => {
             defaultMessage: 'Organization',
           })}
         >
-          {form.getFieldDecorator('organization', {})(
+          {form.getFieldDecorator(
+            'organization',
+            {}
+          )(
             <AutoComplete
               onSearch={onSearchOrganization}
               onSelect={onSelectOrganization}
