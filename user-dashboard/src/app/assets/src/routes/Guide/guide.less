@@ -1,0 +1,85 @@
+@import '~antd/lib/style/themes/default.less';
+
+.result {
+  width: 90%;
+  margin: 48px auto;
+  @media screen and (max-width: @screen-xs) {
+    width: 100%;
+  }
+
+  .icon {
+    font-size: 72px;
+    line-height: 72px;
+    margin-bottom: 24px;
+
+    & > .success {
+      color: @success-color;
+    }
+
+    & > .error {
+      color: @error-color;
+    }
+  }
+
+  .title {
+    font-size: 24px;
+    color: @heading-color;
+    font-weight: 500;
+    line-height: 32px;
+    margin-bottom: 60px;
+    text-align: center;
+  }
+
+  .title2 {
+    font-size: 22px;
+    color: @heading-color;
+    font-weight: 500;
+    line-height: 32px;
+    margin-bottom: 60px;
+    text-align: center;
+  }
+
+  .img {
+    color: @heading-color;
+    line-height: 32px;
+    margin-bottom: 50px;
+    text-align: center;
+  }
+
+  .subtitle {
+    text-align: left;
+    font-size: 14px;
+    line-height: 22px;
+    color: #4b6aff;
+    margin-top: 0;
+    margin-bottom: 24px;
+  }
+
+  .description {
+    text-align: left;
+    font-size: 14px;
+    line-height: 22px;
+    color: @text-color-secondary;
+    margin-top: 0;
+    margin-bottom: 24px;
+  }
+
+  .extra {
+    background: #fafafa;
+    padding: 24px 40px;
+    border-radius: @border-radius-sm;
+    text-align: left;
+
+    @media screen and (max-width: @screen-xs) {
+      padding: 18px 20px;
+    }
+  }
+
+  .actions {
+    margin-top: 32px;
+
+    button:not(:last-child) {
+      margin-right: 8px;
+    }
+  }
+}

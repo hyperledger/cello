@@ -27,7 +27,7 @@
     instance_tags:
       Name: "{{ inventory_hostname }}"
     volumes:
-      - device_name: "{{ cluster.root_block_device_name | default('/dev/sda1') }}"
+      - device_name: "/dev/xvda"
         device_type: "gp2"
         volume_size: "{{ cluster.volume_size }}"
         delete_on_termination: true

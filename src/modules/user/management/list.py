@@ -54,8 +54,8 @@ class ListUser(Resource):
     @marshal_with(user_list_fields)
     def get(self, **kwargs):
         args = user_list_parser.parse_args()
-        page = args['pageNo']
-        per_page = args['pageSize']
+        # page = args['pageNo']
+        # per_page = args['pageSize']
         sort_columns = args['sortColumns']
         sort_columns = sort_columns.split(" ")
         sort_str = ''
@@ -66,11 +66,13 @@ class ListUser(Resource):
                 sort_str = "-%s" % sort_field
             else:
                 sort_str = sort_field
-        offset = (page - 1) * per_page
+        # offset = (page - 1) * per_page
 
         user_count = UserModel.objects.all().count()
+
+
         users = \
-            UserModel.objects.skip(offset).limit(per_page).order_by(sort_str)
+            UserModel.objects.order_by(sort_str)
 
         users = [{
             "id": str(user.id),
@@ -86,8 +88,8 @@ class ListUser(Resource):
             "users": {
                 "result": users,
                 "totalCount": user_count,
-                "pageSize": per_page,
-                "pageNo": page
+                # "pageSize": per_page,
+                # "pageNo": page
             },
         }
 

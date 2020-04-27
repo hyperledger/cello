@@ -6,10 +6,10 @@ import zhCN from 'antd/lib/locale-provider/zh_CN';
 import zhMessages from './zh.json';
 
 export default {
-  messages: {
-    ...zhMessages,
-  },
-  antd: zhCN,
-  locale: 'zh-Hans',
-  data: appLocaleData,
+    messages: {
+        ...zhMessages,
+    },
+    antd: zhCN,
+    locale: 'zh-Hans',
+    data: appLocaleData,
 };

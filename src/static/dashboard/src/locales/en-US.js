@@ -6,10 +6,10 @@ import appLocaleData from 'react-intl/locale-data/en';
 import enMessages from './en.json';
 
 export default {
-  messages: {
-    ...enMessages,
-  },
-  antd: antdEn,
-  locale: 'en-US',
-  data: appLocaleData,
+    messages: {
+        ...enMessages,
+    },
+    antd: antdEn,
+    locale: 'en-US',
+    data: appLocaleData,
 };

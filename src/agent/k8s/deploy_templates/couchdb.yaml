@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: $networkName
+  name: couchdb-$peerName
+spec:
+  replicas: 1
+  strategy: {}
+  selector:
+    matchLabels:
+      app: hyperledger
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+       app: hyperledger
+       role: couchdb
+    spec:
+      containers:
+      - name: couchdb-$peerName
+        image: hyperledger/fabric-couchdb:2.1.1
+        ports:
+         - containerPort: 5984
+        volumeMounts:
+         - mountPath: /opt/couchdb/data
+           name: couchdata
+           subPath: $dataPath
+         - mountPath: /etc/localtime
+           name: host-time
+      volumes:
+       - name: couchdata
+         persistentVolumeClaim:
+             claimName: $dataPV
+       - name: host-time
+         hostPath:
+            path: /etc/localtime
+---
+apiVersion: v1
+kind: Service
+metadata:
+   namespace: $networkName
+   name: couchdb-$peerName
+spec:
+ selector:
+   app: hyperledger
+   role: couchdb
+ type: NodePort
+ ports:
+   - name: external-port
+     protocol: TCP
+     port: 5984
+     targetPort: 5984
+     nodePort: $nodePort1
+

@@ -7,6 +7,7 @@
 # Local `/opt/cello/mongo` will be used for the db storage.
 #  dashboard: dashboard service of cello, listen on 8080
 #  app: app service of cello, listen on 80
+#  nginx: front end
 #  mongo: mongo db
 
 version: '2'

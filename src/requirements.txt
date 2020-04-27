@@ -6,7 +6,7 @@
 docker-compose>=1.16.0,<=1.18.0
 Flask>=0.10.0,<=1.12.0
 greenlet>=0.4.5,<=0.4.12
-gunicorn>=19.0.0,<=19.6.0
+gunicorn>=19.9.0,<=19.9.0
 pymongo>=3.2.0,<=3.4.0
 requests>=2.0.0,<=2.13.0
 mongoengine>=0.10.0,<=0.13.0
@@ -18,9 +18,9 @@ Faker>=0.7.17,<=0.7.18
 pyvmomi>=5.5.0,<=6.5.0
 enum34>=1.1.0,<=1.1.6
 marshmallow>=2.13.6,<=2.14.0
-kubernetes==5.0.0
+kubernetes>=8.0.0,<9.0.0
 flask-socketio>=2.9.0,<=2.9.6
-eventlet>=0.22,<=0.22.1
-celery>=4.2.0,<=4.2.1
-redis>=2.10.0,<=2.10.6
-holdup>1.5.0,<=1.6.0
+eventlet>=0.24,<=0.24.1
+flask-cors>=3.0.6
+Flask-APScheduler>=1.11.0
+

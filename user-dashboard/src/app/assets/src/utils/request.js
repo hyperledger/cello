@@ -7,6 +7,7 @@ import { routerRedux } from "dva/router";
 import { IntlProvider, defineMessages } from "react-intl";
 import store from "../index";
 import { getLocale } from "../utils/utils";
+import Modal from "antd"
 
 const Cookies = require("js-cookie");
 
@@ -45,7 +46,7 @@ const messages = defineMessages({
     },
     code401: {
       id: "Messages.HttpStatus.401",
-      defaultMessage: "用户没有权限（令牌、用户名、密码错误）。",
+      defaultMessage: "Token校验失败/用户没有权限（令牌、用户名、密码错误）。",
     },
     code403: {
       id: "Messages.HttpStatus.403",
@@ -132,11 +133,18 @@ function checkStatus(response) {
  * @return {object}           An object containing either "data" or "err"
  */
 export default function request(url, options) {
+  const token = `JWT ${localStorage.getItem('cello-token')}`;
   const defaultOptions = {
     credentials: "include",
+      headers: {
+        'Authorization': token,
+      }
   };
+  console.log("option:",options);
   const newOptions = { ...defaultOptions, ...options };
+  console.log("newOptions:",newOptions);
   const csrftoken = Cookies.get("csrfToken");
+
   if (newOptions.method === "POST" || newOptions.method === "PUT") {
     if (!(newOptions.body instanceof FormData)) {
       newOptions.headers = {
@@ -176,9 +184,11 @@ export default function request(url, options) {
       const { dispatch } = store;
       const status = e.name;
       if (status === 401) {
-        dispatch({
-          type: "login/logout",
-        });
+        // dispatch({
+        //   type: "login/logout",
+        //
+        // });
+        window.location.href = "/logout";
         return {
           status,
         };
