@@ -89,7 +89,7 @@ class FileViewSet(viewsets.ViewSet):
                 )
 
     @swagger_auto_schema(
-        manual_parameters=FileCreateSerializer().to_form_paras(),
+        request_body=FileCreateSerializer,
         responses=with_common_response(
             {status.HTTP_201_CREATED: FileIDSerializer}
         ),
