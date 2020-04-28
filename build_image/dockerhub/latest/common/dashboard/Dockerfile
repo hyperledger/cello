@@ -10,7 +10,7 @@ LABEL maintainer="github.com/hyperledger/cello"
 WORKDIR /usr/src/app/
 USER root
 COPY --from=downloader /tmp/cello-master/src/dashboard ./
-RUN yarn install && yarn run build
+RUN npm i && npm run build
 
 FROM nginx:1.15.12
 
