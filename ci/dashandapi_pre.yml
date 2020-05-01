@@ -8,5 +8,6 @@ steps:
       sudo pip install --upgrade pip
       sudo pip install wheel
       sudo pip install tox
-      make check
-    displayName: 'make check'
+      cd src/api-engine
+      tox
+    displayName: 'Run tox'

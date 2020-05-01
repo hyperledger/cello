@@ -1,0 +1,23 @@
+parameters:
+  param: []
+
+jobs:
+- ${{ each component in parameters.param }}:
+  - job: ${{ component.name }}
+    steps:
+    - ${{ if component.pretest }}:
+      - template: ${{ component.pretest }}
+    - ${{ each image in component.images }}:
+      - script: |
+          docker build -t ${{ image.imagename }} -f ${{ image.dockerfile }} .
+        displayName: Build ${{ image.imagename }} docker image
+      - script: docker images
+        displayName: 'List available images'
+    - ${{ if component.posttest }}:
+      - template: ${{ component.posttest }}
+    - ${{ each image in component.images }}:
+      - script: |
+          docker login --username $(DockerHub-Username) --password $(DockerHub-Password)
+          docker push ${{ image.imagename }}
+        displayName: Publish docker image ${{ image.imagename }}
+        condition: eq(variables['Build.Reason'], 'IndividualCI')
