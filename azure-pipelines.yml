@@ -42,5 +42,7 @@ stages:
           dockerfile: "build_image/docker/agent/ansible/Dockerfile.in"
       - name: fabricoperator
         images:
-        - imagename: "hyperledger/cello-fabric-operator"
-          dockerfile: "build_image/docker/agent/fabric-operator/Dockerfile.in"
+        - imagename: "hyperledger/cello-k8s-operator-agent"
+          dockerfile: "src/agent/fabric-operator/agent/Dockerfile"
+        - imagename: "hyperledger/cello-k8s-operator-controller"
+          dockerfile: "src/agent/fabric-operator/Dockerfile"
