@@ -246,16 +246,17 @@ class NetworkOnKubenetes(BlockchainNetworkBase):
                 k8s_peer_name = '{}-{}'.format(peer_name, org_name)
                 peer_deploy_file = '{org_deploydir}/deploy_{peer_service_name}.yaml'. \
                     format(org_deploydir=org_deploydir, peer_service_name=peer_service_name)
-                os.makedirs('{}/{}'.format(org_data_path, peer_service_name))
-                couchdb_service_name = 'couchdb.{peer_service_name}'.format(peer_service_name=peer_service_name)
-                if not os.path.exists('{}/{}'.format(org_data_path, couchdb_service_name)):
-                    os.makedirs('{}/{}'.format(org_data_path, couchdb_service_name))
+                if not os.path.exists('{}/{}'.format(org_data_path, peer_service_name))
+                    os.makedirs('{}/{}'.format(org_data_path, peer_service_name))
+                    couchdb_service_name = 'couchdb.{peer_service_name}'.format(peer_service_name=peer_service_name)
+                    if not os.path.exists('{}/{}'.format(org_data_path, couchdb_service_name)):
+                        os.makedirs('{}/{}'.format(org_data_path, couchdb_service_name))
 
-                    host_ports = [request_host_ports[index], request_host_ports[index + 1],
-                                  request_host_ports[index + 2]]
-                    index = index + 3
-                    # couchdb is enabled by default
-                    render(peer_template, peer_deploy_file, networkName=net_name,
+                        host_ports = [request_host_ports[index], request_host_ports[index + 1],
+                                      request_host_ports[index + 2]]
+                        index = index + 3
+                        # couchdb is enabled by default
+                        render(peer_template, peer_deploy_file, networkName=net_name,
                            orgDomain=org_fullDomain_name,
                            peerSvcName=k8s_peer_name,
                            podName=k8s_peer_name,
@@ -274,7 +275,7 @@ class NetworkOnKubenetes(BlockchainNetworkBase):
                            nodePort2=host_ports[1],
                            nodePort3=host_ports[2])
 
-                    couchdb_service_endpoint = modelv2.ServiceEndpoint(id=uuid4().hex,
+                        couchdb_service_endpoint = modelv2.ServiceEndpoint(id=uuid4().hex,
                                                                        service_ip=node_vip,
                                                                        service_port=host_ports[2],
                                                                        service_name=couchdb_service_name,
@@ -283,13 +284,13 @@ class NetworkOnKubenetes(BlockchainNetworkBase):
                                                                        network=modelv2.BlockchainNetwork.objects.get(
                                                                        id=net_id)
                                                                        )
-                    couchdb_service_endpoint.save()
+                        couchdb_service_endpoint.save()
                     # 仅仅peer0做持久化存储. 注释掉暂时不做任何持久化存储
                     # if peer_service_name.split('.')[0][-1] == '0':
                     #    peer0DataPath(peer_deploy_file, peer_service_name)
 
-                    for i in range(2):
-                        peer_service_endpoint = modelv2.ServiceEndpoint(id=uuid4().hex,
+                        for i in range(2):
+                            peer_service_endpoint = modelv2.ServiceEndpoint(id=uuid4().hex,
                                                                         service_ip=node_vip,
                                                                         service_port=host_ports[i],
                                                                         service_name=peer_service_name,
@@ -299,12 +300,12 @@ class NetworkOnKubenetes(BlockchainNetworkBase):
                                                                         network=modelv2.BlockchainNetwork.objects.get(
                                                                             id=net_id)
                                                                         )
-                        peer_service_endpoint.save()
+                            peer_service_endpoint.save()
 
                     # deploy
-                    with open(peer_deploy_file) as f:
-                        resources = yaml.load_all(f)
-                        operation.deploy_k8s_resource(resources)
+                        with open(peer_deploy_file) as f:
+                            resources = yaml.load_all(f)
+                            operation.deploy_k8s_resource(resources)
             else:
                 k8s_peer_name = '{}-{}'.format(peer_name, org_name)
                 peer_deploy_file = '{org_deploydir}/deploy_{peer_service_name}.yaml'. \
