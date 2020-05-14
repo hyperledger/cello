@@ -18,7 +18,7 @@ The k8s configuration file is needed to gain access to a k8s cluster. Many cloud
 
 The config file allows you to put in details like node name, allocate k8s resources such as cpu and memory, and the certificates needed for that.
 
-[Download sample config.yaml file](https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/agent/samples/peer_config.yaml)
+[Download sample config.json file](https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/agent/samples/peer_config.json)
 
 Follow the below process to prepare zip files for setting up your fabric network:
 
@@ -41,7 +41,7 @@ The zip file created in the above process is to be uploaded during the `Agent` c
 Commands for the same :-
 
 ```
-wget https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/agent/samples/peer_config.yaml?raw=true
+wget https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/agent/samples/peer_config.json?raw=true
 tar -czvf peer_config.tgz peer_config.json
 ```
 
