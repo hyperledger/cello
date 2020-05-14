@@ -1,4 +1,4 @@
-apiVersion: fabric.hyperledger.org/v1
+apiVersion: fabric.hyperledger.org/v1alpha1
 kind: Peer
 metadata:
   name: peer1st
