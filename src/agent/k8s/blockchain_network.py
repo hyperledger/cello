@@ -246,7 +246,7 @@ class NetworkOnKubenetes(BlockchainNetworkBase):
                 k8s_peer_name = '{}-{}'.format(peer_name, org_name)
                 peer_deploy_file = '{org_deploydir}/deploy_{peer_service_name}.yaml'. \
                     format(org_deploydir=org_deploydir, peer_service_name=peer_service_name)
-                if not os.path.exists('{}/{}'.format(org_data_path, peer_service_name))
+                if not os.path.exists('{}/{}'.format(org_data_path, peer_service_name)):
                     os.makedirs('{}/{}'.format(org_data_path, peer_service_name))
                     couchdb_service_name = 'couchdb.{peer_service_name}'.format(peer_service_name=peer_service_name)
                     if not os.path.exists('{}/{}'.format(org_data_path, couchdb_service_name)):

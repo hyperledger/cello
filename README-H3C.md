@@ -56,6 +56,6 @@ b)     When instantiating a chain code, you need to set an endorsement policy. F
 
 c)      In the chain code management page, each chain code is followed by the delete function option, but once the chain code is installed, it cannot be deleted.
 
-7.The operator-dashboard's url is http://ip:8071. And the User-dashboard's url is http://ip:8071.
+7.The operator-dashboard's url is http://ip:8071. And the User-dashboard's url is http://ip:8081.
 
  
