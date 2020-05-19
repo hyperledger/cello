@@ -2,7 +2,7 @@
  SPDX-License-Identifier: Apache-2.0
 */
 import React, { PureComponent, Fragment } from 'react';
-import { connect } from 'dva';
+import { connect, useIntl, injectIntl } from 'umi';
 import {
   Card,
   Button,
@@ -17,7 +17,6 @@ import {
   AutoComplete,
 } from 'antd';
 import moment from 'moment';
-import { FormattedMessage, formatMessage } from 'umi-plugin-react/locale';
 import isEmail from 'validator/lib/isEmail';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import StandardTable from '@/components/StandardTable';
@@ -27,7 +26,6 @@ import styles from './styles.less';
 const FormItem = Form.Item;
 const Option = Select.Option;
 const AutoCompleteOption = AutoComplete.Option;
-const userRole = getAuthority()[0];
 
 const CreateUpdateForm = Form.create()(props => {
   const {
@@ -42,6 +40,8 @@ const CreateUpdateForm = Form.create()(props => {
     onSearchOrganization,
   } = props;
   const { getFieldValue } = form;
+  const userRole = getAuthority()[0];
+  const intl = useIntl();
   const onSubmit = () => {
     form.validateFields((err, fieldsValue) => {
       if (err) return;
@@ -52,7 +52,7 @@ const CreateUpdateForm = Form.create()(props => {
   const validateEmail = (rule, value, callback) => {
     if (value && !isEmail(value)) {
       callback(
-        formatMessage({
+        intl.formatMessage({
           id: 'app.operator.user.form.email.noValid',
           defaultMessage: 'Please input valid email',
         })
@@ -72,7 +72,7 @@ const CreateUpdateForm = Form.create()(props => {
   const validatePasswordConfirm = (rule, value, callback) => {
     if (value && getFieldValue('password') !== value) {
       callback(
-        formatMessage({
+        intl.formatMessage({
           id: 'app.operator.user.form.passwordConfirm.noValid',
           defaultMessage: 'Inconsistent password input twice',
         })
@@ -85,10 +85,10 @@ const CreateUpdateForm = Form.create()(props => {
     <Modal
       destroyOnClose
       title={
-        <FormattedMessage
-          id={`app.operator.user.form.${method === 'create' ? 'new' : 'update'}.title`}
-          defaultMessage="New User"
-        />
+        intl.formatMessage({
+          id: `app.operator.user.form.${method === 'create' ? 'new' : 'update'}.title`,
+          defaultMessage: 'New User',
+        })
       }
       visible={visible}
       confirmLoading={confirmLoading}
@@ -99,7 +99,7 @@ const CreateUpdateForm = Form.create()(props => {
       <FormItem
         labelCol={{ span: 5 }}
         wrapperCol={{ span: 15 }}
-        label={formatMessage({
+        label={intl.formatMessage({
           id: 'app.operator.user.form.name.label',
           defaultMessage: 'User Name',
         })}
@@ -109,7 +109,7 @@ const CreateUpdateForm = Form.create()(props => {
           rules: [
             {
               required: true,
-              message: formatMessage({
+              message: intl.formatMessage({
                 id: 'app.operator.user.form.name.required',
                 defaultMessage: 'Please input user name',
               }),
@@ -118,7 +118,7 @@ const CreateUpdateForm = Form.create()(props => {
           ],
         })(
           <Input
-            placeholder={formatMessage({
+            placeholder={intl.formatMessage({
               id: 'form.input.placeholder',
               defaultMessage: 'Please input',
             })}
@@ -128,7 +128,7 @@ const CreateUpdateForm = Form.create()(props => {
       <FormItem
         labelCol={{ span: 5 }}
         wrapperCol={{ span: 15 }}
-        label={formatMessage({
+        label={intl.formatMessage({
           id: 'app.operator.user.form.role.label',
           defaultMessage: 'User Role',
         })}
@@ -138,13 +138,20 @@ const CreateUpdateForm = Form.create()(props => {
         })(
           <Select>
             <Option value="user">
-              <FormattedMessage id="app.operator.user.role.user" defaultMessage="User" />
+              {
+                intl.formatMessage({
+                  id: 'app.operator.user.role.user',
+                  defaultMessage: 'User',
+                })
+              }
             </Option>
             <Option value="administrator">
-              <FormattedMessage
-                id="app.operator.user.role.administrator"
-                defaultMessage="Administrator"
-              />
+              {
+                intl.formatMessage({
+                  id: 'app.operator.user.role.administrator',
+                  defaultMessage: 'Administrator',
+                })
+              }
             </Option>
           </Select>
         )}
@@ -152,7 +159,7 @@ const CreateUpdateForm = Form.create()(props => {
       <FormItem
         labelCol={{ span: 5 }}
         wrapperCol={{ span: 15 }}
-        label={formatMessage({
+        label={intl.formatMessage({
           id: 'app.operator.user.form.email.label',
           defaultMessage: 'Email',
         })}
@@ -162,7 +169,7 @@ const CreateUpdateForm = Form.create()(props => {
           rules: [
             {
               required: true,
-              message: formatMessage({
+              message: intl.formatMessage({
                 id: 'app.operator.user.form.email.required',
                 defaultMessage: 'Please input email',
               }),
@@ -173,7 +180,7 @@ const CreateUpdateForm = Form.create()(props => {
           ],
         })(
           <Input
-            placeholder={formatMessage({
+            placeholder={intl.formatMessage({
               id: 'form.input.placeholder',
               defaultMessage: 'Please input',
             })}
@@ -183,7 +190,7 @@ const CreateUpdateForm = Form.create()(props => {
       <FormItem
         labelCol={{ span: 5 }}
         wrapperCol={{ span: 15 }}
-        label={formatMessage({
+        label={intl.formatMessage({
           id: 'app.operator.user.form.password.label',
           defaultMessage: 'Password',
         })}
@@ -193,7 +200,7 @@ const CreateUpdateForm = Form.create()(props => {
           rules: [
             {
               required: true,
-              message: formatMessage({
+              message: intl.formatMessage({
                 id: 'app.operator.user.form.password.required',
                 defaultMessage: 'Please input password',
               }),
@@ -201,7 +208,7 @@ const CreateUpdateForm = Form.create()(props => {
           ],
         })(
           <Input.Password
-            placeholder={formatMessage({
+            placeholder={intl.formatMessage({
               id: 'form.input.placeholder',
               defaultMessage: 'Please input',
             })}
@@ -211,7 +218,7 @@ const CreateUpdateForm = Form.create()(props => {
       <FormItem
         labelCol={{ span: 5 }}
         wrapperCol={{ span: 15 }}
-        label={formatMessage({
+        label={intl.formatMessage({
           id: 'app.operator.user.form.passwordConfirm.label',
           defaultMessage: 'Password Confirm',
         })}
@@ -221,7 +228,7 @@ const CreateUpdateForm = Form.create()(props => {
           rules: [
             {
               required: true,
-              message: formatMessage({
+              message: intl.formatMessage({
                 id: 'app.operator.user.form.password.required',
                 defaultMessage: 'Please input password',
               }),
@@ -232,7 +239,7 @@ const CreateUpdateForm = Form.create()(props => {
           ],
         })(
           <Input.Password
-            placeholder={formatMessage({
+            placeholder={intl.formatMessage({
               id: 'form.input.placeholder',
               defaultMessage: 'Please input',
             })}
@@ -243,7 +250,7 @@ const CreateUpdateForm = Form.create()(props => {
         <Form.Item
           labelCol={{ span: 5 }}
           wrapperCol={{ span: 15 }}
-          label={formatMessage({
+          label={intl.formatMessage({
             id: 'app.operator.user.form.organization.label',
             defaultMessage: 'Organization',
           })}
@@ -255,7 +262,7 @@ const CreateUpdateForm = Form.create()(props => {
             <AutoComplete
               onSearch={onSearchOrganization}
               onSelect={onSelectOrganization}
-              placeholder={formatMessage({
+              placeholder={intl.formatMessage({
                 id: 'form.input.placeholder',
                 defaultMessage: 'Please input',
               })}
@@ -304,9 +311,10 @@ class UserManagement extends PureComponent {
   };
 
   createCallback = data => {
+    const { intl } = this.props;
     if (data.id) {
       message.success(
-        formatMessage(
+        intl.formatMessage(
           {
             id: 'app.operator.user.create.success',
             defaultMessage: 'Create user {name} success',
@@ -320,7 +328,7 @@ class UserManagement extends PureComponent {
       this.handleFormReset();
     } else {
       message.success(
-        formatMessage(
+        intl.formatMessage(
           {
             id: 'app.operator.user.create.fail',
             defaultMessage: 'Create user {name} failed',
@@ -335,10 +343,11 @@ class UserManagement extends PureComponent {
 
   deleteCallback = data => {
     const { code, payload } = data;
+    const { intl } = this.props;
     const { username } = payload;
     if (code) {
       message.error(
-        formatMessage(
+        intl.formatMessage(
           {
             id: 'app.operator.user.delete.fail',
             defaultMessage: 'Delete user {name} failed',
@@ -350,7 +359,7 @@ class UserManagement extends PureComponent {
       );
     } else {
       message.success(
-        formatMessage(
+        intl.formatMessage(
           {
             id: 'app.operator.user.delete.success',
             defaultMessage: 'Delete user {name} success',
@@ -376,12 +385,13 @@ class UserManagement extends PureComponent {
   };
 
   handleDelete = record => {
+    const { intl } = this.props;
     Modal.confirm({
-      title: formatMessage({
+      title: intl.formatMessage({
         id: 'app.operator.user.form.delete.title',
         defaultMessage: 'Delete User',
       }),
-      content: formatMessage(
+      content: intl.formatMessage(
         {
           id: 'app.operator.user.form.delete.content',
           defaultMessage: 'Confirm to delete user {name}',
@@ -390,8 +400,8 @@ class UserManagement extends PureComponent {
           name: record.username,
         }
       ),
-      okText: formatMessage({ id: 'form.button.confirm', defaultMessage: 'Confirm' }),
-      cancelText: formatMessage({ id: 'form.button.cancel', defaultMessage: 'Cancel' }),
+      okText: intl.formatMessage({ id: 'form.button.confirm', defaultMessage: 'Confirm' }),
+      cancelText: intl.formatMessage({ id: 'form.button.cancel', defaultMessage: 'Cancel' }),
       onOk: () => this.deleteUser(record),
     });
   };
@@ -413,6 +423,7 @@ class UserManagement extends PureComponent {
         currentUser: { organization = {} },
       },
     } = this.props;
+    const userRole = getAuthority()[0];
 
     // eslint-disable-next-line no-param-reassign
     delete values.passwordConfirm;
@@ -435,17 +446,18 @@ class UserManagement extends PureComponent {
 
   handleMenuClick = e => {
     const { selectedRows } = this.state;
+    const { intl } = this.props;
     let names = [];
 
     switch (e.key) {
       case 'remove':
         names = selectedRows.map(item => item.username);
         Modal.confirm({
-          title: formatMessage({
+          title: intl.formatMessage({
             id: 'app.operator.user.form.delete.title',
             defaultMessage: 'Delete User',
           }),
-          content: formatMessage(
+          content: intl.formatMessage(
             {
               id: 'app.operator.user.form.delete.content',
               defaultMessage: 'Confirm to delete user {name}',
@@ -454,8 +466,8 @@ class UserManagement extends PureComponent {
               name: names.join(', '),
             }
           ),
-          okText: formatMessage({ id: 'form.button.confirm', defaultMessage: 'Confirm' }),
-          cancelText: formatMessage({ id: 'form.button.cancel', defaultMessage: 'Cancel' }),
+          okText: intl.formatMessage({ id: 'form.button.confirm', defaultMessage: 'Confirm' }),
+          cancelText: intl.formatMessage({ id: 'form.button.cancel', defaultMessage: 'Cancel' }),
           onOk: () => {
             selectedRows.map(user => this.deleteUser(user));
             this.setState({
@@ -478,6 +490,7 @@ class UserManagement extends PureComponent {
       loadingUsers,
       creatingUser,
       dispatch,
+      intl,
     } = this.props;
     const data = users.map(user => ({
       ...user,
@@ -486,45 +499,59 @@ class UserManagement extends PureComponent {
     const columns = [
       {
         title: (
-          <FormattedMessage id="app.operator.user.table.header.name" defaultMessage="User Name" />
+          intl.formatMessage({
+            id: 'app.operator.user.table.header.name',
+            defaultMessage: 'User Name',
+          })
         ),
-        dataIndex: 'username',
-      },
+    dataIndex: 'username',
+  },
       {
         title: (
-          <FormattedMessage id="app.operator.user.table.header.role" defaultMessage="User Role" />
+          intl.formatMessage({
+            id: 'app.operator.user.table.header.role',
+            defaultMessage: 'User Role',
+          })
         ),
         dataIndex: 'role',
         render: text => (
-          <FormattedMessage id={`app.operator.user.role.${text}`} defaultMessage="User" />
+          intl.formatMessage({
+            id: `app.operator.user.role.${text}`,
+            defaultMessage: 'User',
+          })
         ),
       },
       {
         title: (
-          <FormattedMessage
-            id="app.operator.user.table.header.organization"
-            defaultMessage="Organization"
-          />
+          intl.formatMessage({
+            id: 'app.operator.user.table.header.organization',
+            defaultMessage: 'Organization',
+          })
         ),
         dataIndex: 'organization',
         render: text => (text ? text.name : ''),
       },
       {
         title: (
-          <FormattedMessage
-            id="app.operator.organization.table.header.createTime"
-            defaultMessage="Create Time"
-          />
+          intl.formatMessage({ id: 'app.operator.organization.table.header.createTime', defaultMessage: 'Create Time' })
         ),
         dataIndex: 'created_at',
         render: text => <span>{moment(text).format('YYYY-MM-DD HH:mm:ss')}</span>,
       },
       {
-        title: <FormattedMessage id="form.table.header.operation" defaultMessage="Operation" />,
+        title: intl.formatMessage({
+          id: 'form.table.header.operation',
+          defaultMessage: 'Operation',
+        }),
         render: (text, record) => (
           <Fragment>
             <a className={styles.danger} onClick={() => this.handleDelete(record)}>
-              <FormattedMessage id="form.menu.item.delete" defaultMessage="Delete" />
+              {
+                intl.formatMessage({
+                  id: 'form.menu.item.delete',
+                  defaultMessage: 'Delete',
+                })
+              }
             </a>
           </Fragment>
         ),
@@ -550,28 +577,46 @@ class UserManagement extends PureComponent {
     const menu = (
       <Menu onClick={this.handleMenuClick} selectedKeys={[]}>
         <Menu.Item key="remove">
-          <FormattedMessage id="form.menu.item.delete" defaultMessage="Delete" />
+          {
+            intl.formatMessage({
+              id: 'form.menu.item.delete',
+              defaultMessage: 'Delete',
+            })
+          }
         </Menu.Item>
       </Menu>
     );
     return (
       <PageHeaderWrapper
-        title={<FormattedMessage id="app.operator.user.title" defaultMessage="User Management" />}
+        title={
+          intl.formatMessage({
+            id: 'app.operator.user.title',
+            defaultMessage: 'User Management',
+          })
+        }
       >
         <Card bordered={false}>
           <div className={styles.tableList}>
             <div className={styles.tableListOperator}>
               <Button icon="plus" type="primary" onClick={() => this.handleModalVisible(true)}>
-                <FormattedMessage id="form.button.new" defaultMessage="New" />
+                {
+                  intl.formatMessage({
+                    id: 'form.button.new',
+                    defaultMessage: 'New',
+                  })
+                }
               </Button>
               {selectedRows.length > 0 && (
                 <span>
                   <Dropdown overlay={menu}>
                     <Button>
-                      <FormattedMessage
-                        id="form.button.moreActions"
-                        defaultMessage="More Actions"
-                      />{' '}
+                {
+                  intl.formatMessage({
+                    id: 'form.button.moreActions',
+                    defaultMessage: 'More Actions',
+                  })
+                }
+                      {' '}
                       <Icon type="down" />
                     </Button>
                   </Dropdown>
@@ -598,4 +643,4 @@ class UserManagement extends PureComponent {
   }
 }
 
-export default UserManagement;
+export default injectIntl(UserManagement);

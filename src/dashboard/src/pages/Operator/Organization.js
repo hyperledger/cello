@@ -2,8 +2,7 @@
  SPDX-License-Identifier: Apache-2.0
 */
 import React, { PureComponent, Fragment } from 'react';
-import { connect } from 'dva';
-import { FormattedMessage, formatMessage } from 'umi-plugin-react/locale';
+import { connect, useIntl, injectIntl } from 'umi';
 import { Card, Button, Form, Modal, Input, message, Divider } from 'antd';
 import moment from 'moment';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
@@ -22,6 +21,7 @@ const CreateUpdateForm = Form.create()(props => {
     confirmLoading,
     organization,
   } = props;
+  const intl = useIntl();
   const onSubmit = () => {
     form.validateFields((err, fieldsValue) => {
       if (err) return;
@@ -33,10 +33,7 @@ const CreateUpdateForm = Form.create()(props => {
     <Modal
       destroyOnClose
       title={
-        <FormattedMessage
-          id={`app.operator.organization.form.${method === 'create' ? 'new' : 'update'}.title`}
-          defaultMessage="New Organization"
-        />
+        intl.formatMessage({ id: `app.operator.organization.form.${method === 'create' ? 'new' : 'update'}.title`, defaultMessage: 'New Organization' })
       }
       visible={visible}
       confirmLoading={confirmLoading}
@@ -47,7 +44,7 @@ const CreateUpdateForm = Form.create()(props => {
       <FormItem
         labelCol={{ span: 5 }}
         wrapperCol={{ span: 15 }}
-        label={formatMessage({
+        label={intl.formatMessage({
           id: 'app.operator.organization.form.name.label',
           defaultMessage: 'Organization Name',
         })}
@@ -57,7 +54,7 @@ const CreateUpdateForm = Form.create()(props => {
           rules: [
             {
               required: true,
-              message: formatMessage({
+              message: intl.formatMessage({
                 id: 'app.operator.organization.form.name.required',
                 defaultMessage: 'Please input organization name',
               }),
@@ -66,7 +63,7 @@ const CreateUpdateForm = Form.create()(props => {
           ],
         })(
           <Input
-            placeholder={formatMessage({
+            placeholder={intl.formatMessage({
               id: 'form.input.placeholder',
               defaultMessage: 'Please input',
             })}
@@ -127,9 +124,10 @@ class Organization extends PureComponent {
 
   createCallback = data => {
     const { name } = data.payload;
+    const { intl } = this.props;
     if (data.id) {
       message.success(
-        formatMessage(
+        intl.formatMessage(
           {
             id: 'app.operator.organization.create.success',
             defaultMessage: 'Create organization {name} success',
@@ -144,7 +142,7 @@ class Organization extends PureComponent {
       this.handleFormReset();
     } else {
       message.error(
-        formatMessage(
+        intl.formatMessage(
           {
             id: 'app.operator.organization.create.fail',
             defaultMessage: 'Create organization {name} failed',
@@ -159,10 +157,11 @@ class Organization extends PureComponent {
 
   updateCallback = data => {
     const { code, payload } = data;
+    const { intl } = this.props;
     const { name } = payload;
     if (code) {
       message.error(
-        formatMessage(
+        intl.formatMessage(
           {
             id: 'app.operator.organization.update.fail',
             defaultMessage: 'Update organization {name} failed',
@@ -174,7 +173,7 @@ class Organization extends PureComponent {
       );
     } else {
       message.error(
-        formatMessage(
+        intl.formatMessage(
           {
             id: 'app.operator.organization.update.success',
             defaultMessage: 'Update organization {name} success',
@@ -191,10 +190,11 @@ class Organization extends PureComponent {
 
   deleteCallback = data => {
     const { code, payload } = data;
+    const { intl } = this.props;
     const { name } = payload;
     if (code) {
       message.error(
-        formatMessage(
+        intl.formatMessage(
           {
             id: 'app.operator.organization.delete.fail',
             defaultMessage: 'Delete organization {name} failed',
@@ -206,7 +206,7 @@ class Organization extends PureComponent {
       );
     } else {
       message.success(
-        formatMessage(
+        intl.formatMessage(
           {
             id: 'app.operator.organization.delete.success',
             defaultMessage: 'Delete organization {name} success',
@@ -295,12 +295,13 @@ class Organization extends PureComponent {
   };
 
   handleDelete = record => {
+    const { intl } = this.props;
     Modal.confirm({
-      title: formatMessage({
+      title: intl.formatMessage({
         id: 'app.operator.organization.form.delete.title',
         defaultMessage: 'Delete Organization',
       }),
-      content: formatMessage(
+      content: intl.formatMessage(
         {
           id: 'app.operator.organization.form.delete.content',
           defaultMessage: 'Confirm to delete organization {name}',
@@ -309,8 +310,8 @@ class Organization extends PureComponent {
           name: record.name,
         }
       ),
-      okText: formatMessage({ id: 'form.button.confirm', defaultMessage: 'Confirm' }),
-      cancelText: formatMessage({ id: 'form.button.cancel', defaultMessage: 'Cancel' }),
+      okText: intl.formatMessage({ id: 'form.button.confirm', defaultMessage: 'Confirm' }),
+      cancelText: intl.formatMessage({ id: 'form.button.cancel', defaultMessage: 'Cancel' }),
       onOk: () => this.deleteOrganization(record),
     });
   };
@@ -321,37 +322,32 @@ class Organization extends PureComponent {
       organization: { organizations, pagination },
       loadingOrganizations,
       creatingOrganization,
+      intl,
     } = this.props;
     const columns = [
       {
         title: (
-          <FormattedMessage
-            id="app.operator.organization.table.header.name"
-            defaultMessage="Organization Name"
-          />
+          intl.formatMessage({ id: 'app.operator.organization.table.header.name', defaultMessage: 'Organization Name' })
         ),
         dataIndex: 'name',
       },
       {
         title: (
-          <FormattedMessage
-            id="app.operator.organization.table.header.createTime"
-            defaultMessage="Create Time"
-          />
+          intl.formatMessage({ id: 'app.operator.organization.table.header.createTime', defaultMessage: 'Create Time' })
         ),
         dataIndex: 'created_at',
         render: text => <span>{moment(text).format('YYYY-MM-DD HH:mm:ss')}</span>,
       },
       {
-        title: <FormattedMessage id="form.table.header.operation" defaultMessage="Operation" />,
+        title: intl.formatMessage({ id: 'form.table.header.operation', defaultMessage: 'Operation' }),
         render: (text, record) => (
           <Fragment>
             <a onClick={() => this.showUpdate(record)}>
-              <FormattedMessage id="form.menu.item.update" defaultMessage="Update" />
+              {intl.formatMessage({ id: 'form.menu.item.update', defaultMessage: 'Update' })}
             </a>
             <Divider type="vertical" />
             <a className={styles.danger} onClick={() => this.handleDelete(record)}>
-              <FormattedMessage id="form.menu.item.delete" defaultMessage="Delete" />
+              {intl.formatMessage({ id: 'form.menu.item.delete', defaultMessage: 'Delete' })}
             </a>
           </Fragment>
         ),
@@ -368,17 +364,16 @@ class Organization extends PureComponent {
     return (
       <PageHeaderWrapper
         title={
-          <FormattedMessage
-            id="app.operator.organization.title"
-            defaultMessage="Organization Management"
-          />
+          intl.formatMessage({ id: 'app.operator.organization.title', defaultMessage: 'Organization Management' })
         }
       >
         <Card bordered={false}>
           <div className={styles.tableList}>
             <div className={styles.tableListOperator}>
               <Button icon="plus" type="primary" onClick={() => this.handleModalVisible(true)}>
-                <FormattedMessage id="form.button.new" defaultMessage="New" />
+                {
+                  intl.formatMessage({ id: 'form.button.new', defaultMessage: 'New' })
+                }
               </Button>
             </div>
             <StandardTable
@@ -401,4 +396,4 @@ class Organization extends PureComponent {
   }
 }
 
-export default Organization;
+export default injectIntl(Organization);

@@ -1,4 +1,4 @@
-import { routerRedux } from 'dva/router';
+import { history } from 'umi';
 import { stringify } from 'qs';
 import { fakeAccountLogin } from '@/services/api';
 import { setAuthority } from '@/utils/authority';
@@ -46,7 +46,7 @@ export default {
             redirect = null;
           }
         }
-        yield put(routerRedux.replace(redirect || '/'));
+        yield put(history.replace(redirect || '/'));
         // TODO: find better method to reload token for request, reload page to obtain the token from storage
         window.location.reload();
       }
@@ -65,7 +65,7 @@ export default {
       // redirect
       if (window.location.pathname !== '/user/login' && !redirect) {
         yield put(
-          routerRedux.replace({
+          history.replace({
             pathname: '/user/login',
             search: stringify({
               redirect: window.location.href,

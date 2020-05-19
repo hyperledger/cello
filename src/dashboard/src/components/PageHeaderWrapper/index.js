@@ -1,8 +1,6 @@
 import React from 'react';
-import { FormattedMessage } from 'umi-plugin-react/locale';
-import Link from 'umi/link';
+import { Link, useIntl, connect } from 'umi';
 import { PageHeader, Tabs, Typography } from 'antd';
-import { connect } from 'dva';
 import classNames from 'classnames';
 import GridContent from './GridContent';
 import styles from './index.less';
@@ -47,6 +45,7 @@ const PageHeaderWrapper = ({
   hiddenBreadcrumb,
   ...restProps
 }) => {
+  const intl = useIntl();
   return (
     <div style={{ margin: '-24px -24px 0' }} className={classNames(wrapperClassName, styles.main)}>
       {top}
@@ -72,7 +71,7 @@ const PageHeaderWrapper = ({
                 conversionBreadcrumbList({
                   ...value,
                   ...restProps,
-                  home: <FormattedMessage id="menu.home" defaultMessage="Home" />,
+                  home: intl.formatMessage({ id: 'menu.home', defaultMessage: 'Home' }),
                 })
               }
               className={styles.pageHeader}

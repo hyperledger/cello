@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import Link from 'umi/link';
+import { Link } from 'umi';
 import RightContent from '../GlobalHeader/RightContent';
 import BaseMenu from '../SiderMenu/BaseMenu';
 import { getFlatMenuKeys } from '../SiderMenu/SiderMenuUtils';

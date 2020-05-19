@@ -1,6 +1,6 @@
 import React from 'react';
 import { Form, Button } from 'antd';
-import { FormattedMessage } from 'umi-plugin-react/locale';
+import { useIntl } from 'umi';
 import classNames from 'classnames';
 import styles from '../styles.less';
 
@@ -17,6 +17,7 @@ const formItemLayout = {
 class FabricOrderer extends React.PureComponent {
   render() {
     const { prevBtn, creating } = this.props;
+    const intl = useIntl();
     return (
       <Form layout="horizontal" className={classNames(styles.stepForm, styles.stepInputForm)}>
         <Form.Item
@@ -31,7 +32,10 @@ class FabricOrderer extends React.PureComponent {
         >
           {prevBtn}
           <Button type="primary" style={{ marginLeft: 8 }} loading={creating}>
-            <FormattedMessage id="form.button.submit" defaultMessage="Submit" />
+            {intl.formatMessage({
+              id: 'form.button.submit',
+              defaultMessage: 'Submit',
+            })}
           </Button>
         </Form.Item>
       </Form>

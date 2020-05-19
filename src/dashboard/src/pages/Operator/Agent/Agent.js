@@ -1,6 +1,5 @@
 import React, { PureComponent } from 'react';
-import { FormattedMessage, formatMessage } from 'umi-plugin-react/locale';
-import { connect } from 'dva';
+import { connect, history, useIntl, injectIntl } from 'umi';
 import {
   Card,
   Button,
@@ -16,7 +15,6 @@ import {
 } from 'antd';
 import moment from 'moment';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
-import router from 'umi/router';
 import styles from '../styles.less';
 import { getAuthority } from '@/utils/authority';
 
@@ -25,6 +23,7 @@ const { Option } = Select;
 
 const ApplyAgentForm = Form.create()(props => {
   const { visible, form, handleSubmit, handleModalVisible, confirmLoading } = props;
+  const intl = useIntl();
   const onSubmit = () => {
     form.validateFields((err, fieldsValue) => {
       if (err) return;
@@ -54,7 +53,7 @@ const ApplyAgentForm = Form.create()(props => {
     <Modal
       destroyOnClose
       title={
-        <FormattedMessage id="app.operator.applyAgent.title" defaultMessage="Apply for agent" />
+        intl.formatMessage({ id: 'app.operator.applyAgent.title', defaultMessage: 'Apply for agent' })
       }
       visible={visible}
       confirmLoading={confirmLoading}
@@ -64,7 +63,7 @@ const ApplyAgentForm = Form.create()(props => {
     >
       <FormItem
         {...formItemLayout}
-        label={formatMessage({
+        label={intl.formatMessage({
           id: 'app.operator.newAgent.label.agentCapacity',
           defaultMessage: 'Capacity of agent',
         })}
@@ -75,16 +74,13 @@ const ApplyAgentForm = Form.create()(props => {
             {
               required: true,
               message: (
-                <FormattedMessage
-                  id="app.operator.newAgent.required.agentCapacity"
-                  defaultMessage="Please input the capacity of the agent."
-                />
+                intl.formatMessage({ id: 'app.operator.newAgent.required.agentCapacity', defaultMessage: 'Please input the capacity of the agent.' })
               ),
             },
           ],
         })(
           <InputNumber
-            placeholder={formatMessage({
+            placeholder={intl.formatMessage({
               id: 'app.operator.newAgent.label.agentCapacity',
               defaultMessage: 'Capacity of agent',
             })}
@@ -96,7 +92,7 @@ const ApplyAgentForm = Form.create()(props => {
       </FormItem>
       <FormItem
         {...formItemLayout}
-        label={formatMessage({
+        label={intl.formatMessage({
           id: 'app.operator.newAgent.label.type',
           defaultMessage: 'Type',
         })}
@@ -107,10 +103,7 @@ const ApplyAgentForm = Form.create()(props => {
             {
               required: true,
               message: (
-                <FormattedMessage
-                  id="app.operator.newAgent.required.type"
-                  defaultMessage="Please select a type."
-                />
+                intl.formatMessage({ id: 'app.operator.newAgent.required.type', defaultMessage: 'Please select a type.' })
               ),
             },
           ],
@@ -166,8 +159,9 @@ class Agent extends PureComponent {
   };
 
   applyCallback = () => {
+    const { intl } = this.props;
     message.success(
-      formatMessage({
+      intl.formatMessage({
         id: 'app.operator.applyAgent.success',
         defaultMessage: 'Successful application for agent.',
       })
@@ -194,13 +188,14 @@ class Agent extends PureComponent {
   onAddAgent = () => {
     const userRole = getAuthority()[0];
     if (userRole === 'operator') {
-      router.push('/operator/agent/newAgent?action=create');
+      history.push('/operator/agent/newAgent?action=create');
     } else {
       this.handleModalVisible(true);
     }
   };
 
   deleteCallback = () => {
+    const { intl } = this.props;
     const userRole = getAuthority()[0];
     const id =
       userRole === 'operator'
@@ -210,7 +205,7 @@ class Agent extends PureComponent {
       userRole === 'operator' ? 'Delete agent success.' : 'Release agent success.';
 
     message.success(
-      formatMessage({
+      intl.formatMessage({
         id,
         defaultMessage,
       })
@@ -234,7 +229,7 @@ class Agent extends PureComponent {
   };
 
   editAgent = agent => {
-    router.push(`/operator/agent/editAgent?action=edit&id=${agent.id}`);
+    history.push(`/operator/agent/editAgent?action=edit&id=${agent.id}`);
   };
 
   // TODO: remove these two comment lines after add the functional code
@@ -261,6 +256,7 @@ class Agent extends PureComponent {
   };
 
   handleDelete = agent => {
+    const { intl } = this.props;
     const userRole = getAuthority()[0];
     const titleMessageId =
       userRole === 'operator'
@@ -277,11 +273,11 @@ class Agent extends PureComponent {
         : 'Confirm to release the agent {name}?';
 
     Modal.confirm({
-      title: formatMessage({
+      title: intl.formatMessage({
         id: titleMessageId,
         defaultMessage: titleDefaultMessage,
       }),
-      content: formatMessage(
+      content: intl.formatMessage(
         {
           id: contentMessageId,
           defaultMessage: contentDefaultMessage,
@@ -290,8 +286,8 @@ class Agent extends PureComponent {
           name: agent.name,
         }
       ),
-      okText: formatMessage({ id: 'form.button.confirm', defaultMessage: 'Confirm' }),
-      cancelText: formatMessage({ id: 'form.button.cancel', defaultMessage: 'Cancel' }),
+      okText: intl.formatMessage({ id: 'form.button.confirm', defaultMessage: 'Confirm' }),
+      cancelText: intl.formatMessage({ id: 'form.button.cancel', defaultMessage: 'Cancel' }),
       onOk: () => this.deleteAgent(agent),
     });
   };
@@ -305,6 +301,7 @@ class Agent extends PureComponent {
       user: {
         currentUser: { organization = {} },
       },
+      intl,
     } = this.props;
 
     const { modalVisible } = this.state;
@@ -347,16 +344,13 @@ class Agent extends PureComponent {
         <Row gutter={15} className={styles.ListContentRow}>
           <Col span={8}>
             <p>
-              <FormattedMessage id="app.operator.agent.type" defaultMessage="Type" />
+              {intl.formatMessage({ id: 'app.operator.agent.type', defaultMessage: 'Type' })}
             </p>
             <p>{type}</p>
           </Col>
           <Col span={10}>
             <p>
-              <FormattedMessage
-                id="app.operator.agent.table.header.creationTime"
-                defaultMessage="Creation Time"
-              />
+              {intl.formatMessage({ id: 'app.operator.agent.table.header.creationTime', defaultMessage: 'Creation Time' })}
             </p>
             <p>{moment(createdAt).format('YYYY-MM-DD HH:mm:ss')}</p>
           </Col>
@@ -376,7 +370,9 @@ class Agent extends PureComponent {
 
     return (
       <PageHeaderWrapper
-        title={<FormattedMessage id="app.operator.agent.title" defaultMessage="Agent Management" />}
+        title={
+          intl.formatMessage({ id: 'app.operator.agent.title', defaultMessage: 'Agent Management' })
+        }
       >
         <Card bordered={false}>
           <div className={styles.tableList}>
@@ -387,7 +383,7 @@ class Agent extends PureComponent {
                 type="dashed"
                 onClick={() => this.onAddAgent()}
               >
-                <FormattedMessage id="form.button.new" defaultMessage="New" />
+                {intl.formatMessage({ id: 'form.button.new', defaultMessage: 'New' })}
               </Button>
             </div>
             <List
@@ -400,13 +396,13 @@ class Agent extends PureComponent {
                 <List.Item
                   actions={[
                     <a onClick={() => this.editAgent(item)}>
-                      <FormattedMessage id="form.menu.item.update" defaultMessage="Update" />
+                      {intl.formatMessage({ id: 'iform.menu.item.update', defaultMessage: 'Update' })}
                     </a>,
                     <a onClick={() => this.nodeList(item)}>
-                      <FormattedMessage id="menu.operator.node" defaultMessage="Node" />
+                      {intl.formatMessage({ id: 'menu.operator.node', defaultMessage: 'Node' })}
                     </a>,
                     <a onClick={() => this.handleDelete(item)}>
-                      <FormattedMessage id="form.menu.item.delete" defaultMessage="Delete" />
+                      {intl.formatMessage({ id: 'form.menu.item.delete', defaultMessage: 'Delete' })}
                     </a>,
                   ]}
                 >
@@ -416,10 +412,7 @@ class Agent extends PureComponent {
                       <div>
                         <p>{item.ip}</p>
                         <p>
-                          <FormattedMessage
-                            id="app.operator.agent.listItem.organization"
-                            defaultMessage="Organization"
-                          />
+                          {intl.formatMessage({ id: 'app.operator.agent.listItem.organization', defaultMessage: 'Organization' })}
                           {' : '}
                           {userRole === 'operator'
                             ? filterOrgName(item.organization_id)
@@ -440,4 +433,4 @@ class Agent extends PureComponent {
   }
 }
 
-export default Agent;
+export default injectIntl(Agent);

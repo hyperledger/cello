@@ -1,18 +1,21 @@
 import React, { PureComponent } from 'react';
-import { FormattedMessage } from 'umi-plugin-react/locale';
+import { injectIntl } from 'umi';
 import { Spin, Menu, Icon, Avatar } from 'antd';
 import HeaderDropdown from '../HeaderDropdown';
 import SelectLang from '../SelectLang';
 import styles from './index.less';
 
-export default class GlobalHeaderRight extends PureComponent {
+class GlobalHeaderRight extends PureComponent {
   render() {
-    const { currentUser, onMenuClick } = this.props;
+    const { currentUser, onMenuClick, intl } = this.props;
     const menu = (
       <Menu className={styles.menu} selectedKeys={[]} onClick={onMenuClick}>
         <Menu.Item key="logout">
           <Icon type="logout" />
-          <FormattedMessage id="menu.account.logout" defaultMessage="logout" />
+          {intl.formatMessage({
+            id: 'menu.account.logout',
+            defaultMessage: 'logout'
+          })}
         </Menu.Item>
       </Menu>
     );
@@ -37,3 +40,5 @@ export default class GlobalHeaderRight extends PureComponent {
     );
   }
 }
+
+export default injectIntl(GlobalHeaderRight)
