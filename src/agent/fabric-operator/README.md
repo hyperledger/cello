@@ -17,9 +17,7 @@ fabric CA, Orderer and Peer node using kubectl
 
 ```
 $ kubectl apply \
-  -f https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/deploy/crds/fabric_v1alpha1_ca_crd.yaml?raw=true \
-  -f https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/deploy/crds/fabric_v1alpha1_orderer_crd.yaml?raw=true \
-  -f https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/deploy/crds/fabric_v1alpha1_peer_crd.yaml?raw=true
+  -f https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/deploy/crds/fabric_v1alpha1_crd.yaml?raw=true
 ```
 
 The command should finish successfully if you see messages like the below:
@@ -32,8 +30,7 @@ customresourcedefinition.apiextensions.k8s.io/peers.fabric.hyperledger.org creat
 Once the operator crds get created, start up the controller using the following command
 ```
 kubectl apply \
-  -f https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/deploy/fabric-operator.yaml?raw=true \
-  -f https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/deploy/operator.yaml?raw=true
+  -f https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/deploy/fabric-operator.yaml?raw=true
 ```
 The above command starts up the fabric operator controller in your default namespace of your k8s cluster. If you try to use
 a different namespace, you should download the fabric-operator.yaml file and change the namespace from default to whatever
@@ -43,7 +40,7 @@ the namespace that you want to use.
 
 1. Download the [example fabric ca spec file][ca_spec]
 ```
-wget https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/deploy/crds/fabric_v1alpha1_ca_cr.yaml?raw=true -O myca.yaml
+wget https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/deploy/crs/fabric_v1alpha1_ca_cr.yaml?raw=true -O myca.yaml
 ```
 2. Make changes to the example ca spec file according to your needs. Here are the list of things that you can change in the example ca spec file.
         *. Node name
@@ -69,7 +66,7 @@ kubectl delete ca ca1st
 
 1. Download the [example fabric peer spec file][peer_spec]
 ```
-wget https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/deploy/crds/fabric_v1alpha1_peer_cr.yaml?raw=true -O mypeer.yaml
+wget https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/deploy/crs/fabric_v1alpha1_peer_cr.yaml?raw=true -O mypeer.yaml
 ```
 2. Make changes to the example peer spec file according to your needs. Here are the list of things that you can change in the example peer spec file.
         *. Node name
@@ -94,7 +91,7 @@ kubectl delete peer peer1st
 
 1. Download the [example fabric orderer spec file][orderer_spec]
 ```
-wget https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/deploy/crds/fabric_v1alpha1_orderer_cr.yaml?raw=true -O myorderer.yaml
+wget https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/deploy/crs/fabric_v1alpha1_orderer_cr.yaml?raw=true -O myorderer.yaml
 ```
 2. Make changes to the example orderer spec file according to your needs. Here are the list of things that you can change in the example orderer spec file.
         *. Node name
@@ -116,9 +113,9 @@ kubectl delete orderer orderer1st
 
 [kubectl_tool]:https://kubernetes.io/docs/tasks/tools/install-kubectl/
 [operator_spec]:https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/deploy/operator.yaml?raw=true
-[ca_spec]:https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/deploy/crds/fabric_v1alpha1_ca_cr.yaml?raw=true
-[peer_spec]:https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/deploy/crds/fabric_v1alpha1_peer_cr.yaml?raw=true
-[orderer_spec]:https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/deploy/crds/fabric_v1alpha1_orderer_cr.yaml?raw=true
+[ca_spec]:https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/deploy/crs/fabric_v1alpha1_ca_cr.yaml?raw=true
+[peer_spec]:https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/deploy/crs/fabric_v1alpha1_peer_cr.yaml?raw=true
+[orderer_spec]:https://github.com/hyperledger/cello/blob/master/src/agent/fabric-operator/deploy/crs/fabric_v1alpha1_orderer_cr.yaml?raw=true
 
 ## Fabric Operator from the API / Dashboard
 

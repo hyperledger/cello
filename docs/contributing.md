@@ -1,10 +1,12 @@
+[//]: # (SPDX-License-Identifier: CC-BY-4.0)
+
 Any kind of contribution is encouraged, e.g., [Jira items](https://jira.hyperledger.org/projects/CE/issues) or [patchsets](https://github.com/hyperledger/cello).
 
 ## 1. LF ID Application
 
 All the tools require an Linux Foundation (LF) ID.
 
-If you do not have an LF ID, can [apply one](https://identity.linuxfoundation.org) for free.
+If you do not have an LF ID, [here is how to get one](https://wiki.hyperledger.org/display/CA/Setting+up+an+LFID).
 
 ## 2. Jira board usage
 
@@ -21,15 +23,15 @@ In brief, if you want to contribute, create or find some `To Do` item, and assig
 
 ## 3. Questions and discussions
 
-* [RocketChat](https://chat.hyperledger.org/channel/cello): technical discussions and questions, login with your LFID.
+* [Chat](https://chat.hyperledger.org/channel/cello): technical discussions and questions, login with your LFID.
 
 ## 4. Code Commit Steps
 
 The project employs [GitHub](https://github.com/hyperledger/cello) as the code commit/review system.
 
-*Before committing code, please go to [Jira](https://jira.hyperledger.org/projects/CE) to create a new task or check if there's related existing one, then assign yourself as the assignee. Notice each task will get a Jira number like [CE-26](https://jira.hyperledger.org/browse/CE-26).
+* Before committing code, please go to [Jira](https://jira.hyperledger.org/projects/CE) to create a new task or check if there's related existing one, then assign yourself as the assignee. Notice each task will get a Jira number like [CE-26](https://jira.hyperledger.org/browse/CE-26).
 
-* Clone the project to your working directory with your `LFID`.
+* Clone the project to your working directory.
 
 ```bash
 $ git clone git@github.com:hyperledger/cello.git
@@ -40,11 +42,6 @@ $ git clone git@github.com:hyperledger/cello.git
 ```bash
 $ git config user.name "your name"
 $ git config user.email "your email"
-```
-
-(Optionally) Setup git-review by inputting your LFID. Notice this is only necessary once.
-```bash
-$ git review -s
 ```
 
 * Assign yourself a `To Do` Jira task, mark it as `In progress`, then create a branch with the Jira task number off of your cloned repository, e.g., for CE-26, it can be:
@@ -78,28 +75,30 @@ width less than 80 characters. A bug fix should include the issue number.
 
 CE-1234 #done.
 
-Change-Id: If2e142ea1a21bc4b42f702f9a27d70d31edff20d
 Signed-off-by: Your Name <committer@email.address>
 ```
-
-* Submit your commit using `git review`, and mark the corresponding Jira item as `Under Review`.
+* Submit your PR using [hub](https://github.com/github/hub/), and mark the
+corresponding Jira item as `Under Review`.
 
 ```bash
-$ git review
-remote: Processing changes: new: 1, refs: 1, done
-remote:
-remote: New Changes:
-remote:   http://gerrit.hyperledger.org/r/7915 [CE-26] Update the contribution documentation
-remote:
-To ssh://gerrit.hyperledger.org:29418/cello
- * [new branch]      HEAD -> refs/publish/master/CE-26
-Switched to branch 'master'
-Your branch is up-to-date with 'origin/master'.
+docs % git push ryjones
+Enumerating objects: 7, done.
+Counting objects: 100% (7/7), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (4/4), 835 bytes | 835.00 KiB/s, done.
+Total 4 (delta 3), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (3/3), completed with 3 local objects.
+To github.com:ryjones/cello.git
+   90f0d2e..ec42e8a  master -> master
+docs % hub pull-request
+https://github.com/hyperledger/cello/pull/145
+docs %
 ```
 
-Notice you will get a gerrit url like `http://gerrit.hyperledger.org/r/7915`, open it and check the status.
+Notice you will get a GitHub PR url like `https://github.com/hyperledger/cello/pull/145`, open it and check the status.
 
-After the ci checking passed, add [reviewers](https://wiki.hyperledger.org/projects/cello#contributors) to the reviewer list and also post the gerrit url at the [RocketChat channel](https://chat.hyperledger.org/channel/cello). The patch will be merged into the `master` branch after passing the review, then mark the Jira item as `Done`.
+After the ci checking passed, add [reviewers](https://wiki.hyperledger.org/projects/cello#contributors) to the reviewer list and also post the GitHub PR url in the [chat channel](https://chat.hyperledger.org/channel/cello). The patch will be merged into the `master` branch after passing the review, then mark the Jira item as `Done`.
 
 * If you need to refine the patch further as the reviewers may suggest, you can change on the same branch, and commit the new code with `git commit -a --amend`, and then use the `git review` command again.
 
