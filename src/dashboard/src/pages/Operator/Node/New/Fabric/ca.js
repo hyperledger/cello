@@ -1,6 +1,6 @@
 import React from 'react';
 import { Form, Button, Select, Input } from 'antd';
-import { FormattedMessage, formatMessage } from 'umi-plugin-react/locale';
+import { useIntl } from 'umi';
 import classNames from 'classnames';
 import styles from '../styles.less';
 
@@ -9,6 +9,7 @@ const caTypes = [
   { name: 'TLS', value: 'tls' },
   { name: 'Signature', value: 'signature' },
 ];
+const intl = useIntl();
 
 const formItemLayout = {
   labelCol: {
@@ -57,7 +58,7 @@ class FabricCa extends React.PureComponent {
     const validatePasswordConfirm = (rule, value, callback) => {
       if (value && getFieldValue('admin_password') !== value) {
         callback(
-          formatMessage({
+          intl.formatMessage({
             id: 'app.operator.user.form.passwordConfirm.noValid',
             defaultMessage: 'Inconsistent password input twice',
           })
@@ -70,7 +71,7 @@ class FabricCa extends React.PureComponent {
         <Form.Item
           labelCol={{ span: 5 }}
           wrapperCol={{ span: 15 }}
-          label={formatMessage({
+          label={intl.formatMessage({
             id: 'fabric.ca.form.adminName.label',
             defaultMessage: 'Admin Username',
           })}
@@ -79,7 +80,7 @@ class FabricCa extends React.PureComponent {
             rules: [
               {
                 required: true,
-                message: formatMessage({
+                message: intl.formatMessage({
                   id: 'fabric.ca.form.adminName.required',
                   defaultMessage: 'Please input Admin Username',
                 }),
@@ -87,7 +88,7 @@ class FabricCa extends React.PureComponent {
             ],
           })(
             <Input
-              placeholder={formatMessage({
+              placeholder={intl.formatMessage({
                 id: 'fabric.ca.form.adminName.placeholder',
                 defaultMessage: 'Input Admin Username',
               })}
@@ -97,7 +98,7 @@ class FabricCa extends React.PureComponent {
         <Form.Item
           labelCol={{ span: 5 }}
           wrapperCol={{ span: 15 }}
-          label={formatMessage({
+          label={intl.formatMessage({
             id: 'fabric.ca.form.adminPassword.label',
             defaultMessage: 'Admin Password',
           })}
@@ -106,7 +107,7 @@ class FabricCa extends React.PureComponent {
             rules: [
               {
                 required: true,
-                message: formatMessage({
+                message: intl.formatMessage({
                   id: 'fabric.ca.form.adminPassword.required',
                   defaultMessage: 'Please Input Admin Password',
                 }),
@@ -114,7 +115,7 @@ class FabricCa extends React.PureComponent {
             ],
           })(
             <Input.Password
-              placeholder={formatMessage({
+              placeholder={intl.formatMessage({
                 id: 'fabric.ca.form.adminPassword.placeholder',
                 defaultMessage: 'Input Admin Password',
               })}
@@ -124,7 +125,7 @@ class FabricCa extends React.PureComponent {
         <Form.Item
           labelCol={{ span: 5 }}
           wrapperCol={{ span: 15 }}
-          label={formatMessage({
+          label={intl.formatMessage({
             id: 'app.operator.user.form.passwordConfirm.label',
             defaultMessage: 'Password Confirm',
           })}
@@ -133,7 +134,7 @@ class FabricCa extends React.PureComponent {
             rules: [
               {
                 required: true,
-                message: formatMessage({
+                message: intl.formatMessage({
                   id: 'fabric.ca.form.adminPassword.required',
                   defaultMessage: 'Please Input Admin Password',
                 }),
@@ -144,7 +145,7 @@ class FabricCa extends React.PureComponent {
             ],
           })(
             <Input.Password
-              placeholder={formatMessage({
+              placeholder={intl.formatMessage({
                 id: 'fabric.ca.form.adminPassword.placeholder',
                 defaultMessage: 'Input Admin Password',
               })}
@@ -154,7 +155,7 @@ class FabricCa extends React.PureComponent {
         <Form.Item
           labelCol={{ span: 5 }}
           wrapperCol={{ span: 15 }}
-          label={formatMessage({
+          label={intl.formatMessage({
             id: 'fabric.ca.form.caType.label',
             defaultMessage: 'CA Type',
           })}
@@ -164,7 +165,7 @@ class FabricCa extends React.PureComponent {
             rules: [
               {
                 required: true,
-                message: formatMessage({
+                message: intl.formatMessage({
                   id: 'fabric.ca.form.caType.required',
                   defaultMessage: 'Please Select CA Type',
                 }),
@@ -172,7 +173,7 @@ class FabricCa extends React.PureComponent {
             ],
           })(
             <Select
-              placeholder={formatMessage({
+              placeholder={intl.formatMessage({
                 id: 'fabric.ca.form.caType.placeholder',
                 defaultMessage: 'Select CA Type',
               })}
@@ -198,7 +199,7 @@ class FabricCa extends React.PureComponent {
             onClick={this.validateForm}
             loading={creating}
           >
-            <FormattedMessage id="form.button.submit" defaultMessage="Submit" />
+            {intl.formatMessage({ id: 'form.button.submit', defaultMessage: 'Submit' })}
           </Button>
         </Form.Item>
       </Form>

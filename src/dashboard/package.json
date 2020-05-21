@@ -56,7 +56,6 @@
     "bizcharts": "3.5.2-beta.1",
     "bizcharts-plugin-slider": "^2.1.1-beta.1",
     "classnames": "^2.2.6",
-    "dva": "^2.4.1",
     "enquire-js": "^0.2.1",
     "express": "^4.16.4",
     "gg-editor": "^2.0.2",
@@ -72,18 +71,17 @@
     "prop-types": "^15.6.2",
     "qs": "^6.6.0",
     "rc-animate": "^2.6.0",
-    "react": "^16.7.0",
+    "react": "^16.8.0",
     "react-container-query": "^0.11.0",
     "react-copy-to-clipboard": "^5.0.1",
     "react-document-title": "^2.0.3",
-    "react-dom": "^16.7.0",
+    "react-dom": "^16.8.0",
     "react-fittext": "^1.0.0",
     "react-media": "^1.9.2",
     "resize-observer-polyfill": "^1.5.1",
-    "umi": "^2.13.13",
-    "umi-plugin-react": "^1.15.8",
-    "umi-request": "^1.2.19",
     "cello-paginator": "^1.0.1",
+    "umi-request": "^1.2.19",
+    "@ant-design/pro-layout": "^5.0.0",
     "validator": "^11.0.0"
   },
   "devDependencies": {
@@ -113,7 +111,6 @@
     "jsdom-global": "^3.0.2",
     "less": "^3.9.0",
     "lint-staged": "^8.1.1",
-    "merge-umi-mock-data": "^1.0.4",
     "mockjs": "^1.0.1-beta3",
     "prettier": "^1.17.0",
     "serverless-http": "^2.0.1",
@@ -128,11 +125,9 @@
     "tslint": "^5.12.1",
     "tslint-config-prettier": "^1.17.0",
     "tslint-react": "^3.6.0",
-    "umi-plugin-ga": "^1.1.6",
-    "faker": "^4.1.0"
-  },
-  "optionalDependencies": {
-    "puppeteer": "^1.12.1"
+    "faker": "^4.1.0",
+    "umi": "^3.1.4",
+    "@umijs/preset-react": "^1.2.2"
   },
   "engines": {
     "node": ">=10.0.0"

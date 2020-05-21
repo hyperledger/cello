@@ -1,6 +1,6 @@
 import React, { PureComponent, Fragment } from 'react';
 import { Table, Alert } from 'antd';
-import { FormattedMessage, formatMessage } from 'umi-plugin-react/locale';
+import { injectIntl } from 'umi';
 import styles from './index.less';
 
 function initTotalList(columns) {
@@ -64,14 +64,14 @@ class StandardTable extends PureComponent {
 
   render() {
     const { selectedRowKeys, needTotalList } = this.state;
-    const { data = {}, rowKey, ...rest } = this.props;
+    const { data = {}, rowKey, intl, ...rest } = this.props;
     const { list = [], pagination } = data;
 
     const paginationProps = {
       showSizeChanger: true,
       showQuickJumper: true,
       showTotal: (total, range) =>
-        formatMessage(
+        intl.formatMessage(
           {
             id: 'component.standardTable.showTotal',
             defaultMessage: '{start}-{end} of {total} items',
@@ -99,17 +99,24 @@ class StandardTable extends PureComponent {
           <Alert
             message={
               <Fragment>
-                <FormattedMessage id="component.standardTable.selected" defaultMessage="Selected" />{' '}
+                {intl.formatMessage({
+                  id: 'component.standardTable.selected',
+                  defaultMessage: 'Selected'
+                })}
                 <a style={{ fontWeight: 600 }}>{selectedRowKeys.length}</a>{' '}
-                <FormattedMessage id="component.standardTable.item" defaultMessage="Item" />
+                {intl.formatMessage({
+                  id: 'component.standardTable.item',
+                  defaultMessage: 'Item'
+                })}
                 &nbsp;&nbsp;
                 {needTotalList.map(item => (
                   <span style={{ marginLeft: 8 }} key={item.dataIndex}>
                     {item.title}
-                    <FormattedMessage
-                      id="component.standardTable.total"
-                      defaultMessage="Total"
-                    />{' '}
+                    {intl.formatMessage({
+                      id: 'component.standardTable.total',
+                      defaultMessage: 'Total'
+                    })}
+                    {' '}
                     &nbsp;
                     <span style={{ fontWeight: 600 }}>
                       {item.render ? item.render(item.total) : item.total}
@@ -117,7 +124,10 @@ class StandardTable extends PureComponent {
                   </span>
                 ))}
                 <a onClick={this.cleanSelectedKeys} style={{ marginLeft: 24 }}>
-                  <FormattedMessage id="component.standardTable.clean" defaultMessage="Clean" />
+                  {intl.formatMessage({
+                    id: 'component.standardTable.clean',
+                    defaultMessage: 'Clean'
+                  })}
                 </a>
               </Fragment>
             }
@@ -138,4 +148,4 @@ class StandardTable extends PureComponent {
   }
 }
 
-export default StandardTable;
+export default injectIntl(StandardTable);

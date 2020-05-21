@@ -11,11 +11,8 @@ import {
   Upload,
   message,
 } from 'antd';
-import { FormattedMessage, formatMessage } from 'umi-plugin-react/locale';
 import isIP from 'validator/lib/isIP';
-import router from 'umi/router';
-import withRouter from 'umi/withRouter';
-import { connect } from 'dva';
+import { connect, withRouter, useIntl, history } from 'umi';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import { getAuthority } from '@/utils/authority';
 
@@ -55,17 +52,15 @@ class CreateAgent extends PureComponent {
   }
 
   clickCancel = () => {
-    router.push('/operator/agent');
+    history.push('/operator/agent');
   };
 
   validateIp = (rule, value, callback) => {
+    const intl = useIntl();
     if (value !== '') {
       if (!isIP(value)) {
         callback(
-          <FormattedMessage
-            id="app.operator.newAgent.error.ip"
-            defaultMessage="Please enter a valid IP address.For example:192.168.0.10."
-          />
+          intl.formatMessage({ id: 'app.operator.newAgent.error.ip', defaultMessage: 'Please enter a valid IP address.For example:192.168.0.10.' })
         );
       } else {
         callback();
@@ -76,8 +71,9 @@ class CreateAgent extends PureComponent {
   };
 
   validateCreateResponse = data => {
+    const intl = useIntl();
     message.success(
-      formatMessage(
+      intl.formatMessage(
         {
           id: 'app.operator.newAgent.success',
           defaultMessage: 'Create agent {name} success',
@@ -87,7 +83,7 @@ class CreateAgent extends PureComponent {
         }
       )
     );
-    router.push('/operator/agent');
+    history.push('/operator/agent');
   };
 
   validateUpdateResponse = () => {
@@ -97,7 +93,7 @@ class CreateAgent extends PureComponent {
         defaultMessage: 'Update agent success',
       })
     );
-    router.push('/operator/agent');
+    history.push('/operator/agent');
   };
 
   submitCallback = data => {
@@ -182,6 +178,7 @@ class CreateAgent extends PureComponent {
     const { query = {} } = location;
     const action = query.action || 'create';
     const userRole = getAuthority()[0];
+    const intl = useIntl();
     const {
       form: { getFieldDecorator, getFieldValue },
       agent: { agent },
@@ -235,9 +232,9 @@ class CreateAgent extends PureComponent {
       <PageHeaderWrapper
         title={
           action === 'create' ? (
-            <FormattedMessage id="app.operator.newAgent.title" defaultMessage="Create Agent" />
+            intl.formatMessage({ id: 'app.operator.newAgent.title', defaultMessage: 'Create Agent' })
           ) : (
-            <FormattedMessage id="app.operator.editAgent.title" defaultMessage="Edit Agent" />
+            intl.formatMessage({ id: 'app.operator.editAgent.title', defaultMessage: 'Edit Agent' })
           )
         }
       >
@@ -246,7 +243,7 @@ class CreateAgent extends PureComponent {
             <FormItem
               {...formItemLayout}
               label={
-                <FormattedMessage id="app.operator.newAgent.label.name" defaultMessage="Name" />
+                intl.formatMessage({ id: 'app.operator.newAgent.label.name', defaultMessage: 'Name' })
               }
             >
               {getFieldDecorator('name', {
@@ -255,16 +252,13 @@ class CreateAgent extends PureComponent {
                   {
                     required: false,
                     message: (
-                      <FormattedMessage
-                        id="app.operator.newAgent.required.Name"
-                        defaultMessage="Please input name."
-                      />
+                      intl.formatMessage({ id: 'app.operator.newAgent.required.Name', defaultMessage: 'Please input name.' })
                     ),
                   },
                 ],
               })(
                 <Input
-                  placeholder={formatMessage({
+                  placeholder={intl.formatMessage({
                     id: 'app.operator.newAgent.label.name',
                     defaultMessage: 'Name',
                   })}
@@ -274,10 +268,7 @@ class CreateAgent extends PureComponent {
             <FormItem
               {...formItemLayout}
               label={
-                <FormattedMessage
-                  id="app.operator.newAgent.label.ip"
-                  defaultMessage="Agent IP Address"
-                />
+                intl.formatMessage({ id: 'app.operator.newAgent.label.ip', defaultMessage: 'Agent IP Address' })
               }
             >
               {getFieldDecorator('ip', {
@@ -286,10 +277,7 @@ class CreateAgent extends PureComponent {
                   {
                     required: true,
                     message: (
-                      <FormattedMessage
-                        id="app.operator.newAgent.required.ip"
-                        defaultMessage="Please input the ip address of the agent."
-                      />
+                      intl.formatMessage({ id: 'app.operator.newAgent.required.ip', defaultMessage: 'Please input the ip address of the agent.' })
                     ),
                   },
                   {
@@ -307,10 +295,7 @@ class CreateAgent extends PureComponent {
             <FormItem
               {...formItemLayout}
               label={
-                <FormattedMessage
-                  id="app.operator.newAgent.label.image"
-                  defaultMessage="Image name of deploy agent"
-                />
+                intl.formatMessage({ id: 'app.operator.newAgent.label.image', defaultMessage: 'Image name of deploy agent' })
               }
             >
               {getFieldDecorator('image', {
@@ -319,16 +304,13 @@ class CreateAgent extends PureComponent {
                   {
                     required: true,
                     message: (
-                      <FormattedMessage
-                        id="app.operator.newAgent.required.image"
-                        defaultMessage="Please input the name of the agent's image."
-                      />
+                      intl.formatMessage({ id: 'app.operator.newAgent.required.image', defaultMessage: 'Please input the name of the agent\'s image.' })
                     ),
                   },
                 ],
               })(
                 <Input
-                  placeholder={formatMessage({
+                  placeholder={intl.formatMessage({
                     id: 'app.operator.newAgent.label.image',
                     defaultMessage: 'Image name of deploy agent',
                   })}
@@ -340,10 +322,7 @@ class CreateAgent extends PureComponent {
             <FormItem
               {...formItemLayout}
               label={
-                <FormattedMessage
-                  id="app.operator.newAgent.label.agentCapacity"
-                  defaultMessage="Capacity of agent"
-                />
+                intl.formatMessage({ id: 'app.operator.newAgent.label.agentCapacity', defaultMessage: 'Capacity of agent' })
               }
             >
               {getFieldDecorator('capacity', {
@@ -352,16 +331,13 @@ class CreateAgent extends PureComponent {
                   {
                     required: true,
                     message: (
-                      <FormattedMessage
-                        id="app.operator.newAgent.required.agentCapacity"
-                        defaultMessage="Please input the capacity of the agent."
-                      />
+                      intl.formatMessage({ id: 'app.operator.newAgent.required.agentCapacity', defaultMessage: 'Please input the capacity of the agent.' })
                     ),
                   },
                 ],
               })(
                 <InputNumber
-                  placeholder={formatMessage({
+                  placeholder={intl.formatMessage({
                     id: 'app.operator.newAgent.label.agentCapacity',
                     defaultMessage: 'Capacity of agent',
                   })}
@@ -373,10 +349,7 @@ class CreateAgent extends PureComponent {
             <FormItem
               {...formItemLayout}
               label={
-                <FormattedMessage
-                  id="app.operator.newAgent.label.nodeCapacity"
-                  defaultMessage="Capacity of nodes"
-                />
+                intl.formatMessage({ id: 'app.operator.newAgent.label.nodeCapacity', defaultMessage: 'Capacity of nodes' })
               }
             >
               {getFieldDecorator('node_capacity', {
@@ -385,17 +358,14 @@ class CreateAgent extends PureComponent {
                   {
                     required: true,
                     message: (
-                      <FormattedMessage
-                        id="app.operator.newAgent.required.nodeCapacity"
-                        defaultMessage="Please input the capacity of nodes."
-                      />
+                      intl.formatMessage({ id: 'app.operator.newAgent.required.nodeCapacity', defaultMessage: 'Please input the capacity of nodes.' })
                     ),
                   },
                 ],
               })(
                 <InputNumber
                   disabled={action !== 'create'}
-                  placeholder={formatMessage({
+                  placeholder={intl.formatMessage({
                     id: 'app.operator.newAgent.label.nodeCapacity',
                     defaultMessage: 'Capacity of nodes',
                   })}
@@ -408,7 +378,7 @@ class CreateAgent extends PureComponent {
             <FormItem
               {...formItemLayout}
               label={
-                <FormattedMessage id="app.operator.newAgent.label.type" defaultMessage="Type" />
+                intl.formatMessage({ id: 'app.operator.newAgent.label.type', defaultMessage: 'Type' })
               }
             >
               {getFieldDecorator('type', {
@@ -417,10 +387,7 @@ class CreateAgent extends PureComponent {
                   {
                     required: true,
                     message: (
-                      <FormattedMessage
-                        id="app.operator.newAgent.required.type"
-                        defaultMessage="Please select a type."
-                      />
+                      intl.formatMessage({ id: 'app.operator.newAgent.required.type', defaultMessage: 'Please select a type.' })
                     ),
                   },
                 ],
@@ -436,10 +403,7 @@ class CreateAgent extends PureComponent {
             <FormItem
               {...formItemLayout}
               label={
-                <FormattedMessage
-                  id="app.operator.newAgent.label.configFile"
-                  defaultMessage="Config file"
-                />
+                intl.formatMessage({ id: 'app.operator.newAgent.label.configFile', defaultMessage: 'Config file' })
               }
             >
               {getFieldDecorator('config_file', {
@@ -453,10 +417,7 @@ class CreateAgent extends PureComponent {
                     <Button disabled={getFieldValue('config_file')}>
                       <Icon type="upload" />
                       {
-                        <FormattedMessage
-                          id="app.operator.newAgent.label.configFileSelect"
-                          defaultMessage="Please select the config file."
-                        />
+                        intl.formatMessage({ id: 'app.operator.newAgent.label.configFileSelect', defaultMessage: 'Please select the config file.' })
                       }
                     </Button>
                   </Upload>
@@ -466,10 +427,7 @@ class CreateAgent extends PureComponent {
             <FormItem
               {...formItemLayout}
               label={
-                <FormattedMessage
-                  id="app.operator.newAgent.label.logLevel"
-                  defaultMessage="Log level"
-                />
+                intl.formatMessage({ id: 'app.operator.newAgent.label.logLevel', defaultMessage: 'Log level' })
               }
             >
               {getFieldDecorator('log_level', {
@@ -478,10 +436,7 @@ class CreateAgent extends PureComponent {
                   {
                     required: false,
                     message: (
-                      <FormattedMessage
-                        id="app.operator.newAgent.required.LogLevel"
-                        defaultMessage="Please select a log level."
-                      />
+                      intl.formatMessage({ id: 'app.operator.newAgent.required.LogLevel', defaultMessage: 'Please select a log level.' })
                     ),
                   },
                 ],
@@ -490,10 +445,7 @@ class CreateAgent extends PureComponent {
             <FormItem
               {...formItemLayout}
               label={
-                <FormattedMessage
-                  id="app.operator.newAgent.label.schedulable"
-                  defaultMessage="Schedulable"
-                />
+                intl.formatMessage({ id: 'app.operator.newAgent.label.schedulable', defaultMessage: 'Schedulable' })
               }
             >
               {getFieldDecorator('schedulable', {
@@ -507,7 +459,7 @@ class CreateAgent extends PureComponent {
             </FormItem>
             <FormItem {...submitFormLayout} style={{ marginTop: 32 }}>
               <Button onClick={this.clickCancel}>
-                <FormattedMessage id="form.button.cancel" defaultMessage="Cancel" />
+                {intl.formatMessage({ id: 'form.button.cancel', defaultMessage: 'Cancel' })}
               </Button>
               <Button
                 loading={action === 'create' ? submitting : updating}
@@ -515,7 +467,7 @@ class CreateAgent extends PureComponent {
                 htmlType="submit"
                 style={{ marginLeft: 8 }}
               >
-                <FormattedMessage id="form.button.submit" defaultMessage="Submit" />
+                {intl.formatMessage({ id: 'form.button.submit', defaultMessage: 'Submit' })}
               </Button>
             </FormItem>
           </Form>

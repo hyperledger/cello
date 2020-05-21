@@ -2,8 +2,7 @@ import React, { Fragment, Suspense } from 'react';
 import { connect } from 'dva';
 import querystring from 'querystring';
 import { Form, Button, message } from 'antd';
-import { FormattedMessage } from 'umi-plugin-react/locale';
-import router from 'umi/router';
+import { injectIntl, history } from 'umi';
 
 const FabricCa = React.lazy(() => import('./Fabric/ca'));
 const FabricPeer = React.lazy(() => import('./Fabric/peer'));
@@ -16,12 +15,12 @@ const FabricOrderer = React.lazy(() => import('./Fabric/orderer'));
 @Form.create()
 class NodeInfo extends React.PureComponent {
   prevBtn = () => {
-    const { location } = this.props;
+    const { location, intl } = this.props;
     const { query = {} } = location;
     const urlParams = querystring.stringify(query);
     return (
-      <Button onClick={() => router.push(`/operator/node/new/basic-info?${urlParams}`)}>
-        <FormattedMessage id="form.button.prev" defaultMessage="Prev" />
+      <Button onClick={() => history.push(`/operator/node/new/basic-info?${urlParams}`)}>
+        {intl.formatMessage({ id: 'form.button.prev', defaultMessage: 'Prev' })}
       </Button>
     );
   };
@@ -29,7 +28,7 @@ class NodeInfo extends React.PureComponent {
   createCallback = data => {
     if (data.id) {
       message.success('Create Node successfully');
-      router.push('/operator/node');
+      history.push('/operator/node');
     } else {
       message.error('Create Node Failed');
     }
@@ -94,4 +93,4 @@ class NodeInfo extends React.PureComponent {
   }
 }
 
-export default NodeInfo;
+export default injectIntl(NodeInfo);

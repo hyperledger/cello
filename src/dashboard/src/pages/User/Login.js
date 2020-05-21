@@ -2,8 +2,7 @@
  SPDX-License-Identifier: Apache-2.0
 */
 import React, { Component } from 'react';
-import { connect } from 'dva';
-import { formatMessage, FormattedMessage } from 'umi-plugin-react/locale';
+import { connect, injectIntl } from 'umi';
 import { Checkbox, Alert } from 'antd';
 import Login from '@/components/Login';
 import styles from './Login.less';
@@ -51,7 +50,7 @@ class LoginPage extends Component {
   );
 
   render() {
-    const { login, submitting } = this.props;
+    const { login, submitting, intl } = this.props;
     const { type, autoLogin } = this.state;
     return (
       <div className={styles.main}>
@@ -65,24 +64,24 @@ class LoginPage extends Component {
           {login.status === 'error' &&
             login.type === 'account' &&
             !submitting &&
-            this.renderMessage(formatMessage({ id: 'app.login.message-invalid-credentials' }))}
+            this.renderMessage(intl.formatMessage({ id: 'app.login.message-invalid-credentials' }))}
           <UserName
             name="username"
-            placeholder={`${formatMessage({ id: 'app.login.userName' })}: admin or user`}
+            placeholder={`${intl.formatMessage({ id: 'app.login.userName' })}: admin or user`}
             rules={[
               {
                 required: true,
-                message: formatMessage({ id: 'validation.userName.required' }),
+                message: intl.formatMessage({ id: 'validation.userName.required' }),
               },
             ]}
           />
           <Password
             name="password"
-            placeholder={`${formatMessage({ id: 'app.login.password' })}: passw0rd`}
+            placeholder={`${intl.formatMessage({ id: 'app.login.password' })}: passw0rd`}
             rules={[
               {
                 required: true,
-                message: formatMessage({ id: 'validation.password.required' }),
+                message: intl.formatMessage({ id: 'validation.password.required' }),
               },
             ]}
             onPressEnter={e => {
@@ -92,11 +91,15 @@ class LoginPage extends Component {
           />
           <div>
             <Checkbox checked={autoLogin} onChange={this.changeAutoLogin}>
-              <FormattedMessage id="app.login.remember-me" />
+              {intl.formatMessage({
+                id: 'app.login.remember-me'
+              })}
             </Checkbox>
           </div>
           <Submit loading={submitting}>
-            <FormattedMessage id="app.login.login" />
+            {intl.formatMessage({
+              id: 'app.login.login'
+            })}
           </Submit>
         </Login>
       </div>
@@ -104,4 +107,4 @@ class LoginPage extends Component {
   }
 }
 
-export default LoginPage;
+export default injectIntl(LoginPage);

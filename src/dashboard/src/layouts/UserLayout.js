@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'dva';
-import Link from 'umi/link';
+import { Link } from 'umi';
 import GlobalFooter from '@/components/GlobalFooter';
 import DocumentTitle from 'react-document-title';
 import SelectLang from '@/components/SelectLang';

@@ -2,9 +2,7 @@
  SPDX-License-Identifier: Apache-2.0
 */
 import React, { PureComponent, Fragment } from 'react';
-import { connect } from 'dva';
-import router from 'umi/router';
-import { FormattedMessage, formatMessage } from 'umi-plugin-react/locale';
+import { connect, history, useIntl, injectIntl } from 'umi';
 import {
   Card,
   Button,
@@ -68,15 +66,13 @@ const RegisterUserForm = Form.create()(props => {
       md: { span: 10 },
     },
   };
+  const intl = useIntl();
 
   return (
     <Modal
       destroyOnClose
       title={
-        <FormattedMessage
-          id="app.operator.node.table.operation.registerUser"
-          defaultMessage="Register User"
-        />
+        intl.formatMessage({ id: 'app.operator.node.table.operation.registerUser', defaultMessage: 'Register User' })
       }
       visible={registerUserFormVisible}
       confirmLoading={registeringUser}
@@ -86,7 +82,7 @@ const RegisterUserForm = Form.create()(props => {
     >
       <FormItem
         {...formItemLayout}
-        label={formatMessage({
+        label={intl.formatMessage({
           id: 'app.operator.node.modal.label.name',
           defaultMessage: 'User name',
         })}
@@ -97,16 +93,13 @@ const RegisterUserForm = Form.create()(props => {
             {
               required: true,
               message: (
-                <FormattedMessage
-                  id="app.operator.node.modal.required.name"
-                  defaultMessage="Please input user name."
-                />
+                intl.formatMessage({ id: 'app.operator.node.modal.required.name', defaultMessage: 'Please input user name.' })
               ),
             },
           ],
         })(
           <Input
-            placeholder={formatMessage({
+            placeholder={intl.formatMessage({
               id: 'app.operator.node.modal.label.name',
               defaultMessage: 'User name',
             })}
@@ -115,7 +108,7 @@ const RegisterUserForm = Form.create()(props => {
       </FormItem>
       <FormItem
         {...formItemLayout}
-        label={formatMessage({
+        label={intl.formatMessage({
           id: 'app.operator.node.modal.label.secret',
           defaultMessage: 'Password',
         })}
@@ -126,16 +119,13 @@ const RegisterUserForm = Form.create()(props => {
             {
               required: true,
               message: (
-                <FormattedMessage
-                  id="app.operator.node.modal.required.secret"
-                  defaultMessage="Please input password."
-                />
+                intl.formatMessage({ id: 'app.operator.node.modal.required.secret', defaultMessage: 'Please input password.' })
               ),
             },
           ],
         })(
           <Input
-            placeholder={formatMessage({
+            placeholder={intl.formatMessage({
               id: 'app.operator.node.modal.label.secret',
               defaultMessage: 'Password',
             })}
@@ -144,7 +134,7 @@ const RegisterUserForm = Form.create()(props => {
       </FormItem>
       <FormItem
         {...formItemLayout}
-        label={formatMessage({
+        label={intl.formatMessage({
           id: 'app.operator.node.modal.label.type',
           defaultMessage: 'Type',
         })}
@@ -155,10 +145,7 @@ const RegisterUserForm = Form.create()(props => {
             {
               required: true,
               message: (
-                <FormattedMessage
-                  id="app.operator.node.modal.required.type"
-                  defaultMessage="Please select a type."
-                />
+                intl.formatMessage({ id: 'app.operator.node.modal.required.type', defaultMessage: 'Please select a type.' })
               ),
             },
           ],
@@ -166,7 +153,7 @@ const RegisterUserForm = Form.create()(props => {
       </FormItem>
       <FormItem
         {...formItemLayout}
-        label={formatMessage({
+        label={intl.formatMessage({
           id: 'app.operator.node.modal.label.attributes',
           defaultMessage: 'Attributes',
         })}
@@ -175,7 +162,7 @@ const RegisterUserForm = Form.create()(props => {
           initialValue: '',
         })(
           <Input
-            placeholder={formatMessage({
+            placeholder={intl.formatMessage({
               id: 'app.operator.node.modal.label.attributes',
               defaultMessage: 'Attributes',
             })}
@@ -251,8 +238,9 @@ class Node extends PureComponent {
   };
 
   registerUserCallback = () => {
+    const { intl } = this.props;
     message.success(
-      formatMessage({
+      intl.formatMessage({
         id: 'app.operator.node.modal.success',
         defaultMessage: 'Registered User Successful.',
       })
@@ -284,8 +272,9 @@ class Node extends PureComponent {
   };
 
   deleteCallBack = () => {
+    const { intl } = this.props;
     message.success(
-      formatMessage({
+      intl.formatMessage({
         id: 'app.operator.node.delete.success',
         defaultMessage: 'Delete Node Successful.',
       })
@@ -294,16 +283,16 @@ class Node extends PureComponent {
   };
 
   handleDeleteNode = row => {
-    const { dispatch } = this.props;
+    const { dispatch, intl } = this.props;
     const { deleteCallBack } = this;
     const { id } = row;
 
     Modal.confirm({
-      title: formatMessage({
+      title: intl.formatMessage({
         id: 'app.operator.node.delete.title',
         defaultMessage: 'Delete Node',
       }),
-      content: formatMessage(
+      content: intl.formatMessage(
         {
           id: 'app.operator.node.delete.confirm',
           defaultMessage: 'Confirm to delete the node {name}?',
@@ -312,8 +301,8 @@ class Node extends PureComponent {
           name: row.name,
         }
       ),
-      okText: formatMessage({ id: 'form.button.confirm', defaultMessage: 'Confirm' }),
-      cancelText: formatMessage({ id: 'form.button.cancel', defaultMessage: 'Cancel' }),
+      okText: intl.formatMessage({ id: 'form.button.confirm', defaultMessage: 'Confirm' }),
+      cancelText: intl.formatMessage({ id: 'form.button.cancel', defaultMessage: 'Cancel' }),
       onOk() {
         dispatch({
           type: 'node/deleteNode',
@@ -325,8 +314,9 @@ class Node extends PureComponent {
   };
 
   operationForNodeCallback = data => {
+    const { intl } = this.props;
     message.success(
-      formatMessage({
+      intl.formatMessage({
         id: `app.operator.node.operation.${data.payload.message}.success`,
         defaultMessage: `${data.payload.message.substring(0, 1).toUpperCase() +
           data.payload.message.substring(1)} Node Successful.`,
@@ -357,6 +347,7 @@ class Node extends PureComponent {
       node: { nodes, pagination },
       loadingNodes,
       registeringUser,
+      intl,
     } = this.props;
 
     const formProps = {
@@ -397,29 +388,23 @@ class Node extends PureComponent {
         {record.type === 'ca' && (
           <Menu.Item>
             <a onClick={() => this.handleRegisterUser(record)}>
-              <FormattedMessage
-                id="app.operator.node.table.operation.registerUser"
-                defaultMessage="Register User"
-              />
+              {intl.formatMessage({ id: 'app.operator.node.table.operation.registerUser', defaultMessage: 'Register User' })}
             </a>
           </Menu.Item>
         )}
         <Menu.Item>
           <a onClick={() => this.operationForNode('start', record)}>
-            <FormattedMessage id="app.operator.node.table.operation.start" defaultMessage="Start" />
+            {intl.formatMessage({ id: 'app.operator.node.table.operation.start', defaultMessage: 'Start' })}
           </a>
         </Menu.Item>
         <Menu.Item>
           <a onClick={() => this.operationForNode('stop', record)}>
-            <FormattedMessage id="app.operator.node.table.operation.stop" defaultMessage="Stop" />
+            {intl.formatMessage({ id: 'app.operator.node.table.operation.stop', defaultMessage: 'Stop' })}
           </a>
         </Menu.Item>
         <Menu.Item>
           <a onClick={() => this.operationForNode('restart', record)}>
-            <FormattedMessage
-              id="app.operator.node.table.operation.restart"
-              defaultMessage="Restart"
-            />
+            {intl.formatMessage({ id: 'app.operator.node.table.operation.restart', defaultMessage: 'Restart' })}
           </a>
         </Menu.Item>
       </Menu>
@@ -428,7 +413,7 @@ class Node extends PureComponent {
     const MoreBtn = record => (
       <Dropdown overlay={menu(record)}>
         <a>
-          <FormattedMessage id="app.operator.node.table.operation.more" defaultMessage="More" />{' '}
+          {intl.formatMessage({ id: 'app.operator.node.table.operation.more', defaultMessage: 'More' })}{' '}
           <Icon type="down" />
         </a>
       </Dropdown>
@@ -436,31 +421,28 @@ class Node extends PureComponent {
 
     const columns = [
       {
-        title: <FormattedMessage id="app.operator.node.table.header.name" defaultMessage="Name" />,
+        title: intl.formatMessage({ id: 'app.operator.node.table.header.name', defaultMessage: 'Name' }),
         dataIndex: 'name',
       },
       {
-        title: <FormattedMessage id="app.operator.node.table.header.type" defaultMessage="Type" />,
+        title: intl.formatMessage({ id: 'app.operator.node.table.header.type', defaultMessage: 'Type' }),
         dataIndex: 'type',
       },
       {
         title: (
-          <FormattedMessage
-            id="app.operator.node.table.header.creationTime"
-            defaultMessage="Creation Time"
-          />
+          intl.formatMessage({ id: 'app.operator.node.table.header.creationTime', defaultMessage: 'Creation Time' })
         ),
         dataIndex: 'created_at',
         render: text => <span>{moment(text).format('YYYY-MM-DD HH:mm:ss')}</span>,
       },
       {
         title: (
-          <FormattedMessage id="app.operator.node.table.header.status" defaultMessage="Status" />
+          intl.formatMessage({ id: 'app.operator.node.table.header.status', defaultMessage: 'Status' })
         ),
         render: text => (
           <Badge
             status={badgeStatus(text)}
-            text={formatMessage({
+            text={intl.formatMessage({
               id: `app.operator.node.status.${text}`,
             })}
           />
@@ -468,11 +450,11 @@ class Node extends PureComponent {
         dataIndex: 'status',
       },
       {
-        title: <FormattedMessage id="form.table.header.operation" defaultMessage="Operation" />,
+        title: intl.formatMessage({ id: 'form.table.header.operation', defaultMessage: 'Operation' }),
         render: (text, record) => (
           <Fragment>
             <a className={styles.danger} onClick={() => this.handleDeleteNode(record)}>
-              <FormattedMessage id="form.menu.item.delete" defaultMessage="Delete" />
+              {intl.formatMessage({ id: 'form.menu.item.delete', defaultMessage: 'Delete' })}
             </a>
             <Divider type="vertical" />
             <MoreBtn {...record} />
@@ -483,7 +465,9 @@ class Node extends PureComponent {
 
     return (
       <PageHeaderWrapper
-        title={<FormattedMessage id="app.operator.node.title" defaultMessage="Node Management" />}
+        title={
+          intl.formatMessage({ id: 'app.operator.node.title', defaultMessage: 'Node Management' })
+        }
       >
         <Card bordered={false}>
           <div className={styles.tableList}>
@@ -492,9 +476,9 @@ class Node extends PureComponent {
                 <Button
                   icon="plus"
                   type="primary"
-                  onClick={() => router.push('/operator/node/new')}
+                  onClick={() => history.push('/operator/node/new')}
                 >
-                  <FormattedMessage id="form.button.new" defaultMessage="New" />
+                  {intl.formatMessage({ id: 'form.button.new', defaultMessage: 'New' })}
                 </Button>
               )}
             </div>
@@ -518,4 +502,4 @@ class Node extends PureComponent {
   }
 }
 
-export default Node;
+export default injectIntl(Node);

@@ -1,7 +1,6 @@
 import React from 'react';
 import pathToRegexp from 'path-to-regexp';
-import Link from 'umi/link';
-import { formatMessage } from 'umi-plugin-react/locale';
+import { Link, formatMessage } from 'umi';
 import { urlToList } from '../_utils/pathTools';
 import { menu } from '../../defaultSettings';
 
