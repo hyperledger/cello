@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
 import { injectIntl, setLocale, getLocale } from 'umi';
-import { Menu, Icon } from 'antd';
+import { Menu } from 'antd';
+import { GlobalOutlined } from '@ant-design/icons';
 import classNames from 'classnames';
 import HeaderDropdown from '../HeaderDropdown';
 import styles from './index.less';
@@ -37,11 +38,11 @@ class SelectLang extends PureComponent {
     return (
       <HeaderDropdown overlay={langMenu} placement="bottomRight">
         <span className={classNames(styles.dropDown, className)}>
-          <Icon type="global" title={intl.formatMessage({ id: 'navBar.lang' })} />
+          <GlobalOutlined title={intl.formatMessage({ id: 'navBar.lang' })} />
         </span>
       </HeaderDropdown>
     );
   }
 }
 
-export default injectIntl(SelectLang)
+export default injectIntl(SelectLang);

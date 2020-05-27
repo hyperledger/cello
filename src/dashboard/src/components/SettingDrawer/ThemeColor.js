@@ -1,6 +1,7 @@
 import React from 'react';
-import { Tooltip, Icon } from 'antd';
-import { formatMessage } from 'umi';
+import { Tooltip } from 'antd';
+import { CheckOutlined } from '@ant-design/icons';
+import { useIntl } from 'umi';
 import styles from './ThemeColor.less';
 
 const Tag = ({ color, check, ...rest }) => (
@@ -10,7 +11,7 @@ const Tag = ({ color, check, ...rest }) => (
       backgroundColor: color,
     }}
   >
-    {check ? <Icon type="check" /> : ''}
+    {check ? <CheckOutlined /> : ''}
   </div>
 );
 
@@ -52,12 +53,13 @@ const ThemeColor = ({ colors, title, value, onChange }) => {
       },
     ];
   }
+  const intl = useIntl();
   return (
     <div className={styles.themeColor}>
       <h3 className={styles.title}>{title}</h3>
       <div className={styles.content}>
         {colorList.map(({ key, color }) => (
-          <Tooltip key={color} title={formatMessage({ id: `app.setting.themecolor.${key}` })}>
+          <Tooltip key={color} title={intl.formatMessage({ id: `app.setting.themecolor.${key}` })}>
             <Tag
               className={styles.colorBlock}
               color={color}

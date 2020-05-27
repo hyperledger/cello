@@ -1,4 +1,4 @@
-import { Icon } from 'antd';
+import Icon from '@ant-design/icons';
 import { iconfontUrl as scriptUrl } from '../../defaultSettings';
 
 // 使用：

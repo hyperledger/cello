@@ -1,8 +1,7 @@
 import React, { Fragment, Suspense } from 'react';
-import { connect } from 'dva';
 import querystring from 'querystring';
 import { Form, Button, message } from 'antd';
-import { injectIntl, history } from 'umi';
+import { injectIntl, history, connect } from 'umi';
 
 const FabricCa = React.lazy(() => import('./Fabric/ca'));
 const FabricPeer = React.lazy(() => import('./Fabric/peer'));

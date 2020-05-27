@@ -71,18 +71,18 @@ class Login extends Component {
     };
   };
 
-  handleSubmit = e => {
-    e.preventDefault();
-    const { active, type } = this.state;
-    const { form, onSubmit } = this.props;
-    const activeFileds = active[type];
-    form.validateFields(activeFileds, { force: true }, (err, values) => {
-      onSubmit(err, values);
-    });
+  handleSubmit = values => {
+    const { onSubmit } = this.props;
+    onSubmit(null, values);
+  };
+
+  onFinishFailed = errInfo => {
+    const { onSubmit } = this.props;
+    onSubmit(errInfo, null);
   };
 
   render() {
-    const { className, children } = this.props;
+    const { className, children, form } = this.props;
     const { type, tabs } = this.state;
     const TabChildren = [];
     const otherChildren = [];
@@ -100,7 +100,7 @@ class Login extends Component {
     return (
       <LoginContext.Provider value={this.getContext()}>
         <div className={classNames(className, styles.login)}>
-          <Form onSubmit={this.handleSubmit}>
+          <Form form={form} onFinish={this.handleSubmit} onFinishFailed={this.onFinishFailed}>
             {tabs.length ? (
               <React.Fragment>
                 <Tabs
@@ -129,4 +129,4 @@ Object.keys(LoginItem).forEach(item => {
   Login[item] = LoginItem[item];
 });
 
-export default Form.create()(Login);
+export default Login;

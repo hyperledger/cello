@@ -13,22 +13,24 @@ import {
   InputNumber,
   Select,
 } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
-import styles from '../styles.less';
 import { getAuthority } from '@/utils/authority';
+import styles from '../styles.less';
 
 const FormItem = Form.Item;
 const { Option } = Select;
 
-const ApplyAgentForm = Form.create()(props => {
-  const { visible, form, handleSubmit, handleModalVisible, confirmLoading } = props;
+const ApplyAgentForm = props => {
+  const [form] = Form.useForm();
+  const { visible, handleSubmit, handleModalVisible, confirmLoading } = props;
   const intl = useIntl();
   const onSubmit = () => {
-    form.validateFields((err, fieldsValue) => {
-      if (err) return;
-      handleSubmit(fieldsValue);
-    });
+    form.submit();
+  };
+  const onFinish = values => {
+    handleSubmit(values);
   };
   const agentTypeValues = ['docker', 'kubernetes'];
   const agentTypeOptions = agentTypeValues.map(item => (
@@ -52,33 +54,40 @@ const ApplyAgentForm = Form.create()(props => {
   return (
     <Modal
       destroyOnClose
-      title={
-        intl.formatMessage({ id: 'app.operator.applyAgent.title', defaultMessage: 'Apply for agent' })
-      }
+      title={intl.formatMessage({
+        id: 'app.operator.applyAgent.title',
+        defaultMessage: 'Apply for agent',
+      })}
       visible={visible}
       confirmLoading={confirmLoading}
       width="30%"
       onOk={onSubmit}
       onCancel={() => handleModalVisible()}
     >
-      <FormItem
-        {...formItemLayout}
-        label={intl.formatMessage({
-          id: 'app.operator.newAgent.label.agentCapacity',
-          defaultMessage: 'Capacity of agent',
-        })}
+      <Form
+        onFinish={onFinish}
+        form={form}
+        initialValues={{
+          type: agentTypeValues[0],
+        }}
       >
-        {form.getFieldDecorator('capacity', {
-          initialValue: '',
-          rules: [
+        <FormItem
+          {...formItemLayout}
+          label={intl.formatMessage({
+            id: 'app.operator.newAgent.label.agentCapacity',
+            defaultMessage: 'Capacity of agent',
+          })}
+          name="capacity"
+          rules={[
             {
               required: true,
-              message: (
-                intl.formatMessage({ id: 'app.operator.newAgent.required.agentCapacity', defaultMessage: 'Please input the capacity of the agent.' })
-              ),
+              message: intl.formatMessage({
+                id: 'app.operator.newAgent.required.agentCapacity',
+                defaultMessage: 'Please input the capacity of the agent.',
+              }),
             },
-          ],
-        })(
+          ]}
+        >
           <InputNumber
             placeholder={intl.formatMessage({
               id: 'app.operator.newAgent.label.agentCapacity',
@@ -88,30 +97,30 @@ const ApplyAgentForm = Form.create()(props => {
             max={100}
             style={width}
           />
-        )}
-      </FormItem>
-      <FormItem
-        {...formItemLayout}
-        label={intl.formatMessage({
-          id: 'app.operator.newAgent.label.type',
-          defaultMessage: 'Type',
-        })}
-      >
-        {form.getFieldDecorator('type', {
-          initialValue: agentTypeValues[0],
-          rules: [
+        </FormItem>
+        <FormItem
+          {...formItemLayout}
+          label={intl.formatMessage({
+            id: 'app.operator.newAgent.label.type',
+            defaultMessage: 'Type',
+          })}
+          name="type"
+          rules={[
             {
               required: true,
-              message: (
-                intl.formatMessage({ id: 'app.operator.newAgent.required.type', defaultMessage: 'Please select a type.' })
-              ),
+              message: intl.formatMessage({
+                id: 'app.operator.newAgent.required.type',
+                defaultMessage: 'Please select a type.',
+              }),
             },
-          ],
-        })(<Select style={width}>{agentTypeOptions}</Select>)}
-      </FormItem>
+          ]}
+        >
+          <Select style={width}>{agentTypeOptions}</Select>
+        </FormItem>
+      </Form>
     </Modal>
   );
-});
+};
 
 @connect(({ agent, organization, user, loading }) => ({
   agent,
@@ -343,14 +352,15 @@ class Agent extends PureComponent {
       <div>
         <Row gutter={15} className={styles.ListContentRow}>
           <Col span={8}>
-            <p>
-              {intl.formatMessage({ id: 'app.operator.agent.type', defaultMessage: 'Type' })}
-            </p>
+            <p>{intl.formatMessage({ id: 'app.operator.agent.type', defaultMessage: 'Type' })}</p>
             <p>{type}</p>
           </Col>
           <Col span={10}>
             <p>
-              {intl.formatMessage({ id: 'app.operator.agent.table.header.creationTime', defaultMessage: 'Creation Time' })}
+              {intl.formatMessage({
+                id: 'app.operator.agent.table.header.creationTime',
+                defaultMessage: 'Creation Time',
+              })}
             </p>
             <p>{moment(createdAt).format('YYYY-MM-DD HH:mm:ss')}</p>
           </Col>
@@ -370,19 +380,20 @@ class Agent extends PureComponent {
 
     return (
       <PageHeaderWrapper
-        title={
-          intl.formatMessage({ id: 'app.operator.agent.title', defaultMessage: 'Agent Management' })
-        }
+        title={intl.formatMessage({
+          id: 'app.operator.agent.title',
+          defaultMessage: 'Agent Management',
+        })}
       >
         <Card bordered={false}>
           <div className={styles.tableList}>
             <div className={styles.tableListOperator}>
               <Button
                 className={styles.newAgentButton}
-                icon="plus"
                 type="dashed"
                 onClick={() => this.onAddAgent()}
               >
+                <PlusOutlined />{' '}
                 {intl.formatMessage({ id: 'form.button.new', defaultMessage: 'New' })}
               </Button>
             </div>
@@ -396,13 +407,19 @@ class Agent extends PureComponent {
                 <List.Item
                   actions={[
                     <a onClick={() => this.editAgent(item)}>
-                      {intl.formatMessage({ id: 'iform.menu.item.update', defaultMessage: 'Update' })}
+                      {intl.formatMessage({
+                        id: 'iform.menu.item.update',
+                        defaultMessage: 'Update',
+                      })}
                     </a>,
                     <a onClick={() => this.nodeList(item)}>
                       {intl.formatMessage({ id: 'menu.operator.node', defaultMessage: 'Node' })}
                     </a>,
                     <a onClick={() => this.handleDelete(item)}>
-                      {intl.formatMessage({ id: 'form.menu.item.delete', defaultMessage: 'Delete' })}
+                      {intl.formatMessage({
+                        id: 'form.menu.item.delete',
+                        defaultMessage: 'Delete',
+                      })}
                     </a>,
                   ]}
                 >
@@ -412,7 +429,10 @@ class Agent extends PureComponent {
                       <div>
                         <p>{item.ip}</p>
                         <p>
-                          {intl.formatMessage({ id: 'app.operator.agent.listItem.organization', defaultMessage: 'Organization' })}
+                          {intl.formatMessage({
+                            id: 'app.operator.agent.listItem.organization',
+                            defaultMessage: 'Organization',
+                          })}
                           {' : '}
                           {userRole === 'operator'
                             ? filterOrgName(item.organization_id)

@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { Icon } from 'antd';
+import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { Link } from 'umi';
 import Debounce from 'lodash-decorators/debounce';
 import styles from './index.less';
@@ -32,7 +32,7 @@ export default class GlobalHeader extends PureComponent {
           </Link>
         )}
         <span className={styles.trigger} onClick={this.toggle}>
-          <Icon type={collapsed ? 'menu-unfold' : 'menu-fold'} />
+          {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
         </span>
         <RightContent {...this.props} />
       </div>

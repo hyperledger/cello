@@ -1,9 +1,10 @@
 import React from 'react';
-import { Tooltip, Icon } from 'antd';
+import { Tooltip } from 'antd';
+import { CheckOutlined } from '@ant-design/icons';
 import style from './index.less';
 
 const BlockChecbox = ({ value, onChange, list }) => (
-  <div className={style.blockChecbox} key={value}>
+  <div className={style.blockCheckbox} key={value}>
     {list.map(item => (
       <Tooltip title={item.title} key={item.key}>
         <div className={style.item} onClick={() => onChange(item.key)}>
@@ -14,7 +15,7 @@ const BlockChecbox = ({ value, onChange, list }) => (
               display: value === item.key ? 'block' : 'none',
             }}
           >
-            <Icon type="check" />
+            <CheckOutlined />
           </div>
         </div>
       </Tooltip>

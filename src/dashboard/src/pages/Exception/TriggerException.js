@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
 import { Button, Spin, Card } from 'antd';
-import { connect } from 'dva';
+import { connect } from 'umi';
 import styles from './style.less';
 
 @connect(state => ({

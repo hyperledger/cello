@@ -73,10 +73,6 @@ class WrapFormItem extends Component {
   render() {
     const { count } = this.state;
 
-    const {
-      form: { getFieldDecorator },
-    } = this.props;
-
     // 这么写是为了防止restProps中 带入 onChange, defaultValue, rules props
     const {
       onChange,
@@ -98,10 +94,10 @@ class WrapFormItem extends Component {
     if (type === 'Captcha') {
       const inputProps = omit(otherProps, ['onGetCaptcha', 'countDown']);
       return (
-        <FormItem>
+        <FormItem name={name} {...options}>
           <Row gutter={8}>
             <Col span={16}>
-              {getFieldDecorator(name, options)(<Input {...customprops} {...inputProps} />)}
+              <Input {...customprops} {...inputProps} />
             </Col>
             <Col span={8}>
               <Button
@@ -118,8 +114,8 @@ class WrapFormItem extends Component {
       );
     }
     return (
-      <FormItem>
-        {getFieldDecorator(name, options)(<Input {...customprops} {...otherProps} />)}
+      <FormItem name={name} {...options}>
+        <Input {...customprops} {...otherProps} />
       </FormItem>
     );
   }
