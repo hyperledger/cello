@@ -1,11 +1,10 @@
 import React, { Component, Fragment } from 'react';
-import { connect } from 'dva';
-import { Link } from 'umi';
+import { Link, connect } from 'umi';
 import GlobalFooter from '@/components/GlobalFooter';
 import DocumentTitle from 'react-document-title';
 import SelectLang from '@/components/SelectLang';
-import styles from './UserLayout.less';
 import getPageTitle from '@/utils/getPageTitle';
+import styles from './UserLayout.less';
 
 const links = [];
 

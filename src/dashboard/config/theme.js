@@ -16,8 +16,6 @@ module.exports = {
   'border-color-split': '#152935',
   'text-color ': 'fade(#fff, 80%)',
   'text-color-secondary ': 'fade(#dfe6eb, 80%)',
-  'text-color-warning': '#efc100',
-  'text-color-danger': '#ff5050',
   'success-color': '#8cd211',
   'error-color': '#ff5050',
   'warning-color': '#efc100',

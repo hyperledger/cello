@@ -54,13 +54,7 @@ class LoginPage extends Component {
     const { type, autoLogin } = this.state;
     return (
       <div className={styles.main}>
-        <Login
-          defaultActiveKey={type}
-          onSubmit={this.handleSubmit}
-          ref={form => {
-            this.loginForm = form;
-          }}
-        >
+        <Login defaultActiveKey={type} onSubmit={this.handleSubmit}>
           {login.status === 'error' &&
             login.type === 'account' &&
             !submitting &&
@@ -84,21 +78,17 @@ class LoginPage extends Component {
                 message: intl.formatMessage({ id: 'validation.password.required' }),
               },
             ]}
-            onPressEnter={e => {
-              e.preventDefault();
-              this.loginForm.validateFields(this.handleSubmit);
-            }}
           />
           <div>
             <Checkbox checked={autoLogin} onChange={this.changeAutoLogin}>
               {intl.formatMessage({
-                id: 'app.login.remember-me'
+                id: 'app.login.remember-me',
               })}
             </Checkbox>
           </div>
           <Submit loading={submitting}>
             {intl.formatMessage({
-              id: 'app.login.login'
+              id: 'app.login.login',
             })}
           </Submit>
         </Login>

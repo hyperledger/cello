@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
 import { injectIntl } from 'umi';
-import { Spin, Menu, Icon, Avatar } from 'antd';
+import { Spin, Menu, Avatar } from 'antd';
+import { LogoutOutlined } from '@ant-design/icons';
 import HeaderDropdown from '../HeaderDropdown';
 import SelectLang from '../SelectLang';
 import styles from './index.less';
@@ -11,10 +12,10 @@ class GlobalHeaderRight extends PureComponent {
     const menu = (
       <Menu className={styles.menu} selectedKeys={[]} onClick={onMenuClick}>
         <Menu.Item key="logout">
-          <Icon type="logout" />
+          <LogoutOutlined />
           {intl.formatMessage({
             id: 'menu.account.logout',
-            defaultMessage: 'logout'
+            defaultMessage: 'logout',
           })}
         </Menu.Item>
       </Menu>
@@ -41,4 +42,4 @@ class GlobalHeaderRight extends PureComponent {
   }
 }
 
-export default injectIntl(GlobalHeaderRight)
+export default injectIntl(GlobalHeaderRight);

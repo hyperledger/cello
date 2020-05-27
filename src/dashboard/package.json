@@ -52,7 +52,8 @@
   ],
   "dependencies": {
     "@antv/data-set": "^0.10.1",
-    "antd": "3.16.1",
+    "antd": "^4.2.5",
+    "@ant-design/icons": "^4.1.0",
     "bizcharts": "3.5.2-beta.1",
     "bizcharts-plugin-slider": "^2.1.1-beta.1",
     "classnames": "^2.2.6",
@@ -82,6 +83,8 @@
     "cello-paginator": "^1.0.1",
     "umi-request": "^1.2.19",
     "@ant-design/pro-layout": "^5.0.0",
+    "umi": "^3.1.4",
+    "redux": "^4.0.5",
     "validator": "^11.0.0"
   },
   "devDependencies": {
@@ -126,7 +129,6 @@
     "tslint-config-prettier": "^1.17.0",
     "tslint-react": "^3.6.0",
     "faker": "^4.1.0",
-    "umi": "^3.1.4",
     "@umijs/preset-react": "^1.2.2"
   },
   "engines": {

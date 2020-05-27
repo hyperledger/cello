@@ -2,7 +2,7 @@
  SPDX-License-Identifier: Apache-2.0
 */
 import React, { PureComponent, Fragment } from 'react';
-import { connect, useIntl, injectIntl } from 'umi';
+import { connect, injectIntl } from 'umi';
 import {
   Card,
   Button,
@@ -12,10 +12,10 @@ import {
   Select,
   message,
   Dropdown,
-  Icon,
   Menu,
   AutoComplete,
 } from 'antd';
+import { DownOutlined, PlusOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import isEmail from 'validator/lib/isEmail';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
@@ -27,10 +27,9 @@ const FormItem = Form.Item;
 const Option = Select.Option;
 const AutoCompleteOption = AutoComplete.Option;
 
-const CreateUpdateForm = Form.create()(props => {
+const CreateUpdateForm = props => {
   const {
     visible,
-    form,
     method,
     handleSubmit,
     handleModalVisible,
@@ -38,75 +37,88 @@ const CreateUpdateForm = Form.create()(props => {
     user,
     organizations,
     onSearchOrganization,
+    intl,
   } = props;
-  const { getFieldValue } = form;
+  const [form] = Form.useForm();
   const userRole = getAuthority()[0];
-  const intl = useIntl();
+  let orgID = '';
   const onSubmit = () => {
-    form.validateFields((err, fieldsValue) => {
-      if (err) return;
-      handleSubmit(method, fieldsValue, user);
-    });
+    form.submit();
   };
 
-  const validateEmail = (rule, value, callback) => {
+  const onFinish = values => {
+    handleSubmit(
+      method,
+      {
+        ...values,
+        organization: orgID,
+      },
+      user
+    );
+  };
+  const validateEmail = async (rule, value) => {
     if (value && !isEmail(value)) {
-      callback(
+      throw new Error(
         intl.formatMessage({
           id: 'app.operator.user.form.email.noValid',
           defaultMessage: 'Please input valid email',
         })
       );
     }
-    callback();
   };
   const organizationOptions = organizations.map(org => (
-    <AutoCompleteOption key={org.id}>{org.name}</AutoCompleteOption>
+    <AutoCompleteOption key={org.id} value={org.name}>
+      {org.name}
+    </AutoCompleteOption>
   ));
-  const onSelectOrganization = value => {
+  const onSelectOrganization = (value, option) => {
     form.setFieldsValue({
       organization: value,
     });
+    orgID = option.key;
   };
 
-  const validatePasswordConfirm = (rule, value, callback) => {
-    if (value && getFieldValue('password') !== value) {
-      callback(
+  const validatePasswordConfirm = async (rule, value) => {
+    if (value && form.getFieldValue('password') !== value) {
+      throw new Error(
         intl.formatMessage({
           id: 'app.operator.user.form.passwordConfirm.noValid',
           defaultMessage: 'Inconsistent password input twice',
         })
       );
     }
-    callback();
   };
 
   return (
     <Modal
       destroyOnClose
-      title={
-        intl.formatMessage({
-          id: `app.operator.user.form.${method === 'create' ? 'new' : 'update'}.title`,
-          defaultMessage: 'New User',
-        })
-      }
+      title={intl.formatMessage({
+        id: `app.operator.user.form.${method === 'create' ? 'new' : 'update'}.title`,
+        defaultMessage: 'New User',
+      })}
       visible={visible}
       confirmLoading={confirmLoading}
       width="50%"
       onOk={onSubmit}
       onCancel={() => handleModalVisible()}
     >
-      <FormItem
-        labelCol={{ span: 5 }}
-        wrapperCol={{ span: 15 }}
-        label={intl.formatMessage({
-          id: 'app.operator.user.form.name.label',
-          defaultMessage: 'User Name',
-        })}
+      <Form
+        form={form}
+        onFinish={onFinish}
+        initialValues={{
+          role: method === 'create' ? 'user' : user.role,
+          email: method === 'create' ? '' : user.email,
+        }}
       >
-        {form.getFieldDecorator('username', {
-          initialValue: method === 'create' ? '' : user.username,
-          rules: [
+        <FormItem
+          labelCol={{ span: 5 }}
+          wrapperCol={{ span: 15 }}
+          label={intl.formatMessage({
+            id: 'app.operator.user.form.name.label',
+            defaultMessage: 'User Name',
+          })}
+          name="username"
+          rules={[
             {
               required: true,
               message: intl.formatMessage({
@@ -115,58 +127,48 @@ const CreateUpdateForm = Form.create()(props => {
               }),
               min: 1,
             },
-          ],
-        })(
+          ]}
+        >
           <Input
             placeholder={intl.formatMessage({
               id: 'form.input.placeholder',
               defaultMessage: 'Please input',
             })}
           />
-        )}
-      </FormItem>
-      <FormItem
-        labelCol={{ span: 5 }}
-        wrapperCol={{ span: 15 }}
-        label={intl.formatMessage({
-          id: 'app.operator.user.form.role.label',
-          defaultMessage: 'User Role',
-        })}
-      >
-        {form.getFieldDecorator('role', {
-          initialValue: method === 'create' ? 'user' : user.role,
-        })(
+        </FormItem>
+        <FormItem
+          labelCol={{ span: 5 }}
+          wrapperCol={{ span: 15 }}
+          label={intl.formatMessage({
+            id: 'app.operator.user.form.role.label',
+            defaultMessage: 'User Role',
+          })}
+          name="role"
+        >
           <Select>
             <Option value="user">
-              {
-                intl.formatMessage({
-                  id: 'app.operator.user.role.user',
-                  defaultMessage: 'User',
-                })
-              }
+              {intl.formatMessage({
+                id: 'app.operator.user.role.user',
+                defaultMessage: 'User',
+              })}
             </Option>
             <Option value="administrator">
-              {
-                intl.formatMessage({
-                  id: 'app.operator.user.role.administrator',
-                  defaultMessage: 'Administrator',
-                })
-              }
+              {intl.formatMessage({
+                id: 'app.operator.user.role.administrator',
+                defaultMessage: 'Administrator',
+              })}
             </Option>
           </Select>
-        )}
-      </FormItem>
-      <FormItem
-        labelCol={{ span: 5 }}
-        wrapperCol={{ span: 15 }}
-        label={intl.formatMessage({
-          id: 'app.operator.user.form.email.label',
-          defaultMessage: 'Email',
-        })}
-      >
-        {form.getFieldDecorator('email', {
-          initialValue: method === 'create' ? '' : user.email,
-          rules: [
+        </FormItem>
+        <FormItem
+          labelCol={{ span: 5 }}
+          wrapperCol={{ span: 15 }}
+          label={intl.formatMessage({
+            id: 'app.operator.user.form.email.label',
+            defaultMessage: 'Email',
+          })}
+          name="email"
+          rules={[
             {
               required: true,
               message: intl.formatMessage({
@@ -177,27 +179,24 @@ const CreateUpdateForm = Form.create()(props => {
             {
               validator: validateEmail,
             },
-          ],
-        })(
+          ]}
+        >
           <Input
             placeholder={intl.formatMessage({
               id: 'form.input.placeholder',
               defaultMessage: 'Please input',
             })}
           />
-        )}
-      </FormItem>
-      <FormItem
-        labelCol={{ span: 5 }}
-        wrapperCol={{ span: 15 }}
-        label={intl.formatMessage({
-          id: 'app.operator.user.form.password.label',
-          defaultMessage: 'Password',
-        })}
-      >
-        {form.getFieldDecorator('password', {
-          initialValue: method === 'create' ? '' : user.username,
-          rules: [
+        </FormItem>
+        <FormItem
+          labelCol={{ span: 5 }}
+          wrapperCol={{ span: 15 }}
+          label={intl.formatMessage({
+            id: 'app.operator.user.form.password.label',
+            defaultMessage: 'Password',
+          })}
+          name="password"
+          rules={[
             {
               required: true,
               message: intl.formatMessage({
@@ -205,27 +204,24 @@ const CreateUpdateForm = Form.create()(props => {
                 defaultMessage: 'Please input password',
               }),
             },
-          ],
-        })(
+          ]}
+        >
           <Input.Password
             placeholder={intl.formatMessage({
               id: 'form.input.placeholder',
               defaultMessage: 'Please input',
             })}
           />
-        )}
-      </FormItem>
-      <FormItem
-        labelCol={{ span: 5 }}
-        wrapperCol={{ span: 15 }}
-        label={intl.formatMessage({
-          id: 'app.operator.user.form.passwordConfirm.label',
-          defaultMessage: 'Password Confirm',
-        })}
-      >
-        {form.getFieldDecorator('passwordConfirm', {
-          initialValue: method === 'create' ? '' : user.usernamep,
-          rules: [
+        </FormItem>
+        <FormItem
+          labelCol={{ span: 5 }}
+          wrapperCol={{ span: 15 }}
+          label={intl.formatMessage({
+            id: 'app.operator.user.form.passwordConfirm.label',
+            defaultMessage: 'Password Confirm',
+          })}
+          name="passwordConfirm"
+          rules={[
             {
               required: true,
               message: intl.formatMessage({
@@ -236,29 +232,25 @@ const CreateUpdateForm = Form.create()(props => {
             {
               validator: validatePasswordConfirm,
             },
-          ],
-        })(
+          ]}
+        >
           <Input.Password
             placeholder={intl.formatMessage({
               id: 'form.input.placeholder',
               defaultMessage: 'Please input',
             })}
           />
-        )}
-      </FormItem>
-      {userRole === 'operator' && (
-        <Form.Item
-          labelCol={{ span: 5 }}
-          wrapperCol={{ span: 15 }}
-          label={intl.formatMessage({
-            id: 'app.operator.user.form.organization.label',
-            defaultMessage: 'Organization',
-          })}
-        >
-          {form.getFieldDecorator(
-            'organization',
-            {}
-          )(
+        </FormItem>
+        {userRole === 'operator' && (
+          <Form.Item
+            labelCol={{ span: 5 }}
+            wrapperCol={{ span: 15 }}
+            label={intl.formatMessage({
+              id: 'app.operator.user.form.organization.label',
+              defaultMessage: 'Organization',
+            })}
+            name="organization"
+          >
             <AutoComplete
               onSearch={onSearchOrganization}
               onSelect={onSelectOrganization}
@@ -269,12 +261,12 @@ const CreateUpdateForm = Form.create()(props => {
             >
               {organizationOptions}
             </AutoComplete>
-          )}
-        </Form.Item>
-      )}
+          </Form.Item>
+        )}
+      </Form>
     </Modal>
   );
-});
+};
 
 @connect(({ user, organization, loading }) => ({
   user,
@@ -498,43 +490,37 @@ class UserManagement extends PureComponent {
     }));
     const columns = [
       {
-        title: (
-          intl.formatMessage({
-            id: 'app.operator.user.table.header.name',
-            defaultMessage: 'User Name',
-          })
-        ),
-    dataIndex: 'username',
-  },
+        title: intl.formatMessage({
+          id: 'app.operator.user.table.header.name',
+          defaultMessage: 'User Name',
+        }),
+        dataIndex: 'username',
+      },
       {
-        title: (
-          intl.formatMessage({
-            id: 'app.operator.user.table.header.role',
-            defaultMessage: 'User Role',
-          })
-        ),
+        title: intl.formatMessage({
+          id: 'app.operator.user.table.header.role',
+          defaultMessage: 'User Role',
+        }),
         dataIndex: 'role',
-        render: text => (
+        render: text =>
           intl.formatMessage({
             id: `app.operator.user.role.${text}`,
             defaultMessage: 'User',
-          })
-        ),
+          }),
       },
       {
-        title: (
-          intl.formatMessage({
-            id: 'app.operator.user.table.header.organization',
-            defaultMessage: 'Organization',
-          })
-        ),
+        title: intl.formatMessage({
+          id: 'app.operator.user.table.header.organization',
+          defaultMessage: 'Organization',
+        }),
         dataIndex: 'organization',
         render: text => (text ? text.name : ''),
       },
       {
-        title: (
-          intl.formatMessage({ id: 'app.operator.organization.table.header.createTime', defaultMessage: 'Create Time' })
-        ),
+        title: intl.formatMessage({
+          id: 'app.operator.organization.table.header.createTime',
+          defaultMessage: 'Create Time',
+        }),
         dataIndex: 'created_at',
         render: text => <span>{moment(text).format('YYYY-MM-DD HH:mm:ss')}</span>,
       },
@@ -546,12 +532,10 @@ class UserManagement extends PureComponent {
         render: (text, record) => (
           <Fragment>
             <a className={styles.danger} onClick={() => this.handleDelete(record)}>
-              {
-                intl.formatMessage({
-                  id: 'form.menu.item.delete',
-                  defaultMessage: 'Delete',
-                })
-              }
+              {intl.formatMessage({
+                id: 'form.menu.item.delete',
+                defaultMessage: 'Delete',
+              })}
             </a>
           </Fragment>
         ),
@@ -559,6 +543,7 @@ class UserManagement extends PureComponent {
     ];
 
     const formProps = {
+      intl,
       visible: modalVisible,
       method: modalMethod,
       handleModalVisible: this.handleModalVisible,
@@ -577,47 +562,39 @@ class UserManagement extends PureComponent {
     const menu = (
       <Menu onClick={this.handleMenuClick} selectedKeys={[]}>
         <Menu.Item key="remove">
-          {
-            intl.formatMessage({
-              id: 'form.menu.item.delete',
-              defaultMessage: 'Delete',
-            })
-          }
+          {intl.formatMessage({
+            id: 'form.menu.item.delete',
+            defaultMessage: 'Delete',
+          })}
         </Menu.Item>
       </Menu>
     );
     return (
       <PageHeaderWrapper
-        title={
-          intl.formatMessage({
-            id: 'app.operator.user.title',
-            defaultMessage: 'User Management',
-          })
-        }
+        title={intl.formatMessage({
+          id: 'app.operator.user.title',
+          defaultMessage: 'User Management',
+        })}
       >
         <Card bordered={false}>
           <div className={styles.tableList}>
             <div className={styles.tableListOperator}>
-              <Button icon="plus" type="primary" onClick={() => this.handleModalVisible(true)}>
-                {
-                  intl.formatMessage({
-                    id: 'form.button.new',
-                    defaultMessage: 'New',
-                  })
-                }
+              <Button type="primary" onClick={() => this.handleModalVisible(true)}>
+                <PlusOutlined />
+                {intl.formatMessage({
+                  id: 'form.button.new',
+                  defaultMessage: 'New',
+                })}
               </Button>
               {selectedRows.length > 0 && (
                 <span>
                   <Dropdown overlay={menu}>
                     <Button>
-                {
-                  intl.formatMessage({
-                    id: 'form.button.moreActions',
-                    defaultMessage: 'More Actions',
-                  })
-                }
-                      {' '}
-                      <Icon type="down" />
+                      {intl.formatMessage({
+                        id: 'form.button.moreActions',
+                        defaultMessage: 'More Actions',
+                      })}{' '}
+                      <DownOutlined />
                     </Button>
                   </Dropdown>
                 </span>

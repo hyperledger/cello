@@ -4,16 +4,16 @@
 import React from 'react';
 import { Layout } from 'antd';
 import DocumentTitle from 'react-document-title';
-import { connect } from 'dva';
+import { connect } from 'umi';
 import { ContainerQuery } from 'react-container-query';
 import classNames from 'classnames';
 import Media from 'react-media';
+import SiderMenu from '@/components/SiderMenu';
+import getPageTitle from '@/utils/getPageTitle';
 import logo from '../assets/logo.svg';
 import Footer from './Footer';
 import Header from './Header';
 import Context from './MenuContext';
-import SiderMenu from '@/components/SiderMenu';
-import getPageTitle from '@/utils/getPageTitle';
 import styles from './BasicLayout.less';
 
 // lazy load SettingDrawer

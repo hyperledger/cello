@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
-import { Select, message, Drawer, List, Switch, Divider, Icon, Button, Alert, Tooltip } from 'antd';
+import { Select, message, Drawer, List, Switch, Divider, Button, Alert, Tooltip } from 'antd';
+import { CloseOutlined, SettingOutlined } from '@ant-design/icons';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import { connect, formatMessage } from 'umi';
+import { connect, injectIntl } from 'umi';
 import omit from 'omit.js';
 import styles from './index.less';
 import ThemeColor from './ThemeColor';
@@ -30,10 +31,11 @@ class SettingDrawer extends Component {
   getLayoutSetting = () => {
     const {
       setting: { contentWidth, fixedHeader, layout, autoHideHeader, fixSiderbar },
+      intl,
     } = this.props;
     return [
       {
-        title: formatMessage({ id: 'app.setting.content-width' }),
+        title: intl.formatMessage({ id: 'app.setting.content-width' }),
         action: (
           <Select
             value={contentWidth}
@@ -43,17 +45,17 @@ class SettingDrawer extends Component {
           >
             {layout === 'sidemenu' ? null : (
               <Option value="Fixed">
-                {formatMessage({ id: 'app.setting.content-width.fixed' })}
+                {intl.formatMessage({ id: 'app.setting.content-width.fixed' })}
               </Option>
             )}
             <Option value="Fluid">
-              {formatMessage({ id: 'app.setting.content-width.fluid' })}
+              {intl.formatMessage({ id: 'app.setting.content-width.fluid' })}
             </Option>
           </Select>
         ),
       },
       {
-        title: formatMessage({ id: 'app.setting.fixedheader' }),
+        title: intl.formatMessage({ id: 'app.setting.fixedheader' }),
         action: (
           <Switch
             size="small"
@@ -63,9 +65,9 @@ class SettingDrawer extends Component {
         ),
       },
       {
-        title: formatMessage({ id: 'app.setting.hideheader' }),
+        title: intl.formatMessage({ id: 'app.setting.hideheader' }),
         disabled: !fixedHeader,
-        disabledReason: formatMessage({ id: 'app.setting.hideheader.hint' }),
+        disabledReason: intl.formatMessage({ id: 'app.setting.hideheader.hint' }),
         action: (
           <Switch
             size="small"
@@ -75,9 +77,9 @@ class SettingDrawer extends Component {
         ),
       },
       {
-        title: formatMessage({ id: 'app.setting.fixedsidebar' }),
+        title: intl.formatMessage({ id: 'app.setting.fixedsidebar' }),
         disabled: layout === 'topmenu',
-        disabledReason: formatMessage({ id: 'app.setting.fixedsidebar.hint' }),
+        disabledReason: intl.formatMessage({ id: 'app.setting.fixedsidebar.hint' }),
         action: (
           <Switch
             size="small"
@@ -126,7 +128,7 @@ class SettingDrawer extends Component {
   };
 
   render() {
-    const { setting } = this.props;
+    const { setting, intl } = this.props;
     const { navTheme, primaryColor, layout, colorWeak } = setting;
     const { collapse } = this.state;
     return (
@@ -137,13 +139,21 @@ class SettingDrawer extends Component {
         placement="right"
         handler={
           <div className={styles.handle} onClick={this.togglerContent}>
-            <Icon
-              type={collapse ? 'close' : 'setting'}
-              style={{
-                color: '#fff',
-                fontSize: 20,
-              }}
-            />
+            {collapse ? (
+              <CloseOutlined
+                style={{
+                  color: '#fff',
+                  fontSize: 20,
+                }}
+              />
+            ) : (
+              <SettingOutlined
+                style={{
+                  color: '#fff',
+                  fontSize: 20,
+                }}
+              />
+            )}
           </div>
         }
         style={{
@@ -151,18 +161,18 @@ class SettingDrawer extends Component {
         }}
       >
         <div className={styles.content}>
-          <Body title={formatMessage({ id: 'app.setting.pagestyle' })}>
+          <Body title={intl.formatMessage({ id: 'app.setting.pagestyle' })}>
             <BlockCheckbox
               list={[
                 {
                   key: 'dark',
                   url: 'https://gw.alipayobjects.com/zos/rmsportal/LCkqqYNmvBEbokSDscrm.svg',
-                  title: formatMessage({ id: 'app.setting.pagestyle.dark' }),
+                  title: intl.formatMessage({ id: 'app.setting.pagestyle.dark' }),
                 },
                 {
                   key: 'light',
                   url: 'https://gw.alipayobjects.com/zos/rmsportal/jpRkZQMyYRryryPNtyIC.svg',
-                  title: formatMessage({ id: 'app.setting.pagestyle.light' }),
+                  title: intl.formatMessage({ id: 'app.setting.pagestyle.light' }),
                 },
               ]}
               value={navTheme}
@@ -171,25 +181,25 @@ class SettingDrawer extends Component {
           </Body>
 
           <ThemeColor
-            title={formatMessage({ id: 'app.setting.themecolor' })}
+            title={intl.formatMessage({ id: 'app.setting.themecolor' })}
             value={primaryColor}
             onChange={color => this.changeSetting('primaryColor', color)}
           />
 
           <Divider />
 
-          <Body title={formatMessage({ id: 'app.setting.navigationmode' })}>
+          <Body title={intl.formatMessage({ id: 'app.setting.navigationmode' })}>
             <BlockCheckbox
               list={[
                 {
                   key: 'sidemenu',
                   url: 'https://gw.alipayobjects.com/zos/rmsportal/JopDzEhOqwOjeNTXkoje.svg',
-                  title: formatMessage({ id: 'app.setting.sidemenu' }),
+                  title: intl.formatMessage({ id: 'app.setting.sidemenu' }),
                 },
                 {
                   key: 'topmenu',
                   url: 'https://gw.alipayobjects.com/zos/rmsportal/KDNDBbriJhLwuqMoxcAr.svg',
-                  title: formatMessage({ id: 'app.setting.topmenu' }),
+                  title: intl.formatMessage({ id: 'app.setting.topmenu' }),
                 },
               ]}
               value={layout}
@@ -205,13 +215,13 @@ class SettingDrawer extends Component {
 
           <Divider />
 
-          <Body title={formatMessage({ id: 'app.setting.othersettings' })}>
+          <Body title={intl.formatMessage({ id: 'app.setting.othersettings' })}>
             <List
               split={false}
               renderItem={this.renderLayoutSettingItem}
               dataSource={[
                 {
-                  title: formatMessage({ id: 'app.setting.weakmode' }),
+                  title: intl.formatMessage({ id: 'app.setting.weakmode' }),
                   action: (
                     <Switch
                       size="small"
@@ -226,10 +236,10 @@ class SettingDrawer extends Component {
           <Divider />
           <CopyToClipboard
             text={JSON.stringify(omit(setting, ['colorWeak']), null, 2)}
-            onCopy={() => message.success(formatMessage({ id: 'app.setting.copyinfo' }))}
+            onCopy={() => message.success(intl.formatMessage({ id: 'app.setting.copyinfo' }))}
           >
             <Button block icon="copy">
-              {formatMessage({ id: 'app.setting.copy' })}
+              {intl.formatMessage({ id: 'app.setting.copy' })}
             </Button>
           </CopyToClipboard>
           <Alert
@@ -237,7 +247,7 @@ class SettingDrawer extends Component {
             className={styles.productionHint}
             message={
               <div>
-                {formatMessage({ id: 'app.setting.production.hint' })}{' '}
+                {intl.formatMessage({ id: 'app.setting.production.hint' })}{' '}
                 <a
                   href="https://u.ant.design/pro-v2-default-settings"
                   target="_blank"
@@ -254,4 +264,4 @@ class SettingDrawer extends Component {
   }
 }
 
-export default SettingDrawer;
+export default injectIntl(SettingDrawer);

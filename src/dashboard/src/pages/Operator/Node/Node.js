@@ -11,43 +11,43 @@ import {
   Divider,
   Menu,
   Dropdown,
-  Icon,
   Form,
   Input,
   Select,
   Badge,
 } from 'antd';
+import { DownOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import StandardTable from '@/components/StandardTable';
-import styles from '../styles.less';
 import { getAuthority } from '@/utils/authority';
+import styles from '../styles.less';
 
 const FormItem = Form.Item;
 const { Option } = Select;
 
-const RegisterUserForm = Form.create()(props => {
+const RegisterUserForm = props => {
   const {
     registerUserFormVisible,
-    form,
     handleSubmit,
     handleModalVisible,
     registeringUser,
     targetNodeId,
   } = props;
+  const [form] = Form.useForm();
+  const onFinish = values => {
+    if (values.attrs === '') {
+      // eslint-disable-next-line no-param-reassign
+      delete values.attrs;
+    }
+    const body = {
+      id: targetNodeId,
+      message: values,
+    };
+    handleSubmit(body);
+  };
   const onSubmit = () => {
-    form.validateFields((err, fieldsValue) => {
-      if (err) return;
-      const values = { ...fieldsValue };
-      if (values.attrs === '') {
-        delete values.attrs;
-      }
-      const body = {
-        id: targetNodeId,
-        message: values,
-      };
-      handleSubmit(body);
-    });
+    form.submit();
   };
   const userTypeValues = ['peer', 'orderer', 'user'];
   const userTypeOptions = userTypeValues.map(item => (
@@ -71,114 +71,115 @@ const RegisterUserForm = Form.create()(props => {
   return (
     <Modal
       destroyOnClose
-      title={
-        intl.formatMessage({ id: 'app.operator.node.table.operation.registerUser', defaultMessage: 'Register User' })
-      }
+      title={intl.formatMessage({
+        id: 'app.operator.node.table.operation.registerUser',
+        defaultMessage: 'Register User',
+      })}
       visible={registerUserFormVisible}
       confirmLoading={registeringUser}
       width="30%"
       onOk={onSubmit}
       onCancel={() => handleModalVisible()}
     >
-      <FormItem
-        {...formItemLayout}
-        label={intl.formatMessage({
-          id: 'app.operator.node.modal.label.name',
-          defaultMessage: 'User name',
-        })}
+      <Form
+        form={form}
+        onFinish={onFinish}
+        initialValues={{
+          name: '',
+        }}
       >
-        {form.getFieldDecorator('name', {
-          initialValue: '',
-          rules: [
+        <FormItem
+          {...formItemLayout}
+          label={intl.formatMessage({
+            id: 'app.operator.node.modal.label.name',
+            defaultMessage: 'User name',
+          })}
+          name="name"
+          rules={[
             {
               required: true,
-              message: (
-                intl.formatMessage({ id: 'app.operator.node.modal.required.name', defaultMessage: 'Please input user name.' })
-              ),
+              message: intl.formatMessage({
+                id: 'app.operator.node.modal.required.name',
+                defaultMessage: 'Please input user name.',
+              }),
             },
-          ],
-        })(
+          ]}
+        >
           <Input
             placeholder={intl.formatMessage({
               id: 'app.operator.node.modal.label.name',
               defaultMessage: 'User name',
             })}
           />
-        )}
-      </FormItem>
-      <FormItem
-        {...formItemLayout}
-        label={intl.formatMessage({
-          id: 'app.operator.node.modal.label.secret',
-          defaultMessage: 'Password',
-        })}
-      >
-        {form.getFieldDecorator('secret', {
-          initialValue: '',
-          rules: [
+        </FormItem>
+        <FormItem
+          {...formItemLayout}
+          label={intl.formatMessage({
+            id: 'app.operator.node.modal.label.secret',
+            defaultMessage: 'Password',
+          })}
+          name="secret"
+          rules={[
             {
               required: true,
-              message: (
-                intl.formatMessage({ id: 'app.operator.node.modal.required.secret', defaultMessage: 'Please input password.' })
-              ),
+              message: intl.formatMessage({
+                id: 'app.operator.node.modal.required.secret',
+                defaultMessage: 'Please input password.',
+              }),
             },
-          ],
-        })(
+          ]}
+        >
           <Input
             placeholder={intl.formatMessage({
               id: 'app.operator.node.modal.label.secret',
               defaultMessage: 'Password',
             })}
           />
-        )}
-      </FormItem>
-      <FormItem
-        {...formItemLayout}
-        label={intl.formatMessage({
-          id: 'app.operator.node.modal.label.type',
-          defaultMessage: 'Type',
-        })}
-      >
-        {form.getFieldDecorator('user_type', {
-          initialValue: userTypeValues[0],
-          rules: [
+        </FormItem>
+        <FormItem
+          {...formItemLayout}
+          label={intl.formatMessage({
+            id: 'app.operator.node.modal.label.type',
+            defaultMessage: 'Type',
+          })}
+          name="user_type"
+          rules={[
             {
               required: true,
-              message: (
-                intl.formatMessage({ id: 'app.operator.node.modal.required.type', defaultMessage: 'Please select a type.' })
-              ),
+              message: intl.formatMessage({
+                id: 'app.operator.node.modal.required.type',
+                defaultMessage: 'Please select a type.',
+              }),
             },
-          ],
-        })(<Select style={{ width: '100%' }}>{userTypeOptions}</Select>)}
-      </FormItem>
-      <FormItem
-        {...formItemLayout}
-        label={intl.formatMessage({
-          id: 'app.operator.node.modal.label.attributes',
-          defaultMessage: 'Attributes',
-        })}
-      >
-        {form.getFieldDecorator('attrs', {
-          initialValue: '',
-        })(
+          ]}
+        >
+          <Select style={{ width: '100%' }}>{userTypeOptions}</Select>
+        </FormItem>
+        <FormItem
+          {...formItemLayout}
+          label={intl.formatMessage({
+            id: 'app.operator.node.modal.label.attributes',
+            defaultMessage: 'Attributes',
+          })}
+          name="attr"
+        >
           <Input
             placeholder={intl.formatMessage({
               id: 'app.operator.node.modal.label.attributes',
               defaultMessage: 'Attributes',
             })}
           />
-        )}
-      </FormItem>
+        </FormItem>
+      </Form>
     </Modal>
   );
-});
+};
 
 @connect(({ node, loading }) => ({
   node,
   loadingNodes: loading.effects['node/listNode'],
   registeringUser: loading.effects['node/registerUserToNode'],
 }))
-@Form.create()
 class Node extends PureComponent {
   state = {
     selectedRows: [],
@@ -388,23 +389,35 @@ class Node extends PureComponent {
         {record.type === 'ca' && (
           <Menu.Item>
             <a onClick={() => this.handleRegisterUser(record)}>
-              {intl.formatMessage({ id: 'app.operator.node.table.operation.registerUser', defaultMessage: 'Register User' })}
+              {intl.formatMessage({
+                id: 'app.operator.node.table.operation.registerUser',
+                defaultMessage: 'Register User',
+              })}
             </a>
           </Menu.Item>
         )}
         <Menu.Item>
           <a onClick={() => this.operationForNode('start', record)}>
-            {intl.formatMessage({ id: 'app.operator.node.table.operation.start', defaultMessage: 'Start' })}
+            {intl.formatMessage({
+              id: 'app.operator.node.table.operation.start',
+              defaultMessage: 'Start',
+            })}
           </a>
         </Menu.Item>
         <Menu.Item>
           <a onClick={() => this.operationForNode('stop', record)}>
-            {intl.formatMessage({ id: 'app.operator.node.table.operation.stop', defaultMessage: 'Stop' })}
+            {intl.formatMessage({
+              id: 'app.operator.node.table.operation.stop',
+              defaultMessage: 'Stop',
+            })}
           </a>
         </Menu.Item>
         <Menu.Item>
           <a onClick={() => this.operationForNode('restart', record)}>
-            {intl.formatMessage({ id: 'app.operator.node.table.operation.restart', defaultMessage: 'Restart' })}
+            {intl.formatMessage({
+              id: 'app.operator.node.table.operation.restart',
+              defaultMessage: 'Restart',
+            })}
           </a>
         </Menu.Item>
       </Menu>
@@ -413,32 +426,43 @@ class Node extends PureComponent {
     const MoreBtn = record => (
       <Dropdown overlay={menu(record)}>
         <a>
-          {intl.formatMessage({ id: 'app.operator.node.table.operation.more', defaultMessage: 'More' })}{' '}
-          <Icon type="down" />
+          {intl.formatMessage({
+            id: 'app.operator.node.table.operation.more',
+            defaultMessage: 'More',
+          })}{' '}
+          <DownOutlined />
         </a>
       </Dropdown>
     );
 
     const columns = [
       {
-        title: intl.formatMessage({ id: 'app.operator.node.table.header.name', defaultMessage: 'Name' }),
+        title: intl.formatMessage({
+          id: 'app.operator.node.table.header.name',
+          defaultMessage: 'Name',
+        }),
         dataIndex: 'name',
       },
       {
-        title: intl.formatMessage({ id: 'app.operator.node.table.header.type', defaultMessage: 'Type' }),
+        title: intl.formatMessage({
+          id: 'app.operator.node.table.header.type',
+          defaultMessage: 'Type',
+        }),
         dataIndex: 'type',
       },
       {
-        title: (
-          intl.formatMessage({ id: 'app.operator.node.table.header.creationTime', defaultMessage: 'Creation Time' })
-        ),
+        title: intl.formatMessage({
+          id: 'app.operator.node.table.header.creationTime',
+          defaultMessage: 'Creation Time',
+        }),
         dataIndex: 'created_at',
         render: text => <span>{moment(text).format('YYYY-MM-DD HH:mm:ss')}</span>,
       },
       {
-        title: (
-          intl.formatMessage({ id: 'app.operator.node.table.header.status', defaultMessage: 'Status' })
-        ),
+        title: intl.formatMessage({
+          id: 'app.operator.node.table.header.status',
+          defaultMessage: 'Status',
+        }),
         render: text => (
           <Badge
             status={badgeStatus(text)}
@@ -450,7 +474,10 @@ class Node extends PureComponent {
         dataIndex: 'status',
       },
       {
-        title: intl.formatMessage({ id: 'form.table.header.operation', defaultMessage: 'Operation' }),
+        title: intl.formatMessage({
+          id: 'form.table.header.operation',
+          defaultMessage: 'Operation',
+        }),
         render: (text, record) => (
           <Fragment>
             <a className={styles.danger} onClick={() => this.handleDeleteNode(record)}>
@@ -465,9 +492,10 @@ class Node extends PureComponent {
 
     return (
       <PageHeaderWrapper
-        title={
-          intl.formatMessage({ id: 'app.operator.node.title', defaultMessage: 'Node Management' })
-        }
+        title={intl.formatMessage({
+          id: 'app.operator.node.title',
+          defaultMessage: 'Node Management',
+        })}
       >
         <Card bordered={false}>
           <div className={styles.tableList}>
