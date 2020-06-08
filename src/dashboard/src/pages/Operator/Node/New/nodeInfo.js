@@ -1,6 +1,6 @@
 import React, { Fragment, Suspense } from 'react';
 import querystring from 'querystring';
-import { Form, Button, message } from 'antd';
+import { Button, message } from 'antd';
 import { injectIntl, history, connect } from 'umi';
 
 const FabricCa = React.lazy(() => import('./Fabric/ca'));
@@ -11,7 +11,6 @@ const FabricOrderer = React.lazy(() => import('./Fabric/orderer'));
   node,
   creatingNode: loading.effects['node/createNode'],
 }))
-@Form.create()
 class NodeInfo extends React.PureComponent {
   prevBtn = () => {
     const { location, intl } = this.props;

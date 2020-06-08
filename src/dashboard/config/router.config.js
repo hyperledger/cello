@@ -68,7 +68,7 @@ export default [
               {
                 path: '/operator/node',
                 name: 'node',
-                component: './Operator/Node/Node',
+                component: './Operator/Node/index',
               },
               {
                 path: '/operator/node/new',

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Form, Button } from 'antd';
-import { useIntl } from 'umi';
+import { injectIntl } from 'umi';
 import classNames from 'classnames';
 import styles from '../styles.less';
 
@@ -13,11 +13,9 @@ const formItemLayout = {
   },
 };
 
-@Form.create()
 class FabricPeer extends React.PureComponent {
   render() {
-    const { prevBtn, creating } = this.props;
-    const intl = useIntl();
+    const { prevBtn, creating, intl } = this.props;
     return (
       <Form layout="horizontal" className={classNames(styles.stepForm, styles.stepInputForm)}>
         <Form.Item
@@ -34,7 +32,7 @@ class FabricPeer extends React.PureComponent {
           <Button type="primary" style={{ marginLeft: 8 }} loading={creating}>
             {intl.formatMessage({
               id: 'form.button.submit',
-              defaultMessage: 'Submit'
+              defaultMessage: 'Submit',
             })}
           </Button>
         </Form.Item>
@@ -43,4 +41,4 @@ class FabricPeer extends React.PureComponent {
   }
 }
 
-export default FabricPeer;
+export default injectIntl(FabricPeer);
