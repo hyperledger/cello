@@ -1,6 +1,6 @@
 import React from 'react';
 import { Form, Button } from 'antd';
-import { useIntl } from 'umi';
+import { injectIntl } from 'umi';
 import classNames from 'classnames';
 import styles from '../styles.less';
 
@@ -13,11 +13,9 @@ const formItemLayout = {
   },
 };
 
-@Form.create()
 class FabricOrderer extends React.PureComponent {
   render() {
-    const { prevBtn, creating } = this.props;
-    const intl = useIntl();
+    const { prevBtn, creating, intl } = this.props;
     return (
       <Form layout="horizontal" className={classNames(styles.stepForm, styles.stepInputForm)}>
         <Form.Item
@@ -43,4 +41,4 @@ class FabricOrderer extends React.PureComponent {
   }
 }
 
-export default FabricOrderer;
+export default injectIntl(FabricOrderer);

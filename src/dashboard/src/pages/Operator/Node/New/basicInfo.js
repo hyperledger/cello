@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import { Form, Button, Select } from 'antd';
 import querystring from 'querystring';
-import { useIntl, history } from 'umi';
+import { injectIntl, history } from 'umi';
 import classNames from 'classnames';
 import { networkTypes, agentTypes, fabricVersions, fabricNodeTypes } from '@/utils/networks';
 import styles from './styles.less';
@@ -17,13 +17,19 @@ const formItemLayout = {
   },
 };
 
-@Form.create()
-class InputBasicInfo extends React.PureComponent {
+class InputBasicInfo extends React.Component {
+  formRef = React.createRef();
+
+  getNetworkType = () => {
+    let networkType = 'fabric';
+    if (this.formRef.current) {
+      networkType = this.formRef.current.getFieldValue('network_type');
+    }
+    return networkType;
+  };
+
   getNetworkVersionOptions = () => {
-    const {
-      form: { getFieldValue },
-    } = this.props;
-    const networkType = getFieldValue('network_type');
+    const networkType = this.getNetworkType();
     let versions = [];
     switch (networkType) {
       case 'fabric':
@@ -41,10 +47,7 @@ class InputBasicInfo extends React.PureComponent {
   };
 
   getNetworkNodeTypeOptions = () => {
-    const {
-      form: { getFieldValue },
-    } = this.props;
-    const networkType = getFieldValue('network_type');
+    const networkType = this.getNetworkType();
     let nodeTypeList = [];
     switch (networkType) {
       case 'fabric':
@@ -61,22 +64,14 @@ class InputBasicInfo extends React.PureComponent {
     ));
   };
 
-  validateForm = () => {
-    const {
-      form: { validateFields },
-    } = this.props;
-    validateFields((err, values) => {
-      if (!err) {
-        const params = querystring.stringify(values);
-        history.push(`/operator/node/new/node-info?${params}`);
-      }
-    });
+  validateForm = values => {
+    const params = querystring.stringify(values);
+    history.push(`/operator/node/new/node-info?${params}`);
   };
 
   render() {
-    const { form, location } = this.props;
+    const { location, intl } = this.props;
     const { query = {} } = location;
-    const intl = useIntl();
     const {
       network_type: networkType = networkTypes[0].value,
       network_version: networkVersion,
@@ -96,7 +91,18 @@ class InputBasicInfo extends React.PureComponent {
     ));
     return (
       <Fragment>
-        <Form layout="horizontal" className={classNames(styles.stepForm, styles.stepInputForm)}>
+        <Form
+          ref={this.formRef}
+          layout="horizontal"
+          onFinish={this.validateForm}
+          className={classNames(styles.stepForm, styles.stepInputForm)}
+          initialValues={{
+            network_type: networkType,
+            agent_type: agentType,
+            network_version: networkVersion,
+            type: nodeType,
+          }}
+        >
           <Form.Item
             labelCol={{ span: 5 }}
             wrapperCol={{ span: 15 }}
@@ -104,28 +110,25 @@ class InputBasicInfo extends React.PureComponent {
               id: 'app.operator.node.new.inputBasic.form.networkType.label',
               defaultMessage: 'Network Type',
             })}
+            name="network_type"
+            rules={[
+              {
+                required: true,
+                message: intl.formatMessage({
+                  id: 'app.operator.node.new.inputBasic.form.networkType.required',
+                  defaultMessage: 'Please Select Network Type',
+                }),
+              },
+            ]}
           >
-            {form.getFieldDecorator('network_type', {
-              initialValue: networkType,
-              rules: [
-                {
-                  required: true,
-                  message: intl.formatMessage({
-                    id: 'app.operator.node.new.inputBasic.form.networkType.required',
-                    defaultMessage: 'Please Select Network Type',
-                  }),
-                },
-              ],
-            })(
-              <Select
-                placeholder={intl.formatMessage({
-                  id: 'app.operator.node.new.inputBasic.form.networkType.placeholder',
-                  defaultMessage: 'Select Network Type',
-                })}
-              >
-                {networkTypeOptions}
-              </Select>
-            )}
+            <Select
+              placeholder={intl.formatMessage({
+                id: 'app.operator.node.new.inputBasic.form.networkType.placeholder',
+                defaultMessage: 'Select Network Type',
+              })}
+            >
+              {networkTypeOptions}
+            </Select>
           </Form.Item>
           <Form.Item
             labelCol={{ span: 5 }}
@@ -134,28 +137,25 @@ class InputBasicInfo extends React.PureComponent {
               id: 'app.operator.node.new.inputBasic.form.agentType.label',
               defaultMessage: 'Agent Type',
             })}
+            name="agent_type"
+            rules={[
+              {
+                required: true,
+                message: intl.formatMessage({
+                  id: 'app.operator.node.new.inputBasic.form.agentType.required',
+                  defaultMessage: 'Please Select Agent Type',
+                }),
+              },
+            ]}
           >
-            {form.getFieldDecorator('agent_type', {
-              initialValue: agentType,
-              rules: [
-                {
-                  required: true,
-                  message: intl.formatMessage({
-                    id: 'app.operator.node.new.inputBasic.form.agentType.required',
-                    defaultMessage: 'Please Select Agent Type',
-                  }),
-                },
-              ],
-            })(
-              <Select
-                placeholder={intl.formatMessage({
-                  id: 'app.operator.node.new.inputBasic.form.agentType.placeholder',
-                  defaultMessage: 'Select Agent Type',
-                })}
-              >
-                {agentTypeOptions}
-              </Select>
-            )}
+            <Select
+              placeholder={intl.formatMessage({
+                id: 'app.operator.node.new.inputBasic.form.agentType.placeholder',
+                defaultMessage: 'Select Agent Type',
+              })}
+            >
+              {agentTypeOptions}
+            </Select>
           </Form.Item>
           <Form.Item
             labelCol={{ span: 5 }}
@@ -164,28 +164,25 @@ class InputBasicInfo extends React.PureComponent {
               id: 'app.operator.node.new.inputBasic.form.networkVersion.label',
               defaultMessage: 'Network Version',
             })}
+            name="network_version"
+            rules={[
+              {
+                required: true,
+                message: intl.formatMessage({
+                  id: 'app.operator.node.new.inputBasic.form.networkVersion.required',
+                  defaultMessage: 'Please Select Network Version',
+                }),
+              },
+            ]}
           >
-            {form.getFieldDecorator('network_version', {
-              initialValue: networkVersion,
-              rules: [
-                {
-                  required: true,
-                  message: intl.formatMessage({
-                    id: 'app.operator.node.new.inputBasic.form.networkVersion.required',
-                    defaultMessage: 'Please Select Network Version',
-                  }),
-                },
-              ],
-            })(
-              <Select
-                placeholder={intl.formatMessage({
-                  id: 'app.operator.node.new.inputBasic.form.networkVersion.placeholder',
-                  defaultMessage: 'Select Network Version',
-                })}
-              >
-                {getNetworkVersionOptions()}
-              </Select>
-            )}
+            <Select
+              placeholder={intl.formatMessage({
+                id: 'app.operator.node.new.inputBasic.form.networkVersion.placeholder',
+                defaultMessage: 'Select Network Version',
+              })}
+            >
+              {getNetworkVersionOptions()}
+            </Select>
           </Form.Item>
           <Form.Item
             labelCol={{ span: 5 }}
@@ -194,28 +191,25 @@ class InputBasicInfo extends React.PureComponent {
               id: 'app.operator.node.new.inputBasic.form.nodeType.label',
               defaultMessage: 'Node Type',
             })}
+            name="type"
+            rules={[
+              {
+                required: true,
+                message: intl.formatMessage({
+                  id: 'app.operator.node.new.inputBasic.form.nodeType.required',
+                  defaultMessage: 'Please Select Node Type',
+                }),
+              },
+            ]}
           >
-            {form.getFieldDecorator('type', {
-              initialValue: nodeType,
-              rules: [
-                {
-                  required: true,
-                  message: intl.formatMessage({
-                    id: 'app.operator.node.new.inputBasic.form.nodeType.required',
-                    defaultMessage: 'Please Select Node Type',
-                  }),
-                },
-              ],
-            })(
-              <Select
-                placeholder={intl.formatMessage({
-                  id: 'app.operator.node.new.inputBasic.form.nodeType.placeholder',
-                  defaultMessage: 'Select Node Type',
-                })}
-              >
-                {getNetworkNodeTypeOptions()}
-              </Select>
-            )}
+            <Select
+              placeholder={intl.formatMessage({
+                id: 'app.operator.node.new.inputBasic.form.nodeType.placeholder',
+                defaultMessage: 'Select Node Type',
+              })}
+            >
+              {getNetworkNodeTypeOptions()}
+            </Select>
           </Form.Item>
           <Form.Item
             wrapperCol={{
@@ -230,7 +224,7 @@ class InputBasicInfo extends React.PureComponent {
             <Button onClick={() => history.push(`/operator/node`)}>
               {intl.formatMessage({ id: 'form.button.cancel', defaultMessage: 'Cancel' })}
             </Button>
-            <Button type="primary" onClick={this.validateForm} style={{ marginLeft: 8 }}>
+            <Button type="primary" htmlType="submit" style={{ marginLeft: 8 }}>
               {intl.formatMessage({ id: 'form.button.next', defaultMessage: 'Next' })}
             </Button>
           </Form.Item>
@@ -240,4 +234,4 @@ class InputBasicInfo extends React.PureComponent {
   }
 }
 
-export default InputBasicInfo;
+export default injectIntl(InputBasicInfo);

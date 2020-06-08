@@ -2,7 +2,7 @@
  SPDX-License-Identifier: Apache-2.0
 */
 import React, { PureComponent, Fragment } from 'react';
-import { connect, history, useIntl, injectIntl } from 'umi';
+import { connect, history, injectIntl } from 'umi';
 import {
   Card,
   Button,
@@ -16,7 +16,7 @@ import {
   Select,
   Badge,
 } from 'antd';
-import { DownOutlined } from '@ant-design/icons';
+import { DownOutlined, PlusOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import StandardTable from '@/components/StandardTable';
@@ -33,6 +33,7 @@ const RegisterUserForm = props => {
     handleModalVisible,
     registeringUser,
     targetNodeId,
+    intl,
   } = props;
   const [form] = Form.useForm();
   const onFinish = values => {
@@ -66,7 +67,6 @@ const RegisterUserForm = props => {
       md: { span: 10 },
     },
   };
-  const intl = useIntl();
 
   return (
     <Modal
@@ -180,7 +180,7 @@ const RegisterUserForm = props => {
   loadingNodes: loading.effects['node/listNode'],
   registeringUser: loading.effects['node/registerUserToNode'],
 }))
-class Node extends PureComponent {
+class Index extends PureComponent {
   state = {
     selectedRows: [],
     formValues: {},
@@ -357,6 +357,7 @@ class Node extends PureComponent {
       handleModalVisible: this.handleModalVisible,
       registeringUser,
       targetNodeId,
+      intl,
     };
 
     function badgeStatus(status) {
@@ -501,11 +502,8 @@ class Node extends PureComponent {
           <div className={styles.tableList}>
             <div className={styles.tableListOperator}>
               {userRole !== 'operator' && (
-                <Button
-                  icon="plus"
-                  type="primary"
-                  onClick={() => history.push('/operator/node/new')}
-                >
+                <Button type="primary" onClick={() => history.push('/operator/node/new')}>
+                  <PlusOutlined />
                   {intl.formatMessage({ id: 'form.button.new', defaultMessage: 'New' })}
                 </Button>
               )}
@@ -530,4 +528,4 @@ class Node extends PureComponent {
   }
 }
 
-export default injectIntl(Node);
+export default injectIntl(Index);
