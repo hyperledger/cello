@@ -6,9 +6,6 @@ spec:
   # The CA admin id and password to start up a CA server
   admin: "sampleadmin"
   adminPassword: "samplepassword"
-  # Specify storage being used by this Certificate Authority.
-  # storageClass: "default"
-  # storageSize: "1Gi"
 
   # If you have an set of certs that you like to use instead of
   # generating a set by Fabric CA, you can specify as the following.
@@ -21,9 +18,13 @@ spec:
   #   tlsKey:
   nodeSpec:
     # Specify Fabric binaries to be used to setup the fabric CA
-    image: "hyperledger/fabric-ca:1.4.3"
+    image: "hyperledger/fabric-ca:1.4"
   # Optionally, FQDN can also be specified
   # hosts: ["ca.sample.com", "169.45.20.0"]
+
+  # Specify storage being used by this Certificate Authority.
+  # storageClass: "default"
+  # storageSize: "1Gi"
 
   # To specify resource limits for this CA node,
   # use kubernetes resource requirements spec

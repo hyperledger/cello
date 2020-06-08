@@ -30,7 +30,7 @@ spec:
     #     cpu: "250"
     storageSize: "1Gi"
     storageClass: "default"
-    image: "hyperledger/fabric-peer:1.4.3"
+    image: "hyperledger/fabric-peer:2.1"
     # Add all the configurable peer parameters as
     # name-value pairs
     configParams:
