@@ -30,7 +30,7 @@ spec:
     #     cpu: "250"
     storageSize: "1Gi"
     storageClass: "default"
-    image: "hyperledger/fabric-orderer:1.4.3"
+    image: "hyperledger/fabric-orderer:2.1"
   # Add any configurable orderer parameters as name-value pairs
     configParams:
       - name: ORDERER_GENERAL_TLS_ENABLED
