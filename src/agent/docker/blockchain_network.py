@@ -272,17 +272,23 @@ class NetworkOnDocker(BlockchainNetworkBase):
         result = couchdb_service_model.to_dict()
         return result
 
-    def create_peer_org(self, peer_org, couchdb_enabled, host, net_id, net_name, fabric_version, request_host_ports, portid):
+    def create_peer_org(self, peer_org, couchdb_enabled, host, net_id, net_name, fabric_version, request_host_ports, portid, peer_num):
         service_names = []
         couchdb_service_names = []
         index = portid[0]
         sevices_dict = {}
         org_name = peer_org['name']
         org_domain = peer_org['domain']
+        peer_num_all = int(peer_org['peerNum'])
+        exist_peer_num = 0
+        if peer_num_all != peer_num:
+            exist_peer_num = peer_num_all- peer_num
         container_service_ip = host.worker_api.split(':')[1][2:]
         composefile_dict = {'version': '3.2', 'networks': {'celloNet': None}, 'services': {}}
         net_dir = CELLO_MASTER_FABRIC_DIR + net_id
         for i in range(int(peer_org['peerNum'])):
+            if exist_peer_num > i:
+                continue
             peer_name = 'peer{}'.format(i)
             if couchdb_enabled is True:
                 peer_seq = ['couchdb', peer_name, org_name, org_domain]
@@ -326,27 +332,28 @@ class NetworkOnDocker(BlockchainNetworkBase):
                                                                 )
                 peer_service_endpoint.save()
 
-        ca_service_name = '.'.join(['ca', org_name, org_domain])
-        service_names.append(ca_service_name)
-        org_full_domain = '.'.join([org_name, org_domain])
-        pk_path = '{net_dir}/crypto-config/peerOrganizations/{org_dir}/ca/'. \
-            format(net_dir=net_dir, org_dir=org_full_domain)
-        ca_key_file = self._get_ca_private_key(pk_path)
-        host_port = request_host_ports[index]
-        index = index + 1
-        ca_service_dict = self._construct_ca_docker_service(net_id, org_name, org_domain, ca_key_file, \
-                                                            fabric_version,
-                                                            host_port)
-        sevices_dict.update(ca_service_dict)
-        ca_service_endpoint = modelv2.ServiceEndpoint(id=uuid4().hex,
-                                                      service_ip=container_service_ip,
-                                                      service_port=host_port,
-                                                      service_name=ca_service_name,
-                                                      service_type='ca',
-                                                      org_name=org_name,
-                                                      network=modelv2.BlockchainNetwork.objects.get(id=net_id)
-                                                      )
-        ca_service_endpoint.save()
+        if exist_peer_num == 0:
+            ca_service_name = '.'.join(['ca', org_name, org_domain])
+            service_names.append(ca_service_name)
+            org_full_domain = '.'.join([org_name, org_domain])
+            pk_path = '{net_dir}/crypto-config/peerOrganizations/{org_dir}/ca/'. \
+                format(net_dir=net_dir, org_dir=org_full_domain)
+            ca_key_file = self._get_ca_private_key(pk_path)
+            host_port = request_host_ports[index]
+            index = index + 1
+            ca_service_dict = self._construct_ca_docker_service(net_id, org_name, org_domain, ca_key_file, \
+                                                                fabric_version,
+                                                                host_port)
+            sevices_dict.update(ca_service_dict)
+            ca_service_endpoint = modelv2.ServiceEndpoint(id=uuid4().hex,
+                                                          service_ip=container_service_ip,
+                                                          service_port=host_port,
+                                                          service_name=ca_service_name,
+                                                          service_type='ca',
+                                                          org_name=org_name,
+                                                          network=modelv2.BlockchainNetwork.objects.get(id=net_id)
+                                                          )
+            ca_service_endpoint.save()
         host_id = peer_org['host_id']
         host = host_handler.get_active_host_by_id(host_id)
 
