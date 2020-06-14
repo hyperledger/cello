@@ -317,7 +317,7 @@ def organization_update(organization_id):
     result = org_handler().update(id, peerNum)
     if result:
         logger.debug("organization PUT successfully")
-        return make_ok_my_resp()
+        return make_ok_my_resp(resource='organization',result=result)
     else:
         error_msg = "Failed to update organization {}".format(result.get("name"))
         logger.warning(error_msg)
