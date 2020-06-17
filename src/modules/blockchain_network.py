@@ -300,11 +300,12 @@ class BlockchainNetworkHandler(object):
 
             for peer_org in network_config['peer_org_dicts']:
                 host_id = peer_org['host_id']
+                peer_num = peer_org['peerNum']
                 host_handler.refresh_status(host_id)
                 host = host_handler.get_active_host_by_id(host_id)
                 host.update(add_to_set__clusters=[net_id])
                 self.host_agents[host.type].create_peer_org(peer_org, couchdb_enabled, host, net_id, net_name,
-                                                            fabric_version, request_host_ports, portid)
+                                                            fabric_version, request_host_ports, portid, peer_num)
 
             network.update(set__status='running')
             # zsh修改，为解决网络创建过程中，还可以继续操作组织的问题，将给组织增加网络的动作放到前面
@@ -351,10 +352,11 @@ class BlockchainNetworkHandler(object):
 
             for peer_org in network_config['peer_org_dicts']:
                 host_id = peer_org['host_id']
+                peer_num = peer_org['peerNum']
                 host = host_handler.get_active_host_by_id(host_id)
                 host.update(add_to_set__clusters=[net_id])
                 self.host_agents[host.type].create_peer_org(peer_org, couchdb_enabled, host, net_id, net_name,
-                                                            fabric_version, request_host_ports, portid)
+                                                            fabric_version, request_host_ports, portid, peer_num)
 
 
             network.update(set__status='running')
@@ -386,6 +388,7 @@ class BlockchainNetworkHandler(object):
             #     service_urls = self.gen_service_urls(net_id)
             net_id = network_config['id']
             net_name = network_config['name']
+            peer_num = network_config['peer_num']
             peer_org = network_config['peer_org_dict']
             couchdb_enabled = False
             if network_config['db_type'] == 'couchdb':
@@ -398,7 +401,7 @@ class BlockchainNetworkHandler(object):
             host = host_handler.get_active_host_by_id(host_id)
             host_handler.refresh_status(host_id)
             self.host_agents[host.type].create_peer_org(peer_org, couchdb_enabled, host, net_id, net_name,
-                                                        fabric_version, request_host_ports, portid)
+                                                        fabric_version, request_host_ports, portid, peer_num)
 
 
             network.update(set__status='running')
@@ -736,7 +739,7 @@ class BlockchainNetworkHandler(object):
         # use network model to get?
         # network models only have org ids, no details needed
         network_config = {'id': id, 'name': name, 'fabric_version': fabric_version,
-                          'peer_org_dict': peer_org_dict,
+                          'peer_org_dict': peer_org_dict, 'peer_num':peers_num,
                           'db_type': db_type}
 
         t = Thread(target=self._update_network_for_addpeers, args=(network_config, request_host_ports))

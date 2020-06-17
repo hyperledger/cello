@@ -113,7 +113,7 @@ class NetworkOnKubenetes(BlockchainNetworkBase):
         return k8s_config
 
 
-    def create_peer_org(self, peer_org, couchdb_enabled, host, net_id, net_name, fabric_version, request_host_ports, portid):
+    def create_peer_org(self, peer_org, couchdb_enabled, host, net_id, net_name, fabric_version, request_host_ports, portid, peer_num):
         index = portid[0]
         peer_org_names = []
         net_dir = CELLO_MASTER_FABRIC_DIR + net_id
@@ -257,52 +257,52 @@ class NetworkOnKubenetes(BlockchainNetworkBase):
                         index = index + 3
                         # couchdb is enabled by default
                         render(peer_template, peer_deploy_file, networkName=net_name,
-                           orgDomain=org_fullDomain_name,
-                           peerSvcName=k8s_peer_name,
-                           podName=k8s_peer_name,
-                           fabVersion=fabric_version,
-                           peerID=peer_name,
-                           corePeerID=k8s_peer_name,
-                           peerAddress='{}:7051'.format(k8s_peer_name),
-                           localMSPID='{}MSP'.format(org_name[0:1].upper() + org_name[1:]),
-                           mspPath='peers/{}/msp'.format(peer_service_name),
-                           tlsPath='peers/{}/tls'.format(peer_service_name),
-                           dataPath=peer_service_name,
-                           couchDataPath=couchdb_service_name,
-                           credentialPV=org_name + '-credentialpv',
-                           dataPV=org_name + '-datapv',
-                           nodePort1=host_ports[0],
-                           nodePort2=host_ports[1],
-                           nodePort3=host_ports[2])
+                               orgDomain=org_fullDomain_name,
+                               peerSvcName=k8s_peer_name,
+                               podName=k8s_peer_name,
+                               fabVersion=fabric_version,
+                               peerID=peer_name,
+                               corePeerID=k8s_peer_name,
+                               peerAddress='{}:7051'.format(k8s_peer_name),
+                               localMSPID='{}MSP'.format(org_name[0:1].upper() + org_name[1:]),
+                               mspPath='peers/{}/msp'.format(peer_service_name),
+                               tlsPath='peers/{}/tls'.format(peer_service_name),
+                               dataPath=peer_service_name,
+                               couchDataPath=couchdb_service_name,
+                               credentialPV=org_name + '-credentialpv',
+                               dataPV=org_name + '-datapv',
+                               nodePort1=host_ports[0],
+                               nodePort2=host_ports[1],
+                               nodePort3=host_ports[2])
 
                         couchdb_service_endpoint = modelv2.ServiceEndpoint(id=uuid4().hex,
-                                                                       service_ip=node_vip,
-                                                                       service_port=host_ports[2],
-                                                                       service_name=couchdb_service_name,
-                                                                       service_type='couchdb',
-                                                                       org_name=org_name,
-                                                                       network=modelv2.BlockchainNetwork.objects.get(
-                                                                       id=net_id)
-                                                                       )
+                                                                           service_ip=node_vip,
+                                                                           service_port=host_ports[2],
+                                                                           service_name=couchdb_service_name,
+                                                                           service_type='couchdb',
+                                                                           org_name=org_name,
+                                                                           network=modelv2.BlockchainNetwork.objects.get(
+                                                                           id=net_id)
+                                                                           )
                         couchdb_service_endpoint.save()
-                    # 仅仅peer0做持久化存储. 注释掉暂时不做任何持久化存储
-                    # if peer_service_name.split('.')[0][-1] == '0':
-                    #    peer0DataPath(peer_deploy_file, peer_service_name)
+                        # 仅仅peer0做持久化存储. 注释掉暂时不做任何持久化存储
+                        # if peer_service_name.split('.')[0][-1] == '0':
+                        #    peer0DataPath(peer_deploy_file, peer_service_name)
 
                         for i in range(2):
                             peer_service_endpoint = modelv2.ServiceEndpoint(id=uuid4().hex,
-                                                                        service_ip=node_vip,
-                                                                        service_port=host_ports[i],
-                                                                        service_name=peer_service_name,
-                                                                        service_type='peer',
-                                                                        org_name=org_name,
-                                                                        peer_port_proto=fabric_peer_proto_14[i],
-                                                                        network=modelv2.BlockchainNetwork.objects.get(
-                                                                            id=net_id)
-                                                                        )
+                                                                            service_ip=node_vip,
+                                                                            service_port=host_ports[i],
+                                                                            service_name=peer_service_name,
+                                                                            service_type='peer',
+                                                                            org_name=org_name,
+                                                                            peer_port_proto=fabric_peer_proto_14[i],
+                                                                            network=modelv2.BlockchainNetwork.objects.get(
+                                                                                id=net_id)
+                                                                            )
                             peer_service_endpoint.save()
 
-                    # deploy
+                        # deploy
                         with open(peer_deploy_file) as f:
                             resources = yaml.load_all(f)
                             operation.deploy_k8s_resource(resources)
