@@ -2,6 +2,7 @@ package ca
 
 import (
 	"context"
+	"encoding/base64"
 	"strconv"
 	"strings"
 	"time"
@@ -234,10 +235,10 @@ func (r *ReconcileCA) newSecretForCR(cr *fabricv1alpha1.CA, request reconcile.Re
 		secret.Namespace = request.Namespace
 		secret.Data = make(map[string][]byte)
 		if cr.Spec.Certs != nil {
-			secret.Data["cert"] = []byte(cr.Spec.Certs.Cert)
-			secret.Data["key"] = []byte(cr.Spec.Certs.Key)
-			secret.Data["tlsCert"] = []byte(cr.Spec.Certs.TLSCert)
-			secret.Data["tlsKey"] = []byte(cr.Spec.Certs.TLSKey)
+			secret.Data["cert"], _ = base64.StdEncoding.DecodeString(cr.Spec.Certs.Cert)
+			secret.Data["key"], _ = base64.StdEncoding.DecodeString(cr.Spec.Certs.Key)
+			secret.Data["tlsCert"], _ = base64.StdEncoding.DecodeString(cr.Spec.Certs.TLSCert)
+			secret.Data["tlsKey"], _ = base64.StdEncoding.DecodeString(cr.Spec.Certs.TLSKey)
 		}
 		controllerutil.SetControllerReference(cr, secret, r.scheme)
 	}
