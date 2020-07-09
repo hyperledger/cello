@@ -10,7 +10,7 @@
     "cors": "^2.8.4",
     "express": "^4.15.2",
     "express-bearer-token": "^2.1.0",
-    "express-jwt": "^5.1.0",
+    "express-jwt": "^6.0.0",
     "express-request-language": "^1.1.15",
     "express-session": "^1.15.2",
     "fabric-ca-client": "^1.0.2",
