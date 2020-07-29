@@ -74,10 +74,13 @@ REPLACE_SLASH:=\/
 # deploy method docker-compose/k8s
 export DEPLOY_METHOD?=docker-compose
 
+-include .config
 -include .makerc/kubernetes
 -include .makerc/api-engine
 -include .makerc/dashboard
 -include .makerc/functions
+
+.EXPORT_ALL_VARIABLES:
 
 export ROOT_PATH = ${PWD}
 ROOT_PATH_REPLACE=$(subst $(SLASH),$(REPLACE_SLASH),$(ROOT_PATH))
@@ -95,7 +98,7 @@ WORKER_TYPE ?= docker
 
 # Specify the running mode, prod or dev
 MODE ?= prod
-ifeq ($(MODE),prod)
+ifeq ($(CONFIG_PROD_MODE),y)
 	COMPOSE_FILE=docker-compose.yml
 	export DEPLOY_TEMPLATE_NAME=deploy.tmpl
 	export DEBUG?=False
@@ -199,10 +202,10 @@ image-clean: clean ##@Clean all existing images to rebuild
 	docker images | grep "hyperledger/cello-" | awk '{print $3}' | xargs docker rmi -f
 
 start-docker-compose:
-	docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} up -d --force-recreate
+	docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} up -d --force-recreate --remove-orphans
 
 start: ##@Service Start service
-	if [ "$(DEPLOY_METHOD)" = "docker-compose" ]; then \
+	if [ "$(CONFIG_DOCKER_COMPOSE_DEPLOY)" = "y" ]; then \
 		make start-docker-compose; \
 	else \
 		make start-k8s; \
@@ -238,7 +241,7 @@ generate-mock:
 	make -C src/dashboard generate-mock
 
 stop: ##@Service Stop service
-	if [ "$(DEPLOY_METHOD)" = "docker-compose" ]; then \
+	if [ "$(CONFIG_DOCKER_COMPOSE_DEPLOY)" = "y" ]; then \
 		make stop-docker-compose; \
 	else \
 		make stop-k8s; \
@@ -256,6 +259,15 @@ setup-master: ##@Environment Setup dependency for master node
 
 setup-worker: ##@Environment Setup dependency for worker node
 	cd scripts/worker_node && bash setup.sh $(WORKER_TYPE)
+
+menuconfig:
+	MENUCONFIG_STYLE=aquatic python kconfig-lib/menuconfig.py
+
+oldconfig:
+	python kconfig-lib/oldconfig.py
+
+alldefconfig:
+	python kconfig-lib/alldefconfig.py
 
 help: ##@other Show this help.
 	@perl -e '$(HELP_FUN)' $(MAKEFILE_LIST)

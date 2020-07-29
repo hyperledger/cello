@@ -22,10 +22,10 @@ services:
     links:
     - api-engine
     ports:
-    - "${API_ENGINE_SERVICE_PORT}:80"
+    - "${CONFIG_API_ENGINE_SERVICE_PORT}:80"
     environment:
     - UWSGI_SERVER_HOST=api-engine
-    - URL_PREFIX=${API_ENGINE_WEBROOT}
+    - URL_PREFIX=${CONFIG_API_ENGINE_WEBROOT}
     volumes:
       - /opt/cello/api-engine/media:/var/www/media
 

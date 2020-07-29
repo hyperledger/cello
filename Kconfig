@@ -1,0 +1,66 @@
+menu "Deploy (部署)"
+  choice
+    prompt "Method (部署方式)"
+
+    config DOCKER_COMPOSE_DEPLOY
+      bool "docker-compose deploy (docker-compose部署)"
+
+    config K8S_DEPLOY
+      bool "kubernetes deploy (kubernetes 部署)"
+  endchoice
+  choice
+    prompt "Mode (部署模式)"
+
+    config DEV_MODE
+      bool "dev-mode(开发模式)"
+
+    config PROD_MODE
+      bool "prod-mode(生产模式)"
+  endchoice
+endmenu
+
+menu "API Server Config (API服务配置)"
+  config API_ENGINE_WEBROOT
+    string "WEBROOT (服务根路径)"
+    default "/engine"
+  config POSTGRES_USER
+    string "POSTGRES_USER (数据库用户名)"
+    default "admin"
+  config POSTGRES_PASSWORD
+    string "POSTGRES_PASSWORD (数据库密码)"
+    default "password"
+  config API_ENGINE_SERVICE_PORT
+    int "Service Port (服务端口)"
+    default 8085
+    range 8000 10000
+  config API_ENGINE_ADMIN_TOKEN
+    string "Admin Token(管理员Token)"
+    default "administrator"
+  config API_ENGINE_ADMIN_USERNAME
+    string "Admin Username (管理员用户名)"
+    default "admin"
+  config API_ENGINE_ADMIN_PASSWORD
+    string "Admin Password (管理员密码)"
+    default "pass"
+  config API_ENGINE_ADMIN_EMAIL
+    string "Admin email (管理员邮箱)"
+    default "admin@cello.com"
+  config API_DOCKER_HOST
+    string "Docker Host(Docker主机)"
+    default "unix://var/run/docker.sock"
+  config API_VERSION
+    string "Version (接口版本)"
+    default "master"
+endmenu
+
+menu "Dashboard Config (控制台服务配置)"
+  config MOCK
+    bool "Whether mock api (是否采用假数据)"
+    default y
+  config PROXY
+    string "API Proxy (API代理)"
+  config DASHBOARD_SERVICE_PORT
+    int "Dashboard Service Port (控制台服务端口)"
+    default 8081
+    range 8000 10000
+endmenu
