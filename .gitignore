@@ -241,3 +241,5 @@ screenshot
 src/dashboard/dist
 src/dashboard/functions
 src/dashboard/lambda/mock/index.js
+.config
+.config.old
