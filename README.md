@@ -40,6 +40,20 @@ If environment is prepared, then we can start cello service.
 # make docker
 ```
 
+* config variables for service deployment through menuconfig/alldefconfig, then will generate .config file under the project folder.
+
+if you want to use default configuration for service deployment, only need run alldefconfig.
+
+```bash
+# make alldefconfig
+```
+
+if you want to set the config through terminal ui, run menuconfig ![menuconfig](docs/images/menuconfig.png).
+
+```bash
+# make menuconfig
+```
+
 * Start cello service, default deployment method is using docker-compose, if you have kubernetes environment,
 you can change deployment method to kubernetes through `DEPLOY_METHOD=k8s make start`.
 
