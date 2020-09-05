@@ -62,7 +62,7 @@ def health_check():
         end_healthy = True
         healthy = False
 
-        time.sleep(5)
+        #time.sleep(5)
         for ep in service_endpoints:
             # event port is not needed in fabric 1.4
             # don't do health check on event port to avoid health check fail on fabric 1.3 later
@@ -77,7 +77,7 @@ def health_check():
                 sock.connect((ip, port))
                 #logger.info("connect {}:{} succeed".format(ip, port))
                 healthy = True
-                end_healthy = healthy and end_healthy
+                #end_healthy = healthy and end_healthy
                 ep.update(set__healthy=True)
             except Exception as e:
                 logger.error("connect {}:{} fail, reason {}".format(ip, port, e))
@@ -86,8 +86,9 @@ def health_check():
                 # break
             finally:
                 sock.close()
+                end_healthy = healthy and end_healthy
 
-        if not healthy:
+        if not end_healthy:
             network.update(set__healthy=False)
             return
         else:
