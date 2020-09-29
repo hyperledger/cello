@@ -16,5 +16,5 @@ RUN cd /root && tar xf node-v8.11.3-linux-x64.tar.xz && \
 	ln -s /usr/local/node/bin/npx /usr/bin
 RUN  cd /app/static/dashboard && \
       npm install && npm run build
-RUN apt-get install -y openssh-server
+
 CMD if [ "$DEBUG" = "True" ]; then python dashboard.py ; else gunicorn -w 1 --worker-class eventlet --no-sendfile  -b 0.0.0.0:8071 dashboard:app --timeout 120;fi
