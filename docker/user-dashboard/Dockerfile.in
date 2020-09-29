@@ -6,7 +6,7 @@ FROM node:8.11.3
 MAINTAINER h3c "@h3c.com"
 
 COPY user-dashboard/src /var/www
-RUN cd /var/www && yarn install && npm run build
+RUN cd /var/www && npm install && npm run build
 RUN cd /var/www/packages/fabric-1.4 && npm install
 WORKDIR /var/www
 EXPOSE 8081
