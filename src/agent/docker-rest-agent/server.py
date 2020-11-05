@@ -2,17 +2,32 @@ from flask import Flask, jsonify, request
 import docker
 import sys
 import logging
+import os
 
 app = Flask(__name__)
 PASS_CODE = 'OK'
 FAIL_CODE = 'Fail'
 
-client = docker.from_env()
+docker_url = os.getenv("DOCKER_URL")
+
+client = docker.DockerClient(docker_url)
 res = {'code': '', 'data': {}, 'msg': ''}
 
 @app.route('/api/v1/networks', methods=['GET'])
 def get_network():
-    return jsonify({'networks': client.containers.list()})
+    container_list = client.containers.list()
+    containers = {}
+    for container in container_list:
+        containers[container.id]={
+        "id":container.id,
+        "short_id":container.short_id,
+        "name":container.name,
+        "status":container.status,
+        "image":str(container.image),
+        "attrs":container.attrs
+        }
+    res = {'code':PASS_CODE, 'data':containers, 'msg':''}
+    return jsonify({'res':res})
 
 @app.route('/api/v1/nodes', methods=['POST'])
 def create_node():
@@ -76,4 +91,4 @@ def operate_node(id):
 
 
 if __name__ == '__main__':
-    app.run(port=5001, debug=True)
+    app.run(host = "0.0.0.0", port=5001)
