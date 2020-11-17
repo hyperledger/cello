@@ -41,11 +41,11 @@ def create_node():
     res['data']['id'] = container.id
     res['data']['public-grpc'] = '127.0.0.1:7050' # TODO: read the info from config file
     res['data']['public-raft'] = '127.0.0.1:7052'
+    res['msg'] = 'node created'
     return jsonify(res)
 
 @app.route('/api/v1/nodes/<id>', methods=['GET', 'POST'])
 def operate_node(id):
-    
     container = client.containers.get(id)
     if request.method == 'POST':
         act = request.form.get('action') # only with POST
@@ -53,12 +53,16 @@ def operate_node(id):
         try:
             if act == 'start':
                 container.start()
+                res['msg'] = 'node started'
             elif act == 'restart':
                 container.restart()
+                res['msg'] = 'node restarted'
             elif act == 'stop':
                 container.stop()
+                res['msg'] = 'node stopped'
             elif act == 'delete':
                 container.remove()
+                res['msg'] = 'node deleted'
             else:
                 res['msg'] = 'undefined action'
         except:
@@ -69,8 +73,8 @@ def operate_node(id):
             raise
     else:
         # GET
-        res['data']['status'] = container.status()
-    
+        res['data']['status'] = container.status
+
     res['code'] = PASS_CODE
     return jsonify(res)
 
