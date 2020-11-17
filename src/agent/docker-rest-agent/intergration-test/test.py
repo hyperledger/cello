@@ -18,28 +18,45 @@ with open('msp.zip', 'rb') as node_msp, open('tls.zip', 'rb') as tls, open('bloc
                 'name': 'cello-hlf-peer'
     }
 
-# Test creating a node
+print('-'*20)
+print('Test creating a node')
+print()
 n = post('http://localhost:5001/api/v1/nodes', data=data)
 print(n.text)
 txt = json.loads(n.text)
 nid = txt['data']['id']
+print('-'*20)
 
-# Test starting a node
+print('Test starting a node')
+print()
 data = {'action': 'start'}
 response = post('http://localhost:5001/api/v1/nodes/'+nid, data=data)
 print(response.text)
+print('-'*20)
 
-# Test restarting a node
+print('Test restarting a node')
+print()
 data = {'action': 'restart'}
 response = post('http://localhost:5001/api/v1/nodes/'+nid, data=data)
 print(response.text)
+print('-'*20)
 
-# Test stopping a node
+print('Test stopping a node')
+print()
 data = {'action': 'stop'}
 response = post('http://localhost:5001/api/v1/nodes/'+nid, data=data)
 print(response.text)
+print('-'*20)
 
-# Test deleting a node
+
+print('Get status of a node')
+print()
+response = get('http://localhost:5001/api/v1/nodes/'+nid)
+print(response.text)
+print('-'*20)
+
+print('Test deleting a node')
+print()
 data = {'action': 'delete'}
 response = post('http://localhost:5001/api/v1/nodes/'+nid, data=data)
 print(response.text)
