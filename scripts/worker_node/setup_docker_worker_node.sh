@@ -40,6 +40,10 @@ echo_b "Checking local artifacts path ${ARTIFACTS_DIR}..."
 
 echo_b "Mount NFS Server ${MASTER_NODE_IP}"
 sudo mount -t nfs -o vers=4,loud ${MASTER_NODE_IP}:/ ${ARTIFACTS_DIR}
+if [ $? != 0 ]; then
+	echo_r "Mount failed"
+	exit 1
+fi
 
 echo_b "Setup ip forward rules"
 sudo sysctl -w net.ipv4.ip_forward=1
