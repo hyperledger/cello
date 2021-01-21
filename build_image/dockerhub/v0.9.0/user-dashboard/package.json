@@ -34,7 +34,7 @@
     "rimraf": "^2.6.2",
     "shelljs": "^0.7.8",
     "sleep-promise": "^2.0.0",
-    "socket.io": "^2.0.4",
+    "socket.io": "^2.4.0",
     "swig": "^1.4.2",
     "uuid4": "^1.0.0",
     "winston": "^2.3.1"
