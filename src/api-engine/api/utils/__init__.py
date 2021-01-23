@@ -8,6 +8,7 @@ from rest_framework.exceptions import ValidationError, ParseError
 from api.common.enums import ErrorCode
 from rest_framework import status
 from rest_framework.exceptions import ErrorDetail
+from .common import zip_dir, zip_file
 
 
 LOG = logging.getLogger(__name__)
