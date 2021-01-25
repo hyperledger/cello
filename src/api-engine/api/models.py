@@ -15,6 +15,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.dispatch import receiver
 from django.db.models.signals import post_save
+from django.contrib.postgres.fields import ArrayField
 
 from api.common.enums import (
     HostStatus,
@@ -71,6 +72,30 @@ class Organization(models.Model):
         default="", max_length=64, help_text="Name of organization"
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    msp = models.TextField(help_text="msp of organization", null=True)
+    tls = models.TextField(help_text="tls of organization", null=True)
+    agents = models.CharField(
+        help_text="agent of organization",
+        max_length=128,
+        default="",
+    )
+    network = models.ForeignKey(
+        "Network",
+        help_text="Network to which the organization belongs",
+        null=True,
+        related_name="network",
+        on_delete=models.SET_NULL
+    )
+    channel = models.ForeignKey(
+        "Channel",
+        help_text="channel to which the organization belongs",
+        null=True,
+        related_name="channel",
+        on_delete=models.SET_NULL
+    )
+
+    class Meta:
+        ordering = ("-created_at",)
 
 
 class UserProfile(AbstractUser):
@@ -137,21 +162,17 @@ class Agent(models.Model):
         max_length=64,
         default=random_name("agent"),
     )
-    image = models.CharField(
-        help_text="Image name for deploy agent", max_length=64, default=""
-    )
-    ip = models.GenericIPAddressField(help_text="Agent IP Address")
-    govern = models.ForeignKey(
-        Govern,
-        help_text="Govern of agent",
+    urls = models.URLField(
+        help_text="Agent URL",
         null=True,
-        on_delete=models.CASCADE,
+        blank=True
     )
     organization = models.ForeignKey(
         "Organization",
         null=True,
         on_delete=models.CASCADE,
         help_text="Organization of agent",
+        related_name="organization",
     )
     status = models.CharField(
         help_text="Status of agent",
@@ -159,33 +180,11 @@ class Agent(models.Model):
         max_length=10,
         default=HostStatus.Active.name.lower(),
     )
-    log_level = models.CharField(
-        help_text="Log level of agent",
-        choices=LogLevel.to_choices(True),
-        max_length=10,
-        default=LogLevel.Info.name.lower(),
-    )
     type = models.CharField(
         help_text="Type of agent",
         choices=HostType.to_choices(True),
         max_length=32,
         default=HostType.Docker.name.lower(),
-    )
-    schedulable = models.BooleanField(
-        help_text="Whether agent can be scheduled", default=True
-    )
-    capacity = models.IntegerField(
-        help_text="Capacity of agent",
-        default=1,
-        validators=[MinValueValidator(1), MaxValueValidator(MAX_CAPACITY)],
-    )
-    node_capacity = models.IntegerField(
-        help_text="Capacity of node",
-        default=6,
-        validators=[
-            MinValueValidator(1),
-            MaxValueValidator(MAX_NODE_CAPACITY),
-        ],
     )
     config_file = models.FileField(
         help_text="Config file for agent",
@@ -284,8 +283,10 @@ class Network(models.Model):
         default=make_uuid,
         editable=True,
     )
-    govern = models.ForeignKey(
-        Govern, help_text="Govern of node", null=True, on_delete=models.CASCADE
+    name = models.CharField(
+        help_text="network name, can be generated automatically.",
+        max_length=64,
+        default=random_name("netowrk"),
     )
     type = models.CharField(
         help_text="Type of network, %s" % NetworkType.values(),
@@ -303,6 +304,12 @@ class Network(models.Model):
     )
     created_at = models.DateTimeField(
         help_text="Create time of network", auto_now_add=True
+    )
+    consensus = models.CharField(
+        help_text="Consensus of network", max_length=128, default="raft",
+    )
+    organizations = ArrayField(
+        models.CharField(max_length=128, blank=True), help_text="organizations of network", default=list, null=True
     )
 
     class Meta:
@@ -449,21 +456,6 @@ class Node(models.Model):
         editable=True,
     )
     name = models.CharField(help_text="Node name", max_length=64, default="")
-    network_type = models.CharField(
-        help_text="Network type of node",
-        choices=NetworkType.to_choices(),
-        default=NetworkType.Fabric.value,
-        max_length=64,
-    )
-    network_version = models.CharField(
-        help_text="""
-    Version of network for node.
-    Fabric supported versions: %s
-    """
-        % (FabricVersions.values()),
-        max_length=64,
-        default="",
-    )
     type = models.CharField(
         help_text="""
     Node type defined for network.
@@ -471,18 +463,6 @@ class Node(models.Model):
     """
         % (FabricNodeType.names()),
         max_length=64,
-    )
-    ca = models.ForeignKey(
-        FabricCA,
-        help_text="CA configuration of node",
-        null=True,
-        on_delete=models.CASCADE,
-    )
-    peer = models.ForeignKey(
-        FabricPeer,
-        help_text="Peer configuration of node",
-        null=True,
-        on_delete=models.CASCADE,
     )
     urls = JSONField(
         help_text="URL configurations for node",
@@ -496,24 +476,26 @@ class Node(models.Model):
         null=True,
         on_delete=models.CASCADE,
     )
-    govern = models.ForeignKey(
-        Govern, help_text="Govern of node", null=True, on_delete=models.CASCADE
-    )
-    organization = models.ForeignKey(
+    org = models.ForeignKey(
         Organization,
         help_text="Organization of node",
         null=True,
+        related_name="org",
         on_delete=models.CASCADE,
     )
-    agent = models.ForeignKey(
-        Agent, help_text="Agent of node", null=True, on_delete=models.CASCADE
-    )
-    network = models.ForeignKey(
-        Network,
-        help_text="Network which node joined.",
-        on_delete=models.CASCADE,
-        null=True,
-    )
+    # agent = models.ForeignKey(
+    #     Agent,
+    #     help_text="Agent of node",
+    #     null=True,
+    #     related_name="network",
+    #     on_delete=models.CASCADE
+    # )
+    # network = models.ForeignKey(
+    #     Network,
+    #     help_text="Network which node joined.",
+    #     on_delete=models.CASCADE,
+    #     null=True,
+    # )
     created_at = models.DateTimeField(
         help_text="Create time of network", auto_now_add=True
     )
@@ -523,18 +505,18 @@ class Node(models.Model):
         max_length=64,
         default=NodeStatus.Deploying.name.lower(),
     )
-    compose_file = models.FileField(
-        help_text="Compose file for node, if agent type is docker.",
+    config_file = models.TextField(
+        help_text="Config file of node",
         max_length=256,
-        upload_to=get_compose_file_path,
         blank=True,
         null=True,
     )
-    file = models.FileField(
-        help_text="File of node",
-        max_length=256,
-        blank=True,
-        upload_to=get_node_file_path,
+    msp = models.TextField(
+        help_text="msp of node",
+        null=True,
+    )
+    tls = models.TextField(
+        help_text="tls of node",
         null=True,
     )
 
@@ -561,22 +543,22 @@ class Node(models.Model):
             force_insert, force_update, using, update_fields
         )
 
-    def delete(self, using=None, keep_parents=False):
-        if self.compose_file:
-            compose_file_path = Path(self.compose_file.path)
-            if os.path.isdir(os.path.dirname(compose_file_path)):
-                shutil.rmtree(os.path.dirname(compose_file_path))
-
-        # remove related files of node
-        if self.file:
-            file_path = Path(self.file.path)
-            if os.path.isdir(os.path.dirname(file_path)):
-                shutil.rmtree(os.path.dirname(file_path))
-
-        if self.ca:
-            self.ca.delete()
-
-        super(Node, self).delete(using, keep_parents)
+    # def delete(self, using=None, keep_parents=False):
+    #     if self.compose_file:
+    #         compose_file_path = Path(self.compose_file.path)
+    #         if os.path.isdir(os.path.dirname(compose_file_path)):
+    #             shutil.rmtree(os.path.dirname(compose_file_path))
+    #
+    #     # remove related files of node
+    #     if self.file:
+    #         file_path = Path(self.file.path)
+    #         if os.path.isdir(os.path.dirname(file_path)):
+    #             shutil.rmtree(os.path.dirname(file_path))
+    #
+    #     if self.ca:
+    #         self.ca.delete()
+    #
+    #     super(Node, self).delete(using, keep_parents)
 
 
 class NodeUser(models.Model):
@@ -684,3 +666,85 @@ class File(models.Model):
 
     class Meta:
         ordering = ("-created_at",)
+
+    class User(models.Model):
+        id = models.UUIDField(
+            primary_key=True,
+            help_text="ID of user",
+            default=make_uuid,
+            editable=True,
+        )
+        name = models.CharField(
+            help_text="user name", max_length=128
+        )
+        roles = models.CharField(
+            help_text="roles of user", max_length=128
+        )
+        organization = models.ForeignKey("Organization", on_delete=models.CASCADE)
+        attributes = models.CharField(
+            help_text="attributes of user", max_length=128
+        )
+        revoked = models.CharField(
+            help_text="revoked of user", max_length=128
+        )
+        create_ts = models.DateTimeField(
+            help_text="Create time of user", auto_now_add=True
+        )
+        msp = models.TextField(
+            help_text="msp of user",
+            null=True,
+        )
+        tls = models.TextField(
+            help_text="tls of user",
+            null=True,
+        )
+
+    class Channel(models.Model):
+        id = models.UUIDField(
+            primary_key=True,
+            help_text="ID of Channel",
+            default=make_uuid,
+            editable=False,
+            unique=True)
+        name = models.CharField(
+            help_text="name of channel", max_length=128
+        )
+        network = models.ForeignKey(
+            "Network", on_delete=models.CASCADE
+        )
+        create_ts = models.DateTimeField(
+            help_text="Create time of Channel", auto_now_add=True
+        )
+
+    class ChainCode(models.Model):
+        id = models.UUIDField(
+            primary_key=True,
+            help_text="ID of chainCode",
+            default=make_uuid,
+            editable=False,
+            unique=True
+        )
+        name = models.CharField(
+            help_text="ChainCode name", max_length=128
+        )
+        version = models.CharField(
+            help_text="version of chainCode", max_length=128
+        )
+        creator = models.CharField(
+            help_text="creator of chainCode", max_length=128
+        )
+        language = models.CharField(
+            help_text="language of chainCode", max_length=128
+        )
+        channel = models.ManyToManyField("Channel")
+        install_times = models.DateTimeField(
+            help_text="Create time of install", auto_now_add=True
+        )
+        instantiate_times = models.DateTimeField(
+            help_text="Create time of instantiate", auto_now_add=True
+        )
+        node = models.ManyToManyField("Node", related_name='node')
+        status = models.CharField(
+            help_text="status of chainCode", max_length=128
+        )
+
