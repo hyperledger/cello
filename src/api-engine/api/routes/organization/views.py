@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import logging
+import base64
 
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -25,13 +26,18 @@ from api.routes.organization.serializers import (
 from api.routes.user.serializers import UserIDSerializer
 from api.models import UserProfile, Organization
 from api.routes.user.serializers import UserListSerializer, UserQuerySerializer
+from api.lib.pki import CryptoGen, CryptoConfig
+from api.utils import zip_dir, zip_file
+from api.config import CELLO_HOME
+
 
 LOG = logging.getLogger(__name__)
 
 
 class OrganizationViewSet(viewsets.ViewSet):
-    authentication_classes = (JSONWebTokenAuthentication,)
-    permission_classes = (IsAuthenticated, IsOperatorAuthenticated)
+    """Class represents orgnization related operations."""
+    #authentication_classes = (JSONWebTokenAuthentication,)
+    #permission_classes = (IsAuthenticated, IsOperatorAuthenticated)
 
     @swagger_auto_schema(
         query_serializer=OrganizationQuery,
@@ -43,7 +49,9 @@ class OrganizationViewSet(viewsets.ViewSet):
         """
         List Organizations
 
-        List organizations through query parameter
+        :param request: query parameter
+        :return: organization list
+        :rtype: list
         """
         serializer = OrganizationQuery(data=request.GET)
         if serializer.is_valid(raise_exception=True):
@@ -82,7 +90,9 @@ class OrganizationViewSet(viewsets.ViewSet):
         """
         Create Organization
 
-        Create Organization
+        :param request: create parameter
+        :return: organization ID
+        :rtype: uuid
         """
         serializer = OrganizationCreateBody(data=request.data)
         if serializer.is_valid(raise_exception=True):
@@ -93,7 +103,13 @@ class OrganizationViewSet(viewsets.ViewSet):
                 pass
             else:
                 raise ResourceExists
-            organization = Organization(name=name)
+
+            CryptoConfig(name).create()
+            CryptoGen(name).generate()
+
+            msp, tls = self._conversion_msp_tls(name)
+
+            organization = Organization(name=name, msp=msp, tls=tls)
             organization.save()
 
             response = OrganizationIDSerializer(data=organization.__dict__)
@@ -101,6 +117,30 @@ class OrganizationViewSet(viewsets.ViewSet):
                 return Response(
                     response.validated_data, status=status.HTTP_201_CREATED
                 )
+
+    def _conversion_msp_tls(self, name):
+        """
+        msp and tls from zip file to byte
+
+        :param name: organization name
+        :return: msp, tls
+        :rtype: bytes
+        """
+        try:
+            dir_org = "{}/{}/crypto-config/peerOrganizations/{}/" \
+                .format(CELLO_HOME, name, name)
+
+            zip_dir("{}msp".format(dir_org), "{}msp.zip".format(dir_org))
+            with open("{}msp.zip".format(dir_org), "rb") as f_msp:
+                msp = base64.b64encode(f_msp.read())
+
+            zip_dir("{}tlsca".format(dir_org), "{}tls.zip".format(dir_org))
+            with open("{}tls.zip".format(dir_org), "rb") as f_tls:
+                tls = base64.b64encode(f_tls.read())
+        except Exception as e:
+            raise e
+
+        return msp, tls
 
     @swagger_auto_schema(
         responses=with_common_response(
@@ -111,15 +151,21 @@ class OrganizationViewSet(viewsets.ViewSet):
         """
         Delete Organization
 
-        Delete Organization
+        :param request: destory parameter
+        :param pk: primary key
+        :return: none
+        :rtype: rest_framework.status
         """
         try:
             organization = Organization.objects.get(id=pk)
-            user_count = UserProfile.objects.filter(
-                organization=organization
-            ).count()
-            if user_count > 0:
+            if organization.network:
                 raise ResourceInUse
+
+            # user_count = UserProfile.objects.filter(
+            #     organization=organization
+            # ).count()
+            # if user_count > 0:
+            #     raise ResourceInUse
             organization.delete()
         except ObjectDoesNotExist:
             raise ResourceNotFound
@@ -135,7 +181,10 @@ class OrganizationViewSet(viewsets.ViewSet):
         """
         Retrieve Organization
 
-        Retrieve Organization
+        :param request: retrieve parameter
+        :param pk: primary key
+        :return: organization info
+        :rtype: OrganizationResponse
         """
         try:
             organization = Organization.objects.get(id=pk)
