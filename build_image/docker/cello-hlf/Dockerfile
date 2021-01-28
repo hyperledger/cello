@@ -36,7 +36,7 @@ ENV BASE_VERSION=2.2.0
 ENV PROJECT_VERSION=2.2.0
 ENV HLF_CA_VERSION=1.4.8
 
-# generic environment (core.yaml) for builder and runtime: builder: $(DOCKER_NS)/fabric-ccenv:$(TWO_DIGIT_VERSION)
+# generic environment (core.yaml) for builder and runtime: e.g., builder: $(DOCKER_NS)/fabric-ccenv:$(TWO_DIGIT_VERSION), golang, java, node
 ENV DOCKER_NS=hyperledger
 ENV TWO_DIGIT_VERSION=2.2
 
@@ -80,12 +80,12 @@ RUN mkdir -p /var/hyperledger/production \
 
 # Install development dependencies
 RUN apt-get update \
-        && apt-get install -y apt-utils python-dev \
+        && apt-get install -y apt-utils python3-dev \
         && apt-get install -y libsnappy-dev zlib1g-dev libbz2-dev libyaml-dev libltdl-dev libtool \
-        && apt-get install -y python-pip \
+        && apt-get install -y python3-pip \
         && apt-get install -y vim tree jq unzip \
-        && pip install behave nose docker-compose \
-        && pip install pyinotify \
+        && pip3 install behave nose docker-compose \
+        && pip3 install pyinotify \
         && rm -rf /var/cache/apt
 
 # Install yq to update config for fabric-ca
@@ -99,9 +99,8 @@ RUN go get github.com/golang/protobuf/protoc-gen-go \
         && go get github.com/AlekSi/gocov-xml \
         && go get golang.org/x/tools/cmd/goimports \
         && go get golang.org/x/lint/golint \
-        && go get github.com/estesp/manifest-tool \
+        && go get github.com/estesp/manifest-tool/... \
         && go get github.com/client9/misspell/cmd/misspell \
-        && go get github.com/estesp/manifest-tool \
         && go get github.com/onsi/ginkgo/ginkgo
 
 # Clone the Hyperledger Fabric code and cp sample config files
