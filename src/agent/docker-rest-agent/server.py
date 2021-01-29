@@ -78,6 +78,29 @@ def operate_node(id):
             elif act == 'delete':
                 container.remove()
                 res['msg'] = 'node deleted'
+            elif act == 'update':
+
+                env = {}
+
+                if 'msp' in request.form:
+                    env['HLF_NODE_MSP'] = request.form.get('msp')
+                
+                if 'tls' in request.form:
+                    env['HLF_NODE_TLS'] = request.form.get('tls')
+
+                if 'bootstrap_block' in request.form:
+                    env['HLF_NODE_BOOTSTRAP_BLOCK'] = request.form.get('bootstrap_block')
+                
+                if 'peer_config_file' in request.form:
+                    env['HLF_NODE_PEER_CONFIG'] = request.form.get('peer_config_file')
+
+                if 'orderer_config_file' in request.form:
+                    env['HLF_NODE_ORDERER_CONFIG'] = request.form.get('orderer_config_file')
+
+                container.exec_run(request.form.get('cmd'), detach=True, tty=True, stdin=True, environment=env)
+                container.restart()
+                res['msg'] = 'node updated'
+
             else:
                 res['msg'] = 'undefined action'
         except:
