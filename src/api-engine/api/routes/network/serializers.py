@@ -31,6 +31,10 @@ class NetworkQuery(serializers.Serializer):
         help_text=NetworkStatus.get_info("Network Status:", list_str=True),
         choices=NetworkStatus.to_choices(True),
     )
+    class Meta:
+        model = Network
+        fields = ("page", "per_page", "name")
+        extra_kwargs = {"name": {"required": False}}
 
 
 class NetworkIDSerializer(serializers.Serializer):
@@ -38,12 +42,18 @@ class NetworkIDSerializer(serializers.Serializer):
 
 
 class NetworkResponse(NetworkIDSerializer):
-    status = serializers.ChoiceField(
-        help_text=NetworkStatus.get_info("Network Status:", list_str=True),
-        choices=NetworkStatus.to_choices(True),
-    )
+    id = serializers.UUIDField(help_text="ID of Network")
+
     created_at = serializers.DateTimeField(help_text="Network create time")
-    updated_at = serializers.DateTimeField(help_text="Network update time")
+
+    class Meta:
+        model = Network
+        fields = ("id", "name", "created_at")
+        extra_kwargs = {
+            "name": {"required": True},
+            "created_at": {"required": True, "read_only": False},
+            "id": {"required": True, "read_only": False},
+        }
 
 
 class NetworkMemberSerializer(serializers.Serializer):
@@ -56,20 +66,13 @@ class NetworkMemberSerializer(serializers.Serializer):
 
 
 class NetworkCreateBody(serializers.ModelSerializer):
-    method = serializers.ChoiceField(
-        help_text=NetworkCreateType.get_info(
-            "Network Create Types:", list_str=True
-        ),
-        choices=NetworkCreateType.to_choices(True),
-    )
 
     class Meta:
         model = Network
-        fields = ("type", "version", "method")
-        extra_kwargs = {
-            "type": {"required": True},
-            "version": {"required": True},
-        }
+        fields = ("name", "consensus", "organizations")
+        extra_kwargs = {"name": {"required": True},
+                        "consensus": {"required": True},
+                        "organizations": {"required": True}}
 
 
 class NetworkMemberResponse(serializers.Serializer):

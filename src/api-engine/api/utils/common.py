@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import hashlib
+import os
 
 from drf_yasg import openapi
 from rest_framework import status
@@ -10,6 +11,7 @@ from rest_framework.permissions import BasePermission
 from functools import reduce, partial
 from api.common.serializers import BadResponseSerializer
 import uuid
+from zipfile import ZipFile
 
 
 def make_uuid():
@@ -99,3 +101,31 @@ def hash_file(file, block_size=65536):
         hash_func.update(buf)
 
     return hash_func.hexdigest()
+
+
+def zip_dir(dirpath, outFullName):
+    """
+    Compress the specified folder
+    :param dirpath: specified folder
+    :param outFullName: Save path+xxxx.zip
+    :return: null
+    """
+    dir_dst = "/" + dirpath.rsplit("/", 1)[1]
+    zdir = ZipFile(outFullName, "w")
+    for path, dirnames, filenames in os.walk(dirpath):
+        fpath = dir_dst + path.replace(dirpath, '')
+        for filename in filenames:
+            zdir.write(os.path.join(path, filename), os.path.join(fpath, filename))
+    zdir.close()
+
+
+def zip_file(dirpath, outFullName):
+    """
+    Compress the specified file
+    :param dirpath: specified folder of file
+    :param outFullName: Save path+filename.zip
+    :return: null
+    """
+    zfile = ZipFile(outFullName, "w")
+    zfile.write(dirpath, dirpath.rsplit("/", 1)[1])
+    zfile.close()

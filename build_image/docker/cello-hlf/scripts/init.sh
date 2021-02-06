@@ -36,6 +36,14 @@ cmd=$1
 # The path to store the files
 cfg_path=${FABRIC_CFG_PATH:-/etc/hyperledger/fabric}
 
+# Clean the potential existing msp and tls paths first
+if [ ! -z "${HLF_NODE_MSP}" ] && [ -d ${cfg_path}/msp ]; then
+    mv ${cfg_path}/msp ${cfg_path}/msp.bak
+fi
+if [ ! -z "${HLF_NODE_TLS}" ] && [ -d ${cfg_path}/tls ]; then
+    mv ${cfg_path}/tls ${cfg_path}/tls.bak
+fi
+
 # Read each file from env and store under the ${cfg_path}
 for name in HLF_NODE_MSP \
 	HLF_NODE_TLS \

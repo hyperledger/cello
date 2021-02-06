@@ -109,6 +109,8 @@ class K8SParameterSerializer(serializers.ModelSerializer):
 
 
 class AgentCreateBody(serializers.ModelSerializer):
+    organization = serializers.UUIDField(help_text=IDHelpText)
+
     def to_form_paras(self):
         custom_paras = to_form_paras(self)
 
@@ -118,21 +120,16 @@ class AgentCreateBody(serializers.ModelSerializer):
         model = Agent
         fields = (
             "name",
-            "capacity",
-            "node_capacity",
-            "log_level",
             "type",
-            "schedulable",
-            "ip",
-            "image",
+            "urls",
             "config_file",
+            "organization",
         )
         extra_kwargs = {
-            "capacity": {"required": True},
-            "node_capacity": {"required": True},
             "type": {"required": True},
-            "ip": {"required": True},
-            "image": {"required": True},
+            "urls": {"required": True},
+            "name": {"required": True},
+            "organization": {"required": False},
             "config_file": {
                 "required": False,
                 "validators": [
@@ -145,13 +142,7 @@ class AgentCreateBody(serializers.ModelSerializer):
         }
 
     def validate(self, attrs):
-        capacity = attrs.get("capacity")
-        node_capacity = attrs.get("node_capacity")
-        if node_capacity < capacity:
-            raise serializers.ValidationError(
-                "Node capacity must larger than capacity"
-            )
-
+        pass
         return attrs
 
 
@@ -187,11 +178,8 @@ class AgentUpdateBody(AgentPatchBody):
 
 
 class AgentResponseSerializer(AgentIDSerializer, serializers.ModelSerializer):
-    organization_id = serializers.UUIDField(
+    organization = serializers.UUIDField(
         help_text="Organization ID", required=False, allow_null=True
-    )
-    config_file = serializers.URLField(
-        help_text="Config file of agent", required=False
     )
 
     class Meta:
@@ -199,30 +187,20 @@ class AgentResponseSerializer(AgentIDSerializer, serializers.ModelSerializer):
         fields = (
             "id",
             "name",
-            "capacity",
-            "node_capacity",
             "status",
             "created_at",
-            "log_level",
             "type",
-            "schedulable",
-            "organization_id",
-            "config_file",
-            "ip",
-            "image",
+            "urls",
+            "organization",
         )
         extra_kwargs = {
             "id": {"required": True},
             "name": {"required": True},
             "status": {"required": True},
-            "capacity": {"required": True},
-            "node_capacity": {"required": True},
             "created_at": {"required": True, "read_only": False},
             "type": {"required": True},
-            "log_level": {"required": True},
-            "schedulable": {"required": True},
-            "ip": {"required": True},
-            "image": {"required": True},
+            "organization": {"required": True},
+            "urls": {"required": True},
         }
 
 
