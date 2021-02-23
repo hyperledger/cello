@@ -105,7 +105,6 @@ If you visit the dashboard through 8081 port, the default username/password is `
 # make stop
 ```
 
-
 ## Main Features
 * Manage the lifecycle of blockchains, e.g., create/start/stop/delete/keep health automatically.
 * Support customized (e.g., size, consensus) blockchains request, currently we mainly support [Hyperledger fabric](https://github.com/hyperledger/fabric).
