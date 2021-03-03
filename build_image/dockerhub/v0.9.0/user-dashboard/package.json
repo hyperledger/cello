@@ -28,7 +28,7 @@
     "multer-gridfs-storage": "^1.1.1",
     "node-uuid": "^1.4.8",
     "nodemailer": "^4.2.0",
-    "pug": "^2.0.0-rc.1",
+    "pug": "^3.0.1",
     "request": "^2.81.0",
     "request-promise": "^4.2.0",
     "rimraf": "^2.6.2",
