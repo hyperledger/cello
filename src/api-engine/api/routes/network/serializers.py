@@ -43,7 +43,7 @@ class NetworkIDSerializer(serializers.Serializer):
 
 class NetworkResponse(NetworkIDSerializer):
     id = serializers.UUIDField(help_text="ID of Network")
-
+    name = serializers.CharField(help_text="Name of Network")
     created_at = serializers.DateTimeField(help_text="Network create time")
 
     class Meta:

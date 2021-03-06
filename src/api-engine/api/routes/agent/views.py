@@ -95,15 +95,29 @@ class AgentViewSet(viewsets.ViewSet):
                 query_filters.update({"status": agent_status})
             if agent_type:
                 query_filters.update({"type": agent_type})
+            if organization:
+                query_filters.update({"organization": organization})
 
             agents = Agent.objects.filter(**query_filters)
             p = Paginator(agents, per_page)
             agents = p.page(page)
             # agents = [agent.__dict__ for agent in agents]
             agent_list = []
-            for agent in agents:
-                agent_dict = agent.__dict__
-                agent_list.append(agent_dict)
+            # for agent in agents:
+            #     agent_dict = agent.__dict__
+            #     agent_list.append(agent_dict)
+            agent_list = [
+                {
+                    "id": agent.id,
+                    "name": agent.name,
+                    "status": agent.status,
+                    "type": agent.type,
+                    "urls": agent.urls,
+                    "organization": str(agent.organization.id) if agent.organization else None,
+                    "created_at": agent.created_at,
+                }
+                for agent in agents
+            ]
 
             response = AgentListResponse(
                 data={"data": agent_list, "total": p.count}
@@ -214,7 +228,18 @@ class AgentViewSet(viewsets.ViewSet):
 
         Update special agent with id.
         """
-        pass
+        serializer = AgentUpdateBody(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            name = serializer.validated_data.get("name")
+            urls = serializer.validated_data.get("urls")
+            organization = serializer.validated_data.get("organization")
+            try:
+                Agent.objects.get(name=name)
+            except ObjectDoesNotExist:
+                pass
+            Agent.objects.filter(id=pk).update(name=name, urls=urls, organization=organization)
+
+            return Response(status=status.HTTP_202_ACCEPTED)
 
     @swagger_auto_schema(
         request_body=AgentPatchBody,
