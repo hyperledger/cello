@@ -22,9 +22,10 @@ from api.routes.organization.serializers import (
     OrganizationList,
     OrganizationResponse,
     OrganizationIDSerializer,
+    OrganizationUpdateBody,
 )
 from api.routes.user.serializers import UserIDSerializer
-from api.models import UserProfile, Organization
+from api.models import UserProfile, Organization, Network
 from api.routes.user.serializers import UserListSerializer, UserQuerySerializer
 from api.lib.pki import CryptoGen, CryptoConfig
 from api.utils import zip_dir, zip_file
@@ -68,6 +69,9 @@ class OrganizationViewSet(viewsets.ViewSet):
                 {
                     "id": str(organization.id),
                     "name": organization.name,
+                    "network": str(organization.network.id) if organization.network else None,
+                    "agents": organization.agents if organization.agents else None,
+                    "channel": str(organization.channel.id) if organization.channel else None,
                     "created_at": organization.created_at,
                 }
                 for organization in organizations
@@ -196,6 +200,30 @@ class OrganizationViewSet(viewsets.ViewSet):
                 return Response(
                     response.validated_data, status=status.HTTP_200_OK
                 )
+
+    @swagger_auto_schema(
+        request_body=OrganizationUpdateBody,
+        responses=with_common_response({status.HTTP_202_ACCEPTED: "Accepted"}),
+    )
+    def update(self, request, pk=None):
+        """
+        Update Agent
+
+        Update special agent with id.
+        """
+        serializer = OrganizationUpdateBody(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            name = serializer.validated_data.get("name")
+            agents = serializer.validated_data.get("agents")
+            network = serializer.validated_data.get("network")
+            channel = serializer.validated_data.get("channel")
+            try:
+                Organization.objects.get(name=name)
+            except ObjectDoesNotExist:
+                pass
+            organization = Organization.objects.filter(name=name).update(agents=agents,network=network.id,channel=channel.id)
+
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
     @staticmethod
     def _list_users(request, pk=None):
