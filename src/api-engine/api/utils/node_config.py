@@ -95,7 +95,7 @@ class NodeConfig:
         :return: none
         :rtype: none
         """
-        src = self.peer_file+".bak"
+        src = "/opt/node/core.yaml.bak"
         dst = self.__from_dst(node, "peer")
         self._render(src, dst, **kwargs)
 
@@ -111,7 +111,7 @@ class NodeConfig:
         :return: none
         :rtype: none
         """
-        src = self.orderer_file+".bak"
+        src = "/opt/node/orderer.yaml.bak"
         dst = self.__from_dst(node, "orderer")
         self._render(src, dst, **kwargs)
 
