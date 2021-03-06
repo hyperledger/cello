@@ -168,18 +168,25 @@ class AgentPatchBody(serializers.Serializer):
     )
 
 
-class AgentUpdateBody(AgentPatchBody):
-    status = serializers.ChoiceField(
-        required=False,
-        allow_null=True,
-        help_text=NetworkStatus.get_info(),
-        choices=NetworkStatus.to_choices(),
-    )
+class AgentUpdateBody(AgentIDSerializer, serializers.ModelSerializer):
+    # organization = serializers.UUIDField(
+    #     help_text="Organization ID", required=True, allow_null=True
+    # )
+
+    class Meta:
+        model = Agent
+        fields = (
+            "name",
+            "type",
+            "urls",
+            "organization",
+        )
+
 
 
 class AgentResponseSerializer(AgentIDSerializer, serializers.ModelSerializer):
     organization = serializers.UUIDField(
-        help_text="Organization ID", required=False, allow_null=True
+        help_text="Organization ID", required=True, allow_null=True
     )
 
     class Meta:

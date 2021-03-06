@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import logging
+import base64
 
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -23,11 +24,33 @@ from api.routes.network.serializers import (
 from api.utils.common import with_common_response
 from api.lib.configtxgen import ConfigTX, ConfigTxGen
 from api.models import Network, Node, Organization
+from api.config import CELLO_HOME
+from api.utils import zip_dir, zip_file
 
 LOG = logging.getLogger(__name__)
 
 
 class NetworkViewSet(viewsets.ViewSet):
+
+    def _genesis2base64(self, network):
+        """
+        convert genesis.block to Base64
+
+        :param network: network id
+        :return: genesis block
+        :rtype: bytearray
+        """
+        try:
+            dir_node = "{}/{}/".format(CELLO_HOME, network)
+            name = "genesis.block"
+            zname = "block.zip"
+            zip_file("{}{}".format(dir_node, name), "{}{}".format(dir_node, zname))
+            with open("{}{}".format(dir_node, zname), "rb") as f_block:
+                block = base64.b64encode(f_block.read())
+            return block
+        except Exception as e:
+            raise e
+
     @swagger_auto_schema(
         query_serializer=NetworkQuery,
         responses=with_common_response(
@@ -55,7 +78,7 @@ class NetworkViewSet(viewsets.ViewSet):
             networks = p.page(page)
             networks = [
                 {
-                    "id": str(network.id),
+                    "id": network.id,
                     "name": network.name,
                     "created_at": network.created_at,
                 }
@@ -112,8 +135,12 @@ class NetworkViewSet(viewsets.ViewSet):
             ConfigTX(name).create(consensus=consensus, orderers=orderers, peers=peers)
             ConfigTxGen(name).genesis()
 
-            network = Network(name=name, consensus=consensus, organizations=organizations)
+            block = self._genesis2base64(name)
+            network = Network(name=name, consensus=consensus, organizations=organizations, genesisblock=block)
             network.save()
+
+            for organization in organizations:
+                Organization.objects.filter(pk=organization).update(network=network)
 
             response = NetworkIDSerializer(data=network.__dict__)
             if response.is_valid(raise_exception=True):

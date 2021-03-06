@@ -172,7 +172,7 @@ class Agent(models.Model):
         null=True,
         on_delete=models.CASCADE,
         help_text="Organization of agent",
-        related_name="organization",
+        related_name="agent",
     )
     status = models.CharField(
         help_text="Status of agent",
@@ -310,6 +310,10 @@ class Network(models.Model):
     )
     organizations = ArrayField(
         models.CharField(max_length=128, blank=True), help_text="organizations of network", default=list, null=True
+    )
+    genesisblock = models.TextField(
+        help_text="genesis block",
+        null=True,
     )
 
     class Meta:
@@ -507,8 +511,6 @@ class Node(models.Model):
     )
     config_file = models.TextField(
         help_text="Config file of node",
-        max_length=256,
-        blank=True,
         null=True,
     )
     msp = models.TextField(
@@ -518,6 +520,11 @@ class Node(models.Model):
     tls = models.TextField(
         help_text="tls of node",
         null=True,
+    )
+    cid = models.CharField(
+        help_text="id used in agent, such as container id",
+        max_length=256,
+        default="",
     )
 
     class Meta:
