@@ -27,4 +27,5 @@ function getOrgs(req, res) {
 
 export default {
   'GET /api/organizations': getOrgs,
+  organizations
 };

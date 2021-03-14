@@ -1,6 +1,7 @@
 import Mock from 'mockjs';
 import faker from 'faker';
 import paginator from 'cello-paginator';
+import organizations from './organization';
 
 const users = Mock.mock({
   'data|11': [
@@ -121,6 +122,47 @@ export default {
       status: 'error',
       type,
       currentAuthority: 'guest',
+    });
+  },
+  'POST /api/register': (req, res) => {
+    const { username, orgName } = req.body;
+    if (!username || username === '') {
+      res.send({
+        success: false,
+        message: 'username is necessary!'
+      });
+      return;
+    }
+    if (!orgName || orgName === '') {
+      res.send({
+        success: false,
+        message: 'orgName is necessary!'
+      });
+      return;
+    }
+    let success = true;
+    let message = '';
+    organizations.organizations.data.forEach(function(value){
+      if (value.name === orgName) {
+        success = false;
+        message = 'The org is exist!';
+      }
+    });
+    if (!success) {
+      res.send({
+        success,
+        message
+      });
+      return;
+    }
+    organizations.organizations.data.push({
+      id: Mock.Random.guid(),
+      name: orgName,
+      created_at: Date.now()
+    });
+    res.send({
+      success: true,
+      message: 'register success!'
     });
   },
   'GET /api/500': (req, res) => {

@@ -1,5 +1,11 @@
 import React from 'react';
-import { UserOutlined, LockOutlined, MobileOutlined, MailOutlined } from '@ant-design/icons';
+import {
+  UserOutlined,
+  LockOutlined,
+  MobileOutlined,
+  MailOutlined,
+  TeamOutlined,
+} from '@ant-design/icons';
 import styles from './index.less';
 
 export default {
@@ -59,6 +65,20 @@ export default {
       {
         required: true,
         message: 'Please enter Captcha!',
+      },
+    ],
+  },
+  OrgName: {
+    props: {
+      size: 'large',
+      id: 'orgName',
+      prefix: <TeamOutlined className={styles.prefixIcon} />,
+      placeholder: 'org1',
+    },
+    rules: [
+      {
+        required: true,
+        message: 'Please enter the name of organization!',
       },
     ],
   },
