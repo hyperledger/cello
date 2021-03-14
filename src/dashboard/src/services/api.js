@@ -7,3 +7,10 @@ export async function fakeAccountLogin(params) {
     data: params,
   });
 }
+
+export async function register(params) {
+  return request('/api/register', {
+    method: 'POST',
+    data: params,
+  });
+}
