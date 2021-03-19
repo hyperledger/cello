@@ -58,6 +58,7 @@ from api.utils import zip_dir, zip_file
 from api.config import CELLO_HOME
 from api.utils.node_config import NodeConfig
 from api.lib.agent import AgentHandler
+from api.utils.port_picker import set_ports_mapping, find_available_ports
 
 LOG = logging.getLogger(__name__)
 
@@ -120,6 +121,19 @@ class NodeViewSet(viewsets.ViewSet):
             nodes = Node.objects.filter(**query_filter)
             p = Paginator(nodes, per_page)
             nodes = p.page(page)
+            nodes = [
+                {
+                    "id": str(node.id),
+                    "name": node.name,
+                    "type": node.type,
+                    "network": str(node.org.network.id) if node.org.network.id else None,
+                    "agents": node.agent if node.agent else None,
+                    "channel": str(node.org.channel.id) if node.org.channel else None,
+                    "ports": node.port,
+                    "created_at": node.created_at,
+                }
+                for node in nodes
+            ]
 
             response = NodeListSerializer({"total": p.count, "data": nodes})
             return Response(data=response.data, status=status.HTTP_200_OK)
@@ -271,7 +285,8 @@ class NodeViewSet(viewsets.ViewSet):
             organization = serializer.validated_data.get("organization")
 
             org = Organization.objects.get(id=organization)
-            if org:
+            agent = org.agent.get()
+            if org and agent:
                 pass
             else:
                 raise NoResource
@@ -281,7 +296,7 @@ class NodeViewSet(viewsets.ViewSet):
             }
             CryptoConfig(org.name).update(nodes)
             CryptoGen(org.name).extend()
-            self._generate_config(type, org.name, name, urls.split(":")[2])
+            self._generate_config(type, org.name, name)
             msp, tls, cfg = self._conversion_msp_tls_cfg(type, org.name, name)
 
             node = Node(
@@ -291,15 +306,40 @@ class NodeViewSet(viewsets.ViewSet):
                 type=type,
                 msp=msp,
                 tls=tls,
+                agent=agent,
                 config_file=cfg
             )
             node.save()
+
+            self._set_port(type, node, agent)
 
             response = NodeIDSerializer(data=node.__dict__)
             if response.is_valid(raise_exception=True):
                 return Response(
                     response.validated_data, status=status.HTTP_201_CREATED
                 )
+
+    def _set_port(self, type, node, agent):
+        """
+        get free port from agent,
+
+        :param type: node type
+        :param node: node obj
+        :param agent: agent obj
+        :return: none
+        :rtype: none
+        """
+        ip = agent.urls.split(":")[1].strip("//")
+
+        if type == "peer":
+            ports = find_available_ports(ip, node.id, agent.id, 2)
+            set_ports_mapping(
+                node.id,
+                [{"internal": 7051, "external": ports[0]}, {"internal": 7053, "external": ports[1]}],
+                True)
+        else:
+            ports = find_available_ports(ip, node.id, agent.id, 1)
+            set_ports_mapping(node.id, [{"internal": 7050, "external": ports[0]}], True)
 
     def _conversion_msp_tls_cfg(self, type, org, node):
         """
@@ -339,7 +379,7 @@ class NodeViewSet(viewsets.ViewSet):
 
         return msp, tls, cfg
 
-    def _generate_config(self, type, org, node, port):
+    def _generate_config(self, type, org, node):
         """
         generate config for node
 
@@ -353,16 +393,16 @@ class NodeViewSet(viewsets.ViewSet):
         args = {}
         if type == "peer":
             args.update({"peer_id": "{}.{}".format(node, org)})
-            args.update({"peer_address": "{}.{}:{}".format(node, org, port)})
-            args.update({"peer_gossip_externalEndpoint": "{}.{}:{}".format(node, org, port)})
-            args.update({"peer_chaincodeAddress": "{}.{}:{}".format(node, org, port)})
-            args.update({"peer_tls_enabled": False})
+            args.update({"peer_address": "{}.{}:{}".format(node, org, 7051)})
+            args.update({"peer_gossip_externalEndpoint": "{}.{}:{}".format(node, org, 7051)})
+            args.update({"peer_chaincodeAddress": "{}.{}:{}".format(node, org, 7052)})
+            args.update({"peer_tls_enabled": True})
             args.update({"peer_localMspId": "{}MSP".format(org.capitalize())})
 
             a = NodeConfig(org)
             a.peer(node, **args)
         else:
-            args.update({"General_ListenPort": port})
+            args.update({"General_ListenPort": 7050})
             args.update({"General_LocalMSPID": "{}OrdererMSP".format(org.capitalize())})
             args.update({"General_TLS_Enabled": True})
             args.update({"General_BootstrapFile": "genesis.block"})
