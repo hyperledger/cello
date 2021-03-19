@@ -51,6 +51,10 @@ class NodeIDSerializer(serializers.Serializer):
     id = serializers.UUIDField(help_text="ID of node")
 
 
+class NodeCIDSerializer(serializers.Serializer):
+    id = serializers.CharField(help_text="containter ID of node")
+
+
 class FabricCASerializer(serializers.ModelSerializer):
     hosts = serializers.ListField(
         help_text="Hosts for ca support",
@@ -158,14 +162,11 @@ class FabricPeerSerializer(serializers.ModelSerializer):
 
 
 class NodeInListSerializer(NodeIDSerializer, serializers.ModelSerializer):
-    agent_id = serializers.UUIDField(
-        help_text="Agent ID", required=False, allow_null=True
-    )
+    # agent_id = serializers.UUIDField(
+    #     help_text="Agent ID", required=False, allow_null=True
+    # )
     network_id = serializers.UUIDField(
         help_text="Network ID", required=False, allow_null=True
-    )
-    ca = FabricCASerializer(
-        help_text="CA configuration for node", required=False, allow_null=True
     )
 
     class Meta:
@@ -174,18 +175,17 @@ class NodeInListSerializer(NodeIDSerializer, serializers.ModelSerializer):
             "id",
             "type",
             "name",
-            "network_type",
-            "network_version",
+            "urls",
             "created_at",
-            "agent_id",
-            "network_id",
             "status",
-            "ca",
+            "network_id",
+            "org",
+            "cid",
         )
         extra_kwargs = {
             "id": {"required": True, "read_only": False},
             "created_at": {"required": True, "read_only": False},
-            "ca": {"required": False, "allow_null": True},
+            #"ca": {"required": False, "allow_null": True},
         }
 
 

@@ -18,8 +18,8 @@ from rest_framework.response import Response
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
 from api.auth import IsOperatorAuthenticated
-from api.common.enums import NodeStatus, AgentOperation
-from api.exceptions import CustomError, NoResource, ResourceExists
+from api.common.enums import NodeStatus, AgentOperation, Operation
+from api.exceptions import CustomError, NoResource, ResourceExists, ResourceInUse
 from api.exceptions import ResourceNotFound
 from api.models import (
     Agent,
@@ -39,6 +39,7 @@ from api.routes.node.serializers import (
     NodeQuery,
     NodeCreateBody,
     NodeIDSerializer,
+    NodeCIDSerializer,
     NodeListSerializer,
     NodeUpdateBody,
     NodeFileCreateSerializer,
@@ -55,7 +56,8 @@ from api.auth import CustomAuthenticate
 from api.lib.pki import CryptoGen, CryptoConfig
 from api.utils import zip_dir, zip_file
 from api.config import CELLO_HOME
-
+from api.utils.node_config import NodeConfig
+from api.lib.agent import AgentHandler
 
 LOG = logging.getLogger(__name__)
 
@@ -269,7 +271,7 @@ class NodeViewSet(viewsets.ViewSet):
             organization = serializer.validated_data.get("organization")
 
             org = Organization.objects.get(id=organization)
-            if org.organization.all():
+            if org:
                 pass
             else:
                 raise NoResource
@@ -279,8 +281,8 @@ class NodeViewSet(viewsets.ViewSet):
             }
             CryptoConfig(org.name).update(nodes)
             CryptoGen(org.name).extend()
-
-            msp, tls = self._conversion_msp_tls(type, org.name, name)
+            self._generate_config(type, org.name, name, urls.split(":")[2])
+            msp, tls, cfg = self._conversion_msp_tls_cfg(type, org.name, name)
 
             node = Node(
                 name=name,
@@ -288,7 +290,8 @@ class NodeViewSet(viewsets.ViewSet):
                 urls=urls,
                 type=type,
                 msp=msp,
-                tls=tls
+                tls=tls,
+                config_file=cfg
             )
             node.save()
 
@@ -298,23 +301,28 @@ class NodeViewSet(viewsets.ViewSet):
                     response.validated_data, status=status.HTTP_201_CREATED
                 )
 
-    def _conversion_msp_tls(self, type, org, node):
+    def _conversion_msp_tls_cfg(self, type, org, node):
         """
-        msp and tls from zip file to byte
+        msp and tls , cfg from zip file to byte
 
         :param org: organization name
         :param type: node type
         :param node: node name
-        :return: msp, tls
+        :return: msp, tls, cfg
         :rtype: bytes
         """
         try:
             if type == "peer":
                 dir_node = "{}/{}/crypto-config/peerOrganizations/{}/peers/{}/" \
                     .format(CELLO_HOME, org, org, node + "." + org)
+                name = "core.yaml"
+                cname = "peer_config.zip"
             else:
                 dir_node = "{}/{}/crypto-config/ordererOrganizations/{}/orderers/{}/" \
                     .format(CELLO_HOME, org, org.split(".", 1)[1], node + "." + org.split(".", 1)[1])
+                name = "orderer.yaml"
+                cname = "orderer_config.zip"
+
             zip_dir("{}msp".format(dir_node), "{}msp.zip".format(dir_node))
             with open("{}msp.zip".format(dir_node), "rb") as f_msp:
                 msp = base64.b64encode(f_msp.read())
@@ -322,14 +330,85 @@ class NodeViewSet(viewsets.ViewSet):
             zip_dir("{}tls".format(dir_node), "{}tls.zip".format(dir_node))
             with open("{}tls.zip".format(dir_node), "rb") as f_tls:
                 tls = base64.b64encode(f_tls.read())
+
+            zip_file("{}{}".format(dir_node, name), "{}{}".format(dir_node, cname))
+            with open("{}{}".format(dir_node, cname), "rb") as f_cfg:
+                cfg = base64.b64encode(f_cfg.read())
         except Exception as e:
             raise e
 
-        return msp, tls
+        return msp, tls, cfg
+
+    def _generate_config(self, type, org, node, port):
+        """
+        generate config for node
+
+        :param org: organization name
+        :param type: node type
+        :param node: node name
+        :param port: node port(todo: automatic distribution port)
+        :return: none
+        :rtype: none
+        """
+        args = {}
+        if type == "peer":
+            args.update({"peer_id": "{}.{}".format(node, org)})
+            args.update({"peer_address": "{}.{}:{}".format(node, org, port)})
+            args.update({"peer_gossip_externalEndpoint": "{}.{}:{}".format(node, org, port)})
+            args.update({"peer_chaincodeAddress": "{}.{}:{}".format(node, org, port)})
+            args.update({"peer_tls_enabled": False})
+            args.update({"peer_localMspId": "{}MSP".format(org.capitalize())})
+
+            a = NodeConfig(org)
+            a.peer(node, **args)
+        else:
+            args.update({"General_ListenPort": port})
+            args.update({"General_LocalMSPID": "{}OrdererMSP".format(org.capitalize())})
+            args.update({"General_TLS_Enabled": True})
+            args.update({"General_BootstrapFile": "genesis.block"})
+
+            a = NodeConfig(org)
+            a.orderer(node, **args)
+        pass
+
+    def _agent_params(self, pk):
+        """
+        get node's params from db
+        :param node: node id
+        :return: info
+        """
+        try:
+            node = Node.objects.get(id=pk)
+            org = node.org
+            if org is None:
+                raise ResourceNotFound
+            network = org.network
+            if network is None:
+                raise ResourceNotFound
+            agent = org.agent.get()
+            if agent is None:
+                raise ResourceNotFound
+
+            info = {}
+
+            # get info of node, e.g, tls, msp, config.
+            info["status"] = node.status
+            info["msp"] = node.msp
+            info["tls"] = node.tls
+            info["config_file"] = node.config_file
+            info["type"] = node.type
+            info["name"] = node.name
+            info["bootstrap_block"] = network.genesisblock
+            info["urls"] = agent.urls
+            info["network_type"] = network.type
+            info["agent_type"] = agent.type
+            return info
+        except Exception as e:
+            raise e
 
     @swagger_auto_schema(
         methods=["post"],
-        query_serializer=NodeOperationSerializer,
+        request_body=NodeOperationSerializer,
         responses=with_common_response({status.HTTP_202_ACCEPTED: "Accepted"}),
     )
     @action(methods=["post"], detail=True, url_path="operations")
@@ -339,7 +418,48 @@ class NodeViewSet(viewsets.ViewSet):
 
         Do some operation on node, start/stop/restart
         """
-        pass
+        serializer = NodeOperationSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            action = serializer.validated_data.get("action")
+
+            if action == "start":
+                try:
+                    infos = self._agent_params(pk)
+
+                    agent = AgentHandler(infos)
+                    cid = agent.create(infos)
+                    if cid:
+                        Node.objects.filter(id=pk).update(cid=cid)
+                        response = NodeCIDSerializer(data={"id": cid})
+                        if response.is_valid(raise_exception=True):
+                            return Response(
+                                response.validated_data, status=status.HTTP_201_CREATED
+                            )
+                    else:
+                        raise ResourceNotFound
+                except Exception as e:
+                    raise e
+                if infos.get("status") == "running" or infos.get("status") == "deleting" or infos.get("status") == "deploying":
+                    raise ResourceInUse
+                elif infos.get("status") == "":
+
+                    pass
+                elif infos.get("status") == "stopped" or infos.get("status") == "deleted":
+                    pass
+                elif infos.get("status") == "error":
+                    pass
+                else:
+                    pass
+
+            elif action == "stop":
+                #todo
+                pass
+            elif action == "restart":
+                # todo
+                pass
+            else:
+                # todo
+                pass
 
     @swagger_auto_schema(
         responses=with_common_response(

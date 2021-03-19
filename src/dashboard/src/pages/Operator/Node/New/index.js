@@ -24,9 +24,10 @@ class Index extends PureComponent {
     const { location, children, intl } = this.props;
     return (
       <PageHeaderWrapper
-        title={
-          intl.formatMessage({ id: 'app.operator.node.new.title', defaultMessage: 'Create Node' })
-        }
+        title={intl.formatMessage({
+          id: 'app.operator.node.new.title',
+          defaultMessage: 'Create Node',
+        })}
         tabActiveKey={location.pathname}
       >
         <Card bordered={false}>

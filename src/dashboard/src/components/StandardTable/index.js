@@ -101,12 +101,12 @@ class StandardTable extends PureComponent {
               <Fragment>
                 {intl.formatMessage({
                   id: 'component.standardTable.selected',
-                  defaultMessage: 'Selected'
+                  defaultMessage: 'Selected',
                 })}
                 <a style={{ fontWeight: 600 }}>{selectedRowKeys.length}</a>{' '}
                 {intl.formatMessage({
                   id: 'component.standardTable.item',
-                  defaultMessage: 'Item'
+                  defaultMessage: 'Item',
                 })}
                 &nbsp;&nbsp;
                 {needTotalList.map(item => (
@@ -114,9 +114,8 @@ class StandardTable extends PureComponent {
                     {item.title}
                     {intl.formatMessage({
                       id: 'component.standardTable.total',
-                      defaultMessage: 'Total'
-                    })}
-                    {' '}
+                      defaultMessage: 'Total',
+                    })}{' '}
                     &nbsp;
                     <span style={{ fontWeight: 600 }}>
                       {item.render ? item.render(item.total) : item.total}
@@ -126,7 +125,7 @@ class StandardTable extends PureComponent {
                 <a onClick={this.cleanSelectedKeys} style={{ marginLeft: 24 }}>
                   {intl.formatMessage({
                     id: 'component.standardTable.clean',
-                    defaultMessage: 'Clean'
+                    defaultMessage: 'Clean',
                   })}
                 </a>
               </Fragment>

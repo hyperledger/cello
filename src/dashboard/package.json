@@ -51,11 +51,13 @@
     "not ie <= 10"
   ],
   "dependencies": {
+    "@ant-design/icons": "^4.1.0",
+    "@ant-design/pro-layout": "^5.0.0",
     "@antv/data-set": "^0.10.1",
     "antd": "^4.2.5",
-    "@ant-design/icons": "^4.1.0",
     "bizcharts": "3.5.2-beta.1",
     "bizcharts-plugin-slider": "^2.1.1-beta.1",
+    "cello-paginator": "^1.0.1",
     "classnames": "^2.2.6",
     "enquire-js": "^0.2.1",
     "express": "^4.16.4",
@@ -79,12 +81,11 @@
     "react-dom": "^16.8.0",
     "react-fittext": "^1.0.0",
     "react-media": "^1.9.2",
-    "resize-observer-polyfill": "^1.5.1",
-    "cello-paginator": "^1.0.1",
-    "umi-request": "^1.2.19",
-    "@ant-design/pro-layout": "^5.0.0",
-    "umi": "^3.1.4",
+    "react-redux": "^7.2.2",
     "redux": "^4.0.5",
+    "resize-observer-polyfill": "^1.5.1",
+    "umi": "^3.1.4",
+    "umi-request": "^1.2.19",
     "validator": "^11.0.0"
   },
   "devDependencies": {

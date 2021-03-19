@@ -1,6 +1,6 @@
 import { history } from 'umi';
 import { stringify } from 'qs';
-import { fakeAccountLogin } from '@/services/api';
+import { fakeAccountLogin, register } from '@/services/api';
 import { setAuthority } from '@/utils/authority';
 import { getPageQuery } from '@/utils/utils';
 import { reloadAuthorized } from '@/utils/Authorized';
@@ -10,6 +10,10 @@ export default {
 
   state: {
     status: undefined,
+    register: {
+      success: true,
+      registerMsg: '',
+    },
   },
 
   effects: {
@@ -52,6 +56,17 @@ export default {
       }
     },
 
+    *register({ payload }, { call, put }) {
+      const response = yield call(register, payload);
+      yield put({
+        type: 'changeRegisterStatus',
+        payload: {
+          success: response.success,
+          msg: response.success ? 'Register successfully!' : response.message,
+        },
+      });
+    },
+
     *logout(_, { put }) {
       yield put({
         type: 'changeLoginStatus',
@@ -83,6 +98,15 @@ export default {
         ...state,
         status: payload.status,
         type: payload.type,
+      };
+    },
+    changeRegisterStatus(state, { payload }) {
+      return {
+        ...state,
+        register: {
+          success: payload.success,
+          registerMsg: payload.msg,
+        },
       };
     },
   },

@@ -22,12 +22,20 @@ class OrganizationCreateBody(serializers.ModelSerializer):
         extra_kwargs = {"name": {"required": True}}
 
 
+class OrganizationUpdateBody(serializers.ModelSerializer):
+    class Meta:
+        model = Organization
+        fields = ("name", "agents", "network", "channel")
+
+
 class OrganizationResponse(serializers.ModelSerializer):
     id = serializers.UUIDField(help_text="ID of Organization")
+    network = serializers.UUIDField(help_text="ID of Network", allow_null=True)
+    agents = serializers.UUIDField(help_text="ID of Network", allow_null=True)
 
     class Meta:
         model = Organization
-        fields = ("id", "name", "created_at")
+        fields = ("id", "name", "created_at", "agents", "network", "channel")
         extra_kwargs = {
             "name": {"required": True},
             "created_at": {"required": True, "read_only": False},

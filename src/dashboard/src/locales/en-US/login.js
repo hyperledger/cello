@@ -8,9 +8,12 @@ export default {
   'app.login.remember-me': 'Remember me',
   'app.login.forgot-password': 'Forgot your password?',
   'app.login.sign-in-with': 'Sign in with',
-  'app.login.signup': 'Sign up',
+  'app.login.signUp': 'Sign up',
   'app.login.login': 'Login',
   'app.register.register': 'Register',
+  'app.register.orgName': 'Organization name',
+  'app.register.success': 'The organization and user register success!',
+  'app.register.orgName.example': 'For example: org1.cello.com',
   'app.register.get-verification-code': 'Get code',
   'app.login.verification-code-warning':
     'This project is a demo project and will not actually send you a verification code. Please switch to the account password login interface and log in as prompted.',
@@ -23,6 +26,8 @@ export default {
   'validation.email.required': 'Please enter your email!',
   'validation.email.wrong-format': 'The email address is in the wrong format!',
   'validation.userName.required': 'Please enter your userName!',
+  'validation.orgName.required': 'Please enter your organization name!',
+  'validation.orgName.check': 'Organization name format error!',
   'validation.password.required': 'Please enter your password!',
   'validation.password.twice': 'The passwords entered twice do not match!',
   'validation.password.strength.msg':
