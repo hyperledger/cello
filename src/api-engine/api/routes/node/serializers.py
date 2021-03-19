@@ -28,6 +28,16 @@ from api.utils.common import to_form_paras
 LOG = logging.getLogger(__name__)
 
 
+class PortSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Port
+        fields = ("external", "internal")
+        extra_kwargs = {
+            "external": {"required": True},
+            "internal": {"required": True},
+        }
+
+
 class NodeQuery(PageQuerySerializer, serializers.ModelSerializer):
     agent_id = serializers.UUIDField(
         help_text="Agent ID, only operator can use this field",
@@ -165,6 +175,9 @@ class NodeInListSerializer(NodeIDSerializer, serializers.ModelSerializer):
     # agent_id = serializers.UUIDField(
     #     help_text="Agent ID", required=False, allow_null=True
     # )
+    ports = PortSerializer(
+        help_text="Port mapping for node", many=True, required=False
+    )
     network_id = serializers.UUIDField(
         help_text="Network ID", required=False, allow_null=True
     )
@@ -181,6 +194,7 @@ class NodeInListSerializer(NodeIDSerializer, serializers.ModelSerializer):
             "network_id",
             "org",
             "cid",
+            "ports",
         )
         extra_kwargs = {
             "id": {"required": True, "read_only": False},
@@ -288,16 +302,6 @@ class NodeCreateBody(serializers.ModelSerializer):
         #         )
 
         return attrs
-
-
-class PortSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Port
-        fields = ("external", "internal")
-        extra_kwargs = {
-            "external": {"required": True},
-            "internal": {"required": True},
-        }
 
 
 class NodeUpdateBody(serializers.ModelSerializer):

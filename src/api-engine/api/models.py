@@ -487,13 +487,13 @@ class Node(models.Model):
         related_name="org",
         on_delete=models.CASCADE,
     )
-    # agent = models.ForeignKey(
-    #     Agent,
-    #     help_text="Agent of node",
-    #     null=True,
-    #     related_name="network",
-    #     on_delete=models.CASCADE
-    # )
+    agent = models.ForeignKey(
+        Agent,
+        help_text="Agent of node",
+        null=True,
+        related_name="network",
+        on_delete=models.CASCADE
+    )
     # network = models.ForeignKey(
     #     Network,
     #     help_text="Network which node joined.",
@@ -600,7 +600,7 @@ class NodeUser(models.Model):
 
 class Port(models.Model):
     node = models.ForeignKey(
-        Node, help_text="Node of port", on_delete=models.CASCADE, null=True
+        Node, help_text="Node of port", on_delete=models.CASCADE, null=True, related_name="port",
     )
     external = models.IntegerField(
         help_text="External port",
