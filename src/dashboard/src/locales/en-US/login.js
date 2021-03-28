@@ -12,6 +12,7 @@ export default {
   'app.login.login': 'Login',
   'app.register.register': 'Register',
   'app.register.orgName': 'Organization name',
+  'app.register.passwordAgain': 'Enter the password again',
   'app.register.success': 'The organization and user register success!',
   'app.register.orgName.example': 'For example: org1.cello.com',
   'app.register.get-verification-code': 'Get code',
