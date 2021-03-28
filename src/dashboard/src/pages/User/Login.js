@@ -78,6 +78,20 @@ class LoginPage extends Component {
                 this.renderMessage(
                   intl.formatMessage({ id: 'app.login.message-invalid-credentials' })
                 )}
+              <OrgName
+                name="orgName"
+                placeholder={intl.formatMessage({ id: 'app.register.orgName' })}
+                rules={[
+                  {
+                    required: true,
+                    message: intl.formatMessage({ id: 'validation.orgName.required' }),
+                  },
+                  {
+                    pattern: new RegExp('^[a-z][\\da-z]{0,61}\\.[a-z\\d]{1,62}\\.[a-z]{1,6}$'),
+                    message: intl.formatMessage({ id: 'validation.orgName.check' }),
+                  },
+                ]}
+              />
               <UserName
                 name="username"
                 placeholder={`${intl.formatMessage({ id: 'app.login.userName' })}: admin or user`}
