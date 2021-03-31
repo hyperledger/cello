@@ -117,16 +117,6 @@ class LoginPage extends Component {
               {!registering &&
                 registerMsg !== '' &&
                 this.renderMessage({ type: success ? 'success' : 'error', message: registerMsg })}
-              <UserName
-                name="username"
-                placeholder={intl.formatMessage({ id: 'app.login.userName' })}
-                rules={[
-                  {
-                    required: true,
-                    message: intl.formatMessage({ id: 'validation.userName.required' }),
-                  },
-                ]}
-              />
               <Tooltip
                 title={intl.formatMessage({ id: 'app.register.orgName.example' })}
                 placement="bottomLeft"
@@ -147,6 +137,42 @@ class LoginPage extends Component {
                   ]}
                 />
               </Tooltip>
+              <UserName
+                name="username"
+                placeholder={intl.formatMessage({ id: 'app.login.userName' })}
+                rules={[
+                  {
+                    required: true,
+                    message: intl.formatMessage({ id: 'validation.userName.required' }),
+                  },
+                ]}
+              />
+              <Password
+                name="password"
+                placeholder={`${intl.formatMessage({ id: 'app.login.password' })}`}
+                rules={[
+                  {
+                    required: true,
+                    message: intl.formatMessage({ id: 'validation.password.required' }),
+                  },
+                ]}
+              />
+              <Password
+                name="passwordAgain"
+                placeholder={`${intl.formatMessage({ id: 'app.register.passwordAgain' })}`}
+                rules={[
+                  ({getFieldValue}) => (
+                    {
+                      validator(role, value){
+                        if (value !== getFieldValue("password")){
+                          return Promise.reject(intl.formatMessage({ id: 'validation.password.twice' }));
+                        }
+                        return Promise.resolve();
+                      }
+                    }
+                  )
+                ]}
+              />
               <Submit loading={registering}>
                 {intl.formatMessage({
                   id: 'app.register.register',

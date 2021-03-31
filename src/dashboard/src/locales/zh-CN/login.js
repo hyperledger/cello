@@ -12,6 +12,7 @@ export default {
   'app.login.login': '登录',
   'app.register.register': '注册',
   'app.register.orgName': '组织名',
+  'app.register.passwordAgain': '再次输入密码',
   'app.register.success': '组织和用户注册成功',
   'app.register.orgName.example': '例如：org1.cello.com',
   'app.register.get-verification-code': '获取验证码',
