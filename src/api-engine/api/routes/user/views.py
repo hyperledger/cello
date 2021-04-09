@@ -24,6 +24,7 @@ from api.routes.user.serializers import (
 )
 from api.utils.common import any_of
 from api.utils.common import with_common_response
+from api.auth import TokenAuth
 
 LOG = logging.getLogger(__name__)
 
@@ -31,18 +32,18 @@ ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
 
 
 class UserViewSet(viewsets.ViewSet):
-    authentication_classes = (JSONWebTokenAuthentication,)
+    authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
 
-    def get_permissions(self):
-        permission_classes = []
-
-        if self.action not in ["auth"]:
-            permission_classes = (
-                IsAuthenticated,
-                any_of(IsAdminAuthenticated, IsOperatorAuthenticated),
-            )
-
-        return [permission() for permission in permission_classes]
+    # def get_permissions(self):
+    #     permission_classes = []
+    #
+    #     if self.action not in ["auth"]:
+    #         permission_classes = (
+    #             IsAuthenticated,
+    #             any_of(IsAdminAuthenticated, IsOperatorAuthenticated),
+    #         )
+    #
+    #     return [permission() for permission in permission_classes]
 
     @swagger_auto_schema(
         query_serializer=UserQuerySerializer,

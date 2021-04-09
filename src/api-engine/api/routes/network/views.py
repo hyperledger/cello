@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from django.core.paginator import Paginator
 from django.core.exceptions import ObjectDoesNotExist
+from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from api.routes.network.serializers import (
     NetworkQuery,
     NetworkListResponse,
@@ -26,11 +27,14 @@ from api.lib.configtxgen import ConfigTX, ConfigTxGen
 from api.models import Network, Node, Organization
 from api.config import CELLO_HOME
 from api.utils import zip_dir, zip_file
+from api.auth import TokenAuth
 
 LOG = logging.getLogger(__name__)
 
 
 class NetworkViewSet(viewsets.ViewSet):
+
+    authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
 
     def _genesis2base64(self, network):
         """

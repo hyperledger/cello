@@ -52,7 +52,7 @@ from api.routes.node.serializers import (
 )
 from api.tasks import operate_node
 from api.utils.common import with_common_response
-from api.auth import CustomAuthenticate
+from api.auth import CustomAuthenticate, TokenAuth
 from api.lib.pki import CryptoGen, CryptoConfig
 from api.utils import zip_dir, zip_file
 from api.config import CELLO_HOME
@@ -64,7 +64,7 @@ LOG = logging.getLogger(__name__)
 
 
 class NodeViewSet(viewsets.ViewSet):
-    #authentication_classes = (CustomAuthenticate, JSONWebTokenAuthentication)
+    authentication_classes = (TokenAuth, JSONWebTokenAuthentication)
 
     # Only operator can update node info
     # def get_permissions(self):

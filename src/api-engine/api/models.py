@@ -111,7 +111,7 @@ class UserProfile(AbstractUser):
         max_length=64,
     )
     organization = models.ForeignKey(
-        Organization, null=True, on_delete=models.CASCADE
+        Organization, null=True, on_delete=models.CASCADE, related_name="users",
     )
 
     class Meta:
@@ -194,6 +194,11 @@ class Agent(models.Model):
     )
     created_at = models.DateTimeField(
         help_text="Create time of agent", auto_now_add=True
+    )
+
+    free_port = models.IntegerField(
+        help_text="Agent free port.",
+        default=30000,
     )
 
     def delete(self, using=None, keep_parents=False):
@@ -491,7 +496,7 @@ class Node(models.Model):
         Agent,
         help_text="Agent of node",
         null=True,
-        related_name="network",
+        related_name="agent",
         on_delete=models.CASCADE
     )
     # network = models.ForeignKey(
