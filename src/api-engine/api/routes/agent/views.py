@@ -34,24 +34,25 @@ from api.routes.agent.serializers import (
     AgentApplySerializer,
 )
 from api.utils.common import with_common_response, any_of
+from api.auth import TokenAuth
 
 LOG = logging.getLogger(__name__)
 
 
 class AgentViewSet(viewsets.ViewSet):
     """Class represents agent related operations."""
-    authentication_classes = (JSONWebTokenAuthentication,)
+    authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
 
-    def get_permissions(self):
-        if self.action in ["apply", "list", "release", "retrieve"]:
-            permission_classes = (
-                IsAuthenticated,
-                any_of(IsAdminAuthenticated, IsOperatorAuthenticated),
-            )
-        else:
-            permission_classes = (IsAuthenticated, IsOperatorAuthenticated)
-
-        return [permission() for permission in permission_classes]
+    # def get_permissions(self):
+    #     if self.action in ["apply", "list", "release", "retrieve"]:
+    #         permission_classes = (
+    #             IsAuthenticated,
+    #             any_of(IsAdminAuthenticated, IsOperatorAuthenticated),
+    #         )
+    #     else:
+    #         permission_classes = (IsAuthenticated, IsOperatorAuthenticated)
+    #
+    #     return [permission() for permission in permission_classes]
 
     @swagger_auto_schema(
         query_serializer=AgentQuery,

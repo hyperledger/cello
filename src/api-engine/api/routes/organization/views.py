@@ -30,6 +30,7 @@ from api.routes.user.serializers import UserListSerializer, UserQuerySerializer
 from api.lib.pki import CryptoGen, CryptoConfig
 from api.utils import zip_dir, zip_file
 from api.config import CELLO_HOME
+from api.auth import TokenAuth
 
 
 LOG = logging.getLogger(__name__)
@@ -37,7 +38,7 @@ LOG = logging.getLogger(__name__)
 
 class OrganizationViewSet(viewsets.ViewSet):
     """Class represents orgnization related operations."""
-    #authentication_classes = (JSONWebTokenAuthentication,)
+    authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
     #permission_classes = (IsAuthenticated, IsOperatorAuthenticated)
 
     @swagger_auto_schema(
