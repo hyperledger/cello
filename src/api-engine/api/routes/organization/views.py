@@ -38,7 +38,7 @@ LOG = logging.getLogger(__name__)
 
 class OrganizationViewSet(viewsets.ViewSet):
     """Class represents orgnization related operations."""
-    authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
+    #authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
     #permission_classes = (IsAuthenticated, IsOperatorAuthenticated)
 
     @swagger_auto_schema(
@@ -102,6 +102,8 @@ class OrganizationViewSet(viewsets.ViewSet):
         serializer = OrganizationCreateBody(data=request.data)
         if serializer.is_valid(raise_exception=True):
             name = serializer.validated_data.get("name")
+            peernum = serializer.validated_data.get("org_peernum")
+            orderernum = serializer.validated_data.get("org_orderernum")
             try:
                 Organization.objects.get(name=name)
             except ObjectDoesNotExist:
@@ -109,7 +111,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             else:
                 raise ResourceExists
 
-            CryptoConfig(name).create()
+            CryptoConfig(name).create(peernum, orderernum)
             CryptoGen(name).generate()
 
             msp, tls = self._conversion_msp_tls(name)

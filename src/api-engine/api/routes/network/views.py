@@ -116,6 +116,7 @@ class NetworkViewSet(viewsets.ViewSet):
             name = serializer.validated_data.get("name")
             consensus = serializer.validated_data.get("consensus")
             organizations = serializer.validated_data.get("organizations")
+            db = serializer.validated_data.get("db")
 
             try:
                 Network.objects.get(name=name)
