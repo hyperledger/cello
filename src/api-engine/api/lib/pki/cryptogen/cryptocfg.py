@@ -29,7 +29,7 @@ class CryptoConfig:
         self.enablenodeous = enablenodeous
         self.file = file
 
-    def create(self) -> None:
+    def create(self, peernum, orderernum) -> None:
         """create the crypto-config.yaml
                 param
                 return:
@@ -41,22 +41,29 @@ class CryptoConfig:
                 ca = dict(Country=self.country,
                           Locality=self.locality,
                           Province=self.province)
-                specs = []
+                #specs = []
                 # for host in org_info["Specs"]:
                 #     specs.append(dict(Hostname=host))
+
                 if item == "Peer":
+                    template = dict(Count=peernum)
+                    users = dict(Count=1)
                     org.append(dict(Domain=self.name,
                                     Name=self.name.split(".")[0].capitalize(),
                                     CA=ca,
-                                    Specs=specs,
-                                    EnableNodeOUs=self.enablenodeous))
+                                    #Specs=specs,
+                                    EnableNodeOUs=self.enablenodeous,
+                                    Template=template,
+                                    Users=users))
                     network = {'PeerOrgs': org}
                 else:
+                    template = dict(Count=orderernum)
                     org.append(dict(Domain=self.name.split(".", 1)[1],
                                     Name=self.name.split(".")[0].capitalize() + item,
                                     CA=ca,
-                                    Specs=specs,
-                                    EnableNodeOUs=self.enablenodeous))
+                                    #Specs=specs,
+                                    EnableNodeOUs=self.enablenodeous,
+                                    Template=template))
                     network['OrdererOrgs'] = org
 
             os.system('mkdir -p {}/{}'.format(self.filepath, self.name))
