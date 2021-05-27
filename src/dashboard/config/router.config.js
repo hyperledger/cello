@@ -93,6 +93,11 @@ export default [
                 ],
               },
               {
+                path: '/operator/network',
+                name: 'network',
+                component: './Operator/Network/Network',
+              },
+              {
                 path: '/operator/userManagement',
                 name: 'userManagement',
                 component: './Operator/UserManagement',
