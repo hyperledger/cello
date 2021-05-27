@@ -3,6 +3,8 @@
 #
 import logging
 import base64
+import shutil
+import os
 
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -16,6 +18,19 @@ from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from api.auth import IsOperatorAuthenticated
 from api.utils.common import with_common_response
 from api.exceptions import ResourceExists, ResourceNotFound, ResourceInUse
+from api.models import (
+    Agent,
+    Node,
+    Organization,
+    Port,
+    FabricCA,
+    FabricNodeType,
+    FabricCAServerType,
+    NodeUser,
+    FabricPeer,
+    PeerCa,
+    PeerCaUser,
+)
 from api.routes.organization.serializers import (
     OrganizationQuery,
     OrganizationCreateBody,
@@ -31,6 +46,7 @@ from api.lib.pki import CryptoGen, CryptoConfig
 from api.utils import zip_dir, zip_file
 from api.config import CELLO_HOME
 from api.auth import TokenAuth
+from api.utils.node_config import NodeConfig
 
 
 LOG = logging.getLogger(__name__)
@@ -119,11 +135,112 @@ class OrganizationViewSet(viewsets.ViewSet):
             organization = Organization(name=name, msp=msp, tls=tls)
             organization.save()
 
+            # create node config
+            if peernum > 0:
+                self._create_node(organization, peernum, "peer")
+            if orderernum > 0:
+                self._create_node(organization, orderernum, "orderer")
+
             response = OrganizationIDSerializer(data=organization.__dict__)
             if response.is_valid(raise_exception=True):
                 return Response(
                     response.validated_data, status=status.HTTP_201_CREATED
                 )
+
+    def _create_node(self, org, num, nodeType):
+        """
+        create node
+
+        :param org: organization
+        :param num: the number of node
+        :param nodeType: the type of node
+        :return: null
+        """
+        for i in range(num):
+            nodeName = "peer"+str(i) if nodeType == "peer" else "orderer"+str(i)
+            self._generate_config(nodeType, org.name, nodeName)
+            msp, tls, cfg = self._conversion_msp_tls_cfg(nodeType, org.name, nodeName)
+            urls = "{}.{}".format(nodeName, org.name)
+            node = Node(
+                name=nodeName,
+                org=org,
+                urls=urls,
+                type=nodeType,
+                msp=msp,
+                tls=tls,
+                agent=None,
+                config_file=cfg
+            )
+            node.save()
+
+    def _conversion_msp_tls_cfg(self, type, org, node):
+        """
+        msp and tls , cfg from zip file to byte
+
+        :param org: organization name
+        :param type: node type
+        :param node: node name
+        :return: msp, tls, cfg
+        :rtype: bytes
+        """
+        try:
+            if type == "peer":
+                dir_node = "{}/{}/crypto-config/peerOrganizations/{}/peers/{}/" \
+                    .format(CELLO_HOME, org, org, node + "." + org)
+                name = "core.yaml"
+                cname = "peer_config.zip"
+            else:
+                dir_node = "{}/{}/crypto-config/ordererOrganizations/{}/orderers/{}/" \
+                    .format(CELLO_HOME, org, org.split(".", 1)[1], node + "." + org.split(".", 1)[1])
+                name = "orderer.yaml"
+                cname = "orderer_config.zip"
+
+            zip_dir("{}msp".format(dir_node), "{}msp.zip".format(dir_node))
+            with open("{}msp.zip".format(dir_node), "rb") as f_msp:
+                msp = base64.b64encode(f_msp.read())
+
+            zip_dir("{}tls".format(dir_node), "{}tls.zip".format(dir_node))
+            with open("{}tls.zip".format(dir_node), "rb") as f_tls:
+                tls = base64.b64encode(f_tls.read())
+
+            zip_file("{}{}".format(dir_node, name), "{}{}".format(dir_node, cname))
+            with open("{}{}".format(dir_node, cname), "rb") as f_cfg:
+                cfg = base64.b64encode(f_cfg.read())
+        except Exception as e:
+            raise e
+
+        return msp, tls, cfg
+
+    def _generate_config(self, type, org, node):
+        """
+        generate config for node
+
+        :param org: organization name
+        :param type: node type
+        :param node: node name
+        :param port: node port(todo: automatic distribution port)
+        :return: none
+        :rtype: none
+        """
+        args = {}
+        if type == "peer":
+            args.update({"peer_id": "{}.{}".format(node, org)})
+            args.update({"peer_address": "{}.{}:{}".format(node, org, 7051)})
+            args.update({"peer_gossip_externalEndpoint": "{}.{}:{}".format(node, org, 7051)})
+            args.update({"peer_chaincodeAddress": "{}.{}:{}".format(node, org, 7052)})
+            args.update({"peer_tls_enabled": True})
+            args.update({"peer_localMspId": "{}MSP".format(org.capitalize())})
+
+            a = NodeConfig(org)
+            a.peer(node, **args)
+        else:
+            args.update({"General_ListenPort": 7050})
+            args.update({"General_LocalMSPID": "{}OrdererMSP".format(org.capitalize())})
+            args.update({"General_TLS_Enabled": True})
+            args.update({"General_BootstrapFile": "genesis.block"})
+
+            a = NodeConfig(org)
+            a.orderer(node, **args)
 
     def _conversion_msp_tls(self, name):
         """
@@ -173,6 +290,9 @@ class OrganizationViewSet(viewsets.ViewSet):
             # ).count()
             # if user_count > 0:
             #     raise ResourceInUse
+            path = "{}/{}".format(CELLO_HOME, organization.name)
+            if os.path.exists(path):
+                shutil.rmtree(path, True)
             organization.delete()
         except ObjectDoesNotExist:
             raise ResourceNotFound
