@@ -16,6 +16,7 @@ export default {
   'menu.operator.newNode.basicInfo': '输入节点基本信息',
   'menu.operator.newNode.nodeInfo': '输入节点的特殊信息',
   'menu.operator.network': '网络',
+  'menu.operator.newNetwork': '新建网络',
   'menu.exception': '异常页',
   'menu.exception.not-permission': '403',
   'menu.exception.not-find': '404',

@@ -41,9 +41,9 @@ export default {
     },
     *createNetwork({ payload, callback }, { call }) {
       const response = yield call(createNetwork, payload);
+      console.log('response', response);
       if (callback) {
         callback({
-          payload,
           ...response,
         });
       }
