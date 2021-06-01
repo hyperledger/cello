@@ -31,7 +31,25 @@ function getNets(req, res) {
   });
 }
 
+function createNet(req, res) {
+  const message = req.body;
+  const netInfo = {
+    id : Mock.Random.guid(),
+    name: message.name,
+    created_at: new Date(),
+    type: message.type,
+    version: message.version,
+    consensus: message.consensus,
+    db: message.db,
+    status: 'OK'
+  };
+  networks.data.push(netInfo);
+
+  res.send({...netInfo, success: true});
+}
+
 export default {
   'GET /api/networks': getNets,
+  'POST /api/networks': createNet,
   networks
 };

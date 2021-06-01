@@ -98,6 +98,12 @@ export default [
                 component: './Operator/Network/Network',
               },
               {
+                path: '/operator/network/newNetwork',
+                name: 'newNetwork',
+                component: './Operator/Network/newNetwork',
+                hideInMenu: true,
+              },
+              {
                 path: '/operator/userManagement',
                 name: 'userManagement',
                 component: './Operator/UserManagement',

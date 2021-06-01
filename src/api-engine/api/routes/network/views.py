@@ -39,7 +39,7 @@ class NetworkViewSet(viewsets.ViewSet):
     def _genesis2base64(self, network):
         """
         convert genesis.block to Base64
-
+HTTP_201_CREATED
         :param network: network id
         :return: genesis block
         :rtype: bytearray
@@ -72,7 +72,7 @@ class NetworkViewSet(viewsets.ViewSet):
         serializer = NetworkQuery(data=request.GET)
         if serializer.is_valid(raise_exception=True):
             page = serializer.validated_data.get("page", 1)
-            per_page = serializer.validated_data.get("per_page", 10)
+            per_page = serializer.validated_data.ger_page", 10)
             name = serializer.validated_data.get("name")
             parameters = {}
             if name:

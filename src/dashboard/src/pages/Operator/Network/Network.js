@@ -2,7 +2,7 @@
  SPDX-License-Identifier: Apache-2.0
 */
 import React, { PureComponent, Fragment } from 'react';
-import { connect, injectIntl } from 'umi';
+import { connect, injectIntl, history } from 'umi';
 import { Card, Button, Modal, message, Divider } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import moment from 'moment';
@@ -49,6 +49,10 @@ class Network extends PureComponent {
       type: 'network/listNetwork',
       payload: params,
     });
+  };
+
+  newNetwork = () => {
+    history.push('/operator/network/newNetwork');
   };
 
   render() {
@@ -116,7 +120,7 @@ class Network extends PureComponent {
         <Card bordered={false}>
           <div className={styles.tableList}>
             <div className={styles.tableListOperator}>
-              <Button type="primary" >
+              <Button type="primary" onClick={()=>this.newNetwork()} >
                 <PlusOutlined />
                 {intl.formatMessage({ id: 'form.button.new', defaultMessage: 'New' })}
               </Button>

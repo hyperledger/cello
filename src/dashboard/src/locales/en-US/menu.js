@@ -16,6 +16,7 @@ export default {
   'menu.operator.newNode.basicInfo': 'Input Node Basic Information',
   'menu.operator.newNode.nodeInfo': 'Input Special Information For Node',
   'menu.operator.network': 'network',
+  'menu.operator.newNetwork': 'New Network',
   'menu.exception': 'Exception',
   'menu.exception.not-permission': '403',
   'menu.exception.not-find': '404',
