@@ -53,7 +53,7 @@ class ConfigTX:
                                                            Admins=dict(Type="Signature",Rule="OR('{}MSP.admin')".format(orderer["name"].split(".")[0].capitalize()+"Orderer")))
                                              ))
             for host in orderer['hosts']:
-                OrdererAddress.append('{}.{}:{}'.format(host['name'], orderer['name'].split(".", 1)[1], host["port"]))
+                OrdererAddress.append('{}.{}:{}'.format(host['name'], orderer['name'].split(".", 1)[1], 7050))
 
         PeerOrganizations = []
 
@@ -86,7 +86,7 @@ class ConfigTX:
             for orderer in orderers:
                 for host in orderer['hosts']:
                     Consenters.append(dict(Host='{}.{}'.format(host['name'], orderer['name'].split(".", 1)[1]),
-                                           Port=host['port'],
+                                           Port=7050,
                                            ClientTLSCert='{}/{}/crypto-config/ordererOrganizations/{}/orderers/{}.{}/tls/server.crt'
                                            .format(self.filepath, orderer['name'], orderer['name'].split(".", 1)[1],host['name'], orderer['name'].split(".", 1)[1]),
                                            ServerTLSCert='{}/{}/crypto-config/ordererOrganizations/{}/orderers/{}.{}/tls/server.crt'

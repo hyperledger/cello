@@ -196,9 +196,14 @@ class Agent(models.Model):
         help_text="Create time of agent", auto_now_add=True
     )
 
-    free_port = models.IntegerField(
-        help_text="Agent free port.",
-        default=30000,
+    # free_port = models.IntegerField(
+    #     help_text="Agent free port.",
+    #     default=30000,
+    # )
+    free_ports = ArrayField(
+        models.IntegerField(blank=True),
+        help_text="Agent free ports.",
+        null=True
     )
 
     def delete(self, using=None, keep_parents=False):
@@ -319,6 +324,9 @@ class Network(models.Model):
     genesisblock = models.TextField(
         help_text="genesis block",
         null=True,
+    )
+    database = models.CharField(
+       help_text="database of network", max_length=128, default="leveldb",
     )
 
     class Meta:
