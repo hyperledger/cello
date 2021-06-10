@@ -6,7 +6,7 @@ import socket
 import os
 from random import sample
 from django.core.exceptions import ObjectDoesNotExist
-from api.models import Port, Node
+from api.models import Port, Node, Agent
 
 CLUSTER_PORT_START = int(os.getenv("CLUSTER_PORT_START", 7050))
 MAX_RETRY = 100
@@ -108,3 +108,27 @@ def set_ports_mapping(node_id=None, mapping=None, new=False):
             Port.objects.filter(
                 node__id=node_id, external=port.get("external")
             ).update(internal=port.get("internal"))
+
+
+def get_available_ports(
+    agent_id=None,
+    request_count=1,
+):
+
+    agent = Agent.objects.get(id=agent_id).free_ports
+
+    used_ports = agent.free_ports
+
+    ports = sample(
+        [
+            i
+            for i in range(CLUSTER_PORT_START, 65535)
+            if i not in used_ports
+        ],
+        request_count,
+    )
+
+    agent.free_ports = used_ports.append(ports)
+    agent.save()
+
+    return ports

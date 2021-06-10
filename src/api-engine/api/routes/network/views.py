@@ -3,6 +3,8 @@
 #
 import logging
 import base64
+import shutil
+import os
 
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -10,6 +12,7 @@ from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from django.core.paginator import Paginator
 from django.core.exceptions import ObjectDoesNotExist
+from api.exceptions import ResourceNotFound
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from api.routes.network.serializers import (
     NetworkQuery,
@@ -28,13 +31,14 @@ from api.models import Network, Node, Organization
 from api.config import CELLO_HOME
 from api.utils import zip_dir, zip_file
 from api.auth import TokenAuth
+from api.lib.agent import AgentHandler
 
 LOG = logging.getLogger(__name__)
 
 
 class NetworkViewSet(viewsets.ViewSet):
 
-    authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
+    #authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
 
     def _genesis2base64(self, network):
         """
@@ -97,6 +101,60 @@ HTTP_201_CREATED
                 )
         return Response(data=[], status=status.HTTP_200_OK)
 
+    def _agent_params(self, pk):
+        """
+        get node's params from db
+        :param node: node id
+        :return: info
+        """
+        try:
+            node = Node.objects.get(id=pk)
+            org = node.org
+            if org is None:
+                raise ResourceNotFound
+            network = org.network
+            if network is None:
+                raise ResourceNotFound
+            agent = org.agent.get()
+            if agent is None:
+                raise ResourceNotFound
+
+            info = {}
+
+            # get info of node, e.g, tls, msp, config.
+            info["status"] = node.status
+            info["msp"] = node.msp
+            info["tls"] = node.tls
+            info["config_file"] = node.config_file
+            info["type"] = node.type
+            info["name"] = node.name
+            info["bootstrap_block"] = network.genesisblock
+            info["urls"] = agent.urls
+            info["network_type"] = network.type
+            info["agent_type"] = agent.type
+            return info
+        except Exception as e:
+            raise e
+
+    def _start_node(self, pk):
+        """
+        start node from agent
+        :param node: node id
+        :return: null
+        """
+        try:
+            infos = self._agent_params(pk)
+
+            agent = AgentHandler(infos)
+            cid = agent.create(infos)
+            if cid:
+                Node.objects.filter(id=pk).update(cid=cid)
+
+            else:
+                raise ResourceNotFound
+        except Exception as e:
+            raise e
+
     @swagger_auto_schema(
         request_body=NetworkCreateBody,
         responses=with_common_response(
@@ -116,7 +174,7 @@ HTTP_201_CREATED
             name = serializer.validated_data.get("name")
             consensus = serializer.validated_data.get("consensus")
             organizations = serializer.validated_data.get("organizations")
-            db = serializer.validated_data.get("db")
+            database = serializer.validated_data.get("database")
 
             try:
                 Network.objects.get(name=name)
@@ -132,9 +190,9 @@ HTTP_201_CREATED
                 nodes = Node.objects.filter(org=org)
                 for node in nodes:
                     if node.type == "peer":
-                        peers[i]["hosts"].append({"name": node.name, "port": node.urls.split(":")[2]})
+                        peers[i]["hosts"].append({"name": node.name})
                     elif node.type == "orderer":
-                        orderers[i]["hosts"].append({"name": node.name, "port": node.urls.split(":")[2]})
+                        orderers[i]["hosts"].append({"name": node.name})
                 i = i + 1
 
             ConfigTX(name).create(consensus=consensus, orderers=orderers, peers=peers)
@@ -146,6 +204,14 @@ HTTP_201_CREATED
 
             for organization in organizations:
                 Organization.objects.filter(pk=organization).update(network=network)
+                org = Organization.objects.get(pk=organization)
+                nodes = Node.objects.filter(org=org)
+                for node in nodes:
+                    try:
+                        self._start_node(node.id)
+                    except Exception as e:
+                        print("err:", e)
+                        pass
 
             response = NetworkIDSerializer(data=network.__dict__)
             if response.is_valid(raise_exception=True):
@@ -170,6 +236,9 @@ HTTP_201_CREATED
     def destroy(self, request, pk=None):
         try:
             network = Network.objects.get(pk=pk)
+            path = "{}/{}".format(CELLO_HOME, network.name)
+            if os.path.exists(path):
+                shutil.rmtree(path, True)
             network.delete()
         except ObjectDoesNotExist:
             raise BaseException
