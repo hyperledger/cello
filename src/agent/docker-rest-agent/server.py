@@ -43,7 +43,7 @@ def create_node():
 
     try:
         # same as `docker run -dit yeasy/hyperledge-fabric:2.2.0 -e VARIABLES``
-        container = client.containers.run(request.form.get('img'), request.form.get('cmd'), detach=True, tty=True, stdin_open=True, name=request.form.get('name'), environment=env)
+        container = client.containers.run(request.form.get('img'), request.form.get('cmd'), detach=True, tty=True, stdin_open=True, name=request.form.get('name'), environment=env, ports=request.form.get('port_map'))
     except:
         res['code'] = FAIL_CODE
         res['data'] = sys.exc_info()[0]
