@@ -223,12 +223,12 @@ function releaseAgent(req, res) {
 }
 
 export default {
-  'GET /api/agents': getAgents,
-  'POST /api/agents': createAgent,
-  'GET /api/agents/:id': getOneAgent,
-  'PUT /api/agents/:id': updateAgentForOperator,
-  'PATCH /api/agents/:id': updateAgentForOrgAdmin,
-  'POST /api/agents/organization': applyAgent,
-  'DELETE /api/agents/:id': deleteAgent,
-  'DELETE /api/agents/:id/organization': releaseAgent,
+  'GET /api/v1/agents': getAgents,
+  'POST /api/v1/agents': createAgent,
+  'GET /api/v1/agents/:id': getOneAgent,
+  'PUT /api/v1/agents/:id': updateAgentForOperator,
+  'PATCH /api/v1/agents/:id': updateAgentForOrgAdmin,
+  'POST /api/v1/agents/organization': applyAgent,
+  'DELETE /api/v1/agents/:id': deleteAgent,
+  'DELETE /api/v1/agents/:id/organization': releaseAgent,
 };

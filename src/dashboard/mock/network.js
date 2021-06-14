@@ -49,7 +49,7 @@ function createNet(req, res) {
 }
 
 export default {
-  'GET /api/networks': getNets,
-  'POST /api/networks': createNet,
+  'GET /api/v1/networks': getNets,
+  'POST /api/v1/networks': createNet,
   networks
 };
