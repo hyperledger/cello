@@ -76,7 +76,7 @@ HTTP_201_CREATED
         serializer = NetworkQuery(data=request.GET)
         if serializer.is_valid(raise_exception=True):
             page = serializer.validated_data.get("page", 1)
-            per_page = serializer.validated_data.ger_page", 10)
+            per_page = serializer.validated_data.get("page", 10)
             name = serializer.validated_data.get("name")
             parameters = {}
             if name:
