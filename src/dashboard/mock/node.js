@@ -110,8 +110,8 @@ function operateNode(req, res) {
 }
 
 export default {
-  'GET /api/nodes': getNodes,
-  'POST /api/nodes/:id/users': registerUserToNode,
-  'DELETE /api/nodes/:id': deleteNode,
-  'POST /api/nodes/:id/operations': operateNode,
+  'GET /api/v1/nodes': getNodes,
+  'POST /api/v1/nodes/:id/users': registerUserToNode,
+  'DELETE /api/v1/nodes/:id': deleteNode,
+  'POST /api/v1/nodes/:id/operations': operateNode,
 };
