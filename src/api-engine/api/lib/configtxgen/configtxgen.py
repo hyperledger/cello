@@ -39,7 +39,7 @@ class ConfigTxGen:
             err_msg = "configtxgen genesis fail! "
             raise Exception(err_msg + str(e))
 
-    def channeltx(self, profile, channelid, outputblock):
+    def channeltx(self, profile, channelid, outputCreateChannelTx="channel-artifacts/channel.tx"):
         """generate anchorpeer
                 param:
                     profile: profile
@@ -47,7 +47,14 @@ class ConfigTxGen:
                     outputblock: outputblock
                 return:
         """
-        pass
+        try:
+            call([self.configtxgen, "-configPath", "{}/{}/".format(self.filepath, self.network),
+                  "-profile", "{}".format(profile),
+                  "-outputCreateChannelTx", "{}/{}/{}".format(self.filepath, self.network, outputCreateChannelTx),
+                  "-channelID", "{}".format(channelid)])
+        except Exception as e:
+            err_msg = "configtxgen genesis fail! "
+            raise Exception(err_msg + str(e))
 
     def anchorpeer(self, profile, channelid, outputblock):
         """set anchorpeer
@@ -61,5 +68,5 @@ class ConfigTxGen:
 
 
 if __name__ == "__main__":
-    ConfigTxGen("test3").genesis()
+    ConfigTxGen("net").channeltx("testchannel","testchannel")
 

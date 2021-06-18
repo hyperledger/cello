@@ -140,7 +140,9 @@ class ConfigTX:
             with open('{}/{}/{}'.format(self.filepath, self.network, "configtx.yaml"), 'r+', encoding='utf-8') as f:
                 configtx = yaml.load(f, Loader=yaml.FullLoader)
                 Profiles = configtx["Profiles"]
+                Policies = configtx["Channel"]["Policies"]
                 Application = configtx["Capabilities"]["Application"]
+                Capabilities = configtx["Capabilities"]["Channel"]
                 PeerOrganizations = []
                 for org in configtx["Organizations"]:
                     for item in organizations:
@@ -150,7 +152,10 @@ class ConfigTX:
                     raise Exception("can't find organnization")
                 Profiles[name] = {
                     "Consortium": "SampleConsortium",
-                    "Application": {"Organizations": PeerOrganizations,
+                    "Policies": Policies,
+                    "Capabilities": Capabilities,
+                    "Application": {"Policies": configtx["Application"]["Policies"],
+                                    "Organizations": PeerOrganizations,
                                     "Capabilities": Application},
                 }
 
