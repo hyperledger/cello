@@ -64,7 +64,7 @@ LOG = logging.getLogger(__name__)
 
 
 class NodeViewSet(viewsets.ViewSet):
-    authentication_classes = (TokenAuth, JSONWebTokenAuthentication)
+    #authentication_classes = (TokenAuth, JSONWebTokenAuthentication)
 
     # Only operator can update node info
     # def get_permissions(self):
@@ -126,7 +126,9 @@ class NodeViewSet(viewsets.ViewSet):
                     "id": str(node.id),
                     "name": node.name,
                     "type": node.type,
-                    "network": str(node.org.network.id) if node.org.network.id else None,
+                    "org": node.org,
+                    "urls": node.urls,
+                    "network": str(node.org.network.id) if node.org.network else None,
                     "agents": node.agent if node.agent else None,
                     "channel": str(node.org.channel.id) if node.org.channel else None,
                     "ports": node.port,
