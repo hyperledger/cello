@@ -41,7 +41,7 @@ LOG = logging.getLogger(__name__)
 
 class AgentViewSet(viewsets.ViewSet):
     """Class represents agent related operations."""
-    authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
+    #authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
 
     # def get_permissions(self):
     #     if self.action in ["apply", "list", "release", "retrieve"]:

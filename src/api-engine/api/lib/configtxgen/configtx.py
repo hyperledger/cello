@@ -80,8 +80,13 @@ class ConfigTX:
                                     Admins=dict(Type="ImplicitMeta", Rule="MAJORITY Admins"))
                    }
 
+        capabilities = {"Channel": {"V2_0": True, "V1_3": False},
+                        "Orderer": {"V2_0": True, "V1_3": False},
+                        "Application": {"V2_0": True, "V1_3": False, "V1_2": False, "V1_1": False},
 
-        if consensus=='etcdraft':
+        }
+
+        if consensus == 'etcdraft':
             Consenters = []
             for orderer in orderers:
                 for host in orderer['hosts']:
@@ -118,23 +123,54 @@ class ConfigTX:
                              Admins=dict(Type="ImplicitMeta", Rule="MAJORITY Admins"))
         }}
 
-        configtx = dict(Application=Application, Orderer=Orderer, Profiles=Profiles, Organizations=Organizations, Channel=channel)
+        configtx = dict(Application=Application, Orderer=Orderer, Profiles=Profiles, Organizations=Organizations, Channel=channel, Capabilities=capabilities)
         os.system('mkdir -p {}/{}'.format(self.filepath, self.network))
 
         with open('{}/{}/configtx.yaml'.format(self.filepath, self.network), 'w', encoding='utf-8') as f:
             yaml.dump(configtx, f)
 
-    def update(self):
-        """update the cryptotx.yaml
+    def createChannel(self, name, organizations):
+        """create the channel.tx
                 param:
+                  name: name of channel
+                  organizations: Organizations ready to join the channel
                 return:
         """
-        pass
+        try:
+            with open('{}/{}/{}'.format(self.filepath, self.network, "configtx.yaml"), 'r+', encoding='utf-8') as f:
+                configtx = yaml.load(f, Loader=yaml.FullLoader)
+                Profiles = configtx["Profiles"]
+                Policies = configtx["Channel"]["Policies"]
+                Application = configtx["Capabilities"]["Application"]
+                Capabilities = configtx["Capabilities"]["Channel"]
+                PeerOrganizations = []
+                for org in configtx["Organizations"]:
+                    for item in organizations:
+                        if org["ID"] == item:
+                            PeerOrganizations.append(org)
+                if PeerOrganizations == []:
+                    raise Exception("can't find organnization")
+                Profiles[name] = {
+                    "Consortium": "SampleConsortium",
+                    "Policies": Policies,
+                    "Capabilities": Capabilities,
+                    "Application": {"Policies": configtx["Application"]["Policies"],
+                                    "Organizations": PeerOrganizations,
+                                    "Capabilities": Application},
+                }
+
+            with open('{}/{}/{}'.format(self.filepath, self.network, "configtx.yaml"), 'w', encoding='utf-8') as f:
+                yaml.dump(configtx, f)
+
+        except Exception as e:
+            err_msg = "Configtx create channel failed for {}!".format(e)
+            raise Exception(err_msg)
 
 
 if __name__ == "__main__":
-    orderers=[{"name":"org1.cello.com","hosts":[{"name": "orderer1", "port":8051}]}]
+    #orderers=[{"name":"org1.cello.com","hosts":[{"name": "orderer1", "port":8051}]}]
     #peers = [{"name": "org1.cello.com", "hosts": [{"name": "foo", "port": 7051},{"name": "car", "port": 7052}]},
     #         {"name": "org2.cello.com", "hosts": [{"name": "zoo", "port": 7053}]}]
-    peers = [{"name": "org1.cello.com", "hosts": [{"name": "foo", "port": 7051}, {"name": "car", "port": 7052}]}]
-    ConfigTX("test3").create(consensus="etcdraft", orderers=orderers, peers=peers)
+    #peers = [{"name": "org1.cello.com", "hosts": [{"name": "foo", "port": 7051}, {"name": "car", "port": 7052}]}]
+    #ConfigTX("test3").create(consensus="etcdraft", orderers=orderers, peers=peers)
+    ConfigTX("net").createChannel("testchannel", ["XqMSP"])
