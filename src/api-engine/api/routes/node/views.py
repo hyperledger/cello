@@ -42,7 +42,7 @@ from api.routes.node.serializers import (
     NodeCIDSerializer,
     NodeListSerializer,
     NodeUpdateBody,
-    NodeFileCreateSerializer,
+    # NodeFileCreateSerializer,
     NodeInfoSerializer,
     NodeUserCreateSerializer,
     NodeUserIDSerializer,
@@ -559,33 +559,33 @@ class NodeViewSet(viewsets.ViewSet):
 
             return Response(status=status.HTTP_202_ACCEPTED)
 
-    @swagger_auto_schema(
-        methods=["post"],
-        request_body=NodeFileCreateSerializer,
-        responses=with_common_response({status.HTTP_202_ACCEPTED: "Accepted"}),
-    )
-    @action(methods=["post"], detail=True, url_path="files", url_name="files")
-    def upload_files(self, request, pk=None):
-        """
-        Upload file to node
+    # @swagger_auto_schema(
+    #     methods=["post"],
+    #     request_body=NodeFileCreateSerializer,
+    #     responses=with_common_response({status.HTTP_202_ACCEPTED: "Accepted"}),
+    # )
+    # @action(methods=["post"], detail=True, url_path="files", url_name="files")
+    # def upload_files(self, request, pk=None):
+    #     """
+    #     Upload file to node
 
-        Upload related files to node
-        """
-        serializer = NodeFileCreateSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            file = serializer.validated_data.get("file")
-            try:
-                node = Node.objects.get(id=pk)
-            except ObjectDoesNotExist:
-                raise ResourceNotFound
-            else:
-                # delete old file
-                if node.file:
-                    node.file.delete()
-                node.file = file
-                node.save()
+    #     Upload related files to node
+    #     """
+    #     serializer = NodeFileCreateSerializer(data=request.data)
+    #     if serializer.is_valid(raise_exception=True):
+    #         file = serializer.validated_data.get("file")
+    #         try:
+    #             node = Node.objects.get(id=pk)
+    #         except ObjectDoesNotExist:
+    #             raise ResourceNotFound
+    #         else:
+    #             # delete old file
+    #             if node.file:
+    #                 node.file.delete()
+    #             node.file = file
+    #             node.save()
 
-        return Response(status=status.HTTP_202_ACCEPTED)
+    #     return Response(status=status.HTTP_202_ACCEPTED)
 
     @swagger_auto_schema(
         responses=with_common_response(
