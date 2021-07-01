@@ -105,6 +105,11 @@ class UserProfile(AbstractUser):
         default=make_uuid,
         editable=True,
     )
+    username = models.CharField(
+        default="",
+        max_length=64,
+        help_text="Name of user"
+    )
     role = models.CharField(
         choices=UserRole.to_choices(True),
         default=UserRole.User.value,

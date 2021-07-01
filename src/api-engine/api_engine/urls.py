@@ -43,7 +43,7 @@ WEBROOT = "api/v1/"
 
 swagger_info = openapi.Info(
     title="Cello API Engine Service",
-    default_version=API_VERSION,
+    default_version="1.0",
     description="""
     This is swagger docs for Cello API engine.
     """,
@@ -64,7 +64,7 @@ router.register("organizations", OrganizationViewSet, basename="organization")
 router.register("users", UserViewSet, basename="user")
 router.register("files", FileViewSet, basename="file")
 # router.register("clusters", ClusterViewSet, basename="cluster")
-router.register("register", RegisterViewSet, basename="register"),
+router.register("register", RegisterViewSet, basename="register")
 
 urlpatterns = router.urls
 
