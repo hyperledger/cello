@@ -17,6 +17,8 @@ from api.lib.pki import CryptoGen, CryptoConfig
 from api.utils import zip_dir, zip_file
 from api.config import CELLO_HOME
 
+LOG = logging.getLogger(__name__)
+
 
 class RegisterViewSet(viewsets.ViewSet):
 
@@ -24,21 +26,24 @@ class RegisterViewSet(viewsets.ViewSet):
         serializer = RegisterBody(data=request.data)
         if serializer.is_valid(raise_exception=True):
             username = serializer.validated_data.get("username")
-            organization = serializer.validated_data.get("organization")
+            orgname = serializer.validated_data.get("orgName")
             password = serializer.validated_data.get("password")
+            passwordAgain = serializer.validated_data.get("passwordAgain")
             try:
-                Organization.objects.get(name=organization)
+                Organization.objects.get(name=orgname)
             except ObjectDoesNotExist:
                 pass
             else:
-                raise ResourceExists
+                return Response(
+                    "orgnization exists!", status=status.HTTP_409_CONFLICT
+                )
 
-            CryptoConfig(organization).create()
-            CryptoGen(organization).generate()
+            if password != passwordAgain:
+                return Response(
+                    "password error", status=status.HTTP_409_CONFLICT
+                )
 
-            msp, tls = self._conversion_msp_tls(organization)
-
-            organization = Organization(name=organization, msp=msp, tls=tls)
+            organization = Organization(name=orgname)
             organization.save()
 
             user = UserProfile(
@@ -52,7 +57,7 @@ class RegisterViewSet(viewsets.ViewSet):
             response = RegisterIDSerializer(data=organization.__dict__)
             if response.is_valid(raise_exception=True):
                 return Response(
-                    response.validated_data, status=status.HTTP_201_CREATED
+                    response.validated_data, status=status.HTTP_200_OK
                 )
 
     def _conversion_msp_tls(self, name):
