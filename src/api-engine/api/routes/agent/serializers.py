@@ -224,13 +224,14 @@ class AgentInfoSerializer(AgentIDSerializer, serializers.ModelSerializer):
         fields = (
             "id",
             "name",
-            "capacity",
-            "node_capacity",
+            "url",
+            # "capacity",
+            # "node_capacity",
             "status",
             "created_at",
-            "log_level",
+            # "log_level",
             "type",
-            "schedulable",
+            # "schedulable",
             "k8s_config",
             "organization_id",
         )
@@ -238,12 +239,12 @@ class AgentInfoSerializer(AgentIDSerializer, serializers.ModelSerializer):
             "id": {"required": True},
             "name": {"required": True},
             "status": {"required": True},
-            "capacity": {"required": True},
-            "node_capacity": {"required": True},
+            # "capacity": {"required": True},
+            # "node_capacity": {"required": True},
             "created_at": {"required": True, "read_only": False},
             "type": {"required": True},
-            "log_level": {"required": True},
-            "schedulable": {"required": True},
+            # "log_level": {"required": True},
+            # "schedulable": {"required": True},
         }
 
 
@@ -254,8 +255,11 @@ class AgentListResponse(ListResponseSerializer):
 class AgentApplySerializer(serializers.ModelSerializer):
     class Meta:
         model = Agent
-        fields = ("type", "capacity")
+        fields = (
+            "type", 
+            # "capacity"
+            )
         extra_kwargs = {
             "type": {"required": True},
-            "capacity": {"required": True},
+            # "capacity": {"required": True},
         }
