@@ -33,7 +33,8 @@ from api.routes.node.views import NodeViewSet
 from api.routes.organization.views import OrganizationViewSet
 from api.routes.user.views import UserViewSet
 from api.routes.file.views import FileViewSet
-from api.routes.general.views import RegisterViewSet
+from api.routes.general.views import RegisterViewSet, LoginViewSet, login
+
 
 DEBUG = getattr(settings, "DEBUG")
 API_VERSION = os.getenv("API_VERSION")
@@ -63,13 +64,14 @@ router.register("nodes", NodeViewSet, basename="node")
 router.register("organizations", OrganizationViewSet, basename="organization")
 router.register("users", UserViewSet, basename="user")
 router.register("files", FileViewSet, basename="file")
-# router.register("clusters", ClusterViewSet, basename="cluster")
+router.register("login2", LoginViewSet, basename="login2")
 router.register("register", RegisterViewSet, basename="register")
 
 urlpatterns = router.urls
 
 urlpatterns += [
-    path("login", obtain_jwt_token),
+    #path("auth", obtain_jwt_token),
+    path("login", login),
     path("token-verify", verify_jwt_token),
     path("docs/", SchemaView.with_ui("swagger", cache_timeout=0), name="docs"),
     path("redoc/", SchemaView.with_ui("redoc", cache_timeout=0), name="redoc"),
