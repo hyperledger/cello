@@ -52,7 +52,7 @@ class RegisterViewSet(viewsets.ViewSet):
 
             user = UserProfile(
                 username=username,
-                role="Admin",
+                role="administrator",
                 organization=organization,
             )
             user.set_password(password)

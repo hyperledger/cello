@@ -64,7 +64,7 @@ LOG = logging.getLogger(__name__)
 
 
 class NodeViewSet(viewsets.ViewSet):
-    #authentication_classes = (TokenAuth, JSONWebTokenAuthentication)
+    authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
 
     # Only operator can update node info
     # def get_permissions(self):
@@ -110,10 +110,10 @@ class NodeViewSet(viewsets.ViewSet):
                 query_filter.update({"type": node_type})
             if name:
                 query_filter.update({"name__icontains": name})
-            # if request.user.is_administrator:
-            #     query_filter.update(
-            #         {"organization": request.user.organization}
-            #     )
+            if request.user.is_administrator:
+                query_filter.update(
+                    {"org": request.user.organization}
+                )
             # elif request.user.is_common_user:
             #     query_filter.update({"user": request.user})
             if agent_id:
