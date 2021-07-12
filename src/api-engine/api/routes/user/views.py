@@ -32,7 +32,7 @@ ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
 
 
 class UserViewSet(viewsets.ViewSet):
-    authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
+    #authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
 
     # def get_permissions(self):
     #     permission_classes = []

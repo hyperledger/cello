@@ -41,7 +41,7 @@ LOG = logging.getLogger(__name__)
 
 class AgentViewSet(viewsets.ViewSet):
     """Class represents agent related operations."""
-    #authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
+    authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
 
     # def get_permissions(self):
     #     if self.action in ["apply", "list", "release", "retrieve"]:
@@ -169,7 +169,7 @@ class AgentViewSet(viewsets.ViewSet):
                 body.update({"config_file": config_file})
             if organization is not None:
                 org = Organization.objects.get(id=organization)
-                if org.organization.all():
+                if org.agent.all():
                     raise ResourceExists
                 else:
                     body.update({"organization": org})
