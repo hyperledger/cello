@@ -37,16 +37,21 @@ class CustomAuthenticate(authentication.BaseAuthentication):
 class TokenAuth(authentication.BaseAuthentication):
 
     def authenticate(self, request):
-        token = {"token": request.META.get('HTTP_AUTHORIZATION', None)}
-        valid_data = VerifyJSONWebTokenSerializer().validate(token)
-        user = valid_data['user']
-        organization = user.organization
-        #organization_id = user.organization.id
-        #organization_name = user.organization.name
-        #request.user.
-        if user:
-            return
-        else:
+        try:
+            token = request.META.get('HTTP_AUTHORIZATION', None).split()[1]
+            token = {"token": token}
+
+            valid_data = VerifyJSONWebTokenSerializer().validate(token)
+            user = valid_data['user']
+            #organization = user.organization
+            #organization_id = user.organization.id
+            #organization_name = user.organization.name
+            #request.user.
+            if user:
+                return
+            else:
+                raise AuthenticationFailed('认证失败')
+        except:
             raise AuthenticationFailed('认证失败')
 
 

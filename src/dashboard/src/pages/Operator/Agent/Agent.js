@@ -1,18 +1,6 @@
 import React, { PureComponent } from 'react';
 import { connect, history, useIntl, injectIntl } from 'umi';
-import {
-  Card,
-  Button,
-  message,
-  List,
-  Badge,
-  Row,
-  Col,
-  Modal,
-  Form,
-  InputNumber,
-  Select,
-} from 'antd';
+import { Card, Button, message, List, Badge, Row, Col, Modal, Form, Select, Input } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
@@ -74,29 +62,45 @@ const ApplyAgentForm = props => {
         <FormItem
           {...formItemLayout}
           label={intl.formatMessage({
-            id: 'app.operator.newAgent.label.agentCapacity',
-            defaultMessage: 'Capacity of agent',
+            id: 'app.operator.newAgent.label.name',
+            defaultMessage: 'Name',
           })}
-          name="capacity"
+          name="name"
           rules={[
             {
-              required: true,
+              required: false,
               message: intl.formatMessage({
-                id: 'app.operator.newAgent.required.agentCapacity',
-                defaultMessage: 'Please input the capacity of the agent.',
+                id: 'app.operator.newAgent.required.Name',
+                defaultMessage: 'Please input name.',
               }),
             },
           ]}
         >
-          <InputNumber
+          <Input
             placeholder={intl.formatMessage({
-              id: 'app.operator.newAgent.label.agentCapacity',
-              defaultMessage: 'Capacity of agent',
+              id: 'app.operator.newAgent.label.name',
+              defaultMessage: 'Name',
             })}
-            min={1}
-            max={100}
-            style={width}
           />
+        </FormItem>
+        <FormItem
+          {...formItemLayout}
+          label={intl.formatMessage({
+            id: 'app.operator.newAgent.label.ip',
+            defaultMessage: 'Agent IP Address',
+          })}
+          name="urls"
+          rules={[
+            {
+              required: true,
+              message: intl.formatMessage({
+                id: 'app.operator.newAgent.required.ip',
+                defaultMessage: 'Please input the ip address & port of the agent.',
+              }),
+            },
+          ]}
+        >
+          <Input placeholder="192.168.0.10:5001" />
         </FormItem>
         <FormItem
           {...formItemLayout}
