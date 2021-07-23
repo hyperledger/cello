@@ -17,7 +17,7 @@ export async function createAgent(params) {
 }
 
 export async function applyAgent(params) {
-  return request('/api/v1/agents/organization', {
+  return request('/api/v1/agents', {
     method: 'POST',
     data: params,
   });

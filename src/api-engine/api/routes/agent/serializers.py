@@ -109,7 +109,7 @@ class K8SParameterSerializer(serializers.ModelSerializer):
 
 
 class AgentCreateBody(serializers.ModelSerializer):
-    organization = serializers.UUIDField(help_text=IDHelpText)
+    #organization = serializers.UUIDField(help_text=IDHelpText)
 
     def to_form_paras(self):
         custom_paras = to_form_paras(self)

@@ -75,7 +75,7 @@ class AgentViewSet(viewsets.ViewSet):
             agent_status = serializer.validated_data.get("status")
             name = serializer.validated_data.get("name")
             agent_type = serializer.validated_data.get("type")
-            organization = serializer.validated_data.get("organization")
+            organization = request.user.organization
 
             query_filters = {}
             # if organization:
@@ -148,7 +148,6 @@ class AgentViewSet(viewsets.ViewSet):
             agent_type = serializer.validated_data.get("type")
             urls = serializer.validated_data.get("urls")
             config_file = serializer.validated_data.get("config_file")
-            organization = serializer.validated_data.get("organization")
 
             body = {
                 "type": agent_type,
@@ -167,12 +166,12 @@ class AgentViewSet(viewsets.ViewSet):
 
             if config_file is not None:
                 body.update({"config_file": config_file})
-            if organization is not None:
-                org = Organization.objects.get(id=organization)
-                if org.agent.all():
-                    raise ResourceExists
-                else:
-                    body.update({"organization": org})
+
+            org = request.user.organization
+            if org.agent.all():
+                raise ResourceExists
+            else:
+                body.update({"organization": org})
 
             agent = Agent(**body)
             agent.save()
