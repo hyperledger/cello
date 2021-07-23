@@ -34,6 +34,7 @@ from api.routes.organization.views import OrganizationViewSet
 from api.routes.user.views import UserViewSet
 from api.routes.file.views import FileViewSet
 from api.routes.general.views import RegisterViewSet, LoginViewSet, login
+from api.routes.channel.views import ChannelViewSet
 
 
 DEBUG = getattr(settings, "DEBUG")
@@ -66,6 +67,7 @@ router.register("users", UserViewSet, basename="user")
 router.register("files", FileViewSet, basename="file")
 router.register("login2", LoginViewSet, basename="login2")
 router.register("register", RegisterViewSet, basename="register")
+router.register("channel", ChannelViewSet, basename="channel")
 
 urlpatterns = router.urls
 
