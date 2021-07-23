@@ -231,13 +231,13 @@ class AgentViewSet(viewsets.ViewSet):
         serializer = AgentUpdateBody(data=request.data)
         if serializer.is_valid(raise_exception=True):
             name = serializer.validated_data.get("name")
-            urls = serializer.validated_data.get("urls")
-            organization = serializer.validated_data.get("organization")
+            #urls = serializer.validated_data.get("urls")
+            #organization = request.user.organization
             try:
                 Agent.objects.get(name=name)
             except ObjectDoesNotExist:
                 pass
-            Agent.objects.filter(id=pk).update(name=name, urls=urls, organization=organization)
+            Agent.objects.filter(id=pk).update(name=name)
 
             return Response(status=status.HTTP_202_ACCEPTED)
 
@@ -281,16 +281,22 @@ class AgentViewSet(viewsets.ViewSet):
     )
     def destroy(self, request, pk=None):
         """
-        Delete Agent
-
         Delete agent
+
+        :param request: destory parameter
+        :param pk: primary key
+        :return: none
+        :rtype: rest_framework.status
         """
         try:
-            agent = Agent.objects.get(id=pk)
+            if request.user.is_administrator:
+                agent = Agent.objects.get(id=pk)
+            else:
+                raise CustomError("User can't delete agent！")
         except ObjectDoesNotExist:
             raise ResourceNotFound
         else:
-            if agent.organization is not None:
+            if agent.node.count():
                 raise ResourceInUse
             agent.delete()
 
