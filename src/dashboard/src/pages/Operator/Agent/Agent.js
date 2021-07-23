@@ -261,7 +261,7 @@ class Agent extends PureComponent {
       });
     } else {
       dispatch({
-        type: 'agent/releaseAgent',
+        type: 'agent/deleteAgent',
         payload: agent.id,
         callback: this.deleteCallback,
       });

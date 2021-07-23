@@ -509,7 +509,7 @@ class Node(models.Model):
         Agent,
         help_text="Agent of node",
         null=True,
-        related_name="agent",
+        related_name="node",
         on_delete=models.CASCADE
     )
     # network = models.ForeignKey(
