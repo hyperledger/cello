@@ -221,11 +221,15 @@ class NodeUrlSerializer(serializers.Serializer):
 
 
 class NodeInfoSerializer(NodeIDSerializer, serializers.ModelSerializer):
-    ca = FabricCASerializer(
-        help_text="CA configuration for node", required=False, allow_null=True
+    # ca = FabricCASerializer(
+    #     help_text="CA configuration for node", required=False, allow_null=True
+    # )
+    # file = serializers.URLField(help_text="File url of node", required=False)
+    # links = NodeUrlSerializer(help_text="Links of node service", many=True)
+    agent_id = serializers.UUIDField(
+        help_text="Agent ID", required=False, allow_null=True
     )
-    file = serializers.URLField(help_text="File url of node", required=False)
-    links = NodeUrlSerializer(help_text="Links of node service", many=True)
+
 
     class Meta:
         model = Node
@@ -233,15 +237,15 @@ class NodeInfoSerializer(NodeIDSerializer, serializers.ModelSerializer):
             "id",
             "type",
             "name",
-            "network_type",
-            "network_version",
+            # "network_type",
+            # "network_version",
             "created_at",
             "agent_id",
-            "network_id",
+            # "network_id",
             "status",
-            "ca",
-            "file",
-            "links",
+            # "ca",
+            # "file",
+            # "links",
         )
         extra_kwargs = {
             "id": {"required": True, "read_only": False},
@@ -321,26 +325,26 @@ class NodeOperationSerializer(serializers.Serializer):
     )
 
 
-class NodeFileCreateSerializer(serializers.ModelSerializer):
-    def to_form_paras(self):
-        custom_paras = to_form_paras(self)
+# class NodeFileCreateSerializer(serializers.ModelSerializer):
+#     def to_form_paras(self):
+#         custom_paras = to_form_paras(self)
 
-        return custom_paras
+#         return custom_paras
 
-    class Meta:
-        model = Node
-        fields = ("file",)
-        extra_kwargs = {
-            "file": {
-                "required": True,
-                "validators": [
-                    FileExtensionValidator(
-                        allowed_extensions=["tar.gz", "tgz"]
-                    ),
-                    validate_file,
-                ],
-            }
-        }
+#     class Meta:
+#         model = Node
+#         fields = ("file",)
+#         extra_kwargs = {
+#             "file": {
+#                 "required": True,
+#                 "validators": [
+#                     FileExtensionValidator(
+#                         allowed_extensions=["tar.gz", "tgz"]
+#                     ),
+#                     validate_file,
+#                 ],
+#             }
+#         }
 
 
 class NodeUserCreateSerializer(serializers.ModelSerializer):
