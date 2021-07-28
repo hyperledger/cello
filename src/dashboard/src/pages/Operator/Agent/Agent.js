@@ -100,7 +100,7 @@ const ApplyAgentForm = props => {
             },
           ]}
         >
-          <Input placeholder="192.168.0.10:5001" />
+          <Input placeholder="http://192.168.0.10:5001" />
         </FormItem>
         <FormItem
           {...formItemLayout}

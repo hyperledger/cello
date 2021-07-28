@@ -110,13 +110,14 @@ class CreateAgent extends React.Component {
       const formData = new FormData();
       const userRole = getAuthority()[0];
       const id = query.id;
-      const requestMethod = userRole === 'operator' ? 'PUT' : 'PATCH';
+      const requestMethod =
+        userRole !== 'operator' || userRole !== 'administrator' ? 'PUT' : 'PATCH';
 
       formData.append('name', values.name);
       formData.append('capacity', values.capacity);
       formData.append('log_level', values.log_level);
 
-      if (userRole === 'operator') {
+      if (userRole !== 'operator' || userRole !== 'administrator') {
         formData.append('schedulable', values.schedulable);
       }
 
@@ -246,7 +247,7 @@ class CreateAgent extends React.Component {
               name="name"
               rules={[
                 {
-                  required: false,
+                  required: true,
                   message: intl.formatMessage({
                     id: 'app.operator.newAgent.required.Name',
                     defaultMessage: 'Please input name.',
@@ -270,21 +271,21 @@ class CreateAgent extends React.Component {
               name="ip"
               rules={[
                 {
-                  required: true,
+                  required: false,
                   message: intl.formatMessage({
                     id: 'app.operator.newAgent.required.ip',
                     defaultMessage: 'Please input the ip address of the agent.',
                   }),
                 },
-                {
-                  validator: this.validateIp,
-                },
+                // {
+                //  validator: this.validateIp,
+                // },
               ]}
             >
               <Input
                 disabled={action === 'edit'}
                 style={action === 'edit' ? disabledFontColor : {}}
-                placeholder="192.168.0.10"
+                placeholder="http://192.168.0.10:5001"
               />
             </FormItem>
             <FormItem
@@ -296,7 +297,7 @@ class CreateAgent extends React.Component {
               name="image"
               rules={[
                 {
-                  required: true,
+                  required: false,
                   message: intl.formatMessage({
                     id: 'app.operator.newAgent.required.image',
                     defaultMessage: "Please input the name of the agent's image.",
@@ -322,7 +323,7 @@ class CreateAgent extends React.Component {
               name="capacity"
               rules={[
                 {
-                  required: true,
+                  required: false,
                   message: intl.formatMessage({
                     id: 'app.operator.newAgent.required.agentCapacity',
                     defaultMessage: 'Please input the capacity of the agent.',
@@ -348,7 +349,7 @@ class CreateAgent extends React.Component {
               name="node_capacity"
               rules={[
                 {
-                  required: true,
+                  required: false,
                   message: intl.formatMessage({
                     id: 'app.operator.newAgent.required.nodeCapacity',
                     defaultMessage: 'Please input the capacity of nodes.',
@@ -376,7 +377,7 @@ class CreateAgent extends React.Component {
               name="type"
               rules={[
                 {
-                  required: true,
+                  required: false,
                   message: intl.formatMessage({
                     id: 'app.operator.newAgent.required.type',
                     defaultMessage: 'Please select a type.',
@@ -438,7 +439,9 @@ class CreateAgent extends React.Component {
               name="schedulable"
             >
               <Switch
-                disabled={action === 'edit' && userRole !== 'operator'}
+                disabled={
+                  action === 'edit' && (userRole !== 'operator' || userRole !== 'administrator')
+                }
                 defaultChecked={schedulable}
               />
             </FormItem>
