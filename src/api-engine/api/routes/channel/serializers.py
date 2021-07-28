@@ -20,6 +20,14 @@ class ChannelIDSerializer(serializers.Serializer):
     id = serializers.CharField(help_text="Channel ID")
 
 
+class ChannelUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Channel
+        fields = (
+            "name",
+        )
+
+
 class ChannelResponseSerializer(ChannelIDSerializer, serializers.ModelSerializer):
     network = serializers.UUIDField(help_text="ID of Network")
 
