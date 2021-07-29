@@ -1,99 +1,52 @@
-# This compose file will deploy the services, and bootup a mongo server.
+# This compose file will deploy the services, and bootup a postgres server.
 
-# Copyright IBM Corp., All Rights Reserved.
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-# Local `/opt/cello/mongo` will be used for the db storage.
 
-#  cello-nginx: proxy to access operator dashboard service, listen on 8080
-#  cello-operator-dashboard: dashboard service for operators
-#  cello-user-dashboard: user service of cello, listen on 8081
-#  engine: engine service of cello to provide RESTful APIs, listen on 80
-#  cello-mongo: mongo db
+#  cello-dashboard: dashboard service for cello
+#  cello-api-engine: api engine service of cello to provide RESTful APIs, listen on 8080
+#  cello-postgres: postgres db 
 
 version: '3.2'
 services:
-  postgres-server:
+
+  # pg database
+  cello-postgres:
     image: postgres:11.1
-    hostname: cello-postgres-server
-    container_name: cello-postgres-server
-    restart: always
+    hostname: cello-postgres
+    container_name: cello-postgres
+    restart: unless-stopped
     environment:
-      - POSTGRES_DB=api-engine
-      - POSTGRES_USER=$POSTGRES_USER
-      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+      - POSTGRES_DB=api_engine
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123456
+    ports:
+      - "5432:5432"
     volumes:
-      - /opt/cello/postgres:/var/lib/postgresql/data
+      - /opt/cello/pgdata:/var/lib/postgresql/data
 
-  redis:
-    image: redis:4.0.13
-    hostname: cello-redis
-    container_name: cello-redis
-    volumes:
-      - /opt/cello/redis:/data
-
-  api-engine:
+# api engine service of cello 
+  cello-api-engine:
     image: hyperledger/cello-api-engine
-    hostname: cello-api-engine
     container_name: cello-api-engine
-    restart: always
+    hostname: cello-api-engine
+    restart: unless-stopped
     links:
-      - postgres-server
-      - redis
+      - cello-postgres
     environment:
-      - WEBROOT=${CONFIG_API_ENGINE_WEBROOT}
-      - DEBUG=True
-      - DB_USER=${CONFIG_POSTGRES_USER}
-      - DB_PASSWORD=${CONFIG_POSTGRES_PASSWORD}
-      - DB_NAME=api-engine
-      - DB_HOST=postgres-server
+      - DB_NAME=api_engine
+      - DB_USER=postgres
+      - DB_PASSWORD=123456
+      - DB_HOST=cello-postgres
       - DB_PORT=5432
-      - ADMIN_TOKEN=${CONFIG_API_ENGINE_ADMIN_TOKEN}
-      - CELERY_BROKER_URL=redis://redis
-      - ADMIN_USERNAME=${CONFIG_API_ENGINE_ADMIN_USERNAME}
-      - ADMIN_PASSWORD=${CONFIG_API_ENGINE_ADMIN_PASSWORD}
-      - ADMIN_EMAIL=${CONFIG_API_ENGINE_ADMIN_EMAIL}
-      - API_VERSION=${CONFIG_API_VERSION}
+      - DEBUG=True
     ports:
-      - "${CONFIG_API_ENGINE_SERVICE_PORT}:8080"
-    volumes:
-      - $ROOT_PATH/src/api-engine:/var/www/server
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /opt/cello/api-engine/media:/var/www/media
+      - "8080:8080"
+    # volumes:
+     # - /opt/fabric:/opt/fabric
+     # - /etc/localtime:/etc/localtime 
+ 
+    
 
-  api-engine-tasks:
-    image: hyperledger/cello-api-engine
-    hostname: cello-api-engine-tasks
-    container_name: cello-api-engine-tasks
-    restart: always
-    links:
-    - postgres-server
-    - redis
-    environment:
-    - WEBROOT=${CONFIG_API_ENGINE_WEBROOT}
-    - DEBUG=True
-    - DB_USER=${CONFIG_POSTGRES_USER}
-    - DB_PASSWORD=${CONFIG_POSTGRES_PASSWORD}
-    - DB_NAME=api-engine
-    - DB_HOST=postgres-server
-    - DB_PORT=5432
-    - ADMIN_TOKEN=${CONFIG_API_ENGINE_ADMIN_TOKEN}
-    - CELERY_BROKER_URL=redis://redis
-    - API_VERSION=${CONFIG_API_VERSION}
-    - RUN_MODE=task
-    - DOCKER_HOST=${CONFIG_API_DOCKER_HOST}
-    volumes:
-    - $ROOT_PATH/src/api-engine:/var/www/server
-    - /var/run/docker.sock:/var/run/docker.sock
 
-  dashboard:
-    image: hyperledger/cello-dashboard
-    container_name: cello-dashboard
-    links:
-      - api-engine
-    environment:
-      - API_PROXY=http://api-engine:8080/engine
-      - SERVICE_PORT=${CONFIG_API_ENGINE_SERVICE_PORT}
-    ports:
-      - "${CONFIG_DASHBOARD_SERVICE_PORT}:80"

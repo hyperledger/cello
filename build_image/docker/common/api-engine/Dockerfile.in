@@ -1,4 +1,4 @@
-FROM python:3.6
+FROM python:3.8
 
 # Install software
 RUN apt-get update \
@@ -12,9 +12,8 @@ WORKDIR /var/www/server
 
 # Copy source code to the working dir
 COPY src/api-engine ./
-
 # Install python dependencies
-RUN	pip install -r requirements.txt
+RUN	pip3 install -r requirements.txt
 
 # Add uwsgi configuration file
 COPY build_image/docker/common/api-engine/server.ini /etc/uwsgi/apps-enabled/
