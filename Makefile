@@ -73,6 +73,7 @@ REPLACE_SLASH:=\/
 
 # deploy method docker-compose/k8s
 export DEPLOY_METHOD?=docker-compose
+export CONFIG_DOCKER_COMPOSE_DEPLOY=y
 
 -include .config
 -include .makerc/kubernetes
