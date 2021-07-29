@@ -52,9 +52,8 @@ class ChannelViewSet(viewsets.ViewSet):
             try:
                 org_id = request.user.organization.id
                 org = Organization.objects.get(pk=org_id)
-                channels = Channel.objects.filter(network=org.network)
-                p = Paginator(channels, per_page)
-                channels = p.page(page)
+                channels = Paginator(org.channel, per_page)
+                channels = channels.page(page)
                 response = ChannelListResponse(
                     data={"data": channels, "total": channels.count}
                 )
