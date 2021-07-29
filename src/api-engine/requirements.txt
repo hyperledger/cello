@@ -58,7 +58,7 @@ sqlparse==0.4.1
 strict-rfc3339==0.7
 swagger-spec-validator==2.5.0
 uritemplate==3.0.1
-urllib3==1.26.2
+urllib3==1.26.5
 uWSGI==2.0.18
 validate-email==1.3
 vine==1.3.0
