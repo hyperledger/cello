@@ -724,21 +724,21 @@ class File(models.Model):
             null=True,
         )
 
-    class Channel(models.Model):
-        id = models.UUIDField(
-            primary_key=True,
-            help_text="ID of Channel",
-            default=make_uuid,
-            editable=False,
-            unique=True)
-        name = models.CharField(
-            help_text="name of channel", max_length=128
-        )
-        network = models.ForeignKey(
-            "Network", on_delete=models.CASCADE
-        )
-        create_ts = models.DateTimeField(
-            help_text="Create time of Channel", auto_now_add=True
+class Channel(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        help_text="ID of Channel",
+        default=make_uuid,
+        editable=False,
+        unique=True)
+    name = models.CharField(
+        help_text="name of channel", max_length=128
+    )
+    network = models.ForeignKey(
+        "Network", on_delete=models.CASCADE
+    )
+    create_ts = models.DateTimeField(
+        help_text="Create time of Channel", auto_now_add=True
         )
 
     class ChainCode(models.Model):
