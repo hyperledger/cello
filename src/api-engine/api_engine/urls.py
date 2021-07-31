@@ -67,7 +67,7 @@ router.register("users", UserViewSet, basename="user")
 router.register("files", FileViewSet, basename="file")
 router.register("login2", LoginViewSet, basename="login2")
 router.register("register", RegisterViewSet, basename="register")
-router.register("channel", ChannelViewSet, basename="channel")
+router.register("channels", ChannelViewSet, basename="channel")
 
 urlpatterns = router.urls
 
