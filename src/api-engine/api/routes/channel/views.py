@@ -91,11 +91,9 @@ class ChannelViewSet(viewsets.ViewSet):
                     name=name,
                     network=org.network
                 )
-                channel.organizations.add(org)
                 channel.save()
+                channel.organizations.add(org)
 
-                org.chanel = channel
-                org.save()
                 # TODO: Interact with the Fabric CLI.
                 response = ChannelIDSerializer(data=channel.__dict__)
                 if response.is_valid(raise_exception=True):
