@@ -3,7 +3,6 @@ from rest_framework import serializers
 
 from api.models import Channel
 from api.common.serializers import ListResponseSerializer
-from api.routes.organization.serializers import OrganizationResponse
 
 
 class ChannelCreateBody(serializers.Serializer):
