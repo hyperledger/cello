@@ -55,7 +55,7 @@ class ChannelViewSet(viewsets.ViewSet):
                 channel_pages = Paginator(channels, per_page)
                 channels_list = channel_pages.page(page)
                 response = ChannelListResponse(
-                    data={"data": channels_list, "total": channels.count}
+                    data={"data": channels_list, "total": channels.count()}
                 )
                 if response.is_valid(raise_exception=True):
                     return Response(
