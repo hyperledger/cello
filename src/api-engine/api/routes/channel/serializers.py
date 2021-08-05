@@ -30,10 +30,13 @@ class ChannelUpdateSerializer(serializers.ModelSerializer):
 
 class ChannelResponseSerializer(ChannelIDSerializer, serializers.ModelSerializer):
     network = serializers.UUIDField(help_text="ID of Network")
+    organizations = serializers.ListField(
+        child=serializers.UUIDField(help_text="ID of Organization")
+    )
 
     class Meta:
         model = Channel
-        fields = ("name", "network", "create_ts")
+        fields = ("name", "network", "organizations", "create_ts")
 
 
 class ChannelListResponse(ListResponseSerializer):

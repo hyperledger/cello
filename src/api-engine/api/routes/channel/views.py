@@ -50,12 +50,12 @@ class ChannelViewSet(viewsets.ViewSet):
             per_page = serializer.validated_data.get("per_page")
 
             try:
-                org_id = request.user.organization.id
-                org = Organization.objects.get(pk=org_id)
-                channels = Paginator(org.channel, per_page)
-                channels = channels.page(page)
+                org = request.user.organization
+                channels = Channel.objects.filter(organizations=org)
+                channel_pages = Paginator(channels, per_page)
+                channels_list = channel_pages.page(page)
                 response = ChannelListResponse(
-                    data={"data": channels, "total": channels.count}
+                    data={"data": channels_list, "total": channels.count()}
                 )
                 if response.is_valid(raise_exception=True):
                     return Response(
@@ -86,14 +86,14 @@ class ChannelViewSet(viewsets.ViewSet):
             orderers = serializer.validated_data.get("orderers")
 
             try:
-                org_id = request.user.organization.id
-                org = Organization.objects.get(pk=org_id)
+                org = request.user.organization
                 channel = Channel(
                     name=name,
                     network=org.network
                 )
-                org.chanel = channel
-                org.save()
+                channel.save()
+                channel.organizations.add(org)
+
                 # TODO: Interact with the Fabric CLI.
                 response = ChannelIDSerializer(data=channel.__dict__)
                 if response.is_valid(raise_exception=True):

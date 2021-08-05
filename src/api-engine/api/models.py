@@ -86,13 +86,13 @@ class Organization(models.Model):
         related_name="network",
         on_delete=models.SET_NULL
     )
-    channel = models.ForeignKey(
-        "Channel",
-        help_text="channel to which the organization belongs",
-        null=True,
-        related_name="channel",
-        on_delete=models.SET_NULL
-    )
+    # channel = models.ForeignKey(
+    #     "Channel",
+    #     help_text="channel to which the organization belongs",
+    #     null=True,
+    #     related_name="channel",
+    #     on_delete=models.SET_NULL
+    # )
 
     class Meta:
         ordering = ("-created_at",)
@@ -331,7 +331,7 @@ class Network(models.Model):
         null=True,
     )
     database = models.CharField(
-       help_text="database of network", max_length=128, default="leveldb",
+        help_text="database of network", max_length=128, default="leveldb",
     )
 
     class Meta:
@@ -705,7 +705,8 @@ class File(models.Model):
         roles = models.CharField(
             help_text="roles of user", max_length=128
         )
-        organization = models.ForeignKey("Organization", on_delete=models.CASCADE)
+        organization = models.ForeignKey(
+            "Organization", on_delete=models.CASCADE)
         attributes = models.CharField(
             help_text="attributes of user", max_length=128
         )
@@ -724,6 +725,7 @@ class File(models.Model):
             null=True,
         )
 
+
 class Channel(models.Model):
     id = models.UUIDField(
         primary_key=True,
@@ -737,9 +739,16 @@ class Channel(models.Model):
     network = models.ForeignKey(
         "Network", on_delete=models.CASCADE
     )
+    organizations = models.ManyToManyField(
+        to="Organization",
+        help_text="the organization of the channel",
+        null=True,
+        related_name="channels",
+        on_delete=models.SET_NULL
+    )
     create_ts = models.DateTimeField(
         help_text="Create time of Channel", auto_now_add=True
-        )
+    )
 
     class ChainCode(models.Model):
         id = models.UUIDField(
@@ -772,4 +781,3 @@ class Channel(models.Model):
         status = models.CharField(
             help_text="status of chainCode", max_length=128
         )
-
