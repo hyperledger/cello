@@ -35,6 +35,7 @@ from api.routes.agent.serializers import (
 )
 from api.utils.common import with_common_response, any_of
 from api.auth import TokenAuth
+from api.common import ok, err
 
 LOG = logging.getLogger(__name__)
 
@@ -68,65 +69,70 @@ class AgentViewSet(viewsets.ViewSet):
         :return: agent list
         :rtype: list
         """
-        serializer = AgentQuery(data=request.GET)
-        if serializer.is_valid(raise_exception=True):
-            page = serializer.validated_data.get("page")
-            per_page = serializer.validated_data.get("per_page")
-            agent_status = serializer.validated_data.get("status")
-            name = serializer.validated_data.get("name")
-            agent_type = serializer.validated_data.get("type")
-            organization = request.user.organization
+        try:
+            serializer = AgentQuery(data=request.GET)
+            if serializer.is_valid(raise_exception=True):
+                page = serializer.validated_data.get("page")
+                per_page = serializer.validated_data.get("per_page")
+                agent_status = serializer.validated_data.get("status")
+                name = serializer.validated_data.get("name")
+                agent_type = serializer.validated_data.get("type")
+                organization = request.user.organization
 
-            query_filters = {}
-            # if organization:
-            #     if not request.user.is_operator:
-            #         raise PermissionDenied()
-            #     query_filters.update({"organization": organization})
-            # else:
-            #     org_name = (
-            #         request.user.organization.name
-            #         if request.user.organization
-            #         else ""
-            #     )
-            #     if request.user.is_administrator:
-            #         query_filters.update({"organization__name": org_name})
-            if name:
-                query_filters.update({"name__icontains": name})
-            if agent_status:
-                query_filters.update({"status": agent_status})
-            if agent_type:
-                query_filters.update({"type": agent_type})
-            if organization:
-                query_filters.update({"organization": organization})
+                query_filters = {}
+                # if organization:
+                #     if not request.user.is_operator:
+                #         raise PermissionDenied()
+                #     query_filters.update({"organization": organization})
+                # else:
+                #     org_name = (
+                #         request.user.organization.name
+                #         if request.user.organization
+                #         else ""
+                #     )
+                #     if request.user.is_administrator:
+                #         query_filters.update({"organization__name": org_name})
+                if name:
+                    query_filters.update({"name__icontains": name})
+                if agent_status:
+                    query_filters.update({"status": agent_status})
+                if agent_type:
+                    query_filters.update({"type": agent_type})
+                if organization:
+                    query_filters.update({"organization": organization})
 
-            agents = Agent.objects.filter(**query_filters)
-            p = Paginator(agents, per_page)
-            agents = p.page(page)
-            # agents = [agent.__dict__ for agent in agents]
-            agent_list = []
-            # for agent in agents:
-            #     agent_dict = agent.__dict__
-            #     agent_list.append(agent_dict)
-            agent_list = [
-                {
-                    "id": agent.id,
-                    "name": agent.name,
-                    "status": agent.status,
-                    "type": agent.type,
-                    "urls": agent.urls,
-                    "organization": str(agent.organization.id) if agent.organization else None,
-                    "created_at": agent.created_at,
-                }
-                for agent in agents
-            ]
+                agents = Agent.objects.filter(**query_filters)
+                p = Paginator(agents, per_page)
+                agents = p.page(page)
+                # agents = [agent.__dict__ for agent in agents]
+                agent_list = []
+                # for agent in agents:
+                #     agent_dict = agent.__dict__
+                #     agent_list.append(agent_dict)
+                agent_list = [
+                    {
+                        "id": agent.id,
+                        "name": agent.name,
+                        "status": agent.status,
+                        "type": agent.type,
+                        "urls": agent.urls,
+                        "organization": str(agent.organization.id) if agent.organization else None,
+                        "created_at": agent.created_at,
+                    }
+                    for agent in agents
+                ]
 
-            response = AgentListResponse(
-                data={"data": agent_list, "total": p.count}
-            )
-            if response.is_valid(raise_exception=True):
-                return Response(
-                    response.validated_data, status=status.HTTP_200_OK
+                response = AgentListResponse(
+                    data={"data": agent_list, "total": p.count}
                 )
+                if response.is_valid(raise_exception=True):
+                    return Response(
+                        ok(response.validated_data), status=status.HTTP_200_OK
+                    )
+        except Exception as e:
+            return Response(
+                err(e.args), status=status.HTTP_400_BAD_REQUEST
+            )
 
     @swagger_auto_schema(
         request_body=AgentCreateBody,
@@ -142,45 +148,52 @@ class AgentViewSet(viewsets.ViewSet):
         :return: agent ID
         :rtype: uuid
         """
-        serializer = AgentCreateBody(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            name = serializer.validated_data.get("name")
-            agent_type = serializer.validated_data.get("type")
-            urls = serializer.validated_data.get("urls")
-            config_file = serializer.validated_data.get("config_file")
+        try:
+            serializer = AgentCreateBody(data=request.data)
+            if serializer.is_valid(raise_exception=True):
+                name = serializer.validated_data.get("name")
+                agent_type = serializer.validated_data.get("type")
+                urls = serializer.validated_data.get("urls")
+                config_file = serializer.validated_data.get("config_file")
 
-            body = {
-                "type": agent_type,
-                "urls": urls,
-                "name": name,
-            }
-            if name:
-                agent_count = Agent.objects.filter(
-                    name=name
-                ).count()
-                if agent_count > 0:
-                    raise ResourceExists(
-                        detail="Name %s already exists" % name
+                body = {
+                    "type": agent_type,
+                    "urls": urls,
+                    "name": name,
+                }
+
+                if name:
+                    agent_count = Agent.objects.filter(
+                        name=name
+                    ).count()
+                    if agent_count > 0:
+                        raise ResourceExists
+
+                    body.update({"name": name})
+
+                if config_file is not None:
+                    body.update({"config_file": config_file})
+
+                org = request.user.organization
+                if org.agent.all():
+                    raise ResourceExists
+                else:
+                    body.update({"organization": org})
+
+                agent = Agent(**body)
+                agent.save()
+
+                response = AgentIDSerializer(data=agent.__dict__)
+                if response.is_valid(raise_exception=True):
+                    return Response(
+                        ok(response.validated_data), status=status.HTTP_201_CREATED
                     )
-                body.update({"name": name})
-
-            if config_file is not None:
-                body.update({"config_file": config_file})
-
-            org = request.user.organization
-            if org.agent.all():
-                raise ResourceExists
-            else:
-                body.update({"organization": org})
-
-            agent = Agent(**body)
-            agent.save()
-
-            response = AgentIDSerializer(data=agent.__dict__)
-            if response.is_valid(raise_exception=True):
-                return Response(
-                    response.validated_data, status=status.HTTP_201_CREATED
-                )
+        except ResourceExists as e:
+            raise e
+        except Exception as e:
+            return Response(
+                err(e.args), status=status.HTTP_400_BAD_REQUEST
+            )
 
     @swagger_auto_schema(
         responses=with_common_response(
@@ -215,7 +228,7 @@ class AgentViewSet(viewsets.ViewSet):
             response = AgentInfoSerializer(data=data)
             if response.is_valid(raise_exception=True):
                 return Response(
-                    response.validated_data, status=status.HTTP_200_OK
+                    ok(response.validated_data), status=status.HTTP_200_OK
                 )
 
     @swagger_auto_schema(
@@ -228,18 +241,25 @@ class AgentViewSet(viewsets.ViewSet):
 
         Update special agent with id.
         """
-        serializer = AgentUpdateBody(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            name = serializer.validated_data.get("name")
-            #urls = serializer.validated_data.get("urls")
-            #organization = request.user.organization
-            try:
-                Agent.objects.get(name=name)
-            except ObjectDoesNotExist:
-                pass
-            Agent.objects.filter(id=pk).update(name=name)
+        try:
+            serializer = AgentUpdateBody(data=request.data)
+            if serializer.is_valid(raise_exception=True):
+                name = serializer.validated_data.get("name")
+                #urls = serializer.validated_data.get("urls")
+                #organization = request.user.organization
+                try:
+                    Agent.objects.get(name=name)
+                except ObjectDoesNotExist:
+                    raise ResourceNotFound
+                Agent.objects.filter(id=pk).update(name=name)
 
-            return Response(status=status.HTTP_202_ACCEPTED)
+                return Response(ok(None), status=status.HTTP_202_ACCEPTED)
+        except ResourceNotFound as e:
+            raise e
+        except Exception as e:
+            return Response(
+                err(e.args), status=status.HTTP_400_BAD_REQUEST
+            )
 
     @swagger_auto_schema(
         request_body=AgentPatchBody,
@@ -251,25 +271,32 @@ class AgentViewSet(viewsets.ViewSet):
 
         Partial update special agent with id.
         """
-        serializer = AgentPatchBody(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            name = serializer.validated_data.get("name")
-            capacity = serializer.validated_data.get("capacity")
-            log_level = serializer.validated_data.get("log_level")
-            try:
-                agent = Agent.objects.get(id=pk)
-            except ObjectDoesNotExist:
-                raise ResourceNotFound
-            else:
-                if name:
-                    agent.name = name
-                if capacity:
-                    agent.capacity = capacity
-                if log_level:
-                    agent.log_level = log_level
-                agent.save()
+        try:
+            serializer = AgentPatchBody(data=request.data)
+            if serializer.is_valid(raise_exception=True):
+                name = serializer.validated_data.get("name")
+                capacity = serializer.validated_data.get("capacity")
+                log_level = serializer.validated_data.get("log_level")
+                try:
+                    agent = Agent.objects.get(id=pk)
+                except ObjectDoesNotExist:
+                    raise ResourceNotFound
+                else:
+                    if name:
+                        agent.name = name
+                    if capacity:
+                        agent.capacity = capacity
+                    if log_level:
+                        agent.log_level = log_level
+                    agent.save()
 
-                return Response(status=status.HTTP_202_ACCEPTED)
+                    return Response(ok(None),status=status.HTTP_202_ACCEPTED)
+        except ResourceNotFound as e:
+            raise e
+        except Exception as e:
+            return Response(
+                err(e.args), status=status.HTTP_400_BAD_REQUEST
+            )
 
     @swagger_auto_schema(
         responses=with_common_response(
@@ -289,18 +316,25 @@ class AgentViewSet(viewsets.ViewSet):
         :rtype: rest_framework.status
         """
         try:
-            if request.user.is_administrator:
-                agent = Agent.objects.get(id=pk)
+            try:
+                if request.user.is_administrator:
+                    agent = Agent.objects.get(id=pk)
+                else:
+                    raise CustomError("User can't delete agent！")
+            except ObjectDoesNotExist:
+                raise ResourceNotFound
             else:
-                raise CustomError("User can't delete agent！")
-        except ObjectDoesNotExist:
-            raise ResourceNotFound
-        else:
-            if agent.node.count():
-                raise ResourceInUse
-            agent.delete()
+                if agent.node.count():
+                    raise ResourceInUse
+                agent.delete()
 
-            return Response(status=status.HTTP_204_NO_CONTENT)
+                return Response(ok(None), status=status.HTTP_204_NO_CONTENT)
+        except (ResourceNotFound, ResourceInUse) as e:
+            raise e
+        except Exception as e:
+            return Response(
+                err(e.args), status=status.HTTP_400_BAD_REQUEST
+            )
 
     @swagger_auto_schema(
         method="post",
@@ -316,37 +350,44 @@ class AgentViewSet(viewsets.ViewSet):
 
         Apply Agent
         """
-        serializer = AgentApplySerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            agent_type = serializer.validated_data.get("type")
-            capacity = serializer.validated_data.get("capacity")
+        try:
+            serializer = AgentApplySerializer(data=request.data)
+            if serializer.is_valid(raise_exception=True):
+                agent_type = serializer.validated_data.get("type")
+                capacity = serializer.validated_data.get("capacity")
 
-            if request.user.organization is None:
-                raise CustomError(detail="Need join in organization")
-            agent_count = Agent.objects.filter(
-                organization=request.user.organization
-            ).count()
-            if agent_count > 0:
-                raise CustomError(detail="Already applied agent.")
+                if request.user.organization is None:
+                    raise CustomError(detail="Need join in organization")
+                agent_count = Agent.objects.filter(
+                    organization=request.user.organization
+                ).count()
+                if agent_count > 0:
+                    raise CustomError(detail="Already applied agent.")
 
-            agents = Agent.objects.filter(
-                organization__isnull=True,
-                type=agent_type,
-                capacity__gte=capacity,
-                schedulable=True,
-            ).order_by("capacity")
-            if len(agents) == 0:
-                raise NoResource
+                agents = Agent.objects.filter(
+                    organization__isnull=True,
+                    type=agent_type,
+                    capacity__gte=capacity,
+                    schedulable=True,
+                ).order_by("capacity")
+                if len(agents) == 0:
+                    raise NoResource
 
-            agent = agents[0]
-            agent.organization = request.user.organization
-            agent.save()
+                agent = agents[0]
+                agent.organization = request.user.organization
+                agent.save()
 
-            response = AgentIDSerializer(data=agent.__dict__)
-            if response.is_valid(raise_exception=True):
-                return Response(
-                    response.validated_data, status=status.HTTP_200_OK
-                )
+                response = AgentIDSerializer(data=agent.__dict__)
+                if response.is_valid(raise_exception=True):
+                    return Response(
+                        ok(response.validated_data), status=status.HTTP_200_OK
+                    )
+        except NoResource as e:
+            raise e
+        except Exception as e:
+            return Response(
+                err(e.args), status=status.HTTP_400_BAD_REQUEST
+            )
 
     @swagger_auto_schema(
         method="delete",
@@ -362,18 +403,25 @@ class AgentViewSet(viewsets.ViewSet):
         Release Agent
         """
         try:
-            if request.user.is_operator:
-                agent = Agent.objects.get(id=pk)
+            try:
+                if request.user.is_operator:
+                    agent = Agent.objects.get(id=pk)
+                else:
+                    if request.user.organization is None:
+                        raise CustomError("Need join in organization")
+                    agent = Agent.objects.get(
+                        id=pk, organization=request.user.organization
+                    )
+            except ObjectDoesNotExist:
+                raise ResourceNotFound
             else:
-                if request.user.organization is None:
-                    raise CustomError("Need join in organization")
-                agent = Agent.objects.get(
-                    id=pk, organization=request.user.organization
-                )
-        except ObjectDoesNotExist:
-            raise ResourceNotFound
-        else:
-            agent.organization = None
-            agent.save()
+                agent.organization = None
+                agent.save()
 
-            return Response(status=status.HTTP_204_NO_CONTENT)
+                return Response(ok(None), status=status.HTTP_204_NO_CONTENT)
+        except ResourceNotFound as e:
+            raise e
+        except Exception as e:
+            return Response(
+                err(e.args), status=status.HTTP_400_BAD_REQUEST
+            )

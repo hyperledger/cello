@@ -35,3 +35,5 @@ class CustomError(BadException):
 class NoResource(BadException):
     default_detail = ErrorCode.NoResource.display_string
     default_code = ErrorCode.NoResource.value
+
+

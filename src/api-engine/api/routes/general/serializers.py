@@ -18,6 +18,11 @@ class RegisterIDSerializer(serializers.Serializer):
     id = serializers.UUIDField(help_text="ID of Organization")
 
 
+class RegisterResponse(serializers.Serializer):
+    id = serializers.UUIDField(help_text="ID of Organization")
+    #msg = serializers.CharField(help_text="name of Organization")
+
+
 class LoginBody(serializers.Serializer):
     orgName = serializers.CharField(help_text="name of Organization")
     username = serializers.CharField(help_text="name of user")

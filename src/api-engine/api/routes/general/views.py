@@ -11,14 +11,16 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.response import Response
 from rest_framework_jwt.views import obtain_jwt_token, verify_jwt_token
 from api.models import UserProfile, Organization
-from api.exceptions import ResourceExists, ResourceNotFound, ResourceInUse
+from rest_framework.authtoken.models import Token
 from api.routes.general.serializers import (
     RegisterBody,
     RegisterIDSerializer,
+    RegisterResponse,
     LoginBody,
 )
 from api.lib.pki import CryptoGen, CryptoConfig
 from api.utils import zip_dir, zip_file
+from api.common import ok, err
 from api.config import CELLO_HOME
 
 LOG = logging.getLogger(__name__)
@@ -27,42 +29,54 @@ LOG = logging.getLogger(__name__)
 class RegisterViewSet(viewsets.ViewSet):
 
     def create(self, request):
-        serializer = RegisterBody(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            username = serializer.validated_data.get("username")
-            orgname = serializer.validated_data.get("orgName")
-            password = serializer.validated_data.get("password")
-            passwordAgain = serializer.validated_data.get("passwordAgain")
-            try:
-                Organization.objects.get(name=orgname)
-            except ObjectDoesNotExist:
-                pass
-            else:
-                return Response(
-                    "orgnization exists!", status=status.HTTP_409_CONFLICT
+        try:
+            serializer = RegisterBody(data=request.data)
+            if serializer.is_valid(raise_exception=True):
+                username = serializer.validated_data.get("username")
+                orgname = serializer.validated_data.get("orgName")
+                password = serializer.validated_data.get("password")
+                passwordAgain = serializer.validated_data.get("passwordAgain")
+                try:
+                    Organization.objects.get(name=orgname)
+                except ObjectDoesNotExist:
+                    pass
+                except Exception as e:
+                    return Response(
+                        err(e), status=status.HTTP_409_CONFLICT
+                    )
+                else:
+                    return Response(
+                        err("orgnization exists!"), status=status.HTTP_409_CONFLICT
+                    )
+
+                if password != passwordAgain:
+                    return Response(
+                        err(msg="password error"), status=status.HTTP_409_CONFLICT
+                    )
+
+                organization = Organization(name=orgname)
+                organization.save()
+
+                user = UserProfile(
+                    username=username,
+                    role="administrator",
+                    organization=organization,
                 )
+                user.set_password(password)
+                user.save()
 
-            if password != passwordAgain:
-                return Response(
-                    "password error", status=status.HTTP_409_CONFLICT
+                response = RegisterResponse(
+                    data={"id": organization.id}
                 )
-
-            organization = Organization(name=orgname)
-            organization.save()
-
-            user = UserProfile(
-                username=username,
-                role="administrator",
-                organization=organization,
+                if response.is_valid(raise_exception=True):
+                    return Response(
+                        data=ok(response.validated_data), status=status.HTTP_200_OK
+                    )
+        except Exception as e:
+            return Response(
+                err(e.args), status=status.HTTP_400_BAD_REQUEST
             )
-            user.set_password(password)
-            user.save()
 
-            response = RegisterIDSerializer(data=organization.__dict__)
-            if response.is_valid(raise_exception=True):
-                return Response(
-                    response.validated_data, status=status.HTTP_200_OK
-                )
 
     def _conversion_msp_tls(self, name):
         """
@@ -92,37 +106,43 @@ class RegisterViewSet(viewsets.ViewSet):
 class LoginViewSet(viewsets.ViewSet):
 
     def create(self, request):
-        #token = obtain_jwt_token(request)
-        serializer = LoginBody(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            username = serializer.validated_data.get("username")
-            orgname = serializer.validated_data.get("orgName")
-            password = serializer.validated_data.get("password")
+        try:
+            serializer = LoginBody(data=request.data)
+            if serializer.is_valid(raise_exception=True):
+                username = serializer.validated_data.get("username")
+                orgname = serializer.validated_data.get("orgName")
+                password = serializer.validated_data.get("password")
 
-            try:
-                organization = Organization.objects.get(name=orgname)
-            except ObjectDoesNotExist:
-                return Response(
-                    "orgnization not exists!", status=status.HTTP_409_CONFLICT
-                )
-            try:
-                user = UserProfile.objects.get(username=username, organization=organization)
-                re = user.check_password(password)
-                if not re:
+                try:
+                    organization = Organization.objects.get(name=orgname)
+                except ObjectDoesNotExist:
                     return Response(
-                        "login error!", status=status.HTTP_403_FORBIDDEN
+                        err("orgnization not exists!"), status=status.HTTP_409_CONFLICT
                     )
-            except Exception as e:
-                return Response(
-                    "login error!", status=status.HTTP_403_FORBIDDEN
-                )
-            token = obtain_jwt_token(request)
-            print(token)
-            response = RegisterIDSerializer(data=organization.__dict__)
-            if response.is_valid(raise_exception=True):
-                return Response(
-                    response.validated_data, status=status.HTTP_200_OK
-                )
+                try:
+                    user = UserProfile.objects.get(username=username, organization=organization)
+                    re = user.check_password(password)
+                    if not re:
+                        return Response(
+                            err("login error!"), status=status.HTTP_403_FORBIDDEN
+                        )
+                except Exception as e:
+                    return Response(
+                        err("login error!"), status=status.HTTP_403_FORBIDDEN
+                    )
+                old_token = Token.objects.filter(user=user)
+                old_token.delete()
+                token = Token.objects.create(user=user)
+                print(token)
+                response = RegisterIDSerializer(data=organization.__dict__)
+                if response.is_valid(raise_exception=True):
+                    return Response(
+                        ok(response.validated_data), status=status.HTTP_200_OK
+                    )
+        except Exception as e:
+            return Response(
+                err(e.args), status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 @csrf_exempt
@@ -140,11 +160,11 @@ def login(request):
             re = user.check_password(password)
             if not re:
                 return Response(
-                    "login error!", status=status.HTTP_403_FORBIDDEN
+                    err("login error!"), status=status.HTTP_403_FORBIDDEN
                 )
             token = obtain_jwt_token(request)
             return token
         except Exception as e:
             return Response(
-                "login error!", status=status.HTTP_403_FORBIDDEN
+                err(e.args), status=status.HTTP_403_FORBIDDEN
             )

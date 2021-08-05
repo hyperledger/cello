@@ -744,7 +744,7 @@ class Channel(models.Model):
         help_text="the organization of the channel",
         null=True,
         related_name="channels",
-        on_delete=models.SET_NULL
+        #on_delete=models.SET_NULL
     )
     create_ts = models.DateTimeField(
         help_text="Create time of Channel", auto_now_add=True
