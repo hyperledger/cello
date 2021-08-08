@@ -28,7 +28,7 @@ const ApplyAgentForm = props => {
   const agentTypeValues = ['docker', 'kubernetes'];
   const agentTypeOptions = agentTypeValues.map(item => (
     <Option value={item} key={item}>
-      <span>{item}</span>
+      <span style={{color: '#8c8f88'}}>{item}</span>
     </Option>
   ));
   const width = { width: '120px' };
@@ -124,7 +124,7 @@ const ApplyAgentForm = props => {
             },
           ]}
         >
-          <Select style={width} disabled={action==='update'}>{agentTypeOptions}</Select>
+          <Select defaultActiveFirstOption={false} style={width} disabled={action==='update'}>{agentTypeOptions}</Select>
         </FormItem>
       </Form>
     </Modal>
