@@ -36,7 +36,7 @@ export default {
         type: 'save',
         payload: {
           pagination,
-          agents: response.data,
+          agents: response.data.data,
         },
       });
       if (callback) {
@@ -67,7 +67,7 @@ export default {
       }
     },
     *applyAgent({ payload, callback }, { call }) {
-      const response = yield call(applyAgent, payload);
+      const response = yield call(applyAgent, payload.data);
       if (callback) {
         callback({
           payload,
@@ -76,10 +76,10 @@ export default {
       }
     },
     *updateAgent({ payload, callback }, { call }) {
-      const response = yield call(updateAgent, payload);
+      const response = yield call(updateAgent, payload.data);
       if (callback) {
         callback({
-          payload,
+          action: payload.action,
           ...response,
         });
       }
