@@ -25,8 +25,8 @@ export async function applyAgent(params) {
 
 export async function updateAgent(params) {
   return request(`/api/v1/agents/${params.id}`, {
-    method: params.requestMethod,
-    data: params.data,
+    method: 'PUT',
+    data: params,
   });
 }
 

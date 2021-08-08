@@ -12,13 +12,18 @@ const { Option } = Select;
 
 const ApplyAgentForm = props => {
   const [form] = Form.useForm();
-  const { visible, handleSubmit, handleModalVisible, confirmLoading } = props;
+  const { visible, handleSubmit, handleModalVisible, confirmLoading, action, agentData } = props;
   const intl = useIntl();
   const onSubmit = () => {
     form.submit();
   };
   const onFinish = values => {
-    handleSubmit(values);
+    if (action === 'update') {
+      handleSubmit({name: values.name, id: agentData.id}, action);
+    }
+    else {
+      handleSubmit(values, action);
+    }
   };
   const agentTypeValues = ['docker', 'kubernetes'];
   const agentTypeOptions = agentTypeValues.map(item => (
@@ -38,26 +43,23 @@ const ApplyAgentForm = props => {
       md: { span: 10 },
     },
   };
-
   return (
     <Modal
-      destroyOnClose
+      destroyOnClose={true}
       title={intl.formatMessage({
         id: 'app.operator.applyAgent.title',
         defaultMessage: 'Apply for agent',
       })}
       visible={visible}
       confirmLoading={confirmLoading}
-      width="30%"
+      width="45%"
       onOk={onSubmit}
-      onCancel={() => handleModalVisible()}
+      onCancel={() => handleModalVisible(false)}
     >
       <Form
         onFinish={onFinish}
         form={form}
-        initialValues={{
-          type: agentTypeValues[0],
-        }}
+        preserve={false}
       >
         <FormItem
           {...formItemLayout}
@@ -66,9 +68,10 @@ const ApplyAgentForm = props => {
             defaultMessage: 'Name',
           })}
           name="name"
+          initialValue={action === 'create' ? '' : agentData.name}
           rules={[
             {
-              required: false,
+              required: true,
               message: intl.formatMessage({
                 id: 'app.operator.newAgent.required.Name',
                 defaultMessage: 'Please input name.',
@@ -90,6 +93,7 @@ const ApplyAgentForm = props => {
             defaultMessage: 'Agent IP Address',
           })}
           name="urls"
+          initialValue={action === 'create' ? '' : agentData.urls}
           rules={[
             {
               required: true,
@@ -100,7 +104,7 @@ const ApplyAgentForm = props => {
             },
           ]}
         >
-          <Input placeholder="http://192.168.0.10:5001" />
+          <Input placeholder="http://192.168.0.10:5001" disabled={action==='update'} />
         </FormItem>
         <FormItem
           {...formItemLayout}
@@ -109,6 +113,7 @@ const ApplyAgentForm = props => {
             defaultMessage: 'Type',
           })}
           name="type"
+          initialValue={action === 'create' ? agentTypeValues[0] : agentData.type}
           rules={[
             {
               required: true,
@@ -119,7 +124,7 @@ const ApplyAgentForm = props => {
             },
           ]}
         >
-          <Select style={width}>{agentTypeOptions}</Select>
+          <Select style={width} disabled={action==='update'}>{agentTypeOptions}</Select>
         </FormItem>
       </Form>
     </Modal>
@@ -136,6 +141,8 @@ const ApplyAgentForm = props => {
 class Agent extends PureComponent {
   state = {
     modalVisible: false,
+    action: 'create',
+    agentData: {}
   };
 
   componentDidMount() {
@@ -171,40 +178,58 @@ class Agent extends PureComponent {
     }
   };
 
-  applyCallback = () => {
-    const { intl } = this.props;
-    message.success(
-      intl.formatMessage({
-        id: 'app.operator.applyAgent.success',
-        defaultMessage: 'Successful application for agent.',
-      })
-    );
-    this.queryAgentList();
-    this.handleModalVisible();
+  submitCallback = (response) => {
+    if (response.status === 'successful') {
+      const { intl } = this.props;
+      if (response.action === 'create') {
+        message.success(
+          intl.formatMessage({
+            id: 'app.operator.applyAgent.success',
+            defaultMessage: 'Successful application for agent.',
+          })
+        );
+      }
+      else {
+        message.success(
+          intl.formatMessage({
+            id: 'app.operator.updateAgent.success',
+            defaultMessage: 'Successful application for agent.',
+          })
+        );
+      }
+      this.queryAgentList();
+      this.handleModalVisible();
+    }
   };
 
-  handleModalVisible = visible => {
+  handleModalVisible = (visible, action, data) => {
     this.setState({
       modalVisible: !!visible,
+      action: action || 'create',
+      agentData: data || {}
     });
   };
 
-  handleSubmit = values => {
+  handleSubmit = (values, action) => {
     const { dispatch } = this.props;
-    dispatch({
-      type: 'agent/applyAgent',
-      payload: values,
-      callback: this.applyCallback,
-    });
+    if (action === 'create') {
+      dispatch({
+        type: 'agent/applyAgent',
+        payload: {data: values, action},
+        callback: this.submitCallback,
+      });
+    }
+    else {
+      dispatch({
+        type: 'agent/updateAgent',
+        payload: {data: values, action},
+        callback: this.submitCallback,
+      });
+    }
   };
 
   onAddAgent = () => {
-    const userRole = getAuthority()[0];
-    if (userRole === 'operator') {
-      history.push('/operator/agent/newAgent?action=create');
-    } else {
-      this.handleModalVisible(true);
-    }
+    this.handleModalVisible(true);
   };
 
   deleteCallback = () => {
@@ -242,7 +267,7 @@ class Agent extends PureComponent {
   };
 
   editAgent = agent => {
-    history.push(`/operator/agent/editAgent?action=edit&id=${agent.id}`);
+    this.handleModalVisible(true, 'update', agent);
   };
 
   // TODO: remove these two comment lines after add the functional code
@@ -317,7 +342,7 @@ class Agent extends PureComponent {
       intl,
     } = this.props;
 
-    const { modalVisible } = this.state;
+    const { modalVisible, action, agentData } = this.state;
     const userRole = getAuthority()[0];
 
     const filterOrgName = organizationId => {
@@ -380,6 +405,8 @@ class Agent extends PureComponent {
       handleSubmit: this.handleSubmit,
       handleModalVisible: this.handleModalVisible,
       confirmLoading: applyingAgent,
+      action,
+      agentData
     };
 
     return (
@@ -412,7 +439,7 @@ class Agent extends PureComponent {
                   actions={[
                     <a onClick={() => this.editAgent(item)}>
                       {intl.formatMessage({
-                        id: 'iform.menu.item.update',
+                        id: 'form.menu.item.update',
                         defaultMessage: 'Update',
                       })}
                     </a>,
