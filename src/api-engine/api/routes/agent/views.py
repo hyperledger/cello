@@ -248,13 +248,14 @@ class AgentViewSet(viewsets.ViewSet):
                 #urls = serializer.validated_data.get("urls")
                 #organization = request.user.organization
                 try:
-                    Agent.objects.get(name=name)
+                    if Agent.objects.get(name=name):
+                        raise ResourceExists
                 except ObjectDoesNotExist:
-                    raise ResourceNotFound
+                    pass
                 Agent.objects.filter(id=pk).update(name=name)
 
                 return Response(ok(None), status=status.HTTP_202_ACCEPTED)
-        except ResourceNotFound as e:
+        except ResourceExists as e:
             raise e
         except Exception as e:
             return Response(
@@ -328,7 +329,7 @@ class AgentViewSet(viewsets.ViewSet):
                     raise ResourceInUse
                 agent.delete()
 
-                return Response(ok(None), status=status.HTTP_204_NO_CONTENT)
+                return Response(ok(None), status=status.HTTP_202_ACCEPTED)
         except (ResourceNotFound, ResourceInUse) as e:
             raise e
         except Exception as e:

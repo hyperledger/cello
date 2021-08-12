@@ -11,7 +11,7 @@ def ok(data):
     return {
         "data": data,
         "msg": None,
-        "status": "succesful"
+        "status": "successful"
     }
 
 
