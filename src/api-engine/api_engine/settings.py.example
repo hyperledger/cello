@@ -168,6 +168,7 @@ AUTH_USER_MODEL = 'api.UserProfile'
 JWT_AUTH = {
     'JWT_EXPIRATION_DELTA': datetime.timedelta(days=7),
     'JWT_RESPONSE_PAYLOAD_HANDLER': 'api.utils.jwt.jwt_response_payload_handler',
+    'JWT_PAYLOAD_GET_USERNAME_HANDLER': 'api.utils.customized_jwt_handlers.jwt_get_user_id_from_payload_handler',
 }
 
 SWAGGER_SETTINGS = {
