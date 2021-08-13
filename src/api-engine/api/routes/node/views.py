@@ -59,6 +59,7 @@ from api.config import CELLO_HOME
 from api.utils.node_config import NodeConfig
 from api.lib.agent import AgentHandler
 from api.utils.port_picker import set_ports_mapping, find_available_ports
+from api.common import ok, err
 
 LOG = logging.getLogger(__name__)
 
@@ -94,51 +95,56 @@ class NodeViewSet(viewsets.ViewSet):
         :return: node list
         :rtype: list
         """
-        serializer = NodeQuery(data=request.GET)
-        if serializer.is_valid(raise_exception=True):
-            page = serializer.validated_data.get("page")
-            per_page = serializer.validated_data.get("per_page")
-            node_type = serializer.validated_data.get("type")
-            name = serializer.validated_data.get("name")
-            agent_id = serializer.validated_data.get("agent_id")
+        try:
+            serializer = NodeQuery(data=request.GET)
+            if serializer.is_valid(raise_exception=True):
+                page = serializer.validated_data.get("page")
+                per_page = serializer.validated_data.get("per_page")
+                node_type = serializer.validated_data.get("type")
+                name = serializer.validated_data.get("name")
+                agent_id = serializer.validated_data.get("agent_id")
 
-            # if agent_id is not None and not request.user.is_operator:
-            #     raise PermissionDenied
-            query_filter = {}
+                # if agent_id is not None and not request.user.is_operator:
+                #     raise PermissionDenied
+                query_filter = {}
 
-            if node_type:
-                query_filter.update({"type": node_type})
-            if name:
-                query_filter.update({"name__icontains": name})
-            if request.user.is_administrator:
-                query_filter.update(
-                    {"org": request.user.organization}
-                )
-            # elif request.user.is_common_user:
-            #     query_filter.update({"user": request.user})
-            if agent_id:
-                query_filter.update({"agent__id": agent_id})
-            nodes = Node.objects.filter(**query_filter)
-            p = Paginator(nodes, per_page)
-            nodes = p.page(page)
-            nodes = [
-                {
-                    "id": str(node.id),
-                    "name": node.name,
-                    "type": node.type,
-                    "org": node.org,
-                    "urls": node.urls,
-                    "network": str(node.org.network.id) if node.org.network else None,
-                    "agents": node.agent if node.agent else None,
-                    "channel": str(node.org.channel.id) if node.org.channel else None,
-                    "ports": node.port,
-                    "created_at": node.created_at,
-                }
-                for node in nodes
-            ]
+                if node_type:
+                    query_filter.update({"type": node_type})
+                if name:
+                    query_filter.update({"name__icontains": name})
+                if request.user.is_administrator:
+                    query_filter.update(
+                        {"organization": request.user.organization}
+                    )
+                # elif request.user.is_common_user:
+                #     query_filter.update({"user": request.user})
+                if agent_id:
+                    query_filter.update({"agent__id": agent_id})
+                nodes = Node.objects.filter(**query_filter)
+                p = Paginator(nodes, per_page)
+                nodes = p.page(page)
+                nodes = [
+                    {
+                        "id": str(node.id),
+                        "name": node.name,
+                        "type": node.type,
+                        "organization": node.organization,
+                        "urls": node.urls,
+                        "network": str(node.organization.network.id) if node.organization.network else None,
+                        "agents": node.agent if node.agent else None,
+                        #"channel": str(node.organization.channel.id) if node.organization.channel else None,
+                        "ports": node.port,
+                        "created_at": node.created_at,
+                    }
+                    for node in nodes
+                ]
 
-            response = NodeListSerializer({"total": p.count, "data": nodes})
-            return Response(data=response.data, status=status.HTTP_200_OK)
+                response = NodeListSerializer({"total": p.count, "data": nodes})
+                return Response(data=ok(response.data), status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                err(e.args), status=status.HTTP_400_BAD_REQUEST
+            )
 
     def _save_fabric_ca(self, request, ca=None):
         if ca is None:
@@ -278,48 +284,60 @@ class NodeViewSet(viewsets.ViewSet):
         :return: node ID
         :rtype: uuid
         """
-        serializer = NodeCreateBody(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            #self._validate_organization(request)
-            name = serializer.validated_data.get("name")
-            type = serializer.validated_data.get("type")
-            urls = serializer.validated_data.get("urls")
-            organization = serializer.validated_data.get("organization")
+        try:
+            serializer = NodeCreateBody(data=request.data)
+            if serializer.is_valid(raise_exception=True):
+                node_name = serializer.validated_data.get("name")
+                node_type = serializer.validated_data.get("type")
+                num = serializer.validated_data.get("num")
+                organization = request.user.organization
 
-            org = Organization.objects.get(id=organization)
-            agent = org.agent.get()
-            if org and agent:
-                pass
-            else:
-                raise NoResource
-            nodes = {
-                "type": type,
-                "Specs": [name]
-            }
-            CryptoConfig(org.name).update(nodes)
-            CryptoGen(org.name).extend()
-            self._generate_config(type, org.name, name)
-            msp, tls, cfg = self._conversion_msp_tls_cfg(type, org.name, name)
+                agent = organization.agent.get()
+                if agent:
+                    nodes = Node.objects.filter(name=node_name+"0", organization=organization, type=node_type)
+                    if nodes:
+                        raise ResourceExists
+                else:
+                    raise NoResource
+                for n in range(num):
 
-            node = Node(
-                name=name,
-                org=org,
-                urls=urls,
-                type=type,
-                msp=msp,
-                tls=tls,
-                agent=agent,
-                config_file=cfg
+                    name = node_name+str(n)
+
+                    urls = "http://{}.{}".format(name, organization.name)
+                    nodes = {
+                        "type": node_type,
+                        "Specs": [name]
+                    }
+                    CryptoConfig(organization.name).update(nodes)
+                    CryptoGen(organization.name).extend()
+                    self._generate_config(node_type, organization.name, name)
+                    msp, tls, cfg = self._conversion_msp_tls_cfg(node_type, organization.name, name)
+
+                    node = Node(
+                        name=name,
+                        organization=organization,
+                        urls=urls,
+                        type=node_type,
+                        msp=msp,
+                        tls=tls,
+                        agent=agent,
+                        config_file=cfg
+                    )
+                    node.save()
+
+                    self._set_port(node_type, node, agent)
+
+                response = NodeIDSerializer(data=node.__dict__)
+                if response.is_valid(raise_exception=True):
+                    return Response(
+                        ok(response.validated_data), status=status.HTTP_201_CREATED
+                    )
+        except (ResourceExists, NoResource) as e:
+            raise e
+        except Exception as e:
+            return Response(
+                err(e.args), status=status.HTTP_400_BAD_REQUEST
             )
-            node.save()
-
-            self._set_port(type, node, agent)
-
-            response = NodeIDSerializer(data=node.__dict__)
-            if response.is_valid(raise_exception=True):
-                return Response(
-                    response.validated_data, status=status.HTTP_201_CREATED
-                )
 
     def _set_port(self, type, node, agent):
         """
@@ -460,48 +478,53 @@ class NodeViewSet(viewsets.ViewSet):
 
         Do some operation on node, start/stop/restart
         """
-        serializer = NodeOperationSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            action = serializer.validated_data.get("action")
+        try:
+            serializer = NodeOperationSerializer(data=request.data)
+            if serializer.is_valid(raise_exception=True):
+                action = serializer.validated_data.get("action")
 
-            if action == "start":
-                try:
-                    infos = self._agent_params(pk)
+                if action == "start":
+                    try:
+                        infos = self._agent_params(pk)
 
-                    agent = AgentHandler(infos)
-                    cid = agent.create(infos)
-                    if cid:
-                        Node.objects.filter(id=pk).update(cid=cid)
-                        response = NodeCIDSerializer(data={"id": cid})
-                        if response.is_valid(raise_exception=True):
-                            return Response(
-                                response.validated_data, status=status.HTTP_201_CREATED
-                            )
+                        agent = AgentHandler(infos)
+                        cid = agent.create(infos)
+                        if cid:
+                            Node.objects.filter(id=pk).update(cid=cid)
+                            response = NodeCIDSerializer(data={"id": cid})
+                            if response.is_valid(raise_exception=True):
+                                return Response(
+                                    response.validated_data, status=status.HTTP_201_CREATED
+                                )
+                        else:
+                            raise ResourceNotFound
+                    except Exception as e:
+                        raise e
+                    if infos.get("status") == "running" or infos.get("status") == "deleting" or infos.get("status") == "deploying":
+                        raise ResourceInUse
+                    elif infos.get("status") == "":
+
+                        pass
+                    elif infos.get("status") == "stopped" or infos.get("status") == "deleted":
+                        pass
+                    elif infos.get("status") == "error":
+                        pass
                     else:
-                        raise ResourceNotFound
-                except Exception as e:
-                    raise e
-                if infos.get("status") == "running" or infos.get("status") == "deleting" or infos.get("status") == "deploying":
-                    raise ResourceInUse
-                elif infos.get("status") == "":
+                        pass
 
+                elif action == "stop":
+                    #todo
                     pass
-                elif infos.get("status") == "stopped" or infos.get("status") == "deleted":
-                    pass
-                elif infos.get("status") == "error":
+                elif action == "restart":
+                    # todo
                     pass
                 else:
+                    # todo
                     pass
-
-            elif action == "stop":
-                #todo
-                pass
-            elif action == "restart":
-                # todo
-                pass
-            else:
-                # todo
-                pass
+        except Exception as e:
+            return Response(
+                err(e.args), status=status.HTTP_400_BAD_REQUEST
+            )
 
     @swagger_auto_schema(
         responses=with_common_response(
@@ -518,13 +541,22 @@ class NodeViewSet(viewsets.ViewSet):
         :rtype: rest_framework.status
         """
         try:
-            node = Node.objects.get(id=pk)
-            node.delete()
-            # todo delete node from agent
-        except ObjectDoesNotExist:
-            raise ResourceNotFound
+            try:
+                node = Node.objects.get(id=pk)
+                if node.organization.network:
+                    raise ResourceInUse
+                node.delete()
+                # todo delete node from agent
+            except ObjectDoesNotExist:
+                raise ResourceNotFound
 
-        return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response(ok(None), status=status.HTTP_202_ACCEPTED)
+        except (ResourceNotFound, ResourceInUse) as e:
+            raise e
+        except Exception as e:
+            return Response(
+                err(e.args), status=status.HTTP_400_BAD_REQUEST
+            )
 
     @swagger_auto_schema(
         operation_id="update node",
@@ -537,28 +569,32 @@ class NodeViewSet(viewsets.ViewSet):
 
         Update special node with id.
         """
-        serializer = NodeUpdateBody(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            node_status = serializer.validated_data.get("status")
-            ports = serializer.validated_data.get("ports", [])
-            try:
-                node = Node.objects.get(id=pk)
-            except ObjectDoesNotExist:
-                raise ResourceNotFound
+        try:
+            serializer = NodeUpdateBody(data=request.data)
+            if serializer.is_valid(raise_exception=True):
+                node_status = serializer.validated_data.get("status")
+                ports = serializer.validated_data.get("ports", [])
+                try:
+                    node = Node.objects.get(id=pk)
+                except ObjectDoesNotExist:
+                    raise ResourceNotFound
 
-            node.status = node_status
-            node.save()
+                node.status = node_status
+                node.save()
 
-            for port_item in ports:
-                port = Port(
-                    external=port_item.get("external"),
-                    internal=port_item.get("internal"),
-                    node=node,
-                )
-                port.save()
+                for port_item in ports:
+                    port = Port(
+                        external=port_item.get("external"),
+                        internal=port_item.get("internal"),
+                        node=node,
+                    )
+                    port.save()
 
-            return Response(status=status.HTTP_202_ACCEPTED)
-
+                return Response(status=status.HTTP_202_ACCEPTED)
+        except Exception as e:
+            return Response(
+                err(e.args), status=status.HTTP_400_BAD_REQUEST
+            )
     # @swagger_auto_schema(
     #     methods=["post"],
     #     request_body=NodeFileCreateSerializer,
@@ -598,27 +634,32 @@ class NodeViewSet(viewsets.ViewSet):
 
         Get node detail information.
         """
-        self._validate_organization(request)
         try:
-            node = Node.objects.get(
-                id=pk, organization=request.user.organization
+            self._validate_organization(request)
+            try:
+                node = Node.objects.get(
+                    id=pk, organization=request.user.organization
+                )
+            except ObjectDoesNotExist:
+                raise ResourceNotFound
+            else:
+                # Set file url of node
+                if node.file:
+                    node.file = request.build_absolute_uri(node.file.url)
+                ports = Port.objects.filter(node=node)
+                node.links = [
+                    {
+                        "internal_port": port.internal,
+                        "url": "%s:%s" % (node.agent.ip, port.external),
+                    }
+                    for port in ports
+                ]
+                response = NodeInfoSerializer(node)
+                return Response(data=response.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                err(e.args), status=status.HTTP_400_BAD_REQUEST
             )
-        except ObjectDoesNotExist:
-            raise ResourceNotFound
-        else:
-            # Set file url of node
-            if node.file:
-                node.file = request.build_absolute_uri(node.file.url)
-            ports = Port.objects.filter(node=node)
-            node.links = [
-                {
-                    "internal_port": port.internal,
-                    "url": "%s:%s" % (node.agent.ip, port.external),
-                }
-                for port in ports
-            ]
-            response = NodeInfoSerializer(node)
-            return Response(data=response.data, status=status.HTTP_200_OK)
 
     def _register_user(self, request, pk=None):
         serializer = NodeUserCreateSerializer(data=request.data)
@@ -745,14 +786,19 @@ class NodeViewSet(viewsets.ViewSet):
 
         Patch user status for node
         """
-        serializer = NodeUserPatchSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            try:
-                node_user = NodeUser.objects.get(id=user_pk, node__id=pk)
-            except ObjectDoesNotExist:
-                raise ResourceNotFound
+        try:
+            serializer = NodeUserPatchSerializer(data=request.data)
+            if serializer.is_valid(raise_exception=True):
+                try:
+                    node_user = NodeUser.objects.get(id=user_pk, node__id=pk)
+                except ObjectDoesNotExist:
+                    raise ResourceNotFound
 
-            node_user.status = serializer.validated_data.get("status")
-            node_user.save()
+                node_user.status = serializer.validated_data.get("status")
+                node_user.save()
 
-            return Response(status=status.HTTP_202_ACCEPTED)
+                return Response(status=status.HTTP_202_ACCEPTED)
+        except Exception as e:
+            return Response(
+                err(e.args), status=status.HTTP_400_BAD_REQUEST
+            )
