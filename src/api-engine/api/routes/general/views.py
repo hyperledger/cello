@@ -54,6 +54,9 @@ class RegisterViewSet(viewsets.ViewSet):
                         err(msg="password error"), status=status.HTTP_409_CONFLICT
                     )
 
+                CryptoConfig(orgname).create(0, 0)
+                CryptoGen(orgname).generate()
+
                 organization = Organization(name=orgname)
                 organization.save()
 

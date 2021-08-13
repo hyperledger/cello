@@ -192,7 +192,7 @@ class NodeInListSerializer(NodeIDSerializer, serializers.ModelSerializer):
             "created_at",
             "status",
             "network_id",
-            "org",
+            "organization",
             "cid",
             "ports",
         )
@@ -254,19 +254,17 @@ class NodeInfoSerializer(NodeIDSerializer, serializers.ModelSerializer):
 
 
 class NodeCreateBody(serializers.ModelSerializer):
-    organization = serializers.UUIDField(help_text="ID of organization")
+    num = serializers.IntegerField(help_text="number of node")
 
     class Meta:
         model = Node
         fields = (
             "name",
-            "urls",
             "type",
-            "organization",
+            "num",
         )
         extra_kwargs = {
             "name": {"required": True},
-            "urls": {"required": True},
             "type": {"required": True},
         }
 

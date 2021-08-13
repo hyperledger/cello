@@ -498,11 +498,11 @@ class Node(models.Model):
         null=True,
         on_delete=models.CASCADE,
     )
-    org = models.ForeignKey(
+    organization = models.ForeignKey(
         Organization,
         help_text="Organization of node",
         null=True,
-        related_name="org",
+        related_name="node",
         on_delete=models.CASCADE,
     )
     agent = models.ForeignKey(

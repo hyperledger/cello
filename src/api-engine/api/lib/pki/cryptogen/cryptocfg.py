@@ -41,7 +41,7 @@ class CryptoConfig:
                 ca = dict(Country=self.country,
                           Locality=self.locality,
                           Province=self.province)
-                #specs = []
+                specs = []
                 # for host in org_info["Specs"]:
                 #     specs.append(dict(Hostname=host))
 
@@ -51,7 +51,7 @@ class CryptoConfig:
                     org.append(dict(Domain=self.name,
                                     Name=self.name.split(".")[0].capitalize(),
                                     CA=ca,
-                                    #Specs=specs,
+                                    Specs=specs,
                                     EnableNodeOUs=self.enablenodeous,
                                     Template=template,
                                     Users=users))
@@ -61,7 +61,7 @@ class CryptoConfig:
                     org.append(dict(Domain=self.name.split(".", 1)[1],
                                     Name=self.name.split(".")[0].capitalize() + item,
                                     CA=ca,
-                                    #Specs=specs,
+                                    Specs=specs,
                                     EnableNodeOUs=self.enablenodeous,
                                     Template=template))
                     network['OrdererOrgs'] = org
