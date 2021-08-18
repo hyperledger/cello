@@ -4,7 +4,7 @@
 import logging
 import base64
 import json
-
+from django.contrib.auth import authenticate
 from rest_framework import viewsets, status
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.decorators.csrf import csrf_exempt
@@ -33,6 +33,7 @@ class RegisterViewSet(viewsets.ViewSet):
             serializer = RegisterBody(data=request.data)
             if serializer.is_valid(raise_exception=True):
                 username = serializer.validated_data.get("username")
+                email = serializer.validated_data.get("email")
                 orgname = serializer.validated_data.get("orgName")
                 password = serializer.validated_data.get("password")
                 passwordAgain = serializer.validated_data.get("passwordAgain")
@@ -62,6 +63,7 @@ class RegisterViewSet(viewsets.ViewSet):
 
                 user = UserProfile(
                     username=username,
+                    email=email,
                     role="administrator",
                     organization=organization,
                 )
@@ -79,7 +81,6 @@ class RegisterViewSet(viewsets.ViewSet):
             return Response(
                 err(e.args), status=status.HTTP_400_BAD_REQUEST
             )
-
 
     def _conversion_msp_tls(self, name):
         """
@@ -106,68 +107,53 @@ class RegisterViewSet(viewsets.ViewSet):
         return msp, tls
 
 
-class LoginViewSet(viewsets.ViewSet):
+# class LoginViewSet(viewsets.ViewSet):
 
-    def create(self, request):
-        try:
-            serializer = LoginBody(data=request.data)
-            if serializer.is_valid(raise_exception=True):
-                username = serializer.validated_data.get("username")
-                orgname = serializer.validated_data.get("orgName")
-                password = serializer.validated_data.get("password")
+#     def create(self, request):
+#         try:
+#             serializer = LoginBody(data=request.data)
+#             if serializer.is_valid(raise_exception=True):
+#                 email = serializer.validated_data.get("email")
+#                 password = serializer.validated_data.get("password")
 
-                try:
-                    organization = Organization.objects.get(name=orgname)
-                except ObjectDoesNotExist:
-                    return Response(
-                        err("orgnization not exists!"), status=status.HTTP_409_CONFLICT
-                    )
-                try:
-                    user = UserProfile.objects.get(username=username, organization=organization)
-                    re = user.check_password(password)
-                    if not re:
-                        return Response(
-                            err("login error!"), status=status.HTTP_403_FORBIDDEN
-                        )
-                except Exception as e:
-                    return Response(
-                        err("login error!"), status=status.HTTP_403_FORBIDDEN
-                    )
-                old_token = Token.objects.filter(user=user)
-                old_token.delete()
-                token = Token.objects.create(user=user)
-                print(token)
-                response = RegisterIDSerializer(data=organization.__dict__)
-                if response.is_valid(raise_exception=True):
-                    return Response(
-                        ok(response.validated_data), status=status.HTTP_200_OK
-                    )
-        except Exception as e:
-            return Response(
-                err(e.args), status=status.HTTP_400_BAD_REQUEST
-            )
+#                 try:
+#                     user = authenticate(username=email, password=password)
+#                     if not user:
+#                         return Response(
+#                             err("login error!"), status=status.HTTP_403_FORBIDDEN
+#                         )
+#                 except Exception as e:
+#                     return Response(
+#                         err("login error!"), status=status.HTTP_403_FORBIDDEN
+#                     )
+
+#         except Exception as e:
+#             return Response(
+#                 err(e.args), status=status.HTTP_400_BAD_REQUEST
+#             )
 
 
-@csrf_exempt
-def login(request):
-    if request.method == 'POST':
-        try:
-            post_body = request.body
-            json_result = json.loads(post_body)
-            orgname = json_result.get("orgName")
-            username = json_result.get("username")
-            password = json_result.get("password")
+# @csrf_exempt
+# def login(request):
+#     if request.method == 'POST':
+#         try:
+#             post_body = request.body
+#             json_result = json.loads(post_body)
+#             orgname = json_result.get("orgName")
+#             username = json_result.get("username")
+#             password = json_result.get("password")
 
-            organization = Organization.objects.get(name=orgname)
-            user = UserProfile.objects.get(username=username, organization=organization)
-            re = user.check_password(password)
-            if not re:
-                return Response(
-                    err("login error!"), status=status.HTTP_403_FORBIDDEN
-                )
-            token = obtain_jwt_token(request)
-            return token
-        except Exception as e:
-            return Response(
-                err(e.args), status=status.HTTP_403_FORBIDDEN
-            )
+#             organization = Organization.objects.get(name=orgname)
+#             user = UserProfile.objects.get(
+#                 username=username, organization=organization)
+#             re = user.check_password(password)
+#             if not re:
+#                 return Response(
+#                     err("login error!"), status=status.HTTP_403_FORBIDDEN
+#                 )
+#             token = obtain_jwt_token(request)
+#             return token
+#         except Exception as e:
+#             return Response(
+#                 err(e.args), status=status.HTTP_403_FORBIDDEN
+#             )

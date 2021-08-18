@@ -4,13 +4,15 @@
 from abc import ABC
 
 from rest_framework import serializers
-from api.models import UserProfile
 
 
 class RegisterBody(serializers.Serializer):
     orgName = serializers.CharField(help_text="name of Organization")
-    username = serializers.CharField(help_text="name of Administrator", default="Administator")
-    password = serializers.CharField(help_text="password of Administrator", default="666666")
+    email = serializers.EmailField(help_text="email of user")
+    username = serializers.CharField(
+        help_text="name of Administrator", default="Administator")
+    password = serializers.CharField(
+        help_text="password of Administrator", default="666666")
     passwordAgain = serializers.CharField(help_text="password of Administrator")
 
 
@@ -27,4 +29,3 @@ class LoginBody(serializers.Serializer):
     orgName = serializers.CharField(help_text="name of Organization")
     username = serializers.CharField(help_text="name of user")
     password = serializers.CharField(help_text="password of user")
-
