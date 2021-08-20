@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from django.core.paginator import Paginator
 from django.core.exceptions import ObjectDoesNotExist
-from api.exceptions import ResourceNotFound
+from api.exceptions import ResourceNotFound, ResourceExists
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from api.routes.network.serializers import (
     NetworkQuery,
@@ -32,18 +32,19 @@ from api.config import CELLO_HOME
 from api.utils import zip_dir, zip_file
 from api.auth import TokenAuth
 from api.lib.agent import AgentHandler
+from api.common import ok, err
 
 LOG = logging.getLogger(__name__)
 
 
 class NetworkViewSet(viewsets.ViewSet):
 
-    #authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
+    authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
 
     def _genesis2base64(self, network):
         """
         convert genesis.block to Base64
-HTTP_201_CREATED
+
         :param network: network id
         :return: genesis block
         :rtype: bytearray
@@ -73,33 +74,37 @@ HTTP_201_CREATED
         :return: network list
         :rtype: list
         """
-        serializer = NetworkQuery(data=request.GET)
-        if serializer.is_valid(raise_exception=True):
-            page = serializer.validated_data.get("page", 1)
-            per_page = serializer.validated_data.get("page", 10)
-            name = serializer.validated_data.get("name")
-            parameters = {}
-            if name:
-                parameters.update({"name__icontains": name})
-            networks = Network.objects.filter(**parameters)
-            p = Paginator(networks, per_page)
-            networks = p.page(page)
-            networks = [
-                {
-                    "id": network.id,
-                    "name": network.name,
-                    "created_at": network.created_at,
-                }
-                for network in networks
-            ]
-            response = NetworkListResponse(
-                data={"total": p.count, "data": networks}
-            )
-            if response.is_valid(raise_exception=True):
-                return Response(
-                    response.validated_data, status=status.HTTP_200_OK
+        try:
+            serializer = NetworkQuery(data=request.GET)
+            if serializer.is_valid(raise_exception=True):
+                page = serializer.validated_data.get("page", 1)
+                per_page = serializer.validated_data.get("page", 10)
+                org = request.user.organization
+                networks = org.network
+                if not networks:
+                    return Response(ok(data={"total": 0, "data": None}), status=status.HTTP_200_OK)
+                p = Paginator(networks, per_page)
+                networks = p.page(page)
+                networks = [
+                    {
+                        "id": network.id,
+                        "name": network.name,
+                        "created_at": network.created_at,
+                    }
+                    for network in networks
+                ]
+                response = NetworkListResponse(
+                    data={"total": p.count, "data": networks}
                 )
-        return Response(data=[], status=status.HTTP_200_OK)
+                if response.is_valid(raise_exception=True):
+                    return Response(
+                        ok(response.validated_data), status=status.HTTP_200_OK
+                    )
+            return Response(ok(data={"total": 0, "data": None}), status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                err(e.args), status=status.HTTP_400_BAD_REQUEST
+            )
 
     def _agent_params(self, pk):
         """
@@ -169,55 +174,59 @@ HTTP_201_CREATED
         :return: organization ID
         :rtype: uuid
         """
-        serializer = NetworkCreateBody(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            name = serializer.validated_data.get("name")
-            consensus = serializer.validated_data.get("consensus")
-            organizations = serializer.validated_data.get("organizations")
-            database = serializer.validated_data.get("database")
+        try:
+            serializer = NetworkCreateBody(data=request.data)
+            if serializer.is_valid(raise_exception=True):
+                name = serializer.validated_data.get("name")
+                consensus = serializer.validated_data.get("consensus")
+                database = serializer.validated_data.get("database")
 
-            try:
-                Network.objects.get(name=name)
-            except ObjectDoesNotExist:
-                pass
-            orderers = []
-            peers = []
-            i = 0
-            for organization in organizations:
-                org = Organization.objects.get(pk=organization)
+                try:
+                    if Network.objects.get(name=name):
+                        raise ResourceExists
+                except ObjectDoesNotExist:
+                    pass
+                org = request.user.organization
+                if org.network:
+                    raise ResourceExists
+
+                orderers = []
+                peers = []
                 orderers.append({"name": org.name, "hosts": []})
                 peers.append({"name": org.name, "hosts": []})
-                nodes = Node.objects.filter(org=org)
+                nodes = Node.objects.filter(organization=org)
                 for node in nodes:
                     if node.type == "peer":
-                        peers[i]["hosts"].append({"name": node.name})
+                        peers[0]["hosts"].append({"name": node.name})
                     elif node.type == "orderer":
-                        orderers[i]["hosts"].append({"name": node.name})
-                i = i + 1
+                        orderers[0]["hosts"].append({"name": node.name})
 
-            ConfigTX(name).create(consensus=consensus, orderers=orderers, peers=peers)
-            ConfigTxGen(name).genesis()
+                ConfigTX(name).create(consensus=consensus, orderers=orderers, peers=peers)
+                ConfigTxGen(name).genesis()
 
-            block = self._genesis2base64(name)
-            network = Network(name=name, consensus=consensus, organizations=organizations, genesisblock=block)
-            network.save()
-
-            for organization in organizations:
-                Organization.objects.filter(pk=organization).update(network=network)
-                org = Organization.objects.get(pk=organization)
-                nodes = Node.objects.filter(org=org)
+                block = self._genesis2base64(name)
+                network = Network(name=name, consensus=consensus, genesisblock=block)
+                network.save()
+                org.network = network
+                org.save()
+                nodes = Node.objects.filter(organization=org)
                 for node in nodes:
                     try:
                         self._start_node(node.id)
                     except Exception as e:
-                        print("err:", e)
-                        pass
+                        raise e
 
-            response = NetworkIDSerializer(data=network.__dict__)
-            if response.is_valid(raise_exception=True):
-                return Response(
-                    response.validated_data, status=status.HTTP_201_CREATED
-                )
+                response = NetworkIDSerializer(data=network.__dict__)
+                if response.is_valid(raise_exception=True):
+                    return Response(
+                        ok(response.validated_data), status=status.HTTP_201_CREATED
+                    )
+        except ResourceExists as e:
+            raise e
+        except Exception as e:
+            return Response(
+                err(e.args), status=status.HTTP_400_BAD_REQUEST
+            )
 
     @swagger_auto_schema(responses=with_common_response())
     def retrieve(self, request, pk=None):
