@@ -345,6 +345,7 @@ class Agent extends PureComponent {
     const { modalVisible, action, agentData } = this.state;
     const userRole = getAuthority()[0];
 
+    console.log('organizations', organizations);
     const filterOrgName = organizationId => {
       const orgs = organizations.filter(org => organizationId === org.id);
       if (orgs.length > 0) {
@@ -466,7 +467,7 @@ class Agent extends PureComponent {
                           })}
                           {' : '}
                           {userRole === 'operator'
-                            ? filterOrgName(item.organization_id)
+                            ? filterOrgName(item.organization)
                             : organization.name || ''}
                         </p>
                       </div>
