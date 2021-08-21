@@ -21,7 +21,7 @@ function getOrgs(req, res) {
   const result = paginator(organizations.data, parseInt(page, 10), parseInt(perPage, 10));
   res.send({
     total: result.total,
-    data: result.data,
+    data: result,
   });
 }
 

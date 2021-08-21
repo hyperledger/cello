@@ -77,7 +77,7 @@ export default {
       data: result.data,
     });
   },
-  'POST /api/v1/auth': (req, res) => {
+  'POST /api/v1/login': (req, res) => {
     const { password, username, type } = req.body;
     if (password === 'pass' && username === 'admin') {
       res.send({

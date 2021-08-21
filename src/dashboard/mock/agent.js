@@ -1,6 +1,7 @@
 import Mock from 'mockjs';
 import faker from 'faker';
 import paginator from 'cello-paginator';
+import organizations from './organization';
 
 const agents = Mock.mock({
   'data|11': [
@@ -24,6 +25,7 @@ const agents = Mock.mock({
       status() {
         return Mock.Random.pick(['inactive', 'active']);
       },
+      urls: 'http://192.168.1.2:2375',
       log_level() {
         return Mock.Random.pick(['info', 'debug']);
       },
@@ -33,8 +35,8 @@ const agents = Mock.mock({
       schedulable() {
         return Mock.Random.pick([true, false]);
       },
-      organization_id() {
-        return Mock.Random.guid();
+      organization() {
+        return Mock.Random.pick(organizations.organizations.data).id;
       },
       image() {
         return Mock.Random.pick(['financial', 'sales', 'customer', 'marketing', 'network']);
@@ -49,7 +51,7 @@ function getAgents(req, res) {
   const result = paginator(agents.data, parseInt(page, 10), parseInt(perPage, 10));
   res.send({
     total: result.total,
-    data: result.data,
+    data: result,
   });
 }
 

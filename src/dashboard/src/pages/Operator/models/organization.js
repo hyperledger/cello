@@ -32,7 +32,7 @@ export default {
         type: 'save',
         payload: {
           pagination,
-          organizations: response.data,
+          organizations: response.data.data,
         },
       });
       if (callback) {
@@ -68,7 +68,7 @@ export default {
     },
   },
   reducers: {
-    save(state, { payload }) {
+    save(state, { payload } ) {
       return {
         ...state,
         ...payload,
