@@ -22,7 +22,7 @@ export default [
       {
         path: '/',
         component: '../layouts/BasicLayout',
-        authority: ['operator', 'administrator', 'user'],
+        authority: ['admin', 'member'],
         routes: [
           { path: '/', redirect: '/overview' },
           {
@@ -35,7 +35,7 @@ export default [
             path: '/operator',
             name: 'operator',
             icon: 'dashboard',
-            authority: ['operator', 'administrator'],
+            authority: ['admin'],
             routes: [
               {
                 path: '/operator/overview',
@@ -44,7 +44,7 @@ export default [
               },
               {
                 path: '/operator/organization',
-                authority: ['operator'],
+                authority: ['admin'],
                 name: 'organization',
                 component: './Operator/Organization',
               },

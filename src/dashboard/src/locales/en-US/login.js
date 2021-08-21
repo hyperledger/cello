@@ -10,6 +10,7 @@ export default {
   'app.login.sign-in-with': 'Sign in with',
   'app.login.signUp': 'Sign up',
   'app.login.login': 'Login',
+  'app.login.email': 'E-mail',
   'app.register.register': 'Register',
   'app.register.orgName': 'Organization name',
   'app.register.passwordAgain': 'Enter the password again',

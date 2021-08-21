@@ -7,7 +7,7 @@ import { Checkbox, Alert, Tabs, Tooltip } from 'antd';
 import Login from '@/components/Login';
 import styles from './Login.less';
 
-const { UserName, Password, Submit, OrgName } = Login;
+const { Email, Password, Submit, OrgName } = Login;
 const { TabPane } = Tabs;
 
 @connect(({ login, loading }) => ({
@@ -78,27 +78,17 @@ class LoginPage extends Component {
                 this.renderMessage(
                   intl.formatMessage({ id: 'app.login.message-invalid-credentials' })
                 )}
-              <OrgName
-                name="orgName"
-                placeholder={intl.formatMessage({ id: 'app.register.orgName' })}
+              <Email
+                name="email"
+                placeholder={`${intl.formatMessage({ id: 'app.login.email' })}`}
                 rules={[
                   {
                     required: true,
-                    message: intl.formatMessage({ id: 'validation.orgName.required' }),
+                    message: intl.formatMessage({ id: 'validation.email.required' }),
                   },
                   {
-                    pattern: new RegExp('^[a-z][\\da-z]{0,61}\\.[a-z\\d]{1,62}\\.[a-z]{1,6}$'),
-                    message: intl.formatMessage({ id: 'validation.orgName.check' }),
-                  },
-                ]}
-              />
-              <UserName
-                name="username"
-                placeholder={`${intl.formatMessage({ id: 'app.login.userName' })}: admin or user`}
-                rules={[
-                  {
-                    required: true,
-                    message: intl.formatMessage({ id: 'validation.userName.required' }),
+                    pattern: new RegExp('^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)+$'),
+                    message: intl.formatMessage({ id: 'validation.email.wrong-format' }),
                   },
                 ]}
               />
@@ -151,13 +141,17 @@ class LoginPage extends Component {
                   ]}
                 />
               </Tooltip>
-              <UserName
-                name="username"
-                placeholder={intl.formatMessage({ id: 'app.login.userName' })}
+              <Email
+                name="email"
+                placeholder={intl.formatMessage({ id: 'app.login.email' })}
                 rules={[
                   {
                     required: true,
-                    message: intl.formatMessage({ id: 'validation.userName.required' }),
+                    message: intl.formatMessage({ id: 'validation.email.required' }),
+                  },
+                  {
+                    pattern: new RegExp('^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)+$'),
+                    message: intl.formatMessage({ id: 'validation.email.wrong-format' }),
                   },
                 ]}
               />

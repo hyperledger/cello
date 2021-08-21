@@ -82,4 +82,18 @@ export default {
       },
     ],
   },
+  Email: {
+    props: {
+      size: 'large',
+      id: 'email',
+      prefix: <MailOutlined className={styles.prefixIcon} />,
+      placeholder: 'admin',
+    },
+    rules: [
+      {
+        required: true,
+        message: 'Please enter username!',
+      },
+    ],
+  },
 };
