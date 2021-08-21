@@ -83,7 +83,7 @@ class Organization(models.Model):
         "Network",
         help_text="Network to which the organization belongs",
         null=True,
-        related_name="network",
+        related_name="organization",
         on_delete=models.SET_NULL
     )
     # channel = models.ForeignKey(
@@ -322,9 +322,6 @@ class Network(models.Model):
     )
     consensus = models.CharField(
         help_text="Consensus of network", max_length=128, default="raft",
-    )
-    organizations = ArrayField(
-        models.CharField(max_length=128, blank=True), help_text="organizations of network", default=list, null=True
     )
     genesisblock = models.TextField(
         help_text="genesis block",
