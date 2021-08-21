@@ -78,42 +78,33 @@ export default {
     });
   },
   'POST /api/v1/login': (req, res) => {
-    const { password, username, type } = req.body;
-    if (password === 'pass' && username === 'admin') {
+    const { password, email, type } = req.body;
+    if (password === 'pass' && email === 'admin@cello.com') {
       res.send({
         token: 'admin-token',
         user: {
           id: 'administrator',
-          username: 'admin',
-          role: 'operator',
-          email: 'operator@cello.com',
-          organization: null,
+          role: 'admin',
+          email: 'admin@cello.com',
+          organization: {
+            "id": "a760606b-f55d-40bb-8e06-4c9da5ad49a6",
+            "name": "org1.cello.com"
+          },
         },
       });
       return;
     }
-    if (password === 'pass' && username === 'orgAdmin') {
-      res.send({
-        token: 'orgAdmin-token',
-        user: {
-          id: 'org-administrator',
-          username: 'orgAdmin',
-          role: 'administrator',
-          email: 'administrator@cello.com',
-          organization: null,
-        },
-      });
-      return;
-    }
-    if (password === 'password' && username === 'user') {
+    if (password === 'password' && email === 'member@cello.com') {
       res.send({
         token: 'user-token',
         user: {
           id: 'user',
-          username: 'user',
-          role: 'user',
-          email: 'user@cello.com',
-          organization: null,
+          role: 'member',
+          email: 'member@cello.com',
+          organization: {
+            "id": "a760606b-f55d-40bb-8e06-4c9da5ad49a6",
+            "name": "org1.cello.com"
+          },
         },
       });
       return;
@@ -125,11 +116,11 @@ export default {
     });
   },
   'POST /api/v1/register': (req, res) => {
-    const { username, orgName } = req.body;
-    if (!username || username === '') {
+    const { email, orgName } = req.body;
+    if (!email || email === '') {
       res.send({
         success: false,
-        message: 'username is necessary!'
+        message: 'email is necessary!'
       });
       return;
     }

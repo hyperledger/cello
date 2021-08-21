@@ -31,7 +31,7 @@ export default {
           type: 'changeLoginStatus',
           payload: {
             status: 'ok',
-            currentAuthority: user.role || 'user',
+            currentAuthority: user.role.toLowerCase() || 'member',
             type: 'account',
           },
         });
@@ -61,8 +61,8 @@ export default {
       yield put({
         type: 'changeRegisterStatus',
         payload: {
-          success: response.success,
-          msg: response.success ? 'Register successfully!' : response.message,
+          success: response.status === 'successful',
+          msg: response.status === 'successful' ? 'Register successfully!' : response.msg,
         },
       });
     },

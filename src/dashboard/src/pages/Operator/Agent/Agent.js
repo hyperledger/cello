@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { connect, history, useIntl, injectIntl } from 'umi';
+import { connect, useIntl, injectIntl } from 'umi';
 import { Card, Button, message, List, Badge, Row, Col, Modal, Form, Select, Input } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import moment from 'moment';
@@ -171,7 +171,7 @@ class Agent extends PureComponent {
         page: pagination.current,
       },
     });
-    if (userRole === 'operator') {
+    if (userRole === 'admin') {
       dispatch({
         type: 'organization/listOrganization',
       });
@@ -236,11 +236,11 @@ class Agent extends PureComponent {
     const { intl } = this.props;
     const userRole = getAuthority()[0];
     const id =
-      userRole === 'operator'
+      userRole === 'admin'
         ? 'app.operator.agent.delete.success'
         : 'app.operator.agent.release.success';
     const defaultMessage =
-      userRole === 'operator' ? 'Delete agent success.' : 'Release agent success.';
+      userRole === 'admin' ? 'Delete agent success.' : 'Release agent success.';
 
     message.success(
       intl.formatMessage({
@@ -278,7 +278,7 @@ class Agent extends PureComponent {
     const { dispatch } = this.props;
     const userRole = getAuthority()[0];
 
-    if (userRole === 'operator') {
+    if (userRole === 'admin') {
       dispatch({
         type: 'agent/deleteAgent',
         payload: agent.id,
@@ -297,16 +297,16 @@ class Agent extends PureComponent {
     const { intl } = this.props;
     const userRole = getAuthority()[0];
     const titleMessageId =
-      userRole === 'operator'
+      userRole === 'admin'
         ? 'app.operator.agent.form.delete.title'
         : 'app.operator.agent.form.release.title';
-    const titleDefaultMessage = userRole === 'operator' ? 'Delete Agent' : 'Release Agent';
+    const titleDefaultMessage = userRole === 'admin' ? 'Delete Agent' : 'Release Agent';
     const contentMessageId =
-      userRole === 'operator'
+      userRole === 'admin'
         ? 'app.operator.agent.form.delete.content'
         : 'app.operator.agent.form.release.content';
     const contentDefaultMessage =
-      userRole === 'operator'
+      userRole === 'admin'
         ? 'Confirm to delete the agent {name}?'
         : 'Confirm to release the agent {name}?';
 
@@ -345,7 +345,6 @@ class Agent extends PureComponent {
     const { modalVisible, action, agentData } = this.state;
     const userRole = getAuthority()[0];
 
-    console.log('organizations', organizations);
     const filterOrgName = organizationId => {
       const orgs = organizations.filter(org => organizationId === org.id);
       if (orgs.length > 0) {
@@ -466,9 +465,7 @@ class Agent extends PureComponent {
                             defaultMessage: 'Organization',
                           })}
                           {' : '}
-                          {userRole === 'operator'
-                            ? filterOrgName(item.organization)
-                            : organization.name || ''}
+                          {filterOrgName(item.organization)}
                         </p>
                       </div>
                     }

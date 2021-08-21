@@ -10,6 +10,7 @@ export default {
   'app.login.sign-in-with': '其他登录方式',
   'app.login.signUp': '注册账户',
   'app.login.login': '登录',
+  'app.login.email': 'E-mail',
   'app.register.register': '注册',
   'app.register.orgName': '组织名',
   'app.register.passwordAgain': '再次输入密码',
