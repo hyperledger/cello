@@ -105,6 +105,7 @@ class UserProfile(AbstractUser):
         default=make_uuid,
         editable=True,
     )
+    email = models.EmailField(db_index=True, unique=True)
     username = models.CharField(
         default="",
         max_length=64,
@@ -118,6 +119,8 @@ class UserProfile(AbstractUser):
     organization = models.ForeignKey(
         Organization, null=True, on_delete=models.CASCADE, related_name="users",
     )
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
 
     class Meta:
         verbose_name = "User Info"
@@ -741,7 +744,7 @@ class Channel(models.Model):
         help_text="the organization of the channel",
         null=True,
         related_name="channels",
-        #on_delete=models.SET_NULL
+        # on_delete=models.SET_NULL
     )
     create_ts = models.DateTimeField(
         help_text="Create time of Channel", auto_now_add=True
