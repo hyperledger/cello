@@ -39,6 +39,7 @@ class RegisterViewSet(viewsets.ViewSet):
                 passwordAgain = serializer.validated_data.get("passwordAgain")
                 try:
                     Organization.objects.get(name=orgname)
+                    UserProfile.objects.get(email=email)
                 except ObjectDoesNotExist:
                     pass
                 except Exception as e:
@@ -62,9 +63,9 @@ class RegisterViewSet(viewsets.ViewSet):
                 organization.save()
 
                 user = UserProfile(
-                    username=username,
+                    username=email,
                     email=email,
-                    role="administrator",
+                    role="admin",
                     organization=organization,
                 )
                 user.set_password(password)
