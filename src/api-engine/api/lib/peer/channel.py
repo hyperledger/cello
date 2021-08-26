@@ -11,21 +11,28 @@ class Channel(BasicEnv):
         super(Channel, self).__init__(version, **kwargs)
 
     def create(self, channel, orderer_url, channel_tx, orderer_tls_rootcert, time_out="90s"):
-        res = 0x100
-        print("FABRIC_CFG_PATH", os.getenv("FABRIC_CFG_PATH"))
-        print("CORE_PEER_TLS_ENABLED", os.getenv("CORE_PEER_TLS_ENABLED"))
-        if os.getenv("CORE_PEER_TLS_ENABLED") == "false" or os.getenv("CORE_PEER_TLS_ENABLED") is None:
-            res = os.system("{} channel create -c {} -o {} -f {} --timeout {}"
-                                .format(self.peer, channel, orderer_url, channel_tx, time_out))
-        else:
-            res = os.system("{} channel create -c {} -o {} -f {} --timeout {} --tls --cafile {}"
-                                .format(self.peer, channel, orderer_url, channel_tx, time_out, orderer_tls_rootcert))
+        try:
+            res = 0x100
+            if os.getenv("CORE_PEER_TLS_ENABLED") == "false" or os.getenv("CORE_PEER_TLS_ENABLED") is None:
+                res = os.system("{} channel create -c {} -o {} -f {} --timeout {}"
+                                    .format(self.peer, channel, orderer_url, channel_tx, time_out))
+            else:
+                res = os.system("{} channel create -c {} -o {} -f {} --timeout {} --tls --cafile {}"
+                                    .format(self.peer, channel, orderer_url, channel_tx, time_out, orderer_tls_rootcert))
 
-        # The return value of os.system is not the result of executing the program. It is a 16 bit number,
-        #  and its high bit is the return code
-        res = res >> 8
+            # The return value of os.system is not the result of executing the program. It is a 16 bit number,
+            #  and its high bit is the return code
+            res = res >> 8
+        except Exception as e:
+            err_msg = "create channel failed for {}!".format(e)
+            raise Exception(err_msg)
         return res
 
     def list(self):
-        res = os.system("{} channel list".format(self.peer))
+        try:
+            res = os.system("{} channel list".format(self.peer))
+            res = res >> 8
+        except Exception as e:
+            err_msg = "get channel list failed for {}!".format(e)
+            raise Exception(err_msg)
         return res
