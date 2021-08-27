@@ -88,7 +88,6 @@ class OrganizationViewSet(viewsets.ViewSet):
                     "name": organization.name,
                     "network": str(organization.network.id) if organization.network else None,
                     "agents": organization.agents if organization.agents else None,
-                    "channel": str(organization.channel.id) if organization.channel else None,
                     "created_at": organization.created_at,
                 }
                 for organization in organizations
