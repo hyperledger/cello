@@ -36,3 +36,13 @@ class Channel(BasicEnv):
             err_msg = "get channel list failed for {}!".format(e)
             raise Exception(err_msg)
         return res
+
+    def update(self, channel, channel_tx, orderer_url, time_out="90s"):
+        try:
+            res = os.system("{} channel create -c {}  -f {} -o {} --timeout {}"
+                            .format(self.peer, channel, channel_tx, orderer_url, time_out))
+        except Exception as e:
+            err_msg = "update channel failed for {e}!"
+            raise Exception(err_msg)
+        res = res >> 8
+        return res
