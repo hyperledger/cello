@@ -42,7 +42,7 @@ class OrganizationResponse(serializers.ModelSerializer):
 
     class Meta:
         model = Organization
-        fields = ("id", "name", "created_at", "agents", "network", "channel")
+        fields = ("id", "name", "created_at", "agents", "network")
         extra_kwargs = {
             "name": {"required": True},
             "created_at": {"required": True, "read_only": False},

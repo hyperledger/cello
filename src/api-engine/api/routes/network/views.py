@@ -33,6 +33,7 @@ from api.utils import zip_dir, zip_file
 from api.auth import TokenAuth
 from api.lib.agent import AgentHandler
 from api.common import ok, err
+import threading
 
 LOG = logging.getLogger(__name__)
 
@@ -83,7 +84,7 @@ class NetworkViewSet(viewsets.ViewSet):
                 networks = org.network
                 if not networks:
                     return Response(ok(data={"total": 0, "data": None}), status=status.HTTP_200_OK)
-                p = Paginator(networks, per_page)
+                p = Paginator([networks], per_page)
                 networks = p.page(page)
                 networks = [
                     {
@@ -114,7 +115,7 @@ class NetworkViewSet(viewsets.ViewSet):
         """
         try:
             node = Node.objects.get(id=pk)
-            org = node.org
+            org = node.organization
             if org is None:
                 raise ResourceNotFound
             network = org.network
@@ -212,7 +213,7 @@ class NetworkViewSet(viewsets.ViewSet):
                 nodes = Node.objects.filter(organization=org)
                 for node in nodes:
                     try:
-                        self._start_node(node.id)
+                        threading.Thread(target=self._start_node, args=(node.id,)).start()
                     except Exception as e:
                         raise e
 
@@ -239,20 +240,30 @@ class NetworkViewSet(viewsets.ViewSet):
 
     @swagger_auto_schema(
         responses=with_common_response(
-            {status.HTTP_204_NO_CONTENT: "No Content"}
+            {status.HTTP_202_ACCEPTED: "No Content"}
         )
     )
     def destroy(self, request, pk=None):
+        """
+        Delete Network
+
+        :param request: destory parameter
+        :param pk: primary key
+        :return: none
+        :rtype: rest_framework.status
+        """
         try:
             network = Network.objects.get(pk=pk)
             path = "{}/{}".format(CELLO_HOME, network.name)
             if os.path.exists(path):
                 shutil.rmtree(path, True)
             network.delete()
-        except ObjectDoesNotExist:
-            raise BaseException
+            return Response(ok(None), status=status.HTTP_202_ACCEPTED)
 
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            return Response(
+                err(e.args), status=status.HTTP_400_BAD_REQUEST
+            )
 
     @swagger_auto_schema(
         methods=["get"],
