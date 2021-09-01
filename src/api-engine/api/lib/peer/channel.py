@@ -88,3 +88,38 @@ class Channel(BasicEnv):
             raise Exception(err_msg)
         res = res >> 8
         return res
+
+    def join(self, block_file):
+        """
+        Joins the peer to a channel.
+
+        params:
+            block_file: Path to file containing genesis block
+        """
+        try:
+            res = os.system(
+                "{} channel join -b {}".format(self.peer, block_file)
+            )
+        except Exception as e:
+            err_msg = "join the peer to a channel failed. {}".format(e)
+            raise Exception(err_msg)
+        res = res >> 8
+        return res
+
+    def getinfo(self, channel):
+        """
+        Get blockchain information of a specified channel.
+
+        params:
+            channel: In case of a newChain command, the channel ID to create.
+        """
+        try:
+            res = os.system(
+                "{} channel getinfo  -c {}".format(self.peer, channel)
+            )
+        except Exception as e:
+            err_msg = "get blockchain information of a specified channel failed. {}".format(
+                e)
+            raise Exception(err_msg)
+        res = res >> 8
+        return res
