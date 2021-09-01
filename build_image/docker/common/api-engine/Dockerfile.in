@@ -12,6 +12,7 @@ WORKDIR /var/www/server
 
 # Copy source code to the working dir
 COPY src/api-engine ./
+COPY fabric_tools/2.2.0/bins  /opt/bin
 # Install python dependencies
 RUN	pip3 install -r requirements.txt
 

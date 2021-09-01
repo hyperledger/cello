@@ -34,7 +34,7 @@ class CryptoGen:
                   "--config={}/{}/{}".format(self.filepath, self.name, config)])
         except Exception as e:
             err_msg = "cryptogen generate fail for {}!".format(e)
-            raise err_msg
+            raise Exception(err_msg)
 
     def extend(self, input="crypto-config", config="crypto-config.yaml"):
         """Extend existing network
@@ -48,5 +48,5 @@ class CryptoGen:
                   "--config={}/{}/{}".format(self.filepath, self.name, config)])
         except Exception as e:
             err_msg = "cryptogen extend fail for {}!".format(e)
-            raise err_msg
+            raise Exception(err_msg)
 
