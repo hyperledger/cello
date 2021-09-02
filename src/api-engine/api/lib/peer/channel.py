@@ -30,12 +30,14 @@ class Channel(BasicEnv):
 
     def list(self):
         try:
-            res = os.system("{} channel list".format(self.peer))
+            res = os.system("{} channel list > ./list.txt".format(self.peer))
+            with open('./list.txt', 'r', encoding='utf-8') as f:
+                content = f.read()
             res = res >> 8
         except Exception as e:
             err_msg = "get channel list failed for {}!".format(e)
             raise Exception(err_msg)
-        return res
+        return res, content
 
     def update(self, channel, channel_tx, orderer_url):
         """
@@ -115,11 +117,13 @@ class Channel(BasicEnv):
         """
         try:
             res = os.system(
-                "{} channel getinfo  -c {}".format(self.peer, channel)
+                "{} channel getinfo  -c {} > ./getinfo.txt".format(self.peer, channel)
             )
+            with open('./getinfo.txt', 'r', encoding='utf-8') as f:
+                content = f.read()
         except Exception as e:
             err_msg = "get blockchain information of a specified channel failed. {}".format(
                 e)
             raise Exception(err_msg)
         res = res >> 8
-        return res
+        return res, content
