@@ -1,7 +1,7 @@
 # Dockerfile for hyperledger cello ansible agent
 #
 # @see https://github.com/hyperledger/cello/blob/master/docs/worker_ansible_howto.md
-#
+
 FROM python:3.6
 MAINTAINER Hyperledger Cello Team <github.com/hyperledger/cello>
 
