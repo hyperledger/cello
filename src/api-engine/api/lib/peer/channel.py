@@ -1,4 +1,5 @@
 import os
+import json
 from api.lib.peer.basicEnv import BasicEnv
 from api.config import FABRIC_TOOL
 
@@ -33,11 +34,12 @@ class Channel(BasicEnv):
             res = os.system("{} channel list > ./list.txt".format(self.peer))
             with open('./list.txt', 'r', encoding='utf-8') as f:
                 content = f.read()
-            res = res >> 8
+            content = content.split("\n")
+            os.system("rm ./list.txt")
         except Exception as e:
             err_msg = "get channel list failed for {}!".format(e)
             raise Exception(err_msg)
-        return res, content
+        return res, content[1:-1]
 
     def update(self, channel, channel_tx, orderer_url):
         """
@@ -121,9 +123,13 @@ class Channel(BasicEnv):
             )
             with open('./getinfo.txt', 'r', encoding='utf-8') as f:
                 content = f.read()
+            content = content.split("\n")[0].split(":", 1)[1]
+            os.system("rm ./getinfo.txt")
+            block_info = json.loads(content)
+            body = {"block_info": block_info}
         except Exception as e:
             err_msg = "get blockchain information of a specified channel failed. {}".format(
                 e)
             raise Exception(err_msg)
         res = res >> 8
-        return res, content
+        return res, body
