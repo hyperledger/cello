@@ -36,3 +36,22 @@ class Channel(BasicEnv):
             err_msg = "get channel list failed for {}!".format(e)
             raise Exception(err_msg)
         return res
+
+    def join(self, block_file):
+        try:
+            res = os.system("{} channel join -b {}".format(self.peer, block_file))
+            res = res >> 8
+        except Exception as e:
+            err_msg = "join channel failed for {}!".format(e)
+            raise Exception(err_msg)
+        return res
+
+    def getinfo(self, channel):
+        try:
+            res = os.system("{} channel getinfo -c {}".format(self.peer, channel))
+            res = res >> 8
+        except Exception as e:
+            err_msg = "getinfo of channel failed for {}!".format(e)
+            raise Exception(err_msg)
+        return res
+
