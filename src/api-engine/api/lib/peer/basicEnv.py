@@ -11,6 +11,6 @@ class BasicEnv:
 
         # Please put the config configuration file of the fabric binary in the /opt/node directory
         os.environ["FABRIC_CFG_PATH"] = FABRIC_CFG
-        os.environ["CORE_PEER_TLS_ENABLED"] = "true"
+        # os.environ["CORE_PEER_TLS_ENABLED"] = "true"
         for k, v in kwargs.items():
             os.environ[k] = v
