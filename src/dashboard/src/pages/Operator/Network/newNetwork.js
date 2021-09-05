@@ -21,7 +21,6 @@ class CreateNetwork extends React.Component {
 
   submitCallback = data => {
     const { intl } = this.props;
-    console.log('data', data);
     if (data.success) {
       message.success(
         intl.formatMessage(

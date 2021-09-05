@@ -32,7 +32,7 @@ export default {
         type: 'save',
         payload: {
           pagination,
-          networks: response.data,
+          networks: response.data.data,
         },
       });
       if (callback) {
@@ -41,7 +41,6 @@ export default {
     },
     *createNetwork({ payload, callback }, { call }) {
       const response = yield call(createNetwork, payload);
-      console.log('response', response);
       if (callback) {
         callback({
           ...response,
