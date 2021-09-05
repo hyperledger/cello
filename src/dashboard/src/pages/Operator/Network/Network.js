@@ -99,11 +99,11 @@ class Network extends PureComponent {
         }),
         render: (text, record) => (
           <Fragment>
-            <a >
+            <a>
               {intl.formatMessage({ id: 'form.menu.item.update', defaultMessage: 'Update' })}
             </a>
             <Divider type="vertical" />
-            <a className={styles.danger} >
+            <a className={styles.danger}>
               {intl.formatMessage({ id: 'form.menu.item.delete', defaultMessage: 'Delete' })}
             </a>
           </Fragment>
@@ -120,7 +120,7 @@ class Network extends PureComponent {
         <Card bordered={false}>
           <div className={styles.tableList}>
             <div className={styles.tableListOperator}>
-              <Button type="primary" onClick={()=>this.newNetwork()} >
+              <Button type="primary" onClick={()=>this.newNetwork()}>
                 <PlusOutlined />
                 {intl.formatMessage({ id: 'form.button.new', defaultMessage: 'New' })}
               </Button>

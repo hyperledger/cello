@@ -345,14 +345,6 @@ class Agent extends PureComponent {
     const { modalVisible, action, agentData } = this.state;
     const userRole = getAuthority()[0];
 
-    const filterOrgName = organizationId => {
-      const orgs = organizations.filter(org => organizationId === org.id);
-      if (orgs.length > 0) {
-        return orgs[0].name;
-      }
-      return '';
-    };
-
     function badgeStatus(status) {
       let statusOfBadge = 'default';
       switch (status) {
@@ -459,14 +451,6 @@ class Agent extends PureComponent {
                     description={
                       <div>
                         <p>{item.ip}</p>
-                        <p>
-                          {intl.formatMessage({
-                            id: 'app.operator.agent.listItem.organization',
-                            defaultMessage: 'Organization',
-                          })}
-                          {' : '}
-                          {filterOrgName(item.organization)}
-                        </p>
                       </div>
                     }
                   />

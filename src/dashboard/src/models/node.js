@@ -34,7 +34,7 @@ export default {
         type: 'save',
         payload: {
           pagination,
-          nodes: response.data,
+          nodes: response.data.data,
         },
       });
       if (callback) {
