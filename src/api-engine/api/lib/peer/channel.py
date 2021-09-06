@@ -1,5 +1,6 @@
 import os
 import json
+import subprocess
 from api.lib.peer.basicEnv import BasicEnv
 from api.config import FABRIC_TOOL
 
@@ -31,15 +32,22 @@ class Channel(BasicEnv):
 
     def list(self):
         try:
-            res = os.system("{} channel list > ./list.txt".format(self.peer))
-            with open('./list.txt', 'r', encoding='utf-8') as f:
-                content = f.read()
-            content = content.split("\n")
-            os.system("rm ./list.txt")
+            res = subprocess.Popen("{} channel list".format(self.peer), shell=True,
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+            stdout, stderr = res.communicate()
+            return_code = res.returncode
+
+            if return_code == 0:
+                content = str(stdout, encoding="utf-8")
+                content = content.split("\n")
+            else:
+                stderr = str(stderr, encoding="utf-8")
+                return return_code, stderr
         except Exception as e:
             err_msg = "get channel list failed for {}!".format(e)
             raise Exception(err_msg)
-        return res, content[1:-1]
+        return return_code, content[1:-1]
 
     def update(self, channel, channel_tx, orderer_url):
         """
@@ -118,18 +126,22 @@ class Channel(BasicEnv):
             channel: In case of a newChain command, the channel ID to create.
         """
         try:
-            res = os.system(
-                "{} channel getinfo  -c {} > ./getinfo.txt".format(self.peer, channel)
-            )
-            with open('./getinfo.txt', 'r', encoding='utf-8') as f:
-                content = f.read()
-            content = content.split("\n")[0].split(":", 1)[1]
-            os.system("rm ./getinfo.txt")
-            block_info = json.loads(content)
-            body = {"block_info": block_info}
+            res = subprocess.Popen("{} channel getinfo  -c {}".format(self.peer, channel), shell=True,
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+            stdout, stderr = res.communicate()
+            return_code = res.returncode
+
+            if return_code == 0:
+                content = str(stdout, encoding="utf-8")
+                content = content.split("\n")[0].split(":", 1)[1]
+                block_info = json.loads(content)
+                body = {"block_info": block_info}
+            else:
+                stderr = str(stderr, encoding="utf-8")
+                return return_code, stderr
         except Exception as e:
             err_msg = "get blockchain information of a specified channel failed. {}".format(
                 e)
             raise Exception(err_msg)
-        res = res >> 8
-        return res, body
+        return return_code, body
