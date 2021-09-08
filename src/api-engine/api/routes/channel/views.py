@@ -10,6 +10,7 @@ from django.core.paginator import Paginator
 from api.common.serializers import PageQuerySerializer
 from api.utils.common import with_common_response
 from api.auth import TokenAuth
+from api.lib.configtxgen import ConfigTX, ConfigTxGen
 from api.exceptions import (
     ResourceNotFound,
 )
@@ -87,6 +88,8 @@ class ChannelViewSet(viewsets.ViewSet):
 
             try:
                 org = request.user.organization
+                ConfigTX(org.network.name).createChannel(name, [org.name])
+                ConfigTxGen(org.network.name).channeltx(name, name)
                 channel = Channel(
                     name=name,
                     network=org.network

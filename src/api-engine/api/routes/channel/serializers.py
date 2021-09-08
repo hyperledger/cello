@@ -6,7 +6,7 @@ from api.common.serializers import ListResponseSerializer
 
 
 class ChannelCreateBody(serializers.Serializer):
-    organization = serializers.UUIDField(help_text="ID of Organization")
+    #organization = serializers.UUIDField(help_text="ID of Organization")
     name = serializers.CharField(max_length=128, required=True)
     peers = serializers.ListField(
         child=serializers.UUIDField(help_text="ID of Peer Nodes")

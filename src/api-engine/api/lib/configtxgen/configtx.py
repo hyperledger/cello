@@ -146,7 +146,7 @@ class ConfigTX:
                 PeerOrganizations = []
                 for org in configtx["Organizations"]:
                     for item in organizations:
-                        if org["ID"] == item:
+                        if org["ID"] == item.split(".")[0].capitalize()+"MSP":
                             PeerOrganizations.append(org)
                 if PeerOrganizations == []:
                     raise Exception("can't find organnization")
