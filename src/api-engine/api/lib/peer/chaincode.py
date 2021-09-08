@@ -1,5 +1,6 @@
 import os
 import json
+import subprocess
 from api.lib.peer.basicEnv import BasicEnv
 from api.config import FABRIC_TOOL, FABRIC_CFG
 
@@ -50,12 +51,19 @@ class ChainCode(BasicEnv):
         """
 
         try:
-            res = os.system("{} lifecycle chaincode queryinstalled --output json --connTimeout {}"
-                            " > ./queryInstalled.txt".format(self.peer, timeout))
-            with open('./queryInstalled.txt', 'r', encoding='utf-8') as f:
-                content = f.read()
-            os.system("rm ./queryInstalled.txt")
-            installed_chaincodes = json.loads(content)
+            res = subprocess.Popen("{} lifecycle chaincode queryinstalled --output json --connTimeout {}"
+                                   .format(self.peer, timeout), shell=True,
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+            stdout, stderr = res.communicate()
+            return_code = res.returncode
+
+            if return_code == 0:
+                content = str(stdout, encoding="utf-8")
+                installed_chaincodes = json.loads(content)
+            else:
+                stderr = str(stderr, encoding="utf-8")
+                return return_code, stderr
         except Exception as e:
             err_msg = "query_installed chaincode info failed for {}!".format(e)
             raise Exception(err_msg)
