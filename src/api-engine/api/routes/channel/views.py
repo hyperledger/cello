@@ -105,7 +105,7 @@ class ChannelViewSet(viewsets.ViewSet):
                 channel.organizations.add(org)
 
                 ordering_node = Node.objects.filter(
-                    type="orderer").filter(organization=org).get()
+                    type="orderer").filter(organization=org).first()
                 org_name = org.name
                 org_domain = org_name.split(".", 1)[1]
                 msp_id = org_name.split(".")[0].capitalize()
