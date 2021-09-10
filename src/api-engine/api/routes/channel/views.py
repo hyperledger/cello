@@ -7,16 +7,19 @@ from drf_yasg.utils import swagger_auto_schema
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 
+from api.config import CELLO_HOME
 from api.common.serializers import PageQuerySerializer
 from api.utils.common import with_common_response
 from api.auth import TokenAuth
 from api.lib.configtxgen import ConfigTX, ConfigTxGen
+from api.lib.peer.channel import Channel as PeerChannel
+from api.lib.configtxlator.configtxlator import ConfigTxLator
 from api.exceptions import (
     ResourceNotFound,
 )
 from api.models import (
-    Organization,
-    Channel
+    Channel,
+    Node
 )
 from api.routes.channel.serializers import (
     ChannelCreateBody,
@@ -25,6 +28,7 @@ from api.routes.channel.serializers import (
     ChannelResponseSerializer,
     ChannelUpdateSerializer
 )
+import json
 
 
 class ChannelViewSet(viewsets.ViewSet):
@@ -89,7 +93,10 @@ class ChannelViewSet(viewsets.ViewSet):
             try:
                 org = request.user.organization
                 ConfigTX(org.network.name).createChannel(name, [org.name])
-                ConfigTxGen(org.network.name).channeltx(name, name)
+                tx_gen = ConfigTxGen(org.network.name)
+                tx_gen.channeltx(name, name)
+                tx_path = "{}/{}/{}".format(tx_gen.filepath,
+                                            tx_gen.network, name)
                 channel = Channel(
                     name=name,
                     network=org.network
@@ -97,7 +104,89 @@ class ChannelViewSet(viewsets.ViewSet):
                 channel.save()
                 channel.organizations.add(org)
 
-                # TODO: Interact with the Fabric CLI.
+                ordering_node = Node.objects.filter(
+                    type="orderer").filter(organization=org).get()
+                org_name = org.name
+                org_domain = org_name.split(".", 1)[1]
+                msp_id = org_name.split(".")[0].capitalize()
+                dir_certificate = "{}/organizations/ordererOrganizations/{}/orderers/{}/".format(
+                    CELLO_HOME, org_domain, ordering_node.name + "." + org_domain)
+                dir_node = "{}/organizations/peerOrganizations/{}/".format(
+                    CELLO_HOME, org_name)
+                peer_cli_envs = {
+                    "CORE_PEER_LOCALMSPID": msp_id,
+                    "CORE_PEER_MSPCONFIGPATH": "{}users/Admin@{}/msp".format(
+                        dir_node, org_name),
+                }
+                peer_nodes = Node.objects.filter(
+                    type="peer").filter(organization=org).order_by("name")
+
+                if peer_nodes:
+                    # Get the first peer node.
+                    peer_node = peer_nodes.first()
+                    peer_cli_envs["CORE_PEER_TLS_ROOTCERT_FILE"] = "{}peers/{}/tls/ca.crt".format(
+                        peer_node.name + "." + org_name, dir_node)
+                    peer_cli_envs["CORE_PEER_ADDRESS"] = "{}.{}:{}".format(
+                        peer_node.name, org_name, 7051)
+                    peer_channel_cli = PeerChannel("v2.2.0", **peer_cli_envs)
+                    # Creating an application channel
+                    peer_channel_cli.create(
+                        channel=name,
+                        orderer_url=ordering_node.urls,
+                        channel_tx=tx_path,
+                        orderer_tls_rootcert="{}msp/tlscacerts/tlsca.{}-cert.pem".format(dir_certificate, org_domain))
+                    # Join peers to the channel
+                    peer_channel_cli.join(
+                        block_file="./{}.block".format(name))
+                    for i in range(1, peer_nodes.count()):
+                        peer_node = peer_nodes[i]
+                        peer_cli_envs["CORE_PEER_TLS_ROOTCERT_FILE"] = "{}peers/{}/tls/ca.crt".format(
+                            peer_node.name + "." + org_name, dir_node)
+                        peer_cli_envs["CORE_PEER_ADDRESS"] = "{}.{}:{}".format(
+                            peer_node.name, org_name, 7051)
+                        peer_channel_cli.join(
+                            block_file="./{}.block".format(name))
+
+                # Set the anchor peer
+                peer_channel_cli.fetch(
+                    option="config", channel=name, orderer_url=ordering_node.urls)
+                tx_lator = ConfigTxLator(filepath=CELLO_HOME)
+                tx_lator.proto_decode(
+                    input="config_block.pb", type="common.Block", output="config_block.json")
+                with open(CELLO_HOME + "/config_block.json", "r") as config_file:
+                    config = json.load(config_file)
+                    config = config["data"]["data"][0]["payload"]["data"]["config"]
+                    channel_config = config["channel_group"]["groups"]["Application"]["groups"][msp_id]
+                    channel_config.update({
+                        {"AnchorPeers": {"mod_policy": "Admins", "value": {"anchor_peers": [
+                            {"host": peer_nodes.first().name, "port": 7051}]}, "version": "0"}}
+                    })
+                with open(CELLO_HOME + '/modified_config.json', 'w') as modified_config:
+                    json.dump(channel_config, modified_config)
+
+                tx_lator.proto_encode(input="config.json",
+                                      type="common.Config", output="config.pb")
+                tx_lator.proto_encode(
+                    input="modified_config.json", type="common.Config", output="modified_config.pb")
+                tx_lator.compute_update(
+                    original="config.pb", updated="modified_config.pb", output="config_update.pb", channel_id=name)
+                tx_lator.proto_decode(
+                    input="config_update.pb", type="common.ConfigUpdate", output="config_update.json")
+                with open(CELLO_HOME + "/config_update_in_envelope.json", "w") as config_update_in_envelope:
+                    data = {
+                        "payload": {
+                            "header": {
+                                "channel_header": {
+                                    "channel_id": name,
+                                    "type": 2}},
+                            "data": {
+                                "config_update": '$(cat config_update.json)'}}}
+                    json.dump(data, config_update_in_envelope)
+                tx_lator.proto_encode(
+                    input="config_update_in_envelope.json", type="common.Envelope ", output="config_update_in_envelope.pb")
+                peer_channel_cli.update(
+                    channel=name, channel_tx=CELLO_HOME + "/config_update_in_envelope.pb", orderer_url=ordering_node.urls)
+
                 response = ChannelIDSerializer(data=channel.__dict__)
                 if response.is_valid(raise_exception=True):
                     return Response(
@@ -106,7 +195,7 @@ class ChannelViewSet(viewsets.ViewSet):
             except ObjectDoesNotExist:
                 pass
 
-    @swagger_auto_schema(
+    @ swagger_auto_schema(
         responses=with_common_response(
             {status.HTTP_200_OK: ChannelResponseSerializer}),
     )
