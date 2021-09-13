@@ -109,36 +109,40 @@ class ChainCode(BasicEnv):
         :param sequence: The channel chain code defines the serial number. The default value is 1
         :return:
         """
-        res, installed = self.lifecycle_query_installed("3s")
-        cc_label = cc_name+"_"+chaincode_version
-        package_id = ""
-        for each in installed['installed_chaincodes']:
-            if each['label'] == cc_label:
-                package_id = each['package_id']
-                break
-        if package_id == "":
-            return 1, "not exist the chaincode, please check chaincode_name and chaincode_version"
+        try:
+            res, installed = self.lifecycle_query_installed("3s")
+            cc_label = cc_name+"_"+chaincode_version
+            package_id = ""
+            for each in installed['installed_chaincodes']:
+                if each['label'] == cc_label:
+                    package_id = each['package_id']
+                    break
+            if package_id == "":
+                return 1, "not exist the chaincode, please check chaincode_name and chaincode_version"
 
-        if os.getenv("CORE_PEER_TLS_ENABLED") == "false" or os.getenv("CORE_PEER_TLS_ENABLED") is None:
-            res = subprocess.Popen("{} lifecycle chaincode approveformyorg -o {} - --channelID {} --name {} "
-                                   "--version {} --init-required --package-id {} --sequence {} --signature-policy {}"
-                                   .format(self.peer, orderer_url, channel_name, cc_name, chaincode_version, package_id,
-                                           sequence, policy), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        else:
-            res = subprocess.Popen("{} lifecycle chaincode approveformyorg -o {} --tls --cafile {} --channelID {} "
-                                   "--name {} --version {} --init-required --package-id {} --sequence {} "
-                                   "--signature-policy {}"
-                                   .format(self.peer, orderer_url, orderer_tls_rootcert, channel_name,
-                                           cc_name, chaincode_version, package_id, sequence, policy), shell=True,
-                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout, stderr = res.communicate()
-        return_code = res.returncode
+            if os.getenv("CORE_PEER_TLS_ENABLED") == "false" or os.getenv("CORE_PEER_TLS_ENABLED") is None:
+                res = subprocess.Popen("{} lifecycle chaincode approveformyorg -o {} - --channelID {} --name {} "
+                                       "--version {} --init-required --package-id {} --sequence {} --signature-policy {}"
+                                       .format(self.peer, orderer_url, channel_name, cc_name, chaincode_version, package_id,
+                                               sequence, policy), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            else:
+                res = subprocess.Popen("{} lifecycle chaincode approveformyorg -o {} --tls --cafile {} --channelID {} "
+                                       "--name {} --version {} --init-required --package-id {} --sequence {} "
+                                       "--signature-policy {}"
+                                       .format(self.peer, orderer_url, orderer_tls_rootcert, channel_name,
+                                               cc_name, chaincode_version, package_id, sequence, policy), shell=True,
+                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            stdout, stderr = res.communicate()
+            return_code = res.returncode
 
-        if return_code == 0:
-            content = str(stdout, encoding="utf-8")
-        else:
-            stderr = str(stderr, encoding="utf-8")
-            return return_code, stderr
+            if return_code == 0:
+                content = str(stdout, encoding="utf-8")
+            else:
+                stderr = str(stderr, encoding="utf-8")
+                return return_code, stderr
+        except Exception as e:
+            err_msg = "lifecycle_approve_for_my_org failed for {}!".format(e)
+            raise Exception(err_msg)
         return return_code, content
 
     def lifecycle_query_approved(self, channel_name, cc_name):
@@ -149,24 +153,28 @@ class ChainCode(BasicEnv):
         :return:
         """
 
-        res = subprocess.Popen("{} lifecycle chaincode queryapproved --output json --channelID {}"
-                               " --name {}".format(self.peer, channel_name, cc_name),
-                               shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout, stderr = res.communicate()
-        return_code = res.returncode
-        if return_code == 0:
-            content = str(stdout, encoding="utf-8")
-            chaincodes_info = json.loads(content)
-        else:
-            stderr = str(stderr, encoding="utf-8")
-            return return_code, stderr
+        try:
+            res = subprocess.Popen("{} lifecycle chaincode queryapproved --output json --channelID {}"
+                                   " --name {}".format(self.peer, channel_name, cc_name),
+                                   shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            stdout, stderr = res.communicate()
+            return_code = res.returncode
+            if return_code == 0:
+                content = str(stdout, encoding="utf-8")
+                chaincodes_info = json.loads(content)
+            else:
+                stderr = str(stderr, encoding="utf-8")
+                return return_code, stderr
+        except Exception as e:
+            err_msg = "lifecycle_query_approved failed for {}!".format(e)
+            raise Exception(err_msg)
 
         return return_code, chaincodes_info
 
     def lifecycle_check_commit_readiness(self, orderer_url, orderer_tls_rootcert, channel_name, cc_name, cc_version,
                                          policy, sequence=1):
         """
-        
+
         :param orderer_url:orderer accessable url
         :param orderer_tls_rootcert:orderer tls certificate
         :param channel_name:channel name
@@ -176,37 +184,41 @@ class ChainCode(BasicEnv):
         :param sequence:The channel chain code defines the serial number. The default value is 1
         :return:
         """
-        if os.getenv("CORE_PEER_TLS_ENABLED") == "false" or os.getenv("CORE_PEER_TLS_ENABLED") is None:
-            res = subprocess.Popen("{} lifecycle chaincode checkcommitreadiness --output json "
-                                   " --channelID {}  --name {} --version {} --init-required --sequence {} "
-                                   "--signature-policy {}"
-                                   .format(self.peer, channel_name, cc_name, cc_version, sequence, policy),
-                                   shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            stdout, stderr = res.communicate()
-            return_code = res.returncode
-            if return_code == 0:
-                content = str(stdout, encoding="utf-8")
-                chaincodes_info = json.loads(content)
-                return return_code, chaincodes_info
+        try:
+            if os.getenv("CORE_PEER_TLS_ENABLED") == "false" or os.getenv("CORE_PEER_TLS_ENABLED") is None:
+                res = subprocess.Popen("{} lifecycle chaincode checkcommitreadiness --output json "
+                                       " --channelID {}  --name {} --version {} --init-required --sequence {} "
+                                       "--signature-policy {}"
+                                       .format(self.peer, channel_name, cc_name, cc_version, sequence, policy),
+                                       shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                stdout, stderr = res.communicate()
+                return_code = res.returncode
+                if return_code == 0:
+                    content = str(stdout, encoding="utf-8")
+                    chaincodes_info = json.loads(content)
+                    return return_code, chaincodes_info
+                else:
+                    stderr = str(stderr, encoding="utf-8")
+                    return return_code, stderr
             else:
-                stderr = str(stderr, encoding="utf-8")
-                return return_code, stderr
-        else:
-            res = subprocess.Popen("{} lifecycle chaincode checkcommitreadiness --output json "
-                                   "-o {} --tls --cafile {} --channelID {}  --name {} --version {} "
-                                   "--signature-policy {} --init-required --sequence {}"
-                                   .format(self.peer, orderer_url, orderer_tls_rootcert, channel_name, cc_name,
-                                           cc_version, policy, sequence),
-                                   shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            stdout, stderr = res.communicate()
-            return_code = res.returncode
-            if return_code == 0:
-                content = str(stdout, encoding="utf-8")
-                chaincodes_info = json.loads(content)
-                return return_code, chaincodes_info
-            else:
-                stderr = str(stderr, encoding="utf-8")
-                return return_code, stderr
+                res = subprocess.Popen("{} lifecycle chaincode checkcommitreadiness --output json "
+                                       "-o {} --tls --cafile {} --channelID {}  --name {} --version {} "
+                                       "--signature-policy {} --init-required --sequence {}"
+                                       .format(self.peer, orderer_url, orderer_tls_rootcert, channel_name, cc_name,
+                                               cc_version, policy, sequence),
+                                       shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                stdout, stderr = res.communicate()
+                return_code = res.returncode
+                if return_code == 0:
+                    content = str(stdout, encoding="utf-8")
+                    chaincodes_info = json.loads(content)
+                    return return_code, chaincodes_info
+                else:
+                    stderr = str(stderr, encoding="utf-8")
+                    return return_code, stderr
+        except Exception as e:
+            err_msg = "lifecycle_check_commit_readiness failed for {}!".format(e)
+            raise Exception(err_msg)
 
     def lifecycle_commit(self, orderer_url, orderer_tls_rootcert, channel_name, cc_name, chaincode_version,
                          policy, peerlist, peer_root_certs, sequency=1):
@@ -224,26 +236,30 @@ class ChainCode(BasicEnv):
         :param sequency:The channel chain code defines the serial number. The default value is 1
         :return:
         """
-        peer_addresses_format = " --peerAddresses {} --tlsRootCertFiles {}"
-        command_str_with_tls = "{} lifecycle chaincode commit -o {} --tls --cafile {} " \
-                               "--channelID {} --name {} --version {} --init-required --sequence {} " \
-                               "--signature-policy {}"
-        command_str_without_tls = "{} lifecycle chaincode commit -o {} --channelID {} --name {} " \
-                                  "--version {} --init-required --sequence {} --signature-policy {}"
+        try:
+            peer_addresses_format = " --peerAddresses {} --tlsRootCertFiles {}"
+            command_str_with_tls = "{} lifecycle chaincode commit -o {} --tls --cafile {} " \
+                                   "--channelID {} --name {} --version {} --init-required --sequence {} " \
+                                   "--signature-policy {}"
+            command_str_without_tls = "{} lifecycle chaincode commit -o {} --channelID {} --name {} " \
+                                      "--version {} --init-required --sequence {} --signature-policy {}"
 
-        peer_addressed = []
-        for i in range(len(peerlist)):
-            peer_addressed.append(peerlist[i])
-            peer_addressed.append(peer_root_certs[i])
-        if os.getenv("CORE_PEER_TLS_ENABLED") == "false" or os.getenv("CORE_PEER_TLS_ENABLED") is None:
+            peer_addressed = []
             for i in range(len(peerlist)):
-                command_str_without_tls = command_str_without_tls + peer_addresses_format
-            res = os.system(command_str_without_tls.format(self.peer, orderer_url, channel_name, cc_name,
-                            chaincode_version, sequency, policy, *peer_addressed))      #--collections-config {}
-        else:
-            for i in range(len(peerlist)):
-                command_str_with_tls = command_str_with_tls + peer_addresses_format
-            res = os.system(command_str_with_tls.format(self.peer, orderer_url, orderer_tls_rootcert, channel_name,
-                            cc_name, chaincode_version, sequency, policy, *peer_addressed))
+                peer_addressed.append(peerlist[i])
+                peer_addressed.append(peer_root_certs[i])
+            if os.getenv("CORE_PEER_TLS_ENABLED") == "false" or os.getenv("CORE_PEER_TLS_ENABLED") is None:
+                for i in range(len(peerlist)):
+                    command_str_without_tls = command_str_without_tls + peer_addresses_format
+                res = os.system(command_str_without_tls.format(self.peer, orderer_url, channel_name, cc_name,
+                                chaincode_version, sequency, policy, *peer_addressed))      #--collections-config {}
+            else:
+                for i in range(len(peerlist)):
+                    command_str_with_tls = command_str_with_tls + peer_addresses_format
+                res = os.system(command_str_with_tls.format(self.peer, orderer_url, orderer_tls_rootcert, channel_name,
+                                cc_name, chaincode_version, sequency, policy, *peer_addressed))
+        except Exception as e:
+            err_msg = "lifecycle_commit failed for {}!".format(e)
+            raise Exception(err_msg)
         res = res >> 8
         return res
