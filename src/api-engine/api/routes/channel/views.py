@@ -104,50 +104,52 @@ class ChannelViewSet(viewsets.ViewSet):
                 channel.save()
                 channel.organizations.add(org)
 
-                ordering_node = Node.objects.filter(
-                    type="orderer").filter(organization=org).first()
+                ordering_node = Node.objects.get(id=orderers[0])
                 org_name = org.name
                 org_domain = org_name.split(".", 1)[1]
                 msp_id = org_name.split(".")[0].capitalize()
+                # Path to ordering service tls certificate.
                 dir_certificate = "{}/organizations/ordererOrganizations/{}/orderers/{}/".format(
                     CELLO_HOME, org_domain, ordering_node.name + "." + org_domain)
+                # Path to peer node.
                 dir_node = "{}/organizations/peerOrganizations/{}/".format(
                     CELLO_HOME, org_name)
+                # Get the first peer node.
+                peer_node = Node.objects.get(id=peers[0])
+                # Initialize environment variables for peer channel CLI.
                 peer_cli_envs = {
                     "CORE_PEER_LOCALMSPID": msp_id,
+                    "CORE_PEER_TLS_ROOTCERT_FILE": "{}peers/{}/tls/ca.crt".format(
+                        peer_node.name + "." + org_name, dir_node),
+                    "CORE_PEER_ADDRESS": "{}.{}:{}".format(
+                        peer_node.name, org_name, 7051),
                     "CORE_PEER_MSPCONFIGPATH": "{}users/Admin@{}/msp".format(
                         dir_node, org_name),
                 }
-                peer_nodes = Node.objects.filter(
-                    type="peer").filter(organization=org).order_by("name")
+                peer_channel_cli = PeerChannel("v2.2.0", **peer_cli_envs)
+                # Creating an application channel
+                peer_channel_cli.create(
+                    channel=name,
+                    orderer_url=ordering_node.urls,
+                    channel_tx=tx_path,
+                    orderer_tls_rootcert="{}msp/tlscacerts/tlsca.{}-cert.pem".format(dir_certificate, org_domain))
+                # Join the peer to the channel
+                peer_channel_cli.join(
+                    block_file="./{}.block".format(name))
 
-                if peer_nodes:
-                    # Get the first peer node.
-                    peer_node = peer_nodes.first()
+                # Join the rest of peers.
+                for i in range(1, len(peers)):
+                    peer_node = Node.objects.get(id=peers[i])
                     peer_cli_envs["CORE_PEER_TLS_ROOTCERT_FILE"] = "{}peers/{}/tls/ca.crt".format(
                         peer_node.name + "." + org_name, dir_node)
                     peer_cli_envs["CORE_PEER_ADDRESS"] = "{}.{}:{}".format(
                         peer_node.name, org_name, 7051)
-                    peer_channel_cli = PeerChannel("v2.2.0", **peer_cli_envs)
-                    # Creating an application channel
-                    peer_channel_cli.create(
-                        channel=name,
-                        orderer_url=ordering_node.urls,
-                        channel_tx=tx_path,
-                        orderer_tls_rootcert="{}msp/tlscacerts/tlsca.{}-cert.pem".format(dir_certificate, org_domain))
-                    # Join peers to the channel
                     peer_channel_cli.join(
                         block_file="./{}.block".format(name))
-                    for i in range(1, peer_nodes.count()):
-                        peer_node = peer_nodes[i]
-                        peer_cli_envs["CORE_PEER_TLS_ROOTCERT_FILE"] = "{}peers/{}/tls/ca.crt".format(
-                            peer_node.name + "." + org_name, dir_node)
-                        peer_cli_envs["CORE_PEER_ADDRESS"] = "{}.{}:{}".format(
-                            peer_node.name, org_name, 7051)
-                        peer_channel_cli.join(
-                            block_file="./{}.block".format(name))
 
                 # Set the anchor peer
+                # TODO: Use configtxgen to set up the anchor peer.
+                """
                 peer_channel_cli.fetch(
                     option="config", channel=name, orderer_url=ordering_node.urls)
                 tx_lator = ConfigTxLator(filepath=CELLO_HOME)
@@ -186,6 +188,7 @@ class ChannelViewSet(viewsets.ViewSet):
                     input="config_update_in_envelope.json", type="common.Envelope ", output="config_update_in_envelope.pb")
                 peer_channel_cli.update(
                     channel=name, channel_tx=CELLO_HOME + "/config_update_in_envelope.pb", orderer_url=ordering_node.urls)
+                """
 
                 response = ChannelIDSerializer(data=channel.__dict__)
                 if response.is_valid(raise_exception=True):

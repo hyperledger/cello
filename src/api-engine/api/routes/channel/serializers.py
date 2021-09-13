@@ -15,6 +15,14 @@ class ChannelCreateBody(serializers.Serializer):
         child=serializers.UUIDField(help_text="ID of Orderer Nodes")
     )
 
+    def validate(self, attrs):
+        if len(attrs["peers"]) < 1:
+            raise serializers.ValidationError("Invalid peers")
+        if len(attrs["orderers"]) < 1:
+            raise serializers.ValidationError("Invalid orderers")
+
+        return super().validate(attrs)
+
 
 class ChannelIDSerializer(serializers.Serializer):
     id = serializers.CharField(help_text="Channel ID")
