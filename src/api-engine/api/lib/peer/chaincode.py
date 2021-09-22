@@ -334,3 +334,34 @@ class ChainCode(BasicEnv):
         except Exception as e:
             err_msg = "invoke failed for {}!".format(e)
             raise Exception(err_msg)
+
+    def query(self, orderer_url, orderer_tls_rootcert, channel_name, cc_name, args):
+        try:
+            if os.getenv("CORE_PEER_TLS_ENABLED") == "false" or os.getenv("CORE_PEER_TLS_ENABLED") is None:
+                res = subprocess.Popen("./../bin/{}/bin/peer chaincode query -o {} --channelID {} --name {} -c '{}'"
+                                       .format(self.version, orderer_url, channel_name, cc_name, args),
+                                       shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                stdout, stderr = res.communicate()
+                return_code = res.returncode
+                if return_code == 0:
+                    return return_code, ''
+                else:
+                    stderr = str(stderr, encoding="utf-8")
+                    return return_code, stderr
+            else:
+                res = subprocess.Popen("./../bin/{}/bin/peer chaincode query -o {} --tls --cafile {} --channelID {}"
+                                       " --name {} -c '{}'".format(self.version, orderer_url, orderer_tls_rootcert,
+                                                                   channel_name, cc_name, args),
+                                       shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                stdout, stderr = res.communicate()
+                return_code = res.returncode
+                if return_code == 0:
+                    content = str(stdout, encoding="utf-8")
+                    query_result = json.loads(content)
+                    return return_code, query_result
+                else:
+                    stderr = str(stderr, encoding="utf-8")
+                    return return_code, stderr
+        except Exception as e:
+            err_msg = "query failed for {}!".format(e)
+            raise Exception(err_msg)
