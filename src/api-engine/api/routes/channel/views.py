@@ -124,6 +124,7 @@ class ChannelViewSet(viewsets.ViewSet):
                 # Path to peer node.
                 dir_node = "{}/{}/crypto-config/peerOrganizations".format(
                     CELLO_HOME, org_name)
+
                 # Get the first peer node.
                 peer_node = Node.objects.get(id=peers[0])
                 # Initialize environment variables for peer channel CLI.
@@ -138,28 +139,12 @@ class ChannelViewSet(viewsets.ViewSet):
                         dir_node, org_name, org_name),
                     "FABRIC_CFG_PATH": "{}/{}/peers/{}".format(dir_node, org_name, peer_node.name + "." + org_name)
                 }
-                peer_channel_cli = PeerChannel("v2.2.0", **peer_cli_envs)
-                # Creating an application channel
-                peer_channel_cli.create(
-                    channel=name,
-                    # TODO: The orderer node url needs to be fixed.
-                    orderer_url=ordering_node.urls,
-                    channel_tx=tx_path,
-                    orderer_tls_rootcert="{}/msp/tlscacerts/tlsca.{}-cert.pem".format(dir_certificate, org_domain))
-                # Join the peer to the channel
-                peer_channel_cli.join(
-                    block_file="{}/{}/genesis.block".format(CELLO_HOME, org.network.name))
 
-                # # Join the rest of peers.
-                # for i in range(1, len(peers)):
-                #     peer_node = Node.objects.get(id=peers[i])
-                #     peer_cli_envs["CORE_PEER_TLS_ROOTCERT_FILE"] = "{}peers/{}/tls/ca.crt".format(
-                #         peer_node.name + "." + org_name, dir_node)
-                #     peer_cli_envs["CORE_PEER_ADDRESS"] = "{}.{}:{}".format(
-                #         peer_node.name, org_name, 7051)
-                #     peer_channel_cli.join(
-                #         block_file="./{}.block".format(name))
-
+                rootcert = "{}/msp/tlscacerts/tlsca.{}-cert.pem".format(
+                    dir_certificate, org_domain)
+                create_channel(peer_cli_envs, ordering_node,
+                               name, tx_path, rootcert)
+                join_peers(peers, peer_cli_envs, dir_node, org)
                 # Set the anchor peer
                 # TODO: Use configtxgen to set up the anchor peer.
                 """
@@ -240,16 +225,76 @@ class ChannelViewSet(viewsets.ViewSet):
         """
         Update channel
 
-        :param request: update parameter
+        :param request: update parameters
         :param pk: primary key
         :return: none
         :rtype: rest_framework.status
         """
         serializer = ChannelUpdateSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            name = serializer.validated_data.get("name")
-            channel = Channel.objects.filter(id=pk)
-            if channel:
-                channel.update(name=name)
+            peers = serializer.validated_data.get("peers")
+            channel = Channel.objects.get(id=pk)
+            try:
+                org = request.user.organization
+                org_name = org.name
+                msp_id = org_name.split(".")[0].capitalize()
+                dir_node = "{}/{}/crypto-config/peerOrganizations".format(
+                    CELLO_HOME, org_name)
+                peer_cli_envs = {
+                    "CORE_PEER_LOCALMSPID": msp_id,
+                    "CORE_PEER_MSPCONFIGPATH": "{}/{}/users/Admin@{}/msp".format(
+                        dir_node, org_name, org_name),
+                }
+                join_peers(peers, peer_cli_envs, dir_node, org)
                 return Response(status=status.HTTP_202_ACCEPTED)
-            raise ResourceNotFound
+            except ObjectDoesNotExist:
+                raise ResourceNotFound
+
+
+def create_channel(peer_cli_envs, orderer, name, tx_path, rootcert):
+    """
+    Create an application channel.
+
+    :param peer_cli_envs: peer CLI environment variables.
+    :param orderer: Orderer node object.
+    :param name: channel name.
+    :param tx_path: a path to the transaction.
+    :param rootcert: a path to orderer cert.
+    :return: none
+
+    """
+    peer_channel_cli = PeerChannel("v2.2.0", **peer_cli_envs)
+    # Creating an application channel
+    peer_channel_cli.create(
+        channel=name,
+        # TODO: The orderer node url needs to be fixed.
+        orderer_url=orderer.urls,
+        channel_tx=tx_path,
+        orderer_tls_rootcert=rootcert
+    )
+
+
+def join_peers(peers, peer_cli_envs, dir_node, org):
+    """
+    Join peer nodes to the channel.
+
+    :param peers: list of peer node IDs.
+    :param peer_cli_envs: peer CLI environment variables.
+    :dir_node: path to peer node.
+    :param org: Organizaton object.
+    :return: none
+    """
+    # Join the peers to the channel.
+    org_name = org.name
+    for i in range(0, len(peers)):
+        peer_node = Node.objects.get(id=peers[i])
+        peer_cli_envs["CORE_PEER_TLS_ROOTCERT_FILE"] = "{}/{}/peers/{}/tls/ca.crt".format(
+            dir_node, org_name, peer_node.name + "." + org_name)
+        # TODO: The peer node url needs to be fixed.
+        peer_cli_envs["CORE_PEER_ADDRESS"] = "{}.{}:{}".format(
+            peer_node.name, org_name, "7051")
+        peer_cli_envs["FABRIC_CFG_PATH"] = "{}/{}/peers/{}".format(
+            dir_node, org_name, peer_node.name + "." + org_name)
+        peer_channel_cli = PeerChannel("v2.2.0", **peer_cli_envs)
+        peer_channel_cli.join(
+            block_file="{}/{}/genesis.block".format(CELLO_HOME, org.network.name))
