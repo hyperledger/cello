@@ -1,7 +1,6 @@
-
 from rest_framework import serializers
 
-from api.models import Channel
+from api.models import Channel, Organization
 from api.common.serializers import ListResponseSerializer
 
 
@@ -25,7 +24,7 @@ class ChannelCreateBody(serializers.Serializer):
 
 
 class ChannelIDSerializer(serializers.Serializer):
-    id = serializers.CharField(help_text="Channel ID")
+    id = serializers.UUIDField(help_text="Channel ID")
 
 
 class ChannelUpdateSerializer(serializers.ModelSerializer):
@@ -36,15 +35,25 @@ class ChannelUpdateSerializer(serializers.ModelSerializer):
         )
 
 
+class ChannelOrgListSerializer(serializers.Serializer):
+    id = serializers.UUIDField(help_text="Organization ID")
+    name = serializers.CharField(
+        max_length=128, help_text="name of Organization")
+
+
+class ChannelNetworkSerializer(serializers.Serializer):
+    id = serializers.UUIDField(help_text="Network ID")
+    name = serializers.CharField(max_length=128, help_text="name of Network")
+
+
 class ChannelResponseSerializer(ChannelIDSerializer, serializers.ModelSerializer):
-    network = serializers.UUIDField(help_text="ID of Network")
-    organizations = serializers.ListField(
-        child=serializers.UUIDField(help_text="ID of Organization")
-    )
+    id = serializers.UUIDField(help_text="ID of Channel")
+    network = ChannelNetworkSerializer()
+    organizations = ChannelOrgListSerializer(many=True)
 
     class Meta:
         model = Channel
-        fields = ("name", "network", "organizations", "create_ts")
+        fields = ("id", "name", "network", "organizations", "create_ts")
 
 
 class ChannelListResponse(ListResponseSerializer):
