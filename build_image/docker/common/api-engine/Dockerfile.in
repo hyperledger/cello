@@ -15,7 +15,7 @@ COPY src/api-engine ./
 COPY template/node  /opt/node
 
 # Install compiled code tools from Artifactory and copy it to opt folder.
-RUN curl -X GET "https://hyperledger.jfrog.io/artifactory/fabric-binaries/hyperledger-fabric-linux-amd64-2.2-stable.tar.gz?archiveType=gzip" > bin.tar.gz \
+RUN curl "https://hyperledger.jfrog.io/artifactory/fabric-binaries/hyperledger-fabric-linux-amd64-2.2-stable.tar.gz?archiveType=gzip" > bin.tar.gz \
 	&& tar -xzvf bin.tar.gz -C /opt/
 
 # Install python dependencies
