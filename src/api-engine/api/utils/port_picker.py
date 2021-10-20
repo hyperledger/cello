@@ -72,14 +72,14 @@ def find_available_ports(
         return find_available_ports(
             ip, node_id, agent_id, request_count, exclude_ports, retry
         )
-
-    try:
-        node = Node.objects.get(id=node_id)
-    except ObjectDoesNotExist:
-        return []
-    else:
-        port_objects = [Port(external=port, node=node) for port in ports]
-        Port.objects.bulk_create(port_objects)
+    # Removed these lines of code bc they can produce port objects with 0 internal port number.
+    # try:
+    #     node = Node.objects.get(id=node_id)
+    # except ObjectDoesNotExist:
+    #     return []
+    # else:
+    #     port_objects = [Port(external=port, node=node) for port in ports]
+    #     Port.objects.bulk_create(port_objects)
 
     return ports
 

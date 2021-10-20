@@ -27,7 +27,7 @@ from api.routes.network.serializers import (
 )
 from api.utils.common import with_common_response
 from api.lib.configtxgen import ConfigTX, ConfigTxGen
-from api.models import Network, Node, Organization
+from api.models import Network, Node, Port
 from api.config import CELLO_HOME
 from api.utils import zip_dir, zip_file
 from api.auth import TokenAuth
@@ -124,6 +124,9 @@ class NetworkViewSet(viewsets.ViewSet):
             agent = org.agent.get()
             if agent is None:
                 raise ResourceNotFound
+            ports = Port.objects.filter(node=node)
+            if ports is None:
+                raise ResourceNotFound
 
             info = {}
 
@@ -138,6 +141,7 @@ class NetworkViewSet(viewsets.ViewSet):
             info["urls"] = agent.urls
             info["network_type"] = network.type
             info["agent_type"] = agent.type
+            info["ports"] = {str(p.internal)+'/tcp': p.external for p in ports}
             return info
         except Exception as e:
             raise e
