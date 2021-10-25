@@ -128,8 +128,8 @@ class ChannelViewSet(viewsets.ViewSet):
 
                 # Get the first peer node.
                 peer_node = Node.objects.get(id=peers[0])
-                peer_port = Port.object.filter(
-                    node=peer_node).filter(internal=7051)
+                peer_port = Port.objects.filter(
+                    node=peer_node).filter(internal=7051).first()
                 # Initialize environment variables for peer channel CLI.
                 peer_cli_envs = {
                     "CORE_PEER_LOCALMSPID": msp_id,
@@ -267,7 +267,8 @@ def create_channel(peer_cli_envs, orderer, name, tx_path, rootcert, org_name):
 
     """
     peer_channel_cli = PeerChannel("v2.2.0", **peer_cli_envs)
-    orderer_port = Port.objects.filter(node=orderer).filter(internal=7050)
+    orderer_port = Port.objects.filter(
+        node=orderer).filter(internal=7050).first()
     # Creating an application channel
     peer_channel_cli.create(
         channel=name,
@@ -293,8 +294,8 @@ def join_peers(peers, peer_cli_envs, dir_node, org):
     org_name = org.name
     for i in range(0, len(peers)):
         peer_node = Node.objects.get(id=peers[i])
-        peer_port = Port.object.filter(
-            node=peer_node).filter(internal=7051)
+        peer_port = Port.objects.filter(
+            node=peer_node).filter(internal=7051).first()
         peer_cli_envs["CORE_PEER_TLS_ROOTCERT_FILE"] = "{}/{}/peers/{}/tls/ca.crt".format(
             dir_node, org_name, peer_node.name + "." + org_name)
         peer_cli_envs["CORE_PEER_ADDRESS"] = "{}:{}".format(
