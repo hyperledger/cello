@@ -7,7 +7,7 @@ from drf_yasg.utils import swagger_auto_schema
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 
-from api.config import CELLO_HOME
+from api.config import CELLO_HOME, DOCKER_NETWORK_URL
 from api.common.serializers import PageQuerySerializer
 from api.utils.common import with_common_response
 from api.auth import TokenAuth
@@ -19,7 +19,8 @@ from api.exceptions import (
 )
 from api.models import (
     Channel,
-    Node
+    Node,
+    Port
 )
 from api.routes.channel.serializers import (
     ChannelCreateBody,
@@ -127,14 +128,15 @@ class ChannelViewSet(viewsets.ViewSet):
 
                 # Get the first peer node.
                 peer_node = Node.objects.get(id=peers[0])
+                peer_port = Port.object.filter(
+                    node=peer_node).filter(internal=7051)
                 # Initialize environment variables for peer channel CLI.
                 peer_cli_envs = {
                     "CORE_PEER_LOCALMSPID": msp_id,
                     "CORE_PEER_TLS_ROOTCERT_FILE": "{}/{}/peers/{}/tls/ca.crt".format(
                         dir_node, org_name, peer_node.name + "." + org_name),
-                    # TODO: The peer node url needs to be fixed.
-                    "CORE_PEER_ADDRESS": "{}.{}:{}".format(
-                        peer_node.name, org_name, 7051),
+                    "CORE_PEER_ADDRESS": "{}:{}".format(
+                        DOCKER_NETWORK_URL, str(peer_port.external)),
                     "CORE_PEER_MSPCONFIGPATH": "{}/{}/users/Admin@{}/msp".format(
                         dir_node, org_name, org_name),
                     "FABRIC_CFG_PATH": "{}/{}/peers/{}".format(dir_node, org_name, peer_node.name + "." + org_name)
@@ -143,7 +145,7 @@ class ChannelViewSet(viewsets.ViewSet):
                 rootcert = "{}/msp/tlscacerts/tlsca.{}-cert.pem".format(
                     dir_certificate, org_domain)
                 create_channel(peer_cli_envs, ordering_node,
-                               name, tx_path, rootcert)
+                               name, tx_path, rootcert, org_name)
                 join_peers(peers, peer_cli_envs, dir_node, org)
                 # Set the anchor peer
                 # TODO: Use configtxgen to set up the anchor peer.
@@ -251,7 +253,7 @@ class ChannelViewSet(viewsets.ViewSet):
                 raise ResourceNotFound
 
 
-def create_channel(peer_cli_envs, orderer, name, tx_path, rootcert):
+def create_channel(peer_cli_envs, orderer, name, tx_path, rootcert, org_name):
     """
     Create an application channel.
 
@@ -260,17 +262,20 @@ def create_channel(peer_cli_envs, orderer, name, tx_path, rootcert):
     :param name: channel name.
     :param tx_path: a path to the transaction.
     :param rootcert: a path to orderer cert.
+    :param org_name: a organization name. 
     :return: none
 
     """
     peer_channel_cli = PeerChannel("v2.2.0", **peer_cli_envs)
+    orderer_port = Port.objects.filter(node=orderer).filter(internal=7050)
     # Creating an application channel
     peer_channel_cli.create(
         channel=name,
-        # TODO: The orderer node url needs to be fixed.
-        orderer_url=orderer.urls,
+        orderer_url="{}:{}".format(
+            DOCKER_NETWORK_URL, str(orderer_port.external)),
         channel_tx=tx_path,
-        orderer_tls_rootcert=rootcert
+        orderer_tls_rootcert=rootcert,
+        hostname=orderer.name + "." + org_name
     )
 
 
@@ -281,18 +286,20 @@ def join_peers(peers, peer_cli_envs, dir_node, org):
     :param peers: list of peer node IDs.
     :param peer_cli_envs: peer CLI environment variables.
     :dir_node: path to peer node.
-    :param org: Organizaton object.
+    :param org: Organization object.
     :return: none
     """
     # Join the peers to the channel.
     org_name = org.name
     for i in range(0, len(peers)):
         peer_node = Node.objects.get(id=peers[i])
+        peer_port = Port.object.filter(
+            node=peer_node).filter(internal=7051)
         peer_cli_envs["CORE_PEER_TLS_ROOTCERT_FILE"] = "{}/{}/peers/{}/tls/ca.crt".format(
             dir_node, org_name, peer_node.name + "." + org_name)
-        # TODO: The peer node url needs to be fixed.
-        peer_cli_envs["CORE_PEER_ADDRESS"] = "{}.{}:{}".format(
-            peer_node.name, org_name, "7051")
+        peer_cli_envs["CORE_PEER_ADDRESS"] = "{}:{}".format(
+            DOCKER_NETWORK_URL, str(peer_port.external))
+
         peer_cli_envs["FABRIC_CFG_PATH"] = "{}/{}/peers/{}".format(
             dir_node, org_name, peer_node.name + "." + org_name)
         peer_channel_cli = PeerChannel("v2.2.0", **peer_cli_envs)
