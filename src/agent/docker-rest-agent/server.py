@@ -40,7 +40,6 @@ def create_node():
     'HLF_NODE_PEER_CONFIG':request.form.get('peer_config_file'),
     'HLF_NODE_ORDERER_CONFIG':request.form.get('orderer_config_file'),
     }
-    
     try:
         port_map = ast.literal_eval(request.form.get('port_map'))
     except:
@@ -48,7 +47,18 @@ def create_node():
         raise 
     try:
         # same as `docker run -dit yeasy/hyperledge-fabric:2.2.0 -e VARIABLES``
-        container = client.containers.run(request.form.get('img'), request.form.get('cmd'), detach=True, tty=True, stdin_open=True, name=request.form.get('name'), environment=env, ports=port_map)
+        container = client.containers.run(
+            request.form.get('img'), 
+            request.form.get('cmd'), 
+            detach=True, 
+            tty=True, 
+            stdin_open=True, 
+            network="cello-net",
+            name=request.form.get('name'),
+            dns_search=["."],
+            volumes = ['/var/run/:/host/var/run/'],
+            environment=env, 
+            ports=port_map)
     except:
         res['code'] = FAIL_CODE
         res['data'] = sys.exc_info()[0]

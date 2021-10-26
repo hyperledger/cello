@@ -130,13 +130,14 @@ class NetworkViewSet(viewsets.ViewSet):
 
             info = {}
 
+            org_name = org.name if node.type == "peer" else org.name.split(".", 1)[1]
             # get info of node, e.g, tls, msp, config.
             info["status"] = node.status
             info["msp"] = node.msp
             info["tls"] = node.tls
             info["config_file"] = node.config_file
             info["type"] = node.type
-            info["name"] = node.name
+            info["name"] = "{}.{}".format(node.name, org_name)
             info["bootstrap_block"] = network.genesisblock
             info["urls"] = agent.urls
             info["network_type"] = network.type
