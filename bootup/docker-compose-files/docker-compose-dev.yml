@@ -14,6 +14,7 @@ services:
   # pg database
   cello-postgres:
     image: postgres:11.1
+    hostname: cello-postgres
     container_name: cello-postgres
     restart: unless-stopped
     environment:
@@ -31,11 +32,11 @@ services:
   cello-api-engine:
     image: hyperledger/cello-api-engine
     container_name: cello-api-engine
+    hostname: cello-api-engine
     restart: unless-stopped
     stdin_open: true
     dns_search: .
     environment:
-      - GODEBUG=netdns=go
       - DB_NAME=api_engine
       - DB_USER=postgres
       - DB_PASSWORD=123456

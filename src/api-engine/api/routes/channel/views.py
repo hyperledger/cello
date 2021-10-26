@@ -7,7 +7,7 @@ from drf_yasg.utils import swagger_auto_schema
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 
-from api.config import CELLO_HOME, DOCKER_NETWORK_URL
+from api.config import CELLO_HOME
 from api.common.serializers import PageQuerySerializer
 from api.utils.common import with_common_response
 from api.auth import TokenAuth
@@ -270,7 +270,7 @@ def join_peers(peers, peer_cli_envs, dir_node, org, name=None):
     :param peer_cli_envs: peer CLI environment variables.
     :dir_node: path to peer node.
     :param org: Organization object.
-    :param name: Channle Id
+    :param name: Channel Id
     :return: none
     """
     # Join the peers to the channel.

@@ -110,7 +110,7 @@ class Channel(BasicEnv):
         """
         try:
             res = os.system(
-                "{} channel join -b {} ".format(self.peer, block_file)
+                "{} channel join -b {}".format(self.peer, block_file)
             )
         except Exception as e:
             err_msg = "join the peer to a channel failed. {}".format(e)

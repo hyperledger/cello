@@ -40,6 +40,7 @@ def create_node():
     'HLF_NODE_PEER_CONFIG':request.form.get('peer_config_file'),
     'HLF_NODE_ORDERER_CONFIG':request.form.get('orderer_config_file'),
     }
+
     try:
         port_map = ast.literal_eval(request.form.get('port_map'))
     except:
