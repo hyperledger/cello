@@ -1,6 +1,7 @@
 FROM python:3.6
 COPY src/agent/docker-rest-agent/requirements.txt /
-COPY src/agent/docker-rest-agent/pip.conf /root/.pip/pip.conf
+ARG pip=pip.conf.bak
+COPY src/agent/docker-rest-agent/pip.conf /root/.pip/$pip
 
 RUN pip install -r /requirements.txt
 RUN mkdir -p /var/www/server
