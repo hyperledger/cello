@@ -130,18 +130,22 @@ class NetworkViewSet(viewsets.ViewSet):
 
             info = {}
 
+            org_name = org.name if node.type == "peer" else org.name.split(".", 1)[1]
+            ports = {str(p.internal)+'/tcp': p.external for p in ports}
+            if node.type != "peer":
+                ports["7053/tcp"] = "11721"
             # get info of node, e.g, tls, msp, config.
             info["status"] = node.status
             info["msp"] = node.msp
             info["tls"] = node.tls
             info["config_file"] = node.config_file
             info["type"] = node.type
-            info["name"] = node.name
+            info["name"] = "{}.{}".format(node.name, org_name)
             info["bootstrap_block"] = network.genesisblock
             info["urls"] = agent.urls
             info["network_type"] = network.type
             info["agent_type"] = agent.type
-            info["ports"] = {str(p.internal)+'/tcp': p.external for p in ports}
+            info["ports"] = ports
             return info
         except Exception as e:
             raise e

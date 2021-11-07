@@ -32,7 +32,7 @@ class OrganizationCreateBody(serializers.ModelSerializer):
 class OrganizationUpdateBody(serializers.ModelSerializer):
     class Meta:
         model = Organization
-        fields = ("name", "agents", "network", "channel")
+        fields = ("name", "agents", "network")
 
 
 class OrganizationResponse(serializers.ModelSerializer):

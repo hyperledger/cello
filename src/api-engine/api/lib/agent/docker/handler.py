@@ -41,7 +41,8 @@ class DockerAgent(AgentBase):
                 'orderer_config_file': info.get("config_file")[2:-1],
                 'img': 'yeasy/hyperledger-fabric:2.2.0',
                 'cmd': 'bash /tmp/init.sh "peer node start"' if info.get("type") == "peer" else 'bash /tmp/init.sh "orderer"',
-                'name': 'cello-hlf-{}-{}'.format(info.get("type"), info.get("name")),
+                'name': info.get("name"),
+                'type': info.get("type"),
                 'port_map': info.get("ports").__repr__(),
                 'action': 'create'
             }
