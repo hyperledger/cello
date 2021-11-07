@@ -131,9 +131,6 @@ class NetworkViewSet(viewsets.ViewSet):
             info = {}
 
             org_name = org.name if node.type == "peer" else org.name.split(".", 1)[1]
-            ports = {str(p.internal)+'/tcp': p.external for p in ports}
-            if node.type != "peer":
-                ports["7053/tcp"] = "11721"
             # get info of node, e.g, tls, msp, config.
             info["status"] = node.status
             info["msp"] = node.msp

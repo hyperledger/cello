@@ -7,7 +7,7 @@ from drf_yasg.utils import swagger_auto_schema
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 
-from api.config import CELLO_HOME, DOCKER_NETWORK_URL
+from api.config import CELLO_HOME
 from api.common.serializers import PageQuerySerializer
 from api.utils.common import with_common_response
 from api.auth import TokenAuth
@@ -186,7 +186,7 @@ class ChannelViewSet(viewsets.ViewSet):
                     "CORE_PEER_MSPCONFIGPATH": "{}/{}/users/Admin@{}/msp".format(
                         dir_node, org_name, org_name),
                 }
-                join_peers(peers, peer_cli_envs, dir_node, org)
+                join_peers(peers, peer_cli_envs, dir_node, org, channel.name)
                 return Response(status=status.HTTP_202_ACCEPTED)
             except ObjectDoesNotExist:
                 raise ResourceNotFound

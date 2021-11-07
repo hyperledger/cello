@@ -94,6 +94,7 @@ def create_node():
     # except:
     #     logging.debug("invalid port_map string.")
     #     raise 
+
     try:
         # same as `docker run -dit yeasy/hyperledge-fabric:2.2.0 -e VARIABLES``
         container = client.containers.run(
