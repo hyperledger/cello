@@ -117,14 +117,6 @@ class ConfigTX:
         Profiles["TwoOrgsOrdererGenesis"]["Orderer"]["Capabilities"] = Capabilities["Orderer"]
         Profiles["TwoOrgsOrdererGenesis"]["Consortiums"] = {'SampleConsortium': {'Organizations': deepcopy(PeerOrganizations)}}
 
-
-        #Debug
-        Profiles["TwoOrgsChannel"] = deepcopy(Channel)
-        Profiles["TwoOrgsChannel"]["Consortium"] = "SampleConsortium"
-        Profiles["TwoOrgsChannel"]["Application"] = deepcopy(Application)
-        Profiles["TwoOrgsChannel"]["Application"]["Organizations"] = deepcopy(PeerOrganizations)
-        Profiles["TwoOrgsChannel"]["Application"]["Capabilities"] = Capabilities["Application"]
-
         configtx = dict(
             Organizations=Organizations,
             Capabilities=Capabilities,
