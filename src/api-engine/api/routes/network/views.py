@@ -45,7 +45,6 @@ class NetworkViewSet(viewsets.ViewSet):
     def _genesis2base64(self, network):
         """
         convert genesis.block to Base64
-
         :param network: network id
         :return: genesis block
         :rtype: bytearray
@@ -70,7 +69,6 @@ class NetworkViewSet(viewsets.ViewSet):
     def list(self, request):
         """
         List network
-
         :param request: query parameter
         :return: network list
         :rtype: list
@@ -130,18 +128,19 @@ class NetworkViewSet(viewsets.ViewSet):
 
             info = {}
 
+            org_name = org.name if node.type == "peer" else org.name.split(".", 1)[1]
             # get info of node, e.g, tls, msp, config.
             info["status"] = node.status
             info["msp"] = node.msp
             info["tls"] = node.tls
             info["config_file"] = node.config_file
             info["type"] = node.type
-            info["name"] = node.name
+            info["name"] = "{}.{}".format(node.name, org_name)
             info["bootstrap_block"] = network.genesisblock
             info["urls"] = agent.urls
             info["network_type"] = network.type
             info["agent_type"] = agent.type
-            info["ports"] = {str(p.internal)+'/tcp': p.external for p in ports}
+            info["ports"] = ports
             return info
         except Exception as e:
             raise e
@@ -174,7 +173,6 @@ class NetworkViewSet(viewsets.ViewSet):
     def create(self, request):
         """
         Create Network
-
         :param request: create parameter
         :return: organization ID
         :rtype: uuid
@@ -237,7 +235,6 @@ class NetworkViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         """
         Get Network
-
         Get network information
         """
         pass
@@ -250,7 +247,6 @@ class NetworkViewSet(viewsets.ViewSet):
     def destroy(self, request, pk=None):
         """
         Delete Network
-
         :param request: destory parameter
         :param pk: primary key
         :return: none
@@ -286,11 +282,9 @@ class NetworkViewSet(viewsets.ViewSet):
         """
         get:
         Get Peers
-
         Get peers of network.
         post:
         Add New Peer
-
         Add peer into network
         """
         pass
@@ -306,7 +300,6 @@ class NetworkViewSet(viewsets.ViewSet):
         """
         delete:
         Delete Peer
-
         Delete peer in network
         """
         pass
