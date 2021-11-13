@@ -11,7 +11,7 @@ ARG gid=1000
 
 RUN apt-get update                                          && \
     apt-get install -y bash curl python-dev sudo               \
-    python-pip build-essential openssh-client libffi-dev       \
+    python3-pip build-essential openssh-client libffi-dev       \
     libssl-dev                                              && \
     pip install --upgrade pip ansible pyyaml                && \
     groupadd -g ${gid} ${user}                              && \

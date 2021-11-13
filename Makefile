@@ -30,6 +30,9 @@ YELLOW := $(shell tput -Txterm setaf 3)
 RESET  := $(shell tput -Txterm sgr0)
 ARCH   := $(shell uname -m)
 
+#Set the source of PIP in docker agent image
+PIP=pip.conf.bak
+
 # changelog specific version tags
 PREV_VERSION?=0.9.0
 
@@ -289,7 +292,7 @@ api-engine: # for debug only now
 	docker build -t hyperledger/cello-api-engine:latest -f build_image/docker/common/api-engine/Dockerfile.in ./
 
 docker-rest-agent: # for debug only now
-	docker build -t hyperledger/cello-agent-docker:latest -f build_image/docker/agent/docker-rest-agent/Dockerfile.in ./
+	docker build -t hyperledger/cello-agent-docker:latest -f build_image/docker/agent/docker-rest-agent/Dockerfile.in ./ --build-arg pip=$(PIP)
 
 .PHONY: \
 	all \
