@@ -14,7 +14,6 @@ services:
   # pg database
   cello-postgres:
     image: postgres:11.1
-    hostname: cello-postgres
     container_name: cello-postgres
     restart: unless-stopped
     environment:
@@ -25,28 +24,52 @@ services:
       - "5432:5432"
     volumes:
       - /opt/cello/pgdata:/var/lib/postgresql/data
+    networks:
+      - cello-net
 
 # api engine service of cello 
   cello-api-engine:
     image: hyperledger/cello-api-engine
     container_name: cello-api-engine
-    hostname: cello-api-engine
     restart: unless-stopped
-    links:
-      - cello-postgres
+    stdin_open: true
+    dns_search: .
     environment:
+      - GODEBUG=netdns=go
       - DB_NAME=api_engine
       - DB_USER=postgres
       - DB_PASSWORD=123456
       - DB_HOST=cello-postgres
       - DB_PORT=5432
       - DEBUG=True
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - FABRIC_LOGGING_SPEC=INFO
     ports:
       - "8080:8080"
-    # volumes:
+    volumes:
+      - /var/run/:/host/var/run/
      # - /opt/fabric:/opt/fabric
      # - /etc/localtime:/etc/localtime 
- 
-    
+    networks:
+      - cello-net
 
+  cello-docker-agent:
+    image: hyperledger/cello-agent-docker
+    container_name: cello.docker.agent
+    restart: always
+    ports:
+      - "2375:2375"
+      - "5001:5001"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - cello-net
 
+networks:
+  cello-net:
+    name: cello-net
+
+volumes:
+  cello-docker-agent:
+  cello-api-engine:
+  cello-postgres:

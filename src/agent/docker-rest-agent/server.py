@@ -32,7 +32,7 @@ def get_network():
 
 @app.route('/api/v1/nodes', methods=['POST'])
 def create_node():
-
+    node_name = request.form.get('name')
     env = {
     'HLF_NODE_MSP': request.form.get('msp'),
     'HLF_NODE_TLS':request.form.get('tls'),
@@ -40,15 +40,69 @@ def create_node():
     'HLF_NODE_PEER_CONFIG':request.form.get('peer_config_file'),
     'HLF_NODE_ORDERER_CONFIG':request.form.get('orderer_config_file'),
     }
-    
-    try:
-        port_map = ast.literal_eval(request.form.get('port_map'))
-    except:
-        logging.debug("invalid port_map string.")
-        raise 
+    if request.form.get('type') == "peer":
+        peer_envs = {
+            'CORE_VM_ENDPOINT': 'unix:///host/var/run/docker.sock',
+            'CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE': 'cello-net',
+            'FABRIC_LOGGING_SPEC': 'INFO',
+            'CORE_PEER_TLS_ENABLED': 'true',
+            'CORE_PEER_PROFILE_ENABLED': 'true',
+            'CORE_PEER_TLS_CERT_FILE': '/etc/hyperledger/fabric/tls/server.crt',
+            'CORE_PEER_TLS_KEY_FILE': '/etc/hyperledger/fabric/tls/server.key',
+            'CORE_PEER_TLS_ROOTCERT_FILE': '/etc/hyperledger/fabric/tls/ca.crt',
+            'CORE_PEER_ID': node_name,
+            'CORE_PEER_ADDRESS': node_name +":7051",
+            'CORE_PEER_LISTENADDRESS': '0.0.0.0:7051',
+            'CORE_PEER_CHAINCODEADDRESS':  node_name+":7052",
+            'CORE_PEER_CHAINCODELISTENADDRESS':'0.0.0.0:7052',
+            'CORE_PEER_GOSSIP_BOOTSTRAP': node_name+":7051",
+            'CORE_PEER_GOSSIP_EXTERNALENDPOINT': node_name+":7051",
+            'CORE_OPERATIONS_LISTENADDRESS': '0.0.0.0:17051'
+        }
+        env.update(peer_envs)
+        volumes = ['/var/run/:/host/var/run/']
+        port_map = {
+            "7051/tcp":"7051",
+            "17051/tcp": "17051"
+        }
+      
+    else:
+        order_envs = {  
+            'FABRIC_LOGGING_SPEC':'DEBUG',
+            'ORDERER_GENERAL_LISTENADDRESS': '0.0.0.0',
+            'ORDERER_GENERAL_LISTENPORT': '7050',
+            'ORDERER_GENERAL_GENESISMETHOD':'file',
+            'ORDERER_GENERAL_LOCALMSPDIR': '/etc/hyperledger/fabric/msp',
+            'ORDERER_GENERAL_GENESISFILE': '/etc/hyperledger/fabric/genesis.block',
+            'ORDERER_GENERAL_TLS_ENABLED': 'true',
+            'ORDERER_GENERAL_TLS_PRIVATEKEY':'/etc/hyperledger/fabric/tls/server.key',
+            'ORDERER_GENERAL_TLS_CERTIFICATE':'/etc/hyperledger/fabric/tls/server.crt',
+            'ORDERER_GENERAL_TLS_ROOTCAS': '[/etc/hyperledger/fabric/tls/ca.crt]',
+            'ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE': '/etc/hyperledger/fabric/tls/server.crt',
+            'ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY': '/etc/hyperledger/fabric/tls/server.key',
+            'ORDERER_GENERAL_CLUSTER_ROOTCAS': '[/etc/hyperledger/fabric/tls/ca.crt]',
+        }
+        env.update(order_envs)
+        volumes = ['/var/run/:/host/var/run/']
+        port_map = {
+            "7050/tcp":"7050",
+            "17050/tcp": "17050"
+        }
+
     try:
         # same as `docker run -dit yeasy/hyperledge-fabric:2.2.0 -e VARIABLES``
-        container = client.containers.run(request.form.get('img'), request.form.get('cmd'), detach=True, tty=True, stdin_open=True, name=request.form.get('name'), environment=env, ports=port_map)
+        container = client.containers.run(
+            request.form.get('img'), 
+            request.form.get('cmd'), 
+            detach=True, 
+            tty=True, 
+            stdin_open=True, 
+            network="cello-net",
+            name=request.form.get('name'),
+            dns_search=["."],
+            volumes=volumes,
+            environment=env, 
+            ports=port_map)
     except:
         res['code'] = FAIL_CODE
         res['data'] = sys.exc_info()[0]
