@@ -162,7 +162,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             urls = "{}.{}".format(nodeName, org.name)
             node = Node(
                 name=nodeName,
-                org=org,
+                organization=org,
                 urls=urls,
                 type=nodeType,
                 msp=msp,
