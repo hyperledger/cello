@@ -31,15 +31,22 @@ Environmental preparation:
 2. docker-compose [how install](https://docs.docker.com/compose/install/)
 3. make `all script for cello service management is written in Makefile`
 4. kubernetes (`optional`) [how install](https://kubernetes.io/docs/setup/)
+5. node [how install](https://nodejs.org/en/download/)
 
 If environment is prepared, then we can start cello service.
 
 * Build essential images for cello service (Optional, because currently the dockerhub image auto build haven't ready, in the future you can ignore this step.)
+       
+    * Build API Engine
+       ```bash
+       $ make api-engine
+       ```
+    * Build Docker Agent 
+       ```bash
+       $ make docker-rest-agent
+       ```
 
-```bash
-# make docker
-```
-
+<!---
 * config variables for service deployment through menuconfig/alldefconfig, then will generate .config file under the project folder.
 
 if you want to use default configuration for service deployment, only need run alldefconfig.
@@ -53,31 +60,23 @@ if you want to set the config through terminal ui, run menuconfig ![menuconfig](
 ```bash
 # make menuconfig
 ```
+-->
 
-* Start cello service, default deployment method is using docker-compose, if you have kubernetes environment,
-you can change deployment method to kubernetes through `DEPLOY_METHOD=k8s make start`.
-
+* Start cello service.<!---, default deployment method is using docker-compose, if you have kubernetes environment,-->
+<!---you can change deployment method to kubernetes through `DEPLOY_METHOD=k8s make start`.-->
 ```bash
-# make start
+$ make start
 ```
 
 After service started up, if use docker-compose method, you can see output:
 
 ```bash
-CONTAINER ID        IMAGE                          COMMAND                  CREATED             STATUS              PORTS
-       NAMES
-ddf938ed927e        hyperledger/cello-dashboard    "bash -c '/config-ng…"   2 days ago          Up 2 days           0.0.0.0:8081->80/tcp
-       cello-dashboard
-41ab47784b28        hyperledger/cello-api-engine   "/bin/sh -c 'bash /e…"   2 days ago          Up 2 days           0.0.0.0:8085->8080/tcp
-       cello-api-engine
-073a5f46276e        hyperledger/cello-api-engine   "bash -c 'celery -A …"   2 days ago          Up 2 days
-       cello-api-engine-tasks
-54d2c615d7d9        postgres:11.1                  "docker-entrypoint.s…"   2 days ago          Up 2 days           5432/tcp
-       cello-postgres-server
-1e0fc6386891        redis:4.0.13                   "docker-entrypoint.s…"   2 days ago          Up 2 days           6379/tcp
-       cello-redis
+CONTAINER ID   IMAGE                            COMMAND                  CREATED         STATUS         PORTS                                                                                  NAMES
+81e6459965ec   hyperledger/cello-agent-docker   "gunicorn server:app…"   4 seconds ago   Up 2 seconds   0.0.0.0:2375->2375/tcp, :::2375->2375/tcp, 0.0.0.0:5001->5001/tcp, :::5001->5001/tcp   cello.docker.agent
+04367ab6bd5e   postgres:11.1                    "docker-entrypoint.s…"   4 seconds ago   Up 2 seconds   0.0.0.0:5432->5432/tcp, :::5432->5432/tcp                                              cello-postgres
+29b56a279893   hyperledger/cello-api-engine     "/bin/sh -c 'bash /e…"   4 seconds ago   Up 2 seconds   0.0.0.0:8080->8080/tcp, :::8080->8080/tcp                                              cello-api-engine
 ```
-
+<!---
 If use kubernetes method to deploy, the output is:
 
 ```bash
@@ -96,13 +95,18 @@ pod/redis-6bf574b8c5-p2dnl              1/1     Running   0          7s
 NAME                                    HOSTS   ADDRESS   PORTS   AGE
 ingress.extensions/ingress-api-engine   *                 80      7s
 ```
+-->
+* Start cello dashboard 
+```bash
+$ make start-dashboard
+```
+<!---If you visit the dashboard through 8081 port, the default username/password is `admin/pass`.-->
 
-If you visit the dashboard through 8081 port, the default username/password is `admin/pass`.
 
-* Stop cello service, same as start, need set the `DEPLOY_METHOD` variable.
+* Stop cello service.<!---, same as start, need set the `DEPLOY_METHOD` variable.-->
 
 ```bash
-# make stop
+$ make stop
 ```
 
 
