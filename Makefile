@@ -293,6 +293,8 @@ api-engine: # for debug only now
 
 docker-rest-agent: # for debug only now
 	docker build -t hyperledger/cello-agent-docker:latest -f build_image/docker/agent/docker-rest-agent/Dockerfile.in ./ --build-arg pip=$(PIP)
+start-dashboard: 
+	make -C src/dashboard start;
 
 .PHONY: \
 	all \
