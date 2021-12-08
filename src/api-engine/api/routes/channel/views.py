@@ -127,6 +127,7 @@ class ChannelViewSet(viewsets.ViewSet):
                 )
                 channel.save()
                 channel.organizations.add(org)
+                channel.orderers.add(ordering_node)
                 response = ChannelIDSerializer(data=channel.__dict__)
                 if response.is_valid(raise_exception=True):
                     return Response(
