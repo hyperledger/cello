@@ -104,6 +104,11 @@ export default [
                 hideInMenu: true,
               },
               {
+                path: '/operator/channel',
+                name: 'channel',
+                component: './Operator/Channel/Channel',
+              },
+              {
                 path: '/operator/userManagement',
                 name: 'userManagement',
                 component: './Operator/UserManagement',
