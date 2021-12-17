@@ -179,9 +179,10 @@ check: ##@Code Check code format
 test-case: ##@Code Run test case for flask server
 	@$(MAKE) -C src/operator-dashboard/test/ all
 
-clean: ##@Code Clean tox result
+clean: docker-clean ##@Code Clean tox result, clean built images and db files
 	rm -rf .tox .cache *.egg-info build/
 	find . -name "*.pyc" -o -name "__pycache__" | xargs rm -rf
+	rm -rf /opt/cello/*
 
 # TODO (david_dornseier): As long as there are no release versions, always rewrite
 # the entire changelog (bug)
@@ -293,7 +294,7 @@ api-engine: # for debug only now
 
 docker-rest-agent: # for debug only now
 	docker build -t hyperledger/cello-agent-docker:latest -f build_image/docker/agent/docker-rest-agent/Dockerfile.in ./ --build-arg pip=$(PIP)
-start-dashboard: 
+start-dashboard:
 	make -C src/dashboard start;
 
 .PHONY: \
