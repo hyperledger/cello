@@ -29,7 +29,8 @@ const channels = Mock.mock({
             return faker.company.companyName();
           },
         }
-      ]
+      ],
+      create_ts: '@datetime'
     },
   ],
 });
@@ -43,8 +44,44 @@ function getChannels(req, res) {
   });
 }
 
+function createChannel(req, res) {
+  const message = req.body;
+  const channel = {
+    id : message.id,
+    name: message.name,
+    network: {
+      id() {
+        return Mock.Random.guid();
+      },
+      name() {
+        return faker.company.companyName();
+      },
+      organizations: [
+        {
+          id() {
+            return Mock.Random.guid();
+          },
+          name() {
+            return faker.company.companyName();
+          },
+        }
+      ],
+      network: {
+        id() {
+          return Mock.Random.guid();
+        },
+        name() {
+          return faker.company.companyName();
+        },
+      },
+    },
+  };
+  channels.data.push(channel);
+
+  res.send({success: true});
+}
 
 export default {
   'GET /api/v1/channels': getChannels,
-//  'POST /api/v1/networks': createNet,
+  'POST /api/v1/channels': createChannel,
 };

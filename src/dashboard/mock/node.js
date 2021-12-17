@@ -54,7 +54,7 @@ function getNodes(req, res) {
 
   res.send({
     total: result.total,
-    data: result.data,
+    data: {data: result.data},
   });
 }
 
