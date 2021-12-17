@@ -736,9 +736,6 @@ class Channel(models.Model):
     name = models.CharField(
         help_text="name of channel", max_length=128
     )
-    network = models.ForeignKey(
-        "Network", on_delete=models.CASCADE
-    )
     organizations = models.ManyToManyField(
         to="Organization",
         help_text="the organization of the channel",
@@ -748,6 +745,14 @@ class Channel(models.Model):
     )
     create_ts = models.DateTimeField(
         help_text="Create time of Channel", auto_now_add=True
+    )
+    network = models.ForeignKey(
+        "Network", on_delete=models.CASCADE
+    )
+    orderers = models.ManyToManyField(
+        to="Node",
+        help_text="Orderer list in the channel",
+        null=True,
     )
 
     class ChainCode(models.Model):

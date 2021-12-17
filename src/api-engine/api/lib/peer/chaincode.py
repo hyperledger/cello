@@ -338,8 +338,8 @@ class ChainCode(BasicEnv):
     def query(self, orderer_url, orderer_tls_rootcert, channel_name, cc_name, args):
         try:
             if os.getenv("CORE_PEER_TLS_ENABLED") == "false" or os.getenv("CORE_PEER_TLS_ENABLED") is None:
-                res = subprocess.Popen("./../bin/{}/bin/peer chaincode query -o {} --channelID {} --name {} -c '{}'"
-                                       .format(self.version, orderer_url, channel_name, cc_name, args),
+                res = subprocess.Popen("{} chaincode query -o {} --channelID {} --name {} -c '{}'"
+                                       .format(self.peer, orderer_url, channel_name, cc_name, args),
                                        shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 stdout, stderr = res.communicate()
                 return_code = res.returncode
@@ -349,8 +349,8 @@ class ChainCode(BasicEnv):
                     stderr = str(stderr, encoding="utf-8")
                     return return_code, stderr
             else:
-                res = subprocess.Popen("./../bin/{}/bin/peer chaincode query -o {} --tls --cafile {} --channelID {}"
-                                       " --name {} -c '{}'".format(self.version, orderer_url, orderer_tls_rootcert,
+                res = subprocess.Popen("{} chaincode query -o {} --tls --cafile {} --channelID {}"
+                                       " --name {} -c '{}'".format(self.peer, orderer_url, orderer_tls_rootcert,
                                                                    channel_name, cc_name, args),
                                        shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 stdout, stderr = res.communicate()

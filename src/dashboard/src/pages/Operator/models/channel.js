@@ -1,0 +1,58 @@
+import {
+  listChannel,
+  createChannel,
+  getChannel,
+} from '@/services/channel';
+
+export default {
+  namespace: 'channel',
+
+  state: {
+    channels: [],
+    pagination: {
+      total: 0,
+      current: 1,
+      pageSize: 10,
+    },
+    currentChannel: {},
+  },
+
+  effects: {
+    *listChannel({ payload }, { call, put, select }) {
+      const response = yield call(listChannel, payload);
+      const pagination = yield select(state => state.channel.pagination);
+      const pageSize = payload ? payload.per_page || pagination.pageSize : pagination.pageSize;
+      const current = payload ? payload.page || pagination.current : pagination.current;
+
+      pagination.total = response.total;
+      pagination.pageSize = pageSize;
+      pagination.current = current;
+      yield put({
+        type: 'save',
+        payload: {
+          pagination,
+          channels: response.data,
+        },
+      });
+    },
+  },
+  reducers: {
+    save(state, { payload }) {
+      return {
+        ...state,
+        ...payload,
+      };
+    },
+    clear() {
+      return {
+        channels: [],
+        pagination: {
+          total: 0,
+          current: 1,
+          pageSize: 10,
+        },
+        currentChannel: {},
+      };
+    },
+  },
+};
