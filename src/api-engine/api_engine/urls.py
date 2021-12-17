@@ -24,7 +24,7 @@ from rest_framework import permissions
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework.routers import DefaultRouter
-from rest_framework_jwt.views import obtain_jwt_token, verify_jwt_token
+from rest_framework_jwt.views import verify_jwt_token
 from django.conf.urls.static import static
 
 from api.routes.network.views import NetworkViewSet
@@ -33,7 +33,7 @@ from api.routes.node.views import NodeViewSet
 from api.routes.organization.views import OrganizationViewSet
 from api.routes.user.views import UserViewSet
 from api.routes.file.views import FileViewSet
-from api.routes.general.views import RegisterViewSet
+from api.routes.general.views import RegisterViewSet,CustomObtainJSONWebToken
 from api.routes.channel.views import ChannelViewSet
 
 
@@ -73,8 +73,8 @@ urlpatterns = router.urls
 
 urlpatterns += [
     #path("auth", obtain_jwt_token),
-    path("login", obtain_jwt_token),
     path("token-verify", verify_jwt_token),
+    path("login", CustomObtainJSONWebToken.as_view()),
     path("docs/", SchemaView.with_ui("swagger", cache_timeout=0), name="docs"),
     path("redoc/", SchemaView.with_ui("redoc", cache_timeout=0), name="redoc"),
 ]

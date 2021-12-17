@@ -48,6 +48,7 @@ from api.config import CELLO_HOME
 from api.auth import TokenAuth
 from api.utils.node_config import NodeConfig
 
+from api.common import ok, err
 
 LOG = logging.getLogger(__name__)
 
@@ -97,7 +98,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             )
             if response.is_valid(raise_exception=True):
                 return Response(
-                    response.validated_data, status=status.HTTP_200_OK
+                    ok(response.validated_data), status=status.HTTP_200_OK
                 )
 
     @swagger_auto_schema(
@@ -143,7 +144,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             response = OrganizationIDSerializer(data=organization.__dict__)
             if response.is_valid(raise_exception=True):
                 return Response(
-                    response.validated_data, status=status.HTTP_201_CREATED
+                    ok(response.validated_data), status=status.HTTP_201_CREATED
                 )
 
     def _create_node(self, org, num, nodeType):
@@ -377,7 +378,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             )
             if response.is_valid(raise_exception=True):
                 return Response(
-                    response.validated_data, status=status.HTTP_200_OK
+                    ok(response.validated_data), status=status.HTTP_200_OK
                 )
 
     @staticmethod

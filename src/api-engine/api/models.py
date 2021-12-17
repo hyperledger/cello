@@ -22,7 +22,7 @@ from api.common.enums import (
     LogLevel,
     HostType,
     K8SCredentialType,
-    separate_upper_class,
+    separate_upper_class, 
     NodeStatus,
     FileType,
     FabricCAServerType,

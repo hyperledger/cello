@@ -494,7 +494,7 @@ class NodeViewSet(viewsets.ViewSet):
                             response = NodeCIDSerializer(data={"id": cid})
                             if response.is_valid(raise_exception=True):
                                 return Response(
-                                    response.validated_data, status=status.HTTP_201_CREATED
+                                    ok(response.validated_data), status=status.HTTP_201_CREATED
                                 )
                         else:
                             raise ResourceNotFound
@@ -655,7 +655,7 @@ class NodeViewSet(viewsets.ViewSet):
                     for port in ports
                 ]
                 response = NodeInfoSerializer(node)
-                return Response(data=response.data, status=status.HTTP_200_OK)
+                return Response(ok(data=response.data), status=status.HTTP_200_OK)
         except Exception as e:
             return Response(
                 err(e.args), status=status.HTTP_400_BAD_REQUEST
@@ -737,7 +737,7 @@ class NodeViewSet(viewsets.ViewSet):
             response = NodeUserListSerializer(
                 {"data": users, "total": p.count}
             )
-            return Response(response.data, status=status.HTTP_200_OK)
+            return Response(ok(response.data), status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         methods=["post"],

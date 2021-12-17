@@ -3,6 +3,7 @@ import logging
 from rest_framework import serializers
 
 from api.models import UserProfile, Organization
+from api.common import ok
 
 LOG = logging.getLogger(__name__)
 
@@ -30,7 +31,7 @@ def jwt_response_payload_handler(token, user=None, request=None):
     :param request: request context
     :return: UserSerializer data
     """
-    return {
+    return ok({
         "token": token,
         "user": UserSerializer(user, context={"request": request}).data,
-    }
+    })

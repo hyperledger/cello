@@ -3,15 +3,12 @@
 #
 import logging
 import base64
-import json
-from django.contrib.auth import authenticate
+
 from rest_framework import viewsets, status
 from django.core.exceptions import ObjectDoesNotExist
-from django.views.decorators.csrf import csrf_exempt
 from rest_framework.response import Response
-from rest_framework_jwt.views import obtain_jwt_token, verify_jwt_token
+from rest_framework_jwt.views import ObtainJSONWebToken
 from api.models import UserProfile, Organization
-from rest_framework.authtoken.models import Token
 from api.routes.general.serializers import (
     RegisterBody,
     RegisterIDSerializer,
@@ -22,6 +19,11 @@ from api.lib.pki import CryptoGen, CryptoConfig
 from api.utils import zip_dir, zip_file
 from api.common import ok, err
 from api.config import CELLO_HOME
+from api.utils.jwt import jwt_response_payload_handler
+from datetime import datetime
+from rest_framework_jwt.settings import api_settings
+ 
+
 
 LOG = logging.getLogger(__name__)
 
@@ -107,54 +109,23 @@ class RegisterViewSet(viewsets.ViewSet):
 
         return msp, tls
 
+class CustomObtainJSONWebToken(ObtainJSONWebToken):
 
-# class LoginViewSet(viewsets.ViewSet):
-
-#     def create(self, request):
-#         try:
-#             serializer = LoginBody(data=request.data)
-#             if serializer.is_valid(raise_exception=True):
-#                 email = serializer.validated_data.get("email")
-#                 password = serializer.validated_data.get("password")
-
-#                 try:
-#                     user = authenticate(username=email, password=password)
-#                     if not user:
-#                         return Response(
-#                             err("login error!"), status=status.HTTP_403_FORBIDDEN
-#                         )
-#                 except Exception as e:
-#                     return Response(
-#                         err("login error!"), status=status.HTTP_403_FORBIDDEN
-#                     )
-
-#         except Exception as e:
-#             return Response(
-#                 err(e.args), status=status.HTTP_400_BAD_REQUEST
-#             )
-
-
-# @csrf_exempt
-# def login(request):
-#     if request.method == 'POST':
-#         try:
-#             post_body = request.body
-#             json_result = json.loads(post_body)
-#             orgname = json_result.get("orgName")
-#             username = json_result.get("username")
-#             password = json_result.get("password")
-
-#             organization = Organization.objects.get(name=orgname)
-#             user = UserProfile.objects.get(
-#                 username=username, organization=organization)
-#             re = user.check_password(password)
-#             if not re:
-#                 return Response(
-#                     err("login error!"), status=status.HTTP_403_FORBIDDEN
-#                 )
-#             token = obtain_jwt_token(request)
-#             return token
-#         except Exception as e:
-#             return Response(
-#                 err(e.args), status=status.HTTP_403_FORBIDDEN
-#             )
+    def post(self, request):
+        serializer = self.get_serializer(
+            data=request.data
+        )
+        if serializer.is_valid():
+            user = serializer.object.get('user') or request.user
+            token = serializer.object.get('token')
+            response_data = jwt_response_payload_handler(token, user, request)
+            response = Response(response_data)
+            if api_settings.JWT_AUTH_COOKIE:
+                expiration = (datetime.utcnow() +
+                              api_settings.JWT_EXPIRATION_DELTA)
+                response.set_cookie(api_settings.JWT_AUTH_COOKIE,
+                                    token,
+                                    expires=expiration,
+                                    httponly=True)
+            return response
+        return Response(err(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
