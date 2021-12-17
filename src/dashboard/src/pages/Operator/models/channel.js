@@ -35,6 +35,12 @@ export default {
         },
       });
     },
+    *createChannel({ payload, callback }, { call }) {
+      const response = yield call(createChannel, payload);
+      if (callback) {
+        callback(response);
+      }
+    },
   },
   reducers: {
     save(state, { payload }) {

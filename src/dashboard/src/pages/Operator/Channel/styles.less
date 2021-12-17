@@ -88,3 +88,22 @@
 .auto-complete {
   width: 100%;
 }
+
+
+.dropdownClassName {
+  //background-color: @optionBackgroudColor;
+  :global {
+    .ant-select-dropdown-menu-item {
+      height: 24px;
+      padding: 1px 12px;
+      font-size: 14px;
+      line-height: 24px;
+    }
+    .ant-select-item-option-content{
+      color: #fcfff6 !important;
+    }
+    .ant-select-item-option-selected{
+      background-color: #107c6e !important;
+    }
+  }
+}
