@@ -2,7 +2,7 @@
  SPDX-License-Identifier: Apache-2.0
 */
 import React, { PureComponent, Fragment } from 'react';
-import { connect, history, injectIntl } from 'umi';
+import { connect, history, injectIntl, useIntl } from 'umi';
 import {
   Card,
   Button,
@@ -14,7 +14,7 @@ import {
   Form,
   Input,
   Select,
-  Badge,
+  InputNumber
 } from 'antd';
 import { DownOutlined, PlusOutlined } from '@ant-design/icons';
 import moment from 'moment';
@@ -175,10 +175,154 @@ const RegisterUserForm = props => {
   );
 };
 
+const CreateNode = props => {
+  const [form] = Form.useForm();
+  const intl = useIntl();
+  const { createModalVisible, handleCreate, handleModalVisible, creating, queryNodeList } = props;
+
+  const createCallback = response => {
+    if (response.status !== 'successful') {
+      message.error(intl.formatMessage({
+        id: 'app.operator.node.new.createFail',
+        defaultMessage: 'Create node failed',
+      }));
+    }
+    else {
+      message.success(intl.formatMessage({
+        id: 'app.operator.node.new.createSuccess',
+        defaultMessage: 'Create node succeed',
+      }));
+      form.resetFields();
+      handleModalVisible();
+      queryNodeList();
+    }
+  };
+
+  const onSubmit = () => {
+    form.submit();
+  };
+
+  const onFinish = values => {
+    handleCreate(values, createCallback);
+  };
+
+  const formItemLayout = {
+    labelCol: {
+      xs: { span: 24 },
+      sm: { span: 7 }
+    },
+    wrapperCol: {
+      xs: { span: 24 },
+      sm: { span: 12 },
+      md: { span: 10 }
+    }
+  };
+
+  const types = ['ca', 'orderer', 'peer'];
+  const typeOptions = types.map(item => (
+    <Option value={item} key={item}>
+      <span style={{color: '#8c8f88'}}>{item}</span>
+    </Option>
+  ));
+
+  return(
+    <Modal
+      destroyOnClose
+      title={intl.formatMessage({
+        id: 'app.operator.node.new.title',
+        defaultMessage: 'Create Node',
+      })}
+      confirmLoading={ creating }
+      visible={ createModalVisible }
+      onOk={ onSubmit }
+      onCancel={() => handleModalVisible(false) }
+    >
+      <Form
+        onFinish={ onFinish }
+        form={form}
+        preserve={false}
+      >
+        <FormItem
+          {...formItemLayout}
+          label={intl.formatMessage({
+            id: 'app.operator.node.new.name',
+            defaultMessage: 'Name',
+          })}
+          name="name"
+          initialValue=''
+          rules={[
+            {
+              required: true,
+              message: intl.formatMessage({
+                id: 'app.operator.node.new.nameCheck',
+                defaultMessage: 'Please enter node name',
+              }),
+            },
+          ]}
+        >
+          <Input
+            placeholder={intl.formatMessage({
+              id: 'app.operator.node.new.name',
+              defaultMessage: 'Name',
+            })}
+          />
+        </FormItem>
+        <FormItem
+          {...formItemLayout}
+          label={intl.formatMessage({
+            id: 'app.operator.node.new.type',
+            defaultMessage: 'Type',
+          })}
+          name="type"
+          rules={[
+            {
+              required: true,
+              message: intl.formatMessage({
+                id: 'app.operator.node.new.typeCheck',
+                defaultMessage: 'Please select a type',
+              }),
+            },
+          ]}
+        >
+          <Select defaultActiveFirstOption={false} >{typeOptions}</Select>
+        </FormItem>
+        <FormItem
+          {...formItemLayout}
+          label={intl.formatMessage({
+            id: 'app.operator.node.new.num',
+            defaultMessage: 'Number',
+          })}
+          name="num"
+          initialValue='1'
+          rules={[
+            {
+              required: true,
+              message: intl.formatMessage({
+                id: 'app.operator.node.new.numCheck',
+                defaultMessage: 'Please enter the number of nodes',
+              }),
+            },
+          ]}
+        >
+          <InputNumber
+            placeholder={intl.formatMessage({
+              id: 'app.operator.node.new.num',
+              defaultMessage: 'Number',
+            })}
+            min={1}
+            style={{width: '100%'}}
+          />
+        </FormItem>
+      </Form>
+    </Modal>
+  );
+};
+
 @connect(({ node, loading }) => ({
   node,
   loadingNodes: loading.effects['node/listNode'],
   registeringUser: loading.effects['node/registerUserToNode'],
+  creating: loading.effects['node/createNode']
 }))
 class Index extends PureComponent {
   state = {
@@ -186,6 +330,7 @@ class Index extends PureComponent {
     formValues: {},
     registerUserFormVisible: false,
     targetNodeId: '',
+    createModalVisible: false,
   };
 
   componentDidMount() {
@@ -339,8 +484,24 @@ class Index extends PureComponent {
     });
   };
 
+  handleCreateModalVisible = visible => {
+    this.setState({
+      createModalVisible: !!visible
+    });
+  };
+
+  handleCreate = ( values, callback ) => {
+    const { dispatch } = this.props;
+
+    dispatch({
+      type: 'node/createNode',
+      payload: values,
+      callback
+    });
+  };
+
   render() {
-    const { selectedRows, registerUserFormVisible, targetNodeId } = this.state;
+    const { selectedRows, registerUserFormVisible, targetNodeId, createModalVisible } = this.state;
 
     const userRole = getAuthority()[0];
 
@@ -349,6 +510,7 @@ class Index extends PureComponent {
       loadingNodes,
       registeringUser,
       intl,
+      creating
     } = this.props;
 
     const formProps = {
@@ -358,6 +520,15 @@ class Index extends PureComponent {
       registeringUser,
       targetNodeId,
       intl,
+    };
+
+    const createFormProps = {
+      createModalVisible,
+      handleCreate: this.handleCreate,
+      handleModalVisible: this.handleCreateModalVisible,
+      creating,
+      intl,
+      queryNodeList: this.queryNodeList
     };
 
     function badgeStatus(status) {
@@ -461,21 +632,6 @@ class Index extends PureComponent {
       },
       {
         title: intl.formatMessage({
-          id: 'app.operator.node.table.header.status',
-          defaultMessage: 'Status',
-        }),
-        render: text => (
-          <Badge
-            status={badgeStatus(text)}
-            text={intl.formatMessage({
-              id: `app.operator.node.status.${text}`,
-            })}
-          />
-        ),
-        dataIndex: 'status',
-      },
-      {
-        title: intl.formatMessage({
           id: 'form.table.header.operation',
           defaultMessage: 'Operation',
         }),
@@ -502,7 +658,7 @@ class Index extends PureComponent {
           <div className={styles.tableList}>
             <div className={styles.tableListOperator}>
               {userRole !== 'operator' && (
-                <Button type="primary" onClick={() => history.push('/operator/node/new')}>
+                <Button type="primary" onClick={() => this.handleCreateModalVisible(true)}>
                   <PlusOutlined />
                   {intl.formatMessage({ id: 'form.button.new', defaultMessage: 'New' })}
                 </Button>
@@ -523,6 +679,7 @@ class Index extends PureComponent {
           </div>
         </Card>
         <RegisterUserForm {...formProps} />
+        <CreateNode {...createFormProps} />
       </PageHeaderWrapper>
     );
   }
