@@ -29,7 +29,7 @@ from api.routes.channel.serializers import (
     ChannelResponseSerializer,
     ChannelUpdateSerializer
 )
-
+from api.common import ok, err
 
 class ChannelViewSet(viewsets.ViewSet):
     """Class represents Channel related operations."""
@@ -69,15 +69,12 @@ class ChannelViewSet(viewsets.ViewSet):
                     }
                     for channel in channels_pages
                 ]
-                response = ChannelListResponse(
-                    data={"data": channels_list, "total": channels.count()}
+                response = ChannelListResponse({"data": channels_list, "total": channels.count()})
+                return Response(data=ok(response.data), status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response(
+                    err(e.args), status=status.HTTP_400_BAD_REQUEST
                 )
-                if response.is_valid(raise_exception=True):
-                    return Response(
-                        response.validated_data, status=status.HTTP_200_OK
-                    )
-            except ObjectDoesNotExist:
-                pass
 
     @swagger_auto_schema(
         request_body=ChannelCreateBody,
@@ -131,10 +128,12 @@ class ChannelViewSet(viewsets.ViewSet):
                 response = ChannelIDSerializer(data=channel.__dict__)
                 if response.is_valid(raise_exception=True):
                     return Response(
-                        response.validated_data, status=status.HTTP_201_CREATED
+                        ok(response.validated_data), status=status.HTTP_201_CREATED
                     )
-            except ObjectDoesNotExist:
-                pass
+            except Exception as e:
+                return Response(
+                    err(e.args), status=status.HTTP_400_BAD_REQUEST
+                )
 
     @swagger_auto_schema(
         responses=with_common_response(
@@ -151,7 +150,7 @@ class ChannelViewSet(viewsets.ViewSet):
         try:
             channel = Channel.objects.get(id=pk)
             response = ChannelResponseSerializer(instance=channel)
-            return Response(response.data, status=status.HTTP_200_OK)
+            return Response(ok(response.data), status=status.HTTP_200_OK)
 
         except ObjectDoesNotExist:
             raise ResourceNotFound
