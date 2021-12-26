@@ -186,7 +186,7 @@ class ConsensusPlugin(ExtraEnum):
 
 @unique
 class UserRole(ExtraEnum):
-    Administrator = 0
+    Admin = 0
     Operator = 1
     User = 2
 

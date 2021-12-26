@@ -112,7 +112,7 @@ class NodeViewSet(viewsets.ViewSet):
                     query_filter.update({"type": node_type})
                 if name:
                     query_filter.update({"name__icontains": name})
-                if request.user.is_administrator:
+                if request.user.is_admin:
                     query_filter.update(
                         {"organization": request.user.organization}
                     )
@@ -439,7 +439,7 @@ class NodeViewSet(viewsets.ViewSet):
         """
         try:
             node = Node.objects.get(id=pk)
-            org = node.org
+            org = node.organization
             if org is None:
                 raise ResourceNotFound
             network = org.network
