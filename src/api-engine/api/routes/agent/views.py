@@ -90,7 +90,7 @@ class AgentViewSet(viewsets.ViewSet):
                 #         if request.user.organization
                 #         else ""
                 #     )
-                #     if request.user.is_administrator:
+                #     if request.user.is_admin:
                 #         query_filters.update({"organization__name": org_name})
                 if name:
                     query_filters.update({"name__icontains": name})
@@ -318,7 +318,7 @@ class AgentViewSet(viewsets.ViewSet):
         """
         try:
             try:
-                if request.user.is_administrator:
+                if request.user.is_admin:
                     agent = Agent.objects.get(id=pk)
                 else:
                     raise CustomError("User can't delete agent！")

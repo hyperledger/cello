@@ -131,8 +131,8 @@ class UserProfile(AbstractUser):
         return self.username
 
     @property
-    def is_administrator(self):
-        return self.role == UserRole.Administrator.name.lower()
+    def is_admin(self):
+        return self.role == UserRole.Admin.name.lower()
 
     @property
     def is_operator(self):
