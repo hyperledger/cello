@@ -21,11 +21,8 @@ class ChainCodePackageBody(serializers.Serializer):
     md5 = serializers.CharField(max_length=128, required=True)
     file = serializers.FileField()
 
-
     def validate(self, attrs):
         md5_get = self.md5_for_file(attrs["file"])
-        print("m: ", md5_get)
-        print("a: ", attrs["md5"])
         if md5_get != attrs["md5"]:
             raise serializers.ValidationError("md5 not same.")
         return super().validate(attrs)
