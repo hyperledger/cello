@@ -19,13 +19,9 @@ export default {
   effects: {
     *login({ payload }, { call, put }) {
       const response = yield call(fakeAccountLogin, payload);
-      yield put({
-        type: 'changeLoginStatus',
-        payload: response,
-      });
       // Login successfully
-      if (response.token) {
-        const { user, token } = response;
+      if (response.data.token) {
+        const { user, token } = response.data;
         localStorage.setItem('cello-token', token);
         yield put({
           type: 'changeLoginStatus',

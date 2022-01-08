@@ -42,7 +42,7 @@ export default {
       const response = yield call(queryCurrent);
       yield put({
         type: 'saveCurrentUser',
-        payload: response.user,
+        payload: response.data.user,
       });
     },
     *createUser({ payload, callback }, { call }) {
