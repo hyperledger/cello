@@ -19,7 +19,7 @@ const CreateChannel = props => {
   const { modalVisible, handleCreate, handleModalVisible, nodes, creating, fetchChannels } = props;
 
   const createCallback = response => {
-    if (!response.success) {
+    if (response.status !== 'successful') {
       message.error(intl.formatMessage({
         id: 'app.operator.channel.form.create.fail',
         defaultMessage: 'Create channel failed',
