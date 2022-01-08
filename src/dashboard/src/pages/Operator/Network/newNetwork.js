@@ -1,8 +1,7 @@
 import React from 'react';
 import { Card, Form, Input, Button, Select, message } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
 import { compose } from 'redux';
-import { connect, withRouter, useIntl, history, injectIntl } from 'umi';
+import { connect, withRouter, history, injectIntl } from 'umi';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import { getAuthority } from '@/utils/authority';
 
@@ -21,7 +20,7 @@ class CreateNetwork extends React.Component {
 
   submitCallback = data => {
     const { intl } = this.props;
-    if (data.success) {
+    if (data.status === 'successful') {
       message.success(
         intl.formatMessage(
           {
@@ -86,18 +85,6 @@ class CreateNetwork extends React.Component {
         sm: { span: 10, offset: 7 },
       },
     };
-    const networkTypeValues = ['fabric'];
-    const networkTypeOptions = networkTypeValues.map(item => (
-      <Option value={item} key={item}>
-        <span>{item}</span>
-      </Option>
-    ));
-    const networkVersion = ['v2.2'];
-    const networkVersionOptions = networkVersion.map(item => (
-      <Option value={item} key={item}>
-        <span>{item}</span>
-      </Option>
-    ));
     const networkConsensus = ['etcdraft'];
     const networkConsensusOptions = networkConsensus.map(item => (
       <Option value={item} key={item}>
@@ -154,63 +141,6 @@ class CreateNetwork extends React.Component {
             <FormItem
               {...formItemLayout}
               label={intl.formatMessage({
-                id: 'app.operator.newNetwork.label.description',
-                defaultMessage: 'Description',
-              })}
-              name="description"
-            >
-              <Input
-                placeholder={intl.formatMessage({
-                  id: 'app.operator.newNetwork.label.description',
-                  defaultMessage: 'Description',
-                })}
-              />
-            </FormItem>
-            <FormItem
-              {...formItemLayout}
-              label={intl.formatMessage({
-                id: 'app.operator.newNetwork.label.type',
-                defaultMessage: 'Type',
-              })}
-              name="type"
-              rules={[
-                {
-                  required: true,
-                  message: intl.formatMessage({
-                    id: 'app.operator.newNetwork.required.type',
-                    defaultMessage: 'Please select one type.',
-                  }),
-                },
-              ]}
-            >
-              <Select>
-                {networkTypeOptions}
-              </Select>
-            </FormItem>
-            <FormItem
-              {...formItemLayout}
-              label={intl.formatMessage({
-                id: 'app.operator.newNetwork.label.version',
-                defaultMessage: 'Version',
-              })}
-              name="version"
-              rules={[
-                {
-                  required: true,
-                  message: intl.formatMessage({
-                    id: 'app.operator.newNetwork.required.version',
-                    defaultMessage: 'Please select one version.',
-                  }),
-                },
-              ]}
-            >
-              <Select>
-                {networkVersionOptions}
-              </Select>
-            </FormItem>
-            <FormItem
-              {...formItemLayout}
-              label={intl.formatMessage({
                 id: 'app.operator.newNetwork.label.consensus',
                 defaultMessage: 'Consensus',
               })}
@@ -235,7 +165,7 @@ class CreateNetwork extends React.Component {
                 id: 'app.operator.newNetwork.label.db',
                 defaultMessage: 'Status Database',
               })}
-              name="db"
+              name="database"
               rules={[
                 {
                   required: true,
