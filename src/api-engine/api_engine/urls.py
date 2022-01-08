@@ -35,6 +35,7 @@ from api.routes.user.views import UserViewSet
 from api.routes.file.views import FileViewSet
 from api.routes.general.views import RegisterViewSet,CustomObtainJSONWebToken
 from api.routes.channel.views import ChannelViewSet
+from api.routes.chaincode.views import ChainCodeViewSet
 
 
 DEBUG = getattr(settings, "DEBUG")
@@ -68,6 +69,7 @@ router.register("files", FileViewSet, basename="file")
 # router.register("login2", LoginViewSet, basename="login2")
 router.register("register", RegisterViewSet, basename="register")
 router.register("channels", ChannelViewSet, basename="channel")
+router.register("chaincodes", ChainCodeViewSet, basename="chaincode")
 
 urlpatterns = router.urls
 
