@@ -786,3 +786,27 @@ class Channel(models.Model):
         status = models.CharField(
             help_text="status of chainCode", max_length=128
         )
+
+
+class ChainCodes(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        help_text="ID of ChainCode",
+        default=make_uuid,
+        editable=False,
+        unique=True)
+    name = models.CharField(
+        help_text="name of chainCode", max_length=128
+    )
+    version = models.CharField(
+        help_text="version of chainCode", max_length=128
+    )
+    creator = models.CharField(
+        help_text="creator of chainCode", max_length=128
+    )
+    language = models.CharField(
+        help_text="language of chainCode", max_length=128
+    )
+    create_ts = models.DateTimeField(
+        help_text="Create time of chainCode", auto_now_add=True
+    )
