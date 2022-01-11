@@ -72,20 +72,6 @@ class Network extends PureComponent {
       },
       {
         title: intl.formatMessage({
-          id: 'app.operator.network.table.header.type',
-          defaultMessage: 'Network Type',
-        }),
-        dataIndex: 'type',
-      },
-      {
-        title: intl.formatMessage({
-          id: 'app.operator.network.table.header.version',
-          defaultMessage: 'Version',
-        }),
-        dataIndex: 'version',
-      },
-      {
-        title: intl.formatMessage({
           id: 'app.operator.network.table.header.creationTime',
           defaultMessage: 'Create Time',
         }),
