@@ -32,7 +32,7 @@
     "request": "^2.81.0",
     "request-promise": "^4.2.0",
     "rimraf": "^2.6.2",
-    "shelljs": "^0.7.8",
+    "shelljs": "^0.8.5",
     "sleep-promise": "^2.0.0",
     "socket.io": "^2.4.0",
     "swig": "^1.4.2",
