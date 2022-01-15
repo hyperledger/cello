@@ -10,8 +10,8 @@ FROM nginx:1.15.12
 COPY --from=0 /usr/src/app/dist /usr/share/nginx/html
 COPY build_image/docker/common/dashboard/config-nginx.sh /
 RUN chmod +x /config-nginx.sh
-COPY build_image/docker/common/dashboard/default.conf.tmpl /etc/nginx/conf.d/default.conf.tmpl
+COPY build_image/docker/common/dashboard/nginx.conf /etc/nginx/
 
-EXPOSE 80
+EXPOSE 8081
 
-CMD ["bash", "-c", "/config-nginx.sh && nginx -g 'daemon off;'"]
+CMD ["bash", "-c", "nginx -g 'daemon off;'"]

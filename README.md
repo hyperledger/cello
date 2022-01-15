@@ -45,6 +45,10 @@ If environment is prepared, then we can start cello service.
        ```bash
        $ make docker-rest-agent
        ```
+    * Build Docker Dashboard
+       ```bash
+       $ make dashboard
+       ```
 
 <!---
 * config variables for service deployment through menuconfig/alldefconfig, then will generate .config file under the project folder.
@@ -75,6 +79,7 @@ CONTAINER ID   IMAGE                            COMMAND                  CREATED
 81e6459965ec   hyperledger/cello-agent-docker   "gunicorn server:app…"   4 seconds ago   Up 2 seconds   0.0.0.0:2375->2375/tcp, :::2375->2375/tcp, 0.0.0.0:5001->5001/tcp, :::5001->5001/tcp   cello.docker.agent
 04367ab6bd5e   postgres:11.1                    "docker-entrypoint.s…"   4 seconds ago   Up 2 seconds   0.0.0.0:5432->5432/tcp, :::5432->5432/tcp                                              cello-postgres
 29b56a279893   hyperledger/cello-api-engine     "/bin/sh -c 'bash /e…"   4 seconds ago   Up 2 seconds   0.0.0.0:8080->8080/tcp, :::8080->8080/tcp                                              cello-api-engine
+a272a06d8280   hyperledger/cello-dashboard      "bash -c 'nginx -g '…"   4 seconds ago   Up 2 seconds   80/tcp, 0.0.0.0:8081->8081/tcp, :::8081->8081/tcp                                      cello-dashboard
 ```
 <!---
 If use kubernetes method to deploy, the output is:
@@ -96,11 +101,7 @@ NAME                                    HOSTS   ADDRESS   PORTS   AGE
 ingress.extensions/ingress-api-engine   *                 80      7s
 ```
 -->
-* Start cello dashboard 
-```bash
-$ make start-dashboard
-```
-<!---If you visit the dashboard through 8081 port, the default username/password is `admin/pass`.-->
+
 
 
 * Stop cello service.<!---, same as start, need set the `DEPLOY_METHOD` variable.-->

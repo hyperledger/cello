@@ -292,6 +292,9 @@ HELP_FUN = \
 api-engine: # for debug only now
 	docker build -t hyperledger/cello-api-engine:latest -f build_image/docker/common/api-engine/Dockerfile.in ./
 
+dashboard:
+	docker build -t hyperledger/cello-dashboard:latest -f build_image/docker/common/dashboard/Dockerfile.in ./
+
 docker-rest-agent: # for debug only now
 	docker build -t hyperledger/cello-agent-docker:latest -f build_image/docker/agent/docker-rest-agent/Dockerfile.in ./ --build-arg pip=$(PIP)
 start-dashboard:
