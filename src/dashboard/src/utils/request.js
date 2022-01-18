@@ -68,9 +68,45 @@ const errorHandler = error => {
 const request = extend({
   errorHandler,
   credentials: 'include',
-  headers: {
-    Authorization: `JWT ${localStorage.getItem('cello-token')}`,
-  },
+});
+
+request.interceptors.request.use(async (url, options) => {
+
+  const token = window.localStorage.getItem('cello-token');
+  if( token ){
+    //如果有token 就走token逻辑
+    const headers = {
+      Authorization: `JWT ${token}`,
+    };
+
+    return ({
+      url: url,
+      options: { ...options, headers: headers },
+    });
+  }
+  return ({
+    url: url,
+    options: options,
+  });
+});
+
+//第一个拦截器有可能返回Promise,那么Promise由第二个拦截器处理
+request.interceptors.request.use(async (url, options) => {
+  const token = localStorage.getItem('cello-token');
+  if( token ){
+    //如果有token 就走token逻辑
+    const headers = {
+      Authorization: `JWT ${token}`,
+    };
+    return ({
+      url: url,
+      options: { ...options, headers: headers },
+    });
+  }
+  return ({
+    url: url,
+    options: options,
+  });
 });
 
 export default request;

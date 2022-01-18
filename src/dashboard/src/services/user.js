@@ -9,12 +9,13 @@ export async function query() {
 
 export async function queryCurrent() {
   const token = localStorage.getItem('cello-token');
-  return request('/api/v1/token-verify', {
-    method: 'POST',
-    data: {
-      token,
-    },
-  });
+  if (token && token !== '')
+    return request('/api/v1/token-verify', {
+      method: 'POST',
+      data: {
+        token,
+      },
+    });
 }
 
 export async function createUser(params) {
