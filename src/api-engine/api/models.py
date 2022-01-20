@@ -755,46 +755,47 @@ class Channel(models.Model):
         null=True,
     )
 
-    class ChainCode(models.Model):
-        id = models.UUIDField(
-            primary_key=True,
-            help_text="ID of chainCode",
-            default=make_uuid,
-            editable=False,
-            unique=True
-        )
-        name = models.CharField(
-            help_text="ChainCode name", max_length=128
-        )
-        version = models.CharField(
-            help_text="version of chainCode", max_length=128
-        )
-        creator = models.CharField(
-            help_text="creator of chainCode", max_length=128
-        )
-        language = models.CharField(
-            help_text="language of chainCode", max_length=128
-        )
-        channel = models.ManyToManyField("Channel")
-        install_times = models.DateTimeField(
-            help_text="Create time of install", auto_now_add=True
-        )
-        instantiate_times = models.DateTimeField(
-            help_text="Create time of instantiate", auto_now_add=True
-        )
-        node = models.ManyToManyField("Node", related_name='node')
-        status = models.CharField(
-            help_text="status of chainCode", max_length=128
-        )
+    # class ChainCode(models.Model):
+    #     id = models.UUIDField(
+    #         primary_key=True,
+    #         help_text="ID of chainCode",
+    #         default=make_uuid,
+    #         editable=False,
+    #         unique=True
+    #     )
+    #     name = models.CharField(
+    #         help_text="ChainCode name", max_length=128
+    #     )
+    #     version = models.CharField(
+    #         help_text="version of chainCode", max_length=128
+    #     )
+    #     creator = models.CharField(
+    #         help_text="creator of chainCode", max_length=128
+    #     )
+    #     language = models.CharField(
+    #         help_text="language of chainCode", max_length=128
+    #     )
+    #     channel = models.ManyToManyField("Channel")
+    #     install_times = models.DateTimeField(
+    #         help_text="Create time of install", auto_now_add=True
+    #     )
+    #     instantiate_times = models.DateTimeField(
+    #         help_text="Create time of instantiate", auto_now_add=True
+    #     )
+    #     node = models.ManyToManyField("Node", related_name='node')
+    #     status = models.CharField(
+    #         help_text="status of chainCode", max_length=128
+    #     )
 
 
-class ChainCodes(models.Model):
+class ChainCode(models.Model):
     id = models.UUIDField(
         primary_key=True,
         help_text="ID of ChainCode",
         default=make_uuid,
         editable=False,
-        unique=True)
+        unique=True
+    )
     name = models.CharField(
         help_text="name of chainCode", max_length=128
     )
@@ -806,6 +807,9 @@ class ChainCodes(models.Model):
     )
     language = models.CharField(
         help_text="language of chainCode", max_length=128
+    )
+    md5 = models.CharField(
+        help_text="md5 of chainCode", max_length=128
     )
     create_ts = models.DateTimeField(
         help_text="Create time of chainCode", auto_now_add=True

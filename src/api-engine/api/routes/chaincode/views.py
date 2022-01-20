@@ -9,8 +9,10 @@ from drf_yasg.utils import swagger_auto_schema
 from api.config import FABRIC_CHAINCODE_STORE
 from api.config import CELLO_HOME
 from api.models import (
-    Node
+    Node,
+    ChainCode
 )
+from api.utils.common import make_uuid
 
 from api.lib.peer.chaincode import ChainCode as PeerChainCode
 from api.common.serializers import PageQuerySerializer
@@ -44,9 +46,10 @@ class ChainCodeViewSet(viewsets.ViewSet):
             language = serializer.validated_data.get("language")
             md5 = serializer.validated_data.get("md5")
             file = serializer.validated_data.get("file")
+            id = make_uuid()
 
             try:
-                file_path = os.path.join(FABRIC_CHAINCODE_STORE, md5)
+                file_path = os.path.join(FABRIC_CHAINCODE_STORE, id)
                 if not os.path.exists(file_path):
                     os.makedirs(file_path)
                 fileziped = os.path.join(file_path, file.name)
@@ -68,8 +71,12 @@ class ChainCodeViewSet(viewsets.ViewSet):
                         for each in dirs:
                             chaincode_path += "/"+each
                             if os.path.exists(chaincode_path+"/go.mod"):
+                                cwd = os.getcwd()
+                                print("cwd:", cwd)
+                                os.chdir(chaincode_path)
                                 os.system("go mod vendor")
                                 found = True
+                                os.chdir(cwd)
                                 break
                 # if can not find go.mod, use the dir after extract zipped_file
                 if not found:
@@ -83,9 +90,19 @@ class ChainCodeViewSet(viewsets.ViewSet):
 
                 peer_channel_cli = PeerChainCode("v2.2.0", **envs)
                 res = peer_channel_cli.lifecycle_package(name, version, chaincode_path, language)
-                os.system("rm -rf {}".format(file_path))
+                os.system("rm -rf {}/*".format(file_path))
+                os.system("mv {}.tar.gz {}".format(name, file_path))
                 if res != 0:
                     return Response(err("package chaincode failed."), status=status.HTTP_400_BAD_REQUEST)
+                chaincode = ChainCode(
+                    id=id,
+                    name=name,
+                    version=version,
+                    language=language,
+                    creator=org.name,
+                    md5=md5
+                )
+                chaincode.save()
             except Exception as e:
                 return Response(
                     err(e.args), status=status.HTTP_400_BAD_REQUEST
@@ -93,6 +110,38 @@ class ChainCodeViewSet(viewsets.ViewSet):
             return Response(
                           ok("success"), status=status.HTTP_200_OK
                 )
+
+    @swagger_auto_schema(
+        method="post",
+        responses=with_common_response(
+            {status.HTTP_201_CREATED: ChainCodeIDSerializer}
+        ),
+    )
+    @action(detail=False, methods=['post'])
+    def install(self, request):
+        chaincode_id = request.data.get("id")
+        try:
+            cc_targz = ""
+            file_path = os.path.join(FABRIC_CHAINCODE_STORE, chaincode_id)
+            for _, _, files in os.walk(file_path):
+                cc_targz = os.path.join(file_path+"/"+files[0])
+                break
+
+            org = request.user.organization
+            peer_node = Node.objects.get(type="peer", organization=org.id)
+            envs = init_env_vars(peer_node, org)
+
+            peer_channel_cli = PeerChainCode("v2.2.0", **envs)
+            res = peer_channel_cli.lifecycle_install(cc_targz)
+            if res != 0:
+                return Response(err("package chaincode failed."), status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(
+                err(e.args), status=status.HTTP_400_BAD_REQUEST
+            )
+        return Response(
+            ok("success"), status=status.HTTP_200_OK
+        )
 
 
 def init_env_vars(node, org):
