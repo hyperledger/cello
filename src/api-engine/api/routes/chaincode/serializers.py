@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from api.config import FABRIC_CHAINCODE_STORE
 
-from api.models import ChainCodes
+from api.models import ChainCode
 from api.common.serializers import ListResponseSerializer
 import hashlib
 
@@ -52,7 +52,7 @@ class ChainCodeResponseSerializer(ChainCodeIDSerializer, serializers.ModelSerial
     organizations = ChainCodeOrgListSerializer(many=True)
 
     class Meta:
-        model = ChainCodes
+        model = ChainCode
         fields = ("id", "name", "version", "creator", "language", "create_ts")
 
 
