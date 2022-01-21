@@ -72,7 +72,6 @@ class ChainCodeViewSet(viewsets.ViewSet):
                             chaincode_path += "/"+each
                             if os.path.exists(chaincode_path+"/go.mod"):
                                 cwd = os.getcwd()
-                                print("cwd:", cwd)
                                 os.chdir(chaincode_path)
                                 os.system("go mod vendor")
                                 found = True
@@ -135,6 +134,60 @@ class ChainCodeViewSet(viewsets.ViewSet):
             res = peer_channel_cli.lifecycle_install(cc_targz)
             if res != 0:
                 return Response(err("package chaincode failed."), status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(
+                err(e.args), status=status.HTTP_400_BAD_REQUEST
+            )
+        return Response(
+            ok("success"), status=status.HTTP_200_OK
+        )
+
+    @swagger_auto_schema(
+        method="get",
+        responses=with_common_response(
+            {status.HTTP_201_CREATED: ChainCodeIDSerializer}
+        ),
+    )
+    @action(detail=False, methods=['get'])
+    def query_installed(self, request):
+        try:
+            org = request.user.organization
+            peer_node = Node.objects.get(type="peer", organization=org.id)
+            envs = init_env_vars(peer_node, org)
+
+            timeout = "5s"
+            peer_channel_cli = PeerChainCode("v2.2.0", **envs)
+            res, installed_chaincodes = peer_channel_cli.lifecycle_query_installed(timeout)
+            if res != 0:
+                return Response(err("query installed chaincode failed."), status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(
+                err(e.args), status=status.HTTP_400_BAD_REQUEST
+            )
+        return Response(
+            ok(installed_chaincodes), status=status.HTTP_200_OK
+        )
+
+
+    @swagger_auto_schema(
+        method="get",
+        responses=with_common_response(
+            {status.HTTP_201_CREATED: ChainCodeIDSerializer}
+        ),
+    )
+    @action(detail=False, methods=['get'])
+    def get_installed_package(self, request):
+        try:
+            org = request.user.organization
+            peer_node = Node.objects.get(type="peer", organization=org.id)
+            envs = init_env_vars(peer_node, org)
+
+            timeout = "5s"
+            peer_channel_cli = PeerChainCode("v2.2.0", **envs)
+            res = peer_channel_cli.lifecycle_get_installed_package(timeout)
+            if res != 0:
+                return Response(err("get installed package failed."), status=status.HTTP_400_BAD_REQUEST)
+
         except Exception as e:
             return Response(
                 err(e.args), status=status.HTTP_400_BAD_REQUEST
