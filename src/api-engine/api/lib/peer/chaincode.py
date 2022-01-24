@@ -68,7 +68,7 @@ class ChainCode(BasicEnv):
         except Exception as e:
             err_msg = "query_installed chaincode info failed for {}!".format(e)
             raise Exception(err_msg)
-        return res, installed_chaincodes
+        return return_code, installed_chaincodes
 
     def lifecycle_get_installed_package(self, timeout):
         """
