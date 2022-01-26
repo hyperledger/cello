@@ -34,6 +34,14 @@ class ChainCodePackageBody(serializers.Serializer):
             md5.update(data)
         return md5.hexdigest()
 
+class ChainCodeApproveForMyOrgBody(serializers.Serializer):
+    channel_name = serializers.CharField(max_length=128, required=True)
+    chaincode_name = serializers.CharField(max_length=128, required=True)
+    chaincode_version = serializers.CharField(max_length=128, required=True)
+    policy = serializers.CharField(max_length=128, required=True)
+    orderer_url = serializers.CharField(max_length=128, required=True)
+    sequence = serializers.IntegerField(min_value=1, required=True)
+
 
 class ChainCodeNetworkSerializer(serializers.Serializer):
     id = serializers.UUIDField(help_text="Network ID")

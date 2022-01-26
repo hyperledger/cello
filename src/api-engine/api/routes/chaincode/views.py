@@ -21,7 +21,8 @@ from api.utils.common import with_common_response
 
 from api.routes.chaincode.serializers import (
     ChainCodePackageBody,
-    ChainCodeIDSerializer
+    ChainCodeIDSerializer,
+    ChainCodeApproveForMyOrgBody
 )
 from api.common import ok, err
 
@@ -110,6 +111,7 @@ class ChainCodeViewSet(viewsets.ViewSet):
             return Response(
                           ok("success"), status=status.HTTP_200_OK
                 )
+
     @swagger_auto_schema(
         method="post",
         responses=with_common_response(
@@ -168,7 +170,6 @@ class ChainCodeViewSet(viewsets.ViewSet):
             ok(installed_chaincodes), status=status.HTTP_200_OK
         )
 
-
     @swagger_auto_schema(
         method="get",
         responses=with_common_response(
@@ -195,6 +196,52 @@ class ChainCodeViewSet(viewsets.ViewSet):
         return Response(
             ok("success"), status=status.HTTP_200_OK
         )
+
+    @swagger_auto_schema(
+        method="post",
+        responses=with_common_response(
+            {status.HTTP_201_CREATED: ChainCodeIDSerializer}
+        ),
+    )
+    @action(detail=False, methods=['post'])
+    def approve_for_my_org(self, request):
+        serializer = ChainCodeApproveForMyOrgBody(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            try:
+                channel_name = serializer.validated_data.get("channel_name")
+                chaincode_name = serializer.validated_data.get("chaincode_name")
+                chaincode_version = serializer.validated_data.get("chaincode_version")
+                policy = serializer.validated_data.get("policy")
+                # Perhaps the orderer's port is best stored in the database
+                orderer_url = serializer.validated_data.get("orderer_url")
+                sequence = serializer.validated_data.get("sequence")
+
+                org = request.user.organization
+                orderer_node = Node.objects.get(type="orderer", organization=org.id)
+
+                orderer_tls_dir = "{}/{}/crypto-config/ordererOrganizations/{}/orderers/{}/msp/tlscacerts" \
+                                  .format(CELLO_HOME, org.name, org.name.split(".", 1)[1], orderer_node.name + "." +
+                                          org.name.split(".", 1)[1])
+                orderer_tls_root_cert = ""
+                for _, _, files in os.walk(orderer_tls_dir):
+                    orderer_tls_root_cert = orderer_tls_dir + "/" + files[0]
+                    break
+
+                peer_node = Node.objects.get(type="peer", organization=org.id)
+                envs = init_env_vars(peer_node, org)
+
+                peer_channel_cli = PeerChainCode("v2.2.0", **envs)
+                code, content = peer_channel_cli.lifecycle_approve_for_my_org(orderer_url, orderer_tls_root_cert, channel_name,
+                                                                    chaincode_name, chaincode_version, policy, sequence)
+                if code != 0:
+                    return Response(err(" lifecycle_approve_for_my_org failed. err: "+content), status=status.HTTP_400_BAD_REQUEST)
+            except Exception as e:
+                return Response(
+                    err(e.args), status=status.HTTP_400_BAD_REQUEST
+                )
+            return Response(
+                ok("success"), status=status.HTTP_200_OK
+            )
 
 
 def init_env_vars(node, org):
