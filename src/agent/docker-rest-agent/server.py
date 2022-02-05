@@ -61,11 +61,6 @@ def create_node():
         }
         env.update(peer_envs)
         volumes = ['/var/run/:/host/var/run/']
-        port_map = {
-            "7051/tcp":"7051",
-            "17051/tcp": "17051"
-        }
-      
     else:
         order_envs = {  
             'FABRIC_LOGGING_SPEC':'DEBUG',
@@ -84,10 +79,6 @@ def create_node():
         }
         env.update(order_envs)
         volumes = ['/var/run/:/host/var/run/']
-        port_map = {
-            "7050/tcp":"7050",
-            "17050/tcp": "17050"
-        }
 
     try:
         # same as `docker run -dit yeasy/hyperledge-fabric:2.2.0 -e VARIABLES``
@@ -101,8 +92,8 @@ def create_node():
             name=request.form.get('name'),
             dns_search=["."],
             volumes=volumes,
-            environment=env, 
-            ports=port_map)
+            environment=env
+            )
     except:
         res['code'] = FAIL_CODE
         res['data'] = sys.exc_info()[0]
