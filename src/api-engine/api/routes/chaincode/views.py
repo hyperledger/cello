@@ -368,9 +368,8 @@ class ChainCodeViewSet(viewsets.ViewSet):
                     peer_root_certs.append(peer_tls_cert)
 
                 peer_channel_cli = PeerChainCode("v2.2.0", **envs)
-                policy1 = "\"OR ('Org1.cello.comMSP.member')\""
                 code = peer_channel_cli.lifecycle_commit(orderer_url, orderer_tls_root_cert, channel_name,
-                                                                  chaincode_name, chaincode_version, policy1,
+                                                                  chaincode_name, chaincode_version, policy,
                                                                   peer_address_list, peer_root_certs, sequence)
                 if code != 0:
                     return Response(err("commit failed."), status=status.HTTP_400_BAD_REQUEST)
