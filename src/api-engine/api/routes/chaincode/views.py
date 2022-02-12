@@ -22,6 +22,7 @@ from api.utils.common import with_common_response
 from api.routes.chaincode.serializers import (
     ChainCodePackageBody,
     ChainCodeIDSerializer,
+    ChainCodeCommitBody,
     ChainCodeApproveForMyOrgBody
 )
 from api.common import ok, err
@@ -135,7 +136,7 @@ class ChainCodeViewSet(viewsets.ViewSet):
             peer_channel_cli = PeerChainCode("v2.2.0", **envs)
             res = peer_channel_cli.lifecycle_install(cc_targz)
             if res != 0:
-                return Response(err("package chaincode failed."), status=status.HTTP_400_BAD_REQUEST)
+                return Response(err("install chaincode failed."), status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response(
                 err(e.args), status=status.HTTP_400_BAD_REQUEST
@@ -297,12 +298,18 @@ class ChainCodeViewSet(viewsets.ViewSet):
                     .format(CELLO_HOME, org.name, org.name.split(".", 1)[1], orderer_node.name + "." +
                             org.name.split(".", 1)[1])
 
+                orderer_tls_root_cert = ""
+                for _, _, files in os.walk(orderer_tls_dir):
+                    orderer_tls_root_cert = orderer_tls_dir + "/" + files[0]
+                    break
+
                 peer_node = Node.objects.get(type="peer", organization=org.id)
                 envs = init_env_vars(peer_node, org)
 
                 peer_channel_cli = PeerChainCode("v2.2.0", **envs)
-                code, content = peer_channel_cli.lifecycle_check_commit_readiness(orderer_url, orderer_tls_dir,  channel_name, chaincode_name, chaincode_version,
-                                                                                  policy, sequence)
+                code, content = peer_channel_cli.lifecycle_check_commit_readiness(orderer_url, orderer_tls_root_cert,
+                                                                                  channel_name, chaincode_name,
+                                                                                  chaincode_version, policy, sequence)
                 if code != 0:
                     return Response(err("check_commit_readiness failed."), status=status.HTTP_400_BAD_REQUEST)
 
@@ -312,6 +319,68 @@ class ChainCodeViewSet(viewsets.ViewSet):
                 )
             return Response(
                 ok(content), status=status.HTTP_200_OK
+            )
+
+    @swagger_auto_schema(
+        method="post",
+        responses=with_common_response(
+            {status.HTTP_201_CREATED: ChainCodeIDSerializer}
+        ),
+    )
+    @action(detail=False, methods=['post'])
+    def commit(self, request):
+        serializer = ChainCodeCommitBody(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            try:
+                channel_name = serializer.validated_data.get("channel_name")
+                chaincode_name = serializer.validated_data.get("chaincode_name")
+                chaincode_version = serializer.validated_data.get("chaincode_version")
+                policy = serializer.validated_data.get("policy")
+                # Perhaps the orderer's port is best stored in the database
+                orderer_url = serializer.validated_data.get("orderer_url")
+                sequence = serializer.validated_data.get("sequence")
+                peer_list = serializer.validated_data.get("peer_list")
+                org = request.user.organization
+                orderer_node = Node.objects.get(type="orderer", organization=org.id)
+
+                orderer_tls_dir = "{}/{}/crypto-config/ordererOrganizations/{}/orderers/{}/msp/tlscacerts" \
+                    .format(CELLO_HOME, org.name, org.name.split(".", 1)[1], orderer_node.name + "." +
+                            org.name.split(".", 1)[1])
+                orderer_tls_root_cert = ""
+                for _, _, files in os.walk(orderer_tls_dir):
+                    orderer_tls_root_cert = orderer_tls_dir + "/" + files[0]
+                    break
+
+                peer_node = Node.objects.get(type="peer", organization=org.id)
+                envs = init_env_vars(peer_node, org)
+
+                peer_root_certs = []
+                peer_address_list = []
+                for each in peer_list:
+                    peer_node = Node.objects.get(id=each)
+                    peer_tls_cert = "{}/{}/crypto-config/peerOrganizations/{}/peers/{}/tls/ca.crt" \
+                                    .format(CELLO_HOME, org.name, org.name, peer_node.name + "." + org.name)
+                    print(peer_node.port)
+                    port = peer_node.port.all()[0].internal
+                    # port = ports[0].internal
+                    peer_address = peer_node.name + "." + org.name+":"+str(7051)
+                    peer_address_list.append(peer_address)
+                    peer_root_certs.append(peer_tls_cert)
+
+                peer_channel_cli = PeerChainCode("v2.2.0", **envs)
+                policy1 = "\"OR ('Org1.cello.comMSP.member')\""
+                code = peer_channel_cli.lifecycle_commit(orderer_url, orderer_tls_root_cert, channel_name,
+                                                                  chaincode_name, chaincode_version, policy1,
+                                                                  peer_address_list, peer_root_certs, sequence)
+                if code != 0:
+                    return Response(err("commit failed."), status=status.HTTP_400_BAD_REQUEST)
+
+            except Exception as e:
+                return Response(
+                    err(e.args), status=status.HTTP_400_BAD_REQUEST
+                )
+            return Response(
+                ok("commit success."), status=status.HTTP_200_OK
             )
 
 
