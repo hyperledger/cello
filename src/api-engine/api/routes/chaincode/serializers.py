@@ -34,6 +34,7 @@ class ChainCodePackageBody(serializers.Serializer):
             md5.update(data)
         return md5.hexdigest()
 
+
 class ChainCodeApproveForMyOrgBody(serializers.Serializer):
     channel_name = serializers.CharField(max_length=128, required=True)
     chaincode_name = serializers.CharField(max_length=128, required=True)
@@ -41,6 +42,10 @@ class ChainCodeApproveForMyOrgBody(serializers.Serializer):
     policy = serializers.CharField(max_length=128, required=True)
     orderer_url = serializers.CharField(max_length=128, required=True)
     sequence = serializers.IntegerField(min_value=1, required=True)
+
+
+class ChainCodeCommitBody(ChainCodeApproveForMyOrgBody):
+    peer_list = serializers.ListField(allow_empty=False,required=True)
 
 
 class ChainCodeNetworkSerializer(serializers.Serializer):

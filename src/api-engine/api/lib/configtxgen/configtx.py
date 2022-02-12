@@ -87,9 +87,10 @@ class ConfigTX:
                                           ID='{}MSP'.format(PeerMSP),
                                           MSPDir='{}/{}/crypto-config/peerOrganizations/{}/msp'.format(self.filepath,peer['name'],peer['name']),
                                           #AnchorPeers=[{'Port': peer["hosts"][0]["port"], 'Host': '{}.{}'.format(peer["hosts"][0]["name"],peer["name"])}],
-                                          Policies=dict(Readers=dict(Type="Signature",Rule="OR('{}MSP.peer', '{}MSP.admin','{}MSP.client')".format(PeerMSP,PeerMSP,PeerMSP)),
-                                                        Writers=dict(Type="Signature",Rule="OR('{}MSP.admin','{}MSP.client')".format(PeerMSP,PeerMSP)),
-                                                        Admins=dict(Type="Signature",Rule="OR('{}MSP.admin')".format(PeerMSP)))
+                                          Policies=dict(Readers=dict(Type="Signature",Rule="OR('{}MSP.member')".format(PeerMSP)),
+                                                        Writers=dict(Type="Signature",Rule="OR('{}MSP.member')".format(PeerMSP)),
+                                                        Admins=dict(Type="Signature",Rule="OR('{}MSP.admin')".format(PeerMSP)),
+                                                        Endorsement=dict(Type="Signature",Rule="OR('{}MSP.member')".format(PeerMSP)))
                                           ))
         Organizations = OrdererOrganizations + PeerOrganizations
         Capabilities = dict(
