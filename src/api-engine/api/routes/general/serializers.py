@@ -13,7 +13,6 @@ class RegisterBody(serializers.Serializer):
         help_text="name of Administrator", default="Administator")
     password = serializers.CharField(
         help_text="password of Administrator", default="666666")
-    passwordAgain = serializers.CharField(help_text="password of Administrator")
 
 
 class RegisterIDSerializer(serializers.Serializer):
