@@ -48,7 +48,7 @@ export default {
       }
     },
     *deleteNetwork({ payload, callback }, { call }) {
-      const response = yield call(deleteNetwork, payload.id);
+      const response = yield call(deleteNetwork, payload);
       if (callback) {
         callback({
           payload,
