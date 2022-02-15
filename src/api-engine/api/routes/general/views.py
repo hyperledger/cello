@@ -38,7 +38,6 @@ class RegisterViewSet(viewsets.ViewSet):
                 email = serializer.validated_data.get("email")
                 orgname = serializer.validated_data.get("orgName")
                 password = serializer.validated_data.get("password")
-                passwordAgain = serializer.validated_data.get("passwordAgain")
                 try:
                     Organization.objects.get(name=orgname)
                     UserProfile.objects.get(email=email)
@@ -51,11 +50,6 @@ class RegisterViewSet(viewsets.ViewSet):
                 else:
                     return Response(
                         err("orgnization exists!"), status=status.HTTP_409_CONFLICT
-                    )
-
-                if password != passwordAgain:
-                    return Response(
-                        err(msg="password error"), status=status.HTTP_409_CONFLICT
                     )
 
                 CryptoConfig(orgname).create(0, 0)

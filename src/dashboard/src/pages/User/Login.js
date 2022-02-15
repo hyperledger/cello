@@ -38,6 +38,7 @@ class LoginPage extends Component {
   registerSubmit = (err, values) => {
     if (!err) {
       const { dispatch } = this.props;
+      delete values.passwordAgain;
       dispatch({
         type: 'login/register',
         payload: {
