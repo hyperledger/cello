@@ -29,11 +29,7 @@ class Network extends PureComponent {
   }
 
   componentWillUnmount() {
-    const { dispatch } = this.props;
-
-    dispatch({
-      type: 'network/clear',
-    });
+    this.queryNetworkList();
   }
 
   handleTableChange = pagination => {
@@ -53,6 +49,66 @@ class Network extends PureComponent {
 
   newNetwork = () => {
     history.push('/operator/network/newNetwork');
+  };
+
+  queryNetworkList = () => {
+    const { dispatch } = this.props;
+
+    dispatch({
+      type: 'network/listNetwork',
+    });
+  };
+
+  handleDeleteNetwork = row => {
+    const { dispatch, intl } = this.props;
+    const { deleteCallBack } = this;
+    const { id } = row;
+
+    Modal.confirm({
+      title: intl.formatMessage({
+        id: 'app.operator.network.form.delete.title',
+        defaultMessage: 'Delete Network',
+      }),
+      content: intl.formatMessage(
+        {
+          id: 'app.operator.network.form.delete.content',
+          defaultMessage: 'Confirm to delete network {name}?',
+        },
+        {
+          name: row.name,
+        }
+      ),
+      okText: intl.formatMessage({ id: 'form.button.confirm', defaultMessage: 'Confirm' }),
+      cancelText: intl.formatMessage({ id: 'form.button.cancel', defaultMessage: 'Cancel' }),
+      onOk() {
+        dispatch({
+          type: 'network/deleteNetwork',
+          payload: id,
+          callback: deleteCallBack,
+        });
+      },
+    });
+  };
+
+  deleteCallBack = response => {
+    const { intl } = this.props;
+    if (response.status === 'successful') {
+      message.success(
+        intl.formatMessage({
+          id: 'app.operator.network.delete.success',
+          defaultMessage: 'Delete Network success.',
+        })
+      );
+      this.queryNetworkList();
+    }
+    else {
+      message.error(
+        intl.formatMessage({
+          id: 'app.operator.network.delete.fail',
+          defaultMessage: 'Delete Network failed.',
+        })
+      );
+    }
   };
 
   render() {
@@ -89,7 +145,7 @@ class Network extends PureComponent {
               {intl.formatMessage({ id: 'form.menu.item.update', defaultMessage: 'Update' })}
             </a>
             <Divider type="vertical" />
-            <a className={styles.danger}>
+            <a className={styles.danger} onClick={() => this.handleDeleteNetwork(record)}>
               {intl.formatMessage({ id: 'form.menu.item.delete', defaultMessage: 'Delete' })}
             </a>
           </Fragment>
