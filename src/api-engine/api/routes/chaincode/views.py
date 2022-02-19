@@ -13,6 +13,7 @@ from api.models import (
     ChainCode
 )
 from api.utils.common import make_uuid
+from django.core.paginator import Paginator
 
 from api.lib.peer.chaincode import ChainCode as PeerChainCode
 from api.common.serializers import PageQuerySerializer
@@ -23,7 +24,8 @@ from api.routes.chaincode.serializers import (
     ChainCodePackageBody,
     ChainCodeIDSerializer,
     ChainCodeCommitBody,
-    ChainCodeApproveForMyOrgBody
+    ChainCodeApproveForMyOrgBody,
+    ChaincodeListResponse
 )
 from api.common import ok, err
 
@@ -31,6 +33,49 @@ from api.common import ok, err
 class ChainCodeViewSet(viewsets.ViewSet):
     """Class represents Channel related operations."""
     authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
+
+    @swagger_auto_schema(
+        query_serializer=PageQuerySerializer,
+        responses=with_common_response(
+            {status.HTTP_201_CREATED: ChaincodeListResponse}
+        ),
+    )
+    def list(self, request):
+        """
+        List Chaincodes
+        :param request: org_id
+        :return: chaincode list
+        :rtype: list
+        """
+        serializer = PageQuerySerializer(data=request.GET)
+        if serializer.is_valid(raise_exception=True):
+            page = serializer.validated_data.get("page")
+            per_page = serializer.validated_data.get("per_page")
+
+            try:
+                org = request.user.organization
+                chaincodes = ChainCode.objects.filter(
+                    creator=org.name).order_by("create_ts")
+                p = Paginator(chaincodes, per_page)
+                chaincodes_pages = p.page(page)
+                chanincodes_list = [
+                    {
+                        "id": chaincode.id,
+                        "name": chaincode.name,
+                        "version": chaincode.version,
+                        "creator": chaincode.creator,
+                        "language": chaincode.language,
+                        "create_ts": chaincode.create_ts,
+                        "md5": chaincode.md5,
+                    }
+                    for chaincode in chaincodes_pages
+                ]
+                response = ChaincodeListResponse({"data": chanincodes_list, "total": chaincodes.count()})
+                return Response(data=ok(response.data), status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response(
+                    err(e.args), status=status.HTTP_400_BAD_REQUEST
+                )
 
     @swagger_auto_schema(
         method="post",
@@ -258,7 +303,7 @@ class ChainCodeViewSet(viewsets.ViewSet):
             envs = init_env_vars(peer_node, org)
 
             channel_name = request.data.get("channel_name")
-            cc_name = request.data.get("cc_name")
+            cc_name = request.data.get("chaincode_name")
 
             peer_channel_cli = PeerChainCode("v2.2.0", **envs)
             code, content = peer_channel_cli.lifecycle_query_approved(channel_name, cc_name)
@@ -381,6 +426,34 @@ class ChainCodeViewSet(viewsets.ViewSet):
             return Response(
                 ok("commit success."), status=status.HTTP_200_OK
             )
+
+    @swagger_auto_schema(
+        method="get",
+        responses=with_common_response(
+            {status.HTTP_201_CREATED: ChainCodeIDSerializer}
+        ),
+    )
+    @action(detail=False, methods=['get'])
+    def query_committed(self, request):
+            try:
+                channel_name = request.data.get("channel_name")
+                chaincode_name = request.data.get("chaincode_name")
+                org = request.user.organization
+
+                peer_node = Node.objects.get(type="peer", organization=org.id)
+                envs = init_env_vars(peer_node, org)
+                peer_channel_cli = PeerChainCode("v2.2.0", **envs)
+                code, chaincodes_commited = peer_channel_cli.lifecycle_query_committed(channel_name, chaincode_name)
+                if code != 0:
+                    return Response(err("query committed failed."), status=status.HTTP_400_BAD_REQUEST)
+            except Exception as e:
+                return Response(
+                err(e.args), status=status.HTTP_400_BAD_REQUEST
+                )
+            return Response(
+                ok(chaincodes_commited), status=status.HTTP_200_OK
+            )
+
 
 
 def init_env_vars(node, org):

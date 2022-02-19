@@ -35,19 +35,6 @@ class ChainCodePackageBody(serializers.Serializer):
         return md5.hexdigest()
 
 
-class ChainCodeApproveForMyOrgBody(serializers.Serializer):
-    channel_name = serializers.CharField(max_length=128, required=True)
-    chaincode_name = serializers.CharField(max_length=128, required=True)
-    chaincode_version = serializers.CharField(max_length=128, required=True)
-    policy = serializers.CharField(max_length=128, required=True)
-    orderer_url = serializers.CharField(max_length=128, required=True)
-    sequence = serializers.IntegerField(min_value=1, required=True)
-
-
-class ChainCodeCommitBody(ChainCodeApproveForMyOrgBody):
-    peer_list = serializers.ListField(allow_empty=False,required=True)
-
-
 class ChainCodeNetworkSerializer(serializers.Serializer):
     id = serializers.UUIDField(help_text="Network ID")
     name = serializers.CharField(max_length=128, help_text="name of Network")
@@ -60,16 +47,28 @@ class ChainCodeOrgListSerializer(serializers.Serializer):
 
 
 class ChainCodeResponseSerializer(ChainCodeIDSerializer, serializers.ModelSerializer):
-    id = serializers.UUIDField(help_text="ID of Channel")
-    network = ChainCodeNetworkSerializer()
-    organizations = ChainCodeOrgListSerializer(many=True)
+    id = serializers.UUIDField(help_text="ID of ChainCode")
+    # network = ChainCodeNetworkSerializer()
+    # organizations = ChainCodeOrgListSerializer(many=True)
 
     class Meta:
         model = ChainCode
-        fields = ("id", "name", "version", "creator", "language", "create_ts")
+        fields = ("id", "name", "version", "creator", "language", "create_ts", "md5")
 
 
-class ChannelListResponse(ListResponseSerializer):
+class ChaincodeListResponse(ListResponseSerializer):
     data = ChainCodeResponseSerializer(many=True, help_text="ChianCode data")
 
+
+class ChainCodeApproveForMyOrgBody(serializers.Serializer):
+    channel_name = serializers.CharField(max_length=128, required=True)
+    chaincode_name = serializers.CharField(max_length=128, required=True)
+    chaincode_version = serializers.CharField(max_length=128, required=True)
+    policy = serializers.CharField(max_length=128, required=True)
+    orderer_url = serializers.CharField(max_length=128, required=True)
+    sequence = serializers.IntegerField(min_value=1, required=True)
+
+
+class ChainCodeCommitBody(ChainCodeApproveForMyOrgBody):
+    peer_list = serializers.ListField(allow_empty=False,required=True)
 
