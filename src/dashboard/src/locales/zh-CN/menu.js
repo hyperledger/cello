@@ -18,6 +18,7 @@ export default {
   'menu.operator.network': '网络',
   'menu.operator.newNetwork': '新建网络',
   'menu.operator.channel': '通道',
+  'menu.operator.chaincode': '链码',
   'menu.exception': '异常页',
   'menu.exception.not-permission': '403',
   'menu.exception.not-find': '404',
