@@ -15,6 +15,7 @@ import operatorNode from './zh-CN/operatorNode';
 import fabricCa from './zh-CN/fabric/ca';
 import operatorNetwork from './zh-CN/operatorNetwork';
 import operatorChannel from './zh-CN/operatorChannel';
+import operatorChainCode from './zh-CN/operatorChaincode';
 
 export default {
   'navBar.lang': '语言',
@@ -38,5 +39,6 @@ export default {
   ...operatorNode,
   ...fabricCa,
   ...operatorNetwork,
-  ...operatorChannel
+  ...operatorChannel,
+  ...operatorChainCode
 };
