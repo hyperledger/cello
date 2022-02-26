@@ -86,7 +86,7 @@
     "resize-observer-polyfill": "^1.5.1",
     "umi": "^3.1.4",
     "umi-request": "^1.2.19",
-    "validator": "^11.0.0"
+    "validator": "^13.6.0"
   },
   "devDependencies": {
     "@types/history": "^4.7.2",
