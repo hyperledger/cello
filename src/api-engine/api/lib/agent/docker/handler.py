@@ -32,6 +32,8 @@ class DockerAgent(AgentBase):
         :rtype: string
         """
         try:
+            port_map = {str(port.internal): str(port.external) for port in info.get("ports")}
+            
             data = {
                 'msp': info.get("msp")[2:-1],
                 'tls': info.get("tls")[2:-1],
@@ -42,7 +44,7 @@ class DockerAgent(AgentBase):
                 'cmd': 'bash /tmp/init.sh "peer node start"' if info.get("type") == "peer" else 'bash /tmp/init.sh "orderer"',
                 'name': info.get("name"),
                 'type': info.get("type"),
-                'port_map': info.get("ports").__repr__(),
+                'port_map': port_map.__repr__(),
                 'action': 'create'
             }
 
