@@ -26,6 +26,7 @@ from api.routes.network.serializers import (
     NetworkIDSerializer,
 )
 from api.utils.common import with_common_response
+from api.common.enums import NodeStatus
 from api.lib.configtxgen import ConfigTX, ConfigTxGen
 from api.models import Network, Node, Port
 from api.config import CELLO_HOME
@@ -152,13 +153,13 @@ class NetworkViewSet(viewsets.ViewSet):
         :return: null
         """
         try:
+            node_qs = Node.objects.filter(id=pk)
+            node_qs.update(status="deploying")
             infos = self._agent_params(pk)
-
             agent = AgentHandler(infos)
             cid = agent.create(infos)
             if cid:
-                Node.objects.filter(id=pk).update(cid=cid)
-
+                node_qs.update(cid=cid, status="running")
             else:
                 raise ResourceNotFound
         except Exception as e:
