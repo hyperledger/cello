@@ -482,15 +482,19 @@ class NodeViewSet(viewsets.ViewSet):
             serializer = NodeOperationSerializer(data=request.data)
             if serializer.is_valid(raise_exception=True):
                 action = serializer.validated_data.get("action")
+                infos = self._agent_params(pk)
+                agent = AgentHandler(infos)
+                node_qs = Node.objects.filter(id=pk)
+                node_status = infos.get("status")
 
                 if action == "start":
+                    if node_status in ["running", "deleting", "deploying"]:
+                        raise ResourceInUse
                     try:
-                        infos = self._agent_params(pk)
-
-                        agent = AgentHandler(infos)
+                        node_qs.update(status="deploying", cid=cid)
                         cid = agent.create(infos)
                         if cid:
-                            Node.objects.filter(id=pk).update(cid=cid)
+                            node_qs.update(status="running", cid=cid)
                             response = NodeCIDSerializer(data={"id": cid})
                             if response.is_valid(raise_exception=True):
                                 return Response(
@@ -500,27 +504,23 @@ class NodeViewSet(viewsets.ViewSet):
                             raise ResourceNotFound
                     except Exception as e:
                         raise e
-                    if infos.get("status") == "running" or infos.get("status") == "deleting" or infos.get("status") == "deploying":
-                        raise ResourceInUse
-                    elif infos.get("status") == "":
-
-                        pass
-                    elif infos.get("status") == "stopped" or infos.get("status") == "deleted":
-                        pass
-                    elif infos.get("status") == "error":
-                        pass
-                    else:
-                        pass
-
-                elif action == "stop":
-                    #todo
-                    pass
-                elif action == "restart":
-                    # todo
-                    pass
+    
+                elif action == "stop" and node_status == "running":
+                    res =  True if agent.stop() else False
+                    if res: node_qs.update(status="stopped")
+                    return Response(
+                        ok({"stop": res}), status=status.HTTP_201_CREATED
+                    )
+                elif action == "restart" and node_status == "stopped":
+                    res = True if agent.start() else False 
+                    if res: Node.objects.filter(id=pk).update(status="running")
+                    return Response(
+                        ok({"restart": res}), status=status.HTTP_201_CREATED
+                    )
                 else:
-                    # todo
-                    pass
+                    return Response(
+                        ok({"error": "invalid operation"}), status=status.HTTP_201_CREATED
+                    )
         except Exception as e:
             return Response(
                 err(e.args), status=status.HTTP_400_BAD_REQUEST
@@ -543,6 +543,8 @@ class NodeViewSet(viewsets.ViewSet):
         try:
             try:
                 node = Node.objects.get(id=pk)
+                node.status = "deleting"
+                node.save()
                 if node.organization.network:
                     raise ResourceInUse
                 node.delete()
