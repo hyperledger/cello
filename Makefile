@@ -179,10 +179,17 @@ check: ##@Code Check code format
 test-case: ##@Code Run test case for flask server
 	@$(MAKE) -C src/operator-dashboard/test/ all
 
-clean: docker-clean ##@Code Clean tox result, clean built images and db files
+clean:
+	make stop-docker-compose
 	rm -rf .tox .cache *.egg-info build/
 	find . -name "*.pyc" -o -name "__pycache__" | xargs rm -rf
-	rm -rf /opt/cello/*
+	rm -rf /opt/cello/
+
+deep-clean:
+	make stop
+	make image-clean
+	rm -rf /opt/cello/
+
 
 # TODO (david_dornseier): As long as there are no release versions, always rewrite
 # the entire changelog (bug)
@@ -219,6 +226,8 @@ start: ##@Service Start service
 stop-docker-compose:
 	echo "Stop all services with bootup/docker-compose-files/${COMPOSE_FILE}..."
 	docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} stop
+
+remove-docker-compose:
 	echo "Remove all services with ${COMPOSE_FILE}..."
 	docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} rm -f -a
 
@@ -304,6 +313,7 @@ start-dashboard:
 	all \
 	check \
 	clean \
+	deep-clean \
 	changelog \
 	doc \
 	docker \
