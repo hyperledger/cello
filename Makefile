@@ -181,6 +181,7 @@ test-case: ##@Code Run test case for flask server
 
 clean:
 	make remove-docker-compose
+	
 
 deep-clean:
 	make clean
@@ -222,14 +223,12 @@ start: ##@Service Start service
 stop-docker-compose:
 	echo "Stop all services with bootup/docker-compose-files/${COMPOSE_FILE}..."
 	docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} stop
-	echo "Stop all hyperledger-fabric nodes ..."
-	docker ps | grep "hyperledger-fabric" | awk '{print $1}' | xargs docker stop 
+ 
 
 remove-docker-compose:
 	echo "Remove all services with ${COMPOSE_FILE}..."
 	docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} down -v
-	echo "Remove all hyperledger-fabric nodes ..."
-	docker ps -a | grep "hyperledger-fabric" | awk '{print $1}' | xargs docker rm -f
+	rm -rf /opt/cello
 
 start-k8s:
 	@$(MAKE) -C bootup/kubernetes init-yaml
