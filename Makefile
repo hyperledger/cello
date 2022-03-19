@@ -228,7 +228,7 @@ stop-docker-compose:
 remove-docker-compose:
 	echo "Remove all services with ${COMPOSE_FILE}..."
 	docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} down -v
-	echo "Stop all hyperledger-fabric nodes ..."
+	echo "Remove all hyperledger-fabric nodes ..."
 	docker ps -a | grep "hyperledger-fabric" | awk '{print $1}' | xargs docker rm -f
 
 start-k8s:
