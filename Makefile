@@ -180,15 +180,11 @@ test-case: ##@Code Run test case for flask server
 	@$(MAKE) -C src/operator-dashboard/test/ all
 
 clean:
-	make stop-docker-compose
-	rm -rf .tox .cache *.egg-info build/
-	find . -name "*.pyc" -o -name "__pycache__" | xargs rm -rf
-	rm -rf /opt/cello/
+	make remove-docker-compose
 
 deep-clean:
-	make stop
+	make clean
 	make image-clean
-	rm -rf /opt/cello/
 
 
 # TODO (david_dornseier): As long as there are no release versions, always rewrite
@@ -226,10 +222,14 @@ start: ##@Service Start service
 stop-docker-compose:
 	echo "Stop all services with bootup/docker-compose-files/${COMPOSE_FILE}..."
 	docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} stop
+	echo "Stop all hyperledger-fabric nodes ..."
+	docker ps | grep "hyperledger-fabric" | awk '{print $1}' | xargs docker stop 
 
 remove-docker-compose:
 	echo "Remove all services with ${COMPOSE_FILE}..."
-	docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} rm -f -a
+	docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} down -v
+	echo "Stop all hyperledger-fabric nodes ..."
+	docker ps -a | grep "hyperledger-fabric" | awk '{print $1}' | xargs docker rm -f
 
 start-k8s:
 	@$(MAKE) -C bootup/kubernetes init-yaml
