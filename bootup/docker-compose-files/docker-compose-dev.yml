@@ -55,7 +55,7 @@ services:
       - "8080:8080"
     volumes:
       - /var/run/:/host/var/run/
-      - /opt/cello:/opt/cello
+     # - /opt/fabric:/opt/fabric
      # - /etc/localtime:/etc/localtime 
     networks:
       - cello-net
