@@ -256,13 +256,16 @@ class ChainCode(BasicEnv):
             else:
                 for i in range(len(peerlist)):
                     command_str_with_tls = command_str_with_tls + peer_addresses_format
+
                 res = os.system(command_str_with_tls.format(self.peer, orderer_url, orderer_tls_rootcert, channel_name,
                                 cc_name, chaincode_version, sequency, policy, *peer_addressed))
+
+            res = res >> 8
+            return res
+
         except Exception as e:
             err_msg = "lifecycle_commit failed for {}!".format(e)
             raise Exception(err_msg)
-        res = res >> 8
-        return res
 
     def lifecycle_query_committed(self, channel_name, cc_name):
         """

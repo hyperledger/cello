@@ -13,6 +13,7 @@ from api.models import (
     ChainCode
 )
 from api.utils.common import make_uuid
+from django.core.paginator import Paginator
 
 from api.lib.peer.chaincode import ChainCode as PeerChainCode
 from api.common.serializers import PageQuerySerializer
@@ -22,7 +23,9 @@ from api.utils.common import with_common_response
 from api.routes.chaincode.serializers import (
     ChainCodePackageBody,
     ChainCodeIDSerializer,
-    ChainCodeApproveForMyOrgBody
+    ChainCodeCommitBody,
+    ChainCodeApproveForMyOrgBody,
+    ChaincodeListResponse
 )
 from api.common import ok, err
 
@@ -30,6 +33,49 @@ from api.common import ok, err
 class ChainCodeViewSet(viewsets.ViewSet):
     """Class represents Channel related operations."""
     authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
+
+    @swagger_auto_schema(
+        query_serializer=PageQuerySerializer,
+        responses=with_common_response(
+            {status.HTTP_201_CREATED: ChaincodeListResponse}
+        ),
+    )
+    def list(self, request):
+        """
+        List Chaincodes
+        :param request: org_id
+        :return: chaincode list
+        :rtype: list
+        """
+        serializer = PageQuerySerializer(data=request.GET)
+        if serializer.is_valid(raise_exception=True):
+            page = serializer.validated_data.get("page")
+            per_page = serializer.validated_data.get("per_page")
+
+            try:
+                org = request.user.organization
+                chaincodes = ChainCode.objects.filter(
+                    creator=org.name).order_by("create_ts")
+                p = Paginator(chaincodes, per_page)
+                chaincodes_pages = p.page(page)
+                chanincodes_list = [
+                    {
+                        "id": chaincode.id,
+                        "name": chaincode.name,
+                        "version": chaincode.version,
+                        "creator": chaincode.creator,
+                        "language": chaincode.language,
+                        "create_ts": chaincode.create_ts,
+                        "md5": chaincode.md5,
+                    }
+                    for chaincode in chaincodes_pages
+                ]
+                response = ChaincodeListResponse({"data": chanincodes_list, "total": chaincodes.count()})
+                return Response(data=ok(response.data), status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response(
+                    err(e.args), status=status.HTTP_400_BAD_REQUEST
+                )
 
     @swagger_auto_schema(
         method="post",
@@ -135,7 +181,7 @@ class ChainCodeViewSet(viewsets.ViewSet):
             peer_channel_cli = PeerChainCode("v2.2.0", **envs)
             res = peer_channel_cli.lifecycle_install(cc_targz)
             if res != 0:
-                return Response(err("package chaincode failed."), status=status.HTTP_400_BAD_REQUEST)
+                return Response(err("install chaincode failed."), status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response(
                 err(e.args), status=status.HTTP_400_BAD_REQUEST
@@ -257,7 +303,7 @@ class ChainCodeViewSet(viewsets.ViewSet):
             envs = init_env_vars(peer_node, org)
 
             channel_name = request.data.get("channel_name")
-            cc_name = request.data.get("cc_name")
+            cc_name = request.data.get("chaincode_name")
 
             peer_channel_cli = PeerChainCode("v2.2.0", **envs)
             code, content = peer_channel_cli.lifecycle_query_approved(channel_name, cc_name)
@@ -297,12 +343,18 @@ class ChainCodeViewSet(viewsets.ViewSet):
                     .format(CELLO_HOME, org.name, org.name.split(".", 1)[1], orderer_node.name + "." +
                             org.name.split(".", 1)[1])
 
+                orderer_tls_root_cert = ""
+                for _, _, files in os.walk(orderer_tls_dir):
+                    orderer_tls_root_cert = orderer_tls_dir + "/" + files[0]
+                    break
+
                 peer_node = Node.objects.get(type="peer", organization=org.id)
                 envs = init_env_vars(peer_node, org)
 
                 peer_channel_cli = PeerChainCode("v2.2.0", **envs)
-                code, content = peer_channel_cli.lifecycle_check_commit_readiness(orderer_url, orderer_tls_dir,  channel_name, chaincode_name, chaincode_version,
-                                                                                  policy, sequence)
+                code, content = peer_channel_cli.lifecycle_check_commit_readiness(orderer_url, orderer_tls_root_cert,
+                                                                                  channel_name, chaincode_name,
+                                                                                  chaincode_version, policy, sequence)
                 if code != 0:
                     return Response(err("check_commit_readiness failed."), status=status.HTTP_400_BAD_REQUEST)
 
@@ -313,6 +365,95 @@ class ChainCodeViewSet(viewsets.ViewSet):
             return Response(
                 ok(content), status=status.HTTP_200_OK
             )
+
+    @swagger_auto_schema(
+        method="post",
+        responses=with_common_response(
+            {status.HTTP_201_CREATED: ChainCodeIDSerializer}
+        ),
+    )
+    @action(detail=False, methods=['post'])
+    def commit(self, request):
+        serializer = ChainCodeCommitBody(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            try:
+                channel_name = serializer.validated_data.get("channel_name")
+                chaincode_name = serializer.validated_data.get("chaincode_name")
+                chaincode_version = serializer.validated_data.get("chaincode_version")
+                policy = serializer.validated_data.get("policy")
+                # Perhaps the orderer's port is best stored in the database
+                orderer_url = serializer.validated_data.get("orderer_url")
+                sequence = serializer.validated_data.get("sequence")
+                peer_list = serializer.validated_data.get("peer_list")
+                org = request.user.organization
+                orderer_node = Node.objects.get(type="orderer", organization=org.id)
+
+                orderer_tls_dir = "{}/{}/crypto-config/ordererOrganizations/{}/orderers/{}/msp/tlscacerts" \
+                    .format(CELLO_HOME, org.name, org.name.split(".", 1)[1], orderer_node.name + "." +
+                            org.name.split(".", 1)[1])
+                orderer_tls_root_cert = ""
+                for _, _, files in os.walk(orderer_tls_dir):
+                    orderer_tls_root_cert = orderer_tls_dir + "/" + files[0]
+                    break
+
+                peer_node = Node.objects.get(type="peer", organization=org.id)
+                envs = init_env_vars(peer_node, org)
+
+                peer_root_certs = []
+                peer_address_list = []
+                for each in peer_list:
+                    peer_node = Node.objects.get(id=each)
+                    peer_tls_cert = "{}/{}/crypto-config/peerOrganizations/{}/peers/{}/tls/ca.crt" \
+                                    .format(CELLO_HOME, org.name, org.name, peer_node.name + "." + org.name)
+                    print(peer_node.port)
+                    port = peer_node.port.all()[0].internal
+                    # port = ports[0].internal
+                    peer_address = peer_node.name + "." + org.name+":"+str(7051)
+                    peer_address_list.append(peer_address)
+                    peer_root_certs.append(peer_tls_cert)
+
+                peer_channel_cli = PeerChainCode("v2.2.0", **envs)
+                code = peer_channel_cli.lifecycle_commit(orderer_url, orderer_tls_root_cert, channel_name,
+                                                                  chaincode_name, chaincode_version, policy,
+                                                                  peer_address_list, peer_root_certs, sequence)
+                if code != 0:
+                    return Response(err("commit failed."), status=status.HTTP_400_BAD_REQUEST)
+
+            except Exception as e:
+                return Response(
+                    err(e.args), status=status.HTTP_400_BAD_REQUEST
+                )
+            return Response(
+                ok("commit success."), status=status.HTTP_200_OK
+            )
+
+    @swagger_auto_schema(
+        method="get",
+        responses=with_common_response(
+            {status.HTTP_201_CREATED: ChainCodeIDSerializer}
+        ),
+    )
+    @action(detail=False, methods=['get'])
+    def query_committed(self, request):
+            try:
+                channel_name = request.data.get("channel_name")
+                chaincode_name = request.data.get("chaincode_name")
+                org = request.user.organization
+
+                peer_node = Node.objects.get(type="peer", organization=org.id)
+                envs = init_env_vars(peer_node, org)
+                peer_channel_cli = PeerChainCode("v2.2.0", **envs)
+                code, chaincodes_commited = peer_channel_cli.lifecycle_query_committed(channel_name, chaincode_name)
+                if code != 0:
+                    return Response(err("query committed failed."), status=status.HTTP_400_BAD_REQUEST)
+            except Exception as e:
+                return Response(
+                err(e.args), status=status.HTTP_400_BAD_REQUEST
+                )
+            return Response(
+                ok(chaincodes_commited), status=status.HTTP_200_OK
+            )
+
 
 
 def init_env_vars(node, org):

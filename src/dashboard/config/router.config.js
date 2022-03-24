@@ -109,6 +109,11 @@ export default [
                 component: './Operator/Channel/Channel',
               },
               {
+                path: '/operator/chaincode',
+                name: 'chaincode',
+                component: './Operator/ChainCode/ChainCode',
+              },
+              {
                 path: '/operator/userManagement',
                 name: 'userManagement',
                 component: './Operator/UserManagement',
