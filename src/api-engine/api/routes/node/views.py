@@ -135,6 +135,7 @@ class NodeViewSet(viewsets.ViewSet):
                         #"channel": str(node.organization.channel.id) if node.organization.channel else None,
                         "ports": node.port,
                         "created_at": node.created_at,
+                        "status": node.status
                     }
                     for node in nodes
                 ]
