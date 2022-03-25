@@ -21,7 +21,6 @@ class AgentHandler(object):
         self._node_type = node.get("type")
         self._agent_type = node.get("agent_type")
         self._node = node
-
         if self._agent_type == HostType.Docker.name.lower():
             self._agent = DockerAgent(node)
         elif self._agent_type == HostType.Kubernetes.name.lower():
