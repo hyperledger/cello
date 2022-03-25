@@ -23,6 +23,7 @@ class DockerAgent(AgentBase):
         self._id = node.get("id")
         self._name = node.get("name")
         self._urls = node.get("urls")
+        self._cname = node.get("container_name")
 
     def create(self, info):
         """
@@ -60,7 +61,7 @@ class DockerAgent(AgentBase):
 
     def delete(self, *args, **kwargs):
         try:
-            response = post('{}/api/v1/nodes/{}'.format(self._urls, kwargs["nid"]), data=kwargs["data"])
+            response = post('{}/api/v1/nodes/{}'.format(self._urls, self._cname), data={'action': 'delete'})
             if response.status_code == 200:
                 return True
             else:
@@ -70,7 +71,7 @@ class DockerAgent(AgentBase):
 
     def start(self, *args, **kwargs):
         try:
-            response = post('{}/api/v1/nodes/{}'.format(self._urls, kwargs["nid"]), data=kwargs["data"])
+            response = post('{}/api/v1/nodes/{}'.format(self._urls, self._cname), data={'action': 'start'})
             if response.status_code == 200:
                 return True
             else:
@@ -80,7 +81,7 @@ class DockerAgent(AgentBase):
 
     def restart(self, *args, **kwargs):
         try:
-            response = post('{}/api/v1/nodes/{}'.format(self._urls, kwargs["nid"]), data=kwargs["data"])
+            response = post('{}/api/v1/nodes/{}'.format(self._urls, self._cname), data={'action': 'restart'})
             if response.status_code == 200:
                 return True
             else:
@@ -90,7 +91,7 @@ class DockerAgent(AgentBase):
 
     def stop(self, *args, **kwargs):
         try:
-            response = post('{}/api/v1/nodes/{}'.format(self._urls, kwargs["nid"]), data=kwargs["data"])
+            response = post('{}/api/v1/nodes/{}'.format(self._urls, self._cname), data={'action': 'stop'})
             if response.status_code == 200:
                 return True
             else:
@@ -100,7 +101,7 @@ class DockerAgent(AgentBase):
 
     def get(self, *args, **kwargs):
         try:
-            response = get('{}/api/v1/nodes/{}'.format(self._urls, kwargs["nid"]))
+            response = get('{}/api/v1/nodes/{}'.format(self._urls, self._cname))
             if response.status_code == 200:
                 return True
             else:

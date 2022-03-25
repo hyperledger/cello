@@ -303,7 +303,7 @@ class NodeViewSet(viewsets.ViewSet):
 
                     name = node_name+str(n)
 
-                    urls = "http://{}.{}".format(name, organization.name)
+                    urls = "{}.{}".format(name, organization.name)
                     nodes = {
                         "type": node_type,
                         "Specs": [name]
@@ -462,6 +462,7 @@ class NodeViewSet(viewsets.ViewSet):
             info["urls"] = agent.urls
             info["network_type"] = network.type
             info["agent_type"] = agent.type
+            info["container_name"] = node.urls
             return info
         except Exception as e:
             raise e
@@ -491,7 +492,7 @@ class NodeViewSet(viewsets.ViewSet):
                     if node_status in ["running", "deleting", "deploying"]:
                         raise ResourceInUse
                     try:
-                        node_qs.update(status="deploying", cid=cid)
+                        node_qs.update(status="deploying")
                         cid = agent.create(infos)
                         if cid:
                             node_qs.update(status="running", cid=cid)
