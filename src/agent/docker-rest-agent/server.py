@@ -43,8 +43,8 @@ def create_node():
     port_map = ast.literal_eval(request.form.get("port_map"))
     volumes = [        
         '/var/run/:/host/var/run/', 
-        '/opt/fabric/{}:/etc/hyperledger/fabric'.format(node_name),
-        '/opt/production/{}:/var/hyperledger/production'.format(node_name)
+        '/opt/hyperledger/fabric/{}:/etc/hyperledger/fabric'.format(node_name),
+        '/opt/hyperledger/production/{}:/var/hyperledger/production'.format(node_name)
     ]
     if request.form.get('type') == "peer":
         peer_envs = {
