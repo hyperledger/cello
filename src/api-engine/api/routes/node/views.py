@@ -1,9 +1,10 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-import json
 import logging
 import base64
+import shutil
+import os
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import PermissionDenied
@@ -55,7 +56,11 @@ from api.utils.common import with_common_response
 from api.auth import CustomAuthenticate, TokenAuth
 from api.lib.pki import CryptoGen, CryptoConfig
 from api.utils import zip_dir, zip_file
-from api.config import CELLO_HOME
+from api.config import (
+    CELLO_HOME,
+    FABRIC_NODE,
+    PRODUCTION_NODE
+)
 from api.utils.node_config import NodeConfig
 from api.lib.agent import AgentHandler
 from api.utils.port_picker import set_ports_mapping, find_available_ports
@@ -448,9 +453,9 @@ class NodeViewSet(viewsets.ViewSet):
             agent = org.agent.get()
             if agent is None:
                 raise ResourceNotFound
-
+            
             info = {}
-
+            org_name = org.name if node.type == "peer" else org.name.split(".", 1)[1]
             # get info of node, e.g, tls, msp, config.
             info["status"] = node.status
             info["msp"] = node.msp
@@ -462,7 +467,7 @@ class NodeViewSet(viewsets.ViewSet):
             info["urls"] = agent.urls
             info["network_type"] = network.type
             info["agent_type"] = agent.type
-            info["container_name"] = node.urls
+            info["container_name"] = "{}.{}".format(node.name, org_name)
             return info
         except Exception as e:
             raise e
@@ -544,16 +549,26 @@ class NodeViewSet(viewsets.ViewSet):
         try:
             try:
                 node = Node.objects.get(id=pk)
+                infos = self._agent_params(pk)
+                agent = AgentHandler(infos)
                 node.status = "deleting"
                 node.save()
-                if node.organization.network:
-                    raise ResourceInUse
-                node.delete()
-                # todo delete node from agent
+                if node.type == "orderer":
+                    orderer_cnt = Node.objects.filter(type="orderer", organization__network=node.organization.network).count()
+                    if orderer_cnt == 1: raise ResourceInUse
+                agent.stop()
+                res = True if agent.delete() else False
+                if res:
+                    fabric_path = "{}/{}".format(FABRIC_NODE, infos["container_name"])
+                    if os.path.exists(fabric_path): shutil.rmtree(fabric_path, True)
+                    prod_path = "{}/{}".format(PRODUCTION_NODE, infos["container_name"])
+                    if os.path.exists(prod_path): shutil.rmtree(prod_path, True)
+                    node.delete()
+                else:
+                    return Response(ok({"delete":False}), status=status.HTTP_202_ACCEPTED)
             except ObjectDoesNotExist:
                 raise ResourceNotFound
-
-            return Response(ok(None), status=status.HTTP_202_ACCEPTED)
+            return Response(ok({"delete":True}), status=status.HTTP_202_ACCEPTED)
         except (ResourceNotFound, ResourceInUse) as e:
             raise e
         except Exception as e:
