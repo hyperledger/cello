@@ -441,7 +441,7 @@ class Index extends PureComponent {
       content: intl.formatMessage(
         {
           id: 'app.operator.node.delete.confirm',
-          defaultMessage: 'Confirm to delete the node {name}?',
+          defaultMessage: 'Deleting node {name} may cause abnormality in the blockchain network. Confirm delete?',
         },
         {
           name: row.name,

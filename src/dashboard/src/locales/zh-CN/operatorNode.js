@@ -19,7 +19,7 @@ export default {
   'app.operator.node.modal.label.attributes': '属性',
   'app.operator.node.modal.success': '注册用户成功。',
   'app.operator.node.delete.title': '删除节点',
-  'app.operator.node.delete.confirm': '确认要删除节点 {name}?',
+  'app.operator.node.delete.confirm': '删除节点 {name} 可能导致区块链网络异常，是否确认删除？',
   'app.operator.node.delete.success': '删除节点成功。',
   'app.operator.node.operation.start.success': '启动节点成功。',
   'app.operator.node.operation.stop.success': '停止节点成功。',
