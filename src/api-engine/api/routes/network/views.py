@@ -154,7 +154,6 @@ class NetworkViewSet(viewsets.ViewSet):
         """
         try:
             node_qs = Node.objects.filter(id=pk)
-            node_qs.update(status="deploying")
             infos = self._agent_params(pk)
             agent = AgentHandler(infos)
             cid = agent.create(infos)
