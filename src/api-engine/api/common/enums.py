@@ -143,12 +143,13 @@ class FabricNodeType(ExtraEnum):
 
 @unique
 class NodeStatus(ExtraEnum):
-    Deploying = 0
-    Running = 1
-    Stopped = 2
-    Deleting = 3
-    Error = 4
-    Deleted = 5
+    Created = 0
+    Restarting = 1
+    Running = 2
+    Removing = 3
+    Paused = 4
+    Exited = 5
+    Dead = 6
 
 
 @unique
