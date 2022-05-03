@@ -55,7 +55,7 @@
     "@ant-design/pro-layout": "^5.0.0",
     "@antv/data-set": "^0.10.1",
     "antd": "^4.2.5",
-    "bizcharts": "3.5.2-beta.1",
+    "bizcharts": "4.0.15",
     "bizcharts-plugin-slider": "^2.1.1-beta.1",
     "cello-paginator": "^1.0.1",
     "classnames": "^2.2.6",
@@ -66,7 +66,7 @@
     "lodash-decorators": "^6.0.1",
     "memoize-one": "^5.0.0",
     "moment": "^2.24.0",
-    "netlify-lambda": "^1.4.3",
+    "glob-parent: ^5.1.2",
     "numeral": "^2.0.6",
     "nzh": "^1.0.4",
     "omit.js": "^1.0.0",
@@ -84,9 +84,9 @@
     "react-redux": "^7.2.2",
     "redux": "^4.0.5",
     "resize-observer-polyfill": "^1.5.1",
-    "umi": "^3.1.4",
-    "umi-request": "^1.2.19",
-    "validator": "^11.0.0"
+    "cello-dashboard:^1.0.0",
+    "node-fetch:^3.1.1",
+    "validator": "^13.6.0"
   },
   "devDependencies": {
     "@types/history": "^4.7.2",
