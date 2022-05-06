@@ -5,7 +5,7 @@ import logging
 import base64
 
 from rest_framework import viewsets, status
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from rest_framework.response import Response
 from rest_framework_jwt.views import ObtainJSONWebToken
 from api.models import UserProfile, Organization
@@ -33,24 +33,39 @@ class RegisterViewSet(viewsets.ViewSet):
         try:
             serializer = RegisterBody(data=request.data)
             if serializer.is_valid(raise_exception=True):
-                username = serializer.validated_data.get("username")
+                #username = serializer.validated_data.get("username")
                 email = serializer.validated_data.get("email")
                 orgname = serializer.validated_data.get("orgName")
                 password = serializer.validated_data.get("password")
+
                 try:
-                    Organization.objects.get(name=orgname)
                     UserProfile.objects.get(email=email)
                 except ObjectDoesNotExist:
                     pass
-                except Exception as e:
+                except MultipleObjectsReturned:
                     return Response(
-                        err(e), status=status.HTTP_409_CONFLICT
+                        err("Email Aleady exists!"), status=status.HTTP_409_CONFLICT
                     )
                 else:
                     return Response(
-                        err("orgnization exists!"), status=status.HTTP_409_CONFLICT
+                        err("Email Aleady exists!"), status=status.HTTP_409_CONFLICT
                     )
 
+                try:
+                    Organization.objects.get(name=orgname)
+                except ObjectDoesNotExist:
+                    pass
+                except MultipleObjectsReturned:
+                    return Response(
+                        err("Orgnization already exists!"), status=status.HTTP_409_CONFLICT
+                    )
+                else:
+                    return Response(
+                        err("Orgnization already exists!"), status=status.HTTP_409_CONFLICT
+                    )
+                
+
+                
                 CryptoConfig(orgname).create(0, 0)
                 CryptoGen(orgname).generate()
 
