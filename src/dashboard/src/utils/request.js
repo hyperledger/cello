@@ -31,14 +31,6 @@ const errorHandler = error => {
 
   if (status === 400) {
     const api = url.split('/').pop();
-
-    if (api === 'login'){
-      notification.error({
-        message: '用户名或密码错误。',
-      });
-      return;
-    }
-
     if (api === 'token-verify') {
       verifyUserFail = true;
     }
@@ -55,18 +47,6 @@ const errorHandler = error => {
     });
     return;
   }
-
-  if (status === 409){
-    const api = url.split('/').pop();
-    if (api === 'register'){
-      notification.error({
-        message: '邮箱地址或组织名已存在。',
-      });
-      return;
-    }
-
-  }
-
   notification.error({
     message: `请求错误 ${status}: ${url}`,
     description: errortext,
