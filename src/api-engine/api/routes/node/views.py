@@ -1,9 +1,11 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-import json
 import logging
 import base64
+import shutil
+import os
+import threading
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import PermissionDenied
@@ -55,7 +57,11 @@ from api.utils.common import with_common_response
 from api.auth import CustomAuthenticate, TokenAuth
 from api.lib.pki import CryptoGen, CryptoConfig
 from api.utils import zip_dir, zip_file
-from api.config import CELLO_HOME
+from api.config import (
+    CELLO_HOME,
+    FABRIC_NODE,
+    PRODUCTION_NODE
+)
 from api.utils.node_config import NodeConfig
 from api.lib.agent import AgentHandler
 from api.utils.port_picker import set_ports_mapping, find_available_ports
@@ -135,6 +141,7 @@ class NodeViewSet(viewsets.ViewSet):
                         #"channel": str(node.organization.channel.id) if node.organization.channel else None,
                         "ports": node.port,
                         "created_at": node.created_at,
+                        "status": node.status
                     }
                     for node in nodes
                 ]
@@ -303,7 +310,7 @@ class NodeViewSet(viewsets.ViewSet):
 
                     name = node_name+str(n)
 
-                    urls = "http://{}.{}".format(name, organization.name)
+                    urls = "{}.{}".format(name, organization.name)
                     nodes = {
                         "type": node_type,
                         "Specs": [name]
@@ -326,6 +333,11 @@ class NodeViewSet(viewsets.ViewSet):
                     node.save()
 
                     self._set_port(node_type, node, agent)
+                    if node.organization.network:
+                        try:
+                            threading.Thread(target=self._start_node, args=(node.id,)).start()
+                        except Exception as e:
+                            raise e
 
                 response = NodeIDSerializer(data=node.__dict__)
                 if response.is_valid(raise_exception=True):
@@ -448,21 +460,44 @@ class NodeViewSet(viewsets.ViewSet):
             agent = org.agent.get()
             if agent is None:
                 raise ResourceNotFound
-
+            ports = Port.objects.filter(node=node)
+            if ports is None:
+                raise ResourceNotFound
+            
             info = {}
-
+            org_name = org.name if node.type == "peer" else org.name.split(".", 1)[1]
             # get info of node, e.g, tls, msp, config.
             info["status"] = node.status
             info["msp"] = node.msp
             info["tls"] = node.tls
             info["config_file"] = node.config_file
             info["type"] = node.type
-            info["name"] = node.name
+            info["name"] = "{}.{}".format(node.name, org_name)
             info["bootstrap_block"] = network.genesisblock
             info["urls"] = agent.urls
             info["network_type"] = network.type
             info["agent_type"] = agent.type
+            info["container_name"] = "{}.{}".format(node.name, org_name)
+            info["ports"] = ports
             return info
+        except Exception as e:
+            raise e
+
+    def _start_node(self, pk):
+        """
+        start node from agent
+        :param node: node id
+        :return: null
+        """
+        try:
+            node_qs = Node.objects.filter(id=pk)
+            infos = self._agent_params(pk)
+            agent = AgentHandler(infos)
+            cid = agent.create(infos)
+            if cid:
+                node_qs.update(cid=cid, status="running")
+            else:
+                raise ResourceNotFound
         except Exception as e:
             raise e
 
@@ -487,35 +522,18 @@ class NodeViewSet(viewsets.ViewSet):
                 node_qs = Node.objects.filter(id=pk)
                 node_status = infos.get("status")
 
-                if action == "start":
-                    if node_status in ["running", "deleting", "deploying"]:
-                        raise ResourceInUse
-                    try:
-                        node_qs.update(status="deploying", cid=cid)
-                        cid = agent.create(infos)
-                        if cid:
-                            node_qs.update(status="running", cid=cid)
-                            response = NodeCIDSerializer(data={"id": cid})
-                            if response.is_valid(raise_exception=True):
-                                return Response(
-                                    ok(response.validated_data), status=status.HTTP_201_CREATED
-                                )
-                        else:
-                            raise ResourceNotFound
-                    except Exception as e:
-                        raise e
-    
-                elif action == "stop" and node_status == "running":
-                    res =  True if agent.stop() else False
-                    if res: node_qs.update(status="stopped")
-                    return Response(
-                        ok({"stop": res}), status=status.HTTP_201_CREATED
-                    )
-                elif action == "restart" and node_status == "stopped":
+                if action == "start" and node_status == "paused":
+                    node_qs.update(status="restarting")
                     res = True if agent.start() else False 
-                    if res: Node.objects.filter(id=pk).update(status="running")
+                    if res: node_qs.update(status="running")
                     return Response(
                         ok({"restart": res}), status=status.HTTP_201_CREATED
+                    )    
+                elif action == "stop" and node_status == "running":
+                    res =  True if agent.stop() else False
+                    if res: node_qs.update(status="paused")
+                    return Response(
+                        ok({"stop": res}), status=status.HTTP_201_CREATED
                     )
                 else:
                     return Response(
@@ -543,16 +561,28 @@ class NodeViewSet(viewsets.ViewSet):
         try:
             try:
                 node = Node.objects.get(id=pk)
-                node.status = "deleting"
+                infos = self._agent_params(pk)
+                agent = AgentHandler(infos)
+                node.status = "removing"
                 node.save()
-                if node.organization.network:
-                    raise ResourceInUse
-                node.delete()
-                # todo delete node from agent
+                if node.type == "orderer":
+                    orderer_cnt = Node.objects.filter(type="orderer", organization__network=node.organization.network).count()
+                    if orderer_cnt == 1: raise ResourceInUse
+                agent.stop()
+                res = True if agent.delete() else False
+                if res:
+                    fabric_path = "{}/{}".format(FABRIC_NODE, infos["container_name"])
+                    if os.path.exists(fabric_path): shutil.rmtree(fabric_path, True)
+                    prod_path = "{}/{}".format(PRODUCTION_NODE, infos["container_name"])
+                    if os.path.exists(prod_path): shutil.rmtree(prod_path, True)
+                    node.delete()
+                    #node.status = "exited"
+                    #node.save()
+                else:
+                    return Response(ok({"delete":False}), status=status.HTTP_202_ACCEPTED)
             except ObjectDoesNotExist:
                 raise ResourceNotFound
-
-            return Response(ok(None), status=status.HTTP_202_ACCEPTED)
+            return Response(ok({"delete":True}), status=status.HTTP_202_ACCEPTED)
         except (ResourceNotFound, ResourceInUse) as e:
             raise e
         except Exception as e:

@@ -1,5 +1,6 @@
 import {
   listChainCode,
+  uploadChainCode
 } from '@/services/chaincode';
 
 export default {
@@ -31,6 +32,12 @@ export default {
           chainCodes: response.data.data,
         },
       });
+    },
+    *uploadChainCode({ payload, callback }, { call }) {
+      const response = yield call(uploadChainCode, payload);
+      if (callback) {
+        callback(response);
+      }
     },
   },
   reducers: {

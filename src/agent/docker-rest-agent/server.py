@@ -41,6 +41,11 @@ def create_node():
     'HLF_NODE_ORDERER_CONFIG':request.form.get('orderer_config_file'),
     }
     port_map = ast.literal_eval(request.form.get("port_map"))
+    volumes = [        
+        '/var/run/:/host/var/run/', 
+        '/opt/hyperledger/fabric/{}:/etc/hyperledger/fabric'.format(node_name),
+        '/opt/hyperledger/production/{}:/var/hyperledger/production'.format(node_name)
+    ]
     if request.form.get('type') == "peer":
         peer_envs = {
             'CORE_VM_ENDPOINT': 'unix:///host/var/run/docker.sock',
@@ -61,7 +66,6 @@ def create_node():
             'CORE_OPERATIONS_LISTENADDRESS': '0.0.0.0:17051'
         }
         env.update(peer_envs)
-        volumes = ['/var/run/:/host/var/run/']
     else:
         order_envs = {  
             'FABRIC_LOGGING_SPEC':'DEBUG',
@@ -79,9 +83,6 @@ def create_node():
             'ORDERER_GENERAL_CLUSTER_ROOTCAS': '[/etc/hyperledger/fabric/tls/ca.crt]',
         }
         env.update(order_envs)
-        volumes = ['/var/run/:/host/var/run/']
-        
-
     try:
         # same as `docker run -dit yeasy/hyperledge-fabric:2.2.0 -e VARIABLES``
         container = client.containers.run(

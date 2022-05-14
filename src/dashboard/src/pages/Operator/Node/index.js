@@ -14,7 +14,8 @@ import {
   Form,
   Input,
   Select,
-  InputNumber
+  InputNumber,
+  Badge
 } from 'antd';
 import { DownOutlined, PlusOutlined } from '@ant-design/icons';
 import moment from 'moment';
@@ -441,7 +442,7 @@ class Index extends PureComponent {
       content: intl.formatMessage(
         {
           id: 'app.operator.node.delete.confirm',
-          defaultMessage: 'Confirm to delete the node {name}?',
+          defaultMessage: 'Deleting node {name} may cause abnormality in the blockchain network. Confirm delete?',
         },
         {
           name: row.name,
@@ -546,9 +547,6 @@ class Index extends PureComponent {
         case 'stopped':
           statusOfBadge = 'warning';
           break;
-        case 'error':
-          statusOfBadge = 'error';
-          break;
         default:
           break;
       }
@@ -568,30 +566,39 @@ class Index extends PureComponent {
             </a>
           </Menu.Item>
         )}
-        <Menu.Item>
-          <a onClick={() => this.operationForNode('start', record)}>
-            {intl.formatMessage({
-              id: 'app.operator.node.table.operation.start',
-              defaultMessage: 'Start',
-            })}
-          </a>
-        </Menu.Item>
-        <Menu.Item>
-          <a onClick={() => this.operationForNode('stop', record)}>
-            {intl.formatMessage({
-              id: 'app.operator.node.table.operation.stop',
-              defaultMessage: 'Stop',
-            })}
-          </a>
-        </Menu.Item>
-        <Menu.Item>
-          <a onClick={() => this.operationForNode('restart', record)}>
-            {intl.formatMessage({
-              id: 'app.operator.node.table.operation.restart',
-              defaultMessage: 'Restart',
-            })}
-          </a>
-        </Menu.Item>
+        {
+          record.status === 'stopped' &&
+          <Menu.Item>
+            <a onClick={() => this.operationForNode('start', record)}>
+              {intl.formatMessage({
+                id: 'app.operator.node.table.operation.start',
+                defaultMessage: 'Start',
+              })}
+            </a>
+          </Menu.Item>
+        }
+        {
+          record.status === 'running' &&
+          <Menu.Item>
+            <a onClick={() => this.operationForNode('stop', record)}>
+              {intl.formatMessage({
+                id: 'app.operator.node.table.operation.stop',
+                defaultMessage: 'Stop',
+              })}
+            </a>
+          </Menu.Item>
+        }
+        {
+          record.status === 'stopped' &&
+          <Menu.Item>
+            <a onClick={() => this.operationForNode('restart', record)}>
+              {intl.formatMessage({
+                id: 'app.operator.node.table.operation.restart',
+                defaultMessage: 'Restart',
+              })}
+            </a>
+          </Menu.Item>
+        }
       </Menu>
     );
 
@@ -629,6 +636,14 @@ class Index extends PureComponent {
         }),
         dataIndex: 'created_at',
         render: text => <span>{moment(text).format('YYYY-MM-DD HH:mm:ss')}</span>,
+      },
+      {
+        title: intl.formatMessage({
+          id: 'app.operator.node.table.header.status',
+          defaultMessage: 'Status',
+        }),
+        dataIndex: 'status',
+        render: text => <Badge status={badgeStatus(text)} text={text} />,
       },
       {
         title: intl.formatMessage({

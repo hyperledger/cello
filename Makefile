@@ -179,10 +179,14 @@ check: ##@Code Check code format
 test-case: ##@Code Run test case for flask server
 	@$(MAKE) -C src/operator-dashboard/test/ all
 
-clean: docker-clean ##@Code Clean tox result, clean built images and db files
-	rm -rf .tox .cache *.egg-info build/
-	find . -name "*.pyc" -o -name "__pycache__" | xargs rm -rf
-	rm -rf /opt/cello/*
+clean:
+	make remove-docker-compose
+	
+
+deep-clean:
+	make clean
+	make image-clean
+
 
 # TODO (david_dornseier): As long as there are no release versions, always rewrite
 # the entire changelog (bug)
@@ -204,7 +208,7 @@ logs: ##@Log tail for all service log
 
 image-clean: clean ##@Clean all existing images to rebuild
 	echo "Clean all cello related images, may need to remove all containers before"
-	docker images | grep "hyperledger/cello-" | awk '{print $3}' | xargs docker rmi -f
+	docker images | grep "cello-" | awk '{print $3}' | xargs docker rmi -f
 
 start-docker-compose:
 	docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} up -d --force-recreate --remove-orphans
@@ -219,8 +223,17 @@ start: ##@Service Start service
 stop-docker-compose:
 	echo "Stop all services with bootup/docker-compose-files/${COMPOSE_FILE}..."
 	docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} stop
-	echo "Remove all services with ${COMPOSE_FILE}..."
-	docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} rm -f -a
+	echo "Stop all services successfully"
+ 
+
+remove-docker-compose:
+	make stop-docker-compose
+	echo "Remove all services with bootup/docker-compose-files/${COMPOSE_FILE}..."
+	if docker ps -a | grep "cello-"; then \
+		docker ps -a | grep "cello-" | awk '{print $1}' | xargs docker rm -f >/dev/null 2>&1; \
+		rm -rf /opt/cello; \
+	fi
+	echo "Remove all services successfully"
 
 start-k8s:
 	@$(MAKE) -C bootup/kubernetes init-yaml
@@ -292,11 +305,12 @@ HELP_FUN = \
 api-engine: # for debug only now
 	docker build -t hyperledger/cello-api-engine:latest -f build_image/docker/common/api-engine/Dockerfile.in ./
 
-dashboard:
+dashboard: # for debug only now
 	docker build -t hyperledger/cello-dashboard:latest -f build_image/docker/common/dashboard/Dockerfile.in ./
 
 docker-rest-agent: # for debug only now
 	docker build -t hyperledger/cello-agent-docker:latest -f build_image/docker/agent/docker-rest-agent/Dockerfile.in ./ --build-arg pip=$(PIP)
+
 start-dashboard:
 	make -C src/dashboard start;
 
@@ -304,6 +318,8 @@ start-dashboard:
 	all \
 	check \
 	clean \
+	deep-clean \
+	dev-build \
 	changelog \
 	doc \
 	docker \

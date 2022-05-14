@@ -525,7 +525,7 @@ class Node(models.Model):
         help_text="Status of node",
         choices=NodeStatus.to_choices(True),
         max_length=64,
-        default=NodeStatus.Deploying.name.lower(),
+        default=NodeStatus.Created.name.lower(),
     )
     config_file = models.TextField(
         help_text="Config file of node",
