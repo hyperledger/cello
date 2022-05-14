@@ -7,12 +7,12 @@ Flask==1.1.2
 Flask-RESTful==0.3.8
 idna==2.10
 itsdangerous==1.1.0
-Jinja2==2.11.2
+Jinja2==2.11.3
 MarkupSafe==1.1.1
 pytz==2020.1
 requests==2.24.0
 six==1.15.0
-urllib3==1.25.11
+urllib3==1.26.5
 websocket-client==0.57.0
 Werkzeug==1.0.1
 gevent==20.9.0
