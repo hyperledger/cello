@@ -54,21 +54,25 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - /var/run/:/host/var/run/
       - /opt/cello:/opt/cello
      # - /etc/localtime:/etc/localtime 
     networks:
       - cello-net
 
+  # cello docker agent may deploy to an individual server. This cofig only serves development purpose.
   cello-docker-agent:
     image: hyperledger/cello-agent-docker
-    container_name: cello.docker.agent
+    container_name: cello-docker-agent
+    hostname: cello.docker.agent
     restart: always
     ports:
       - "2375:2375"
       - "5001:5001"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DOCKER_URL=unix://var/run/docker.sock
+      - STORAGE_PATH=/opt/hyperledger
     networks:
       - cello-net
 
@@ -77,7 +81,7 @@ networks:
     name: cello-net
 
 volumes:
-  cello-docker-agent:
   cello-api-engine:
   cello-postgres:
   cello-dashboard:
+  cello-docker-agent:

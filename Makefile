@@ -46,6 +46,7 @@ IS_RELEASE=false
 DOCKER_BASE_x86_64=python:3.6
 DOCKER_BASE_ppc64le=ppc64le/python:3.6
 DOCKER_BASE_s390x=s390x/python:3.6
+DOCKER_BASE_arm64=python:3.6
 DOCKER_BASE=$(DOCKER_BASE_$(ARCH))
 BASE_VERSION ?= $(ARCH)-$(VERSION)
 
@@ -303,13 +304,21 @@ HELP_FUN = \
 	print "\n"; }
 
 api-engine: # for debug only now
-	docker build -t hyperledger/cello-api-engine:latest -f build_image/docker/common/api-engine/Dockerfile.in ./
+	if [ "$(ARCH)" = "arm64" ]; then \
+		docker build -t hyperledger/cello-api-engine:latest -f build_image/docker/common/api-engine/Dockerfile.in ./ --platform linux/amd64; \
+	else \
+		docker build -t hyperledger/cello-api-engine:latest -f build_image/docker/common/api-engine/Dockerfile.in ./; \
+	fi
 
 dashboard: # for debug only now
 	docker build -t hyperledger/cello-dashboard:latest -f build_image/docker/common/dashboard/Dockerfile.in ./
 
 docker-rest-agent: # for debug only now
-	docker build -t hyperledger/cello-agent-docker:latest -f build_image/docker/agent/docker-rest-agent/Dockerfile.in ./ --build-arg pip=$(PIP)
+	if [ "$(ARCH)" = "arm64" ]; then \
+		docker build -t hyperledger/cello-agent-docker:latest -f build_image/docker/agent/docker-rest-agent/Dockerfile.in ./ --build-arg pip=$(PIP) --platform linux/amd64; \
+	else \
+		docker build -t hyperledger/cello-agent-docker:latest -f build_image/docker/agent/docker-rest-agent/Dockerfile.in ./ --build-arg pip=$(PIP); \
+	fi
 
 start-dashboard:
 	make -C src/dashboard start;
