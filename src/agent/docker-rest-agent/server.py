@@ -10,6 +10,7 @@ PASS_CODE = 'OK'
 FAIL_CODE = 'Fail'
 
 docker_url = os.getenv("DOCKER_URL")
+storage_path = os.getenv("STORAGE_PATH")
 
 client = docker.DockerClient(docker_url)
 res = {'code': '', 'data': {}, 'msg': ''}
@@ -39,12 +40,12 @@ def create_node():
     'HLF_NODE_BOOTSTRAP_BLOCK':request.form.get('bootstrap_block'),
     'HLF_NODE_PEER_CONFIG':request.form.get('peer_config_file'),
     'HLF_NODE_ORDERER_CONFIG':request.form.get('orderer_config_file'),
+    'platform': 'linux/amd64',
     }
     port_map = ast.literal_eval(request.form.get("port_map"))
     volumes = [        
-        '/var/run/:/host/var/run/', 
-        '/opt/hyperledger/fabric/{}:/etc/hyperledger/fabric'.format(node_name),
-        '/opt/hyperledger/production/{}:/var/hyperledger/production'.format(node_name)
+        '{}/fabric/{}:/etc/hyperledger/fabric'.format(storage_path, node_name),
+        '{}/production/{}:/var/hyperledger/production'.format(storage_path, node_name)
     ]
     if request.form.get('type') == "peer":
         peer_envs = {
