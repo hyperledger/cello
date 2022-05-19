@@ -1,11 +1,13 @@
+#
+# SPDX-License-Identifier: Apache-2.0
+#
 from rest_framework import serializers
 
-from api.models import Channel, Organization
+from api.models import Channel
 from api.common.serializers import ListResponseSerializer
 
 
 class ChannelCreateBody(serializers.Serializer):
-    #organization = serializers.UUIDField(help_text="ID of Organization")
     name = serializers.CharField(max_length=128, required=True)
     peers = serializers.ListField(
         child=serializers.UUIDField(help_text="ID of Peer Nodes")

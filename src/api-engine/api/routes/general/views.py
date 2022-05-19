@@ -11,12 +11,11 @@ from rest_framework_jwt.views import ObtainJSONWebToken
 from api.models import UserProfile, Organization
 from api.routes.general.serializers import (
     RegisterBody,
-    RegisterIDSerializer,
     RegisterResponse,
-    LoginBody,
+
 )
 from api.lib.pki import CryptoGen, CryptoConfig
-from api.utils import zip_dir, zip_file
+from api.utils import zip_dir
 from api.common import ok, err
 from api.config import CELLO_HOME
 from api.utils.jwt import jwt_response_payload_handler

@@ -4,16 +4,13 @@
 import logging
 
 from django.core.validators import (
-    URLValidator,
     RegexValidator,
     FileExtensionValidator,
 )
 from rest_framework import serializers
 
 from api.common.enums import (
-    NetworkStatus,
     LogLevel,
-    HostType,
     K8SCredentialType,
     separate_upper_class,
 )

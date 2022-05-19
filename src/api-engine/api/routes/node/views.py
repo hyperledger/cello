@@ -8,28 +8,20 @@ import os
 import threading
 
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
-from django.db.models import Count, F
-from django.urls import reverse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
-from api.auth import IsOperatorAuthenticated
-from api.common.enums import NodeStatus, AgentOperation, Operation
+from api.common.enums import  AgentOperation
 from api.exceptions import CustomError, NoResource, ResourceExists, ResourceInUse
 from api.exceptions import ResourceNotFound
 from api.models import (
-    Agent,
     Node,
-    Organization,
     Port,
     FabricCA,
-    FabricNodeType,
     FabricCAServerType,
     NodeUser,
     FabricPeer,
@@ -41,7 +33,6 @@ from api.routes.node.serializers import (
     NodeQuery,
     NodeCreateBody,
     NodeIDSerializer,
-    NodeCIDSerializer,
     NodeListSerializer,
     NodeUpdateBody,
     # NodeFileCreateSerializer,
@@ -54,7 +45,7 @@ from api.routes.node.serializers import (
 )
 from api.tasks import operate_node
 from api.utils.common import with_common_response
-from api.auth import CustomAuthenticate, TokenAuth
+from api.auth import TokenAuth
 from api.lib.pki import CryptoGen, CryptoConfig
 from api.utils import zip_dir, zip_file
 from api.config import (

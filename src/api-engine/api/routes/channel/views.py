@@ -1,3 +1,6 @@
+#
+# SPDX-License-Identifier: Apache-2.0
+#
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
@@ -13,14 +16,12 @@ from api.utils.common import with_common_response
 from api.auth import TokenAuth
 from api.lib.configtxgen import ConfigTX, ConfigTxGen
 from api.lib.peer.channel import Channel as PeerChannel
-from api.lib.configtxlator.configtxlator import ConfigTxLator
 from api.exceptions import (
     ResourceNotFound,
 )
 from api.models import (
     Channel,
     Node,
-    Port
 )
 from api.routes.channel.serializers import (
     ChannelCreateBody,

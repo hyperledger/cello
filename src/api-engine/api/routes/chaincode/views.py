@@ -6,6 +6,9 @@ import os
 import zipfile
 
 from drf_yasg.utils import swagger_auto_schema
+#
+# SPDX-License-Identifier: Apache-2.0
+#
 from api.config import FABRIC_CHAINCODE_STORE
 from api.config import CELLO_HOME
 from api.models import (

@@ -9,11 +9,8 @@ from django.db.models import Q
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
-from api.auth import IsAdminAuthenticated, IsOperatorAuthenticated
 from api.exceptions import ResourceExists, CustomError
 from api.models import UserProfile
 from api.routes.user.serializers import (
@@ -22,9 +19,7 @@ from api.routes.user.serializers import (
     UserQuerySerializer,
     UserListSerializer,
 )
-from api.utils.common import any_of
 from api.utils.common import with_common_response
-from api.auth import TokenAuth
 
 LOG = logging.getLogger(__name__)
 

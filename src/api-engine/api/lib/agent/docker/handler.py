@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import logging
-from requests import put, get, post
+from requests import get, post
 import json
 
 from api.lib.agent.base import AgentBase

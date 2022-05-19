@@ -7,7 +7,6 @@ from api.common.enums import (
     NetworkOperation,
     ChannelType,
     FabricNodeType,
-    NetworkCreateType,
 )
 from api.models import Network
 
