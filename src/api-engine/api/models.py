@@ -5,11 +5,9 @@ import os
 import shutil
 import tarfile
 from zipfile import ZipFile
-from pathlib import Path
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
-from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -19,7 +17,6 @@ from django.contrib.postgres.fields import ArrayField
 
 from api.common.enums import (
     HostStatus,
-    LogLevel,
     HostType,
     K8SCredentialType,
     separate_upper_class,
@@ -262,7 +259,7 @@ class KubernetesConfig(models.Model):
         max_length=256,
         blank=True,
     )
-    parameters = JSONField(
+    parameters = models.JSONField(
         help_text="Extra parameters for kubernetes",
         default=dict,
         null=True,
@@ -379,7 +376,7 @@ class FabricCA(models.Model):
         default="adminpw",
         max_length=32,
     )
-    hosts = JSONField(
+    hosts = models.JSONField(
         help_text="Hosts for ca", null=True, blank=True, default=list
     )
     type = models.CharField(
@@ -486,7 +483,7 @@ class Node(models.Model):
         % (FabricNodeType.names()),
         max_length=64,
     )
-    urls = JSONField(
+    urls = models.JSONField(
         help_text="URL configurations for node",
         null=True,
         blank=True,
@@ -739,7 +736,6 @@ class Channel(models.Model):
     organizations = models.ManyToManyField(
         to="Organization",
         help_text="the organization of the channel",
-        null=True,
         related_name="channels",
         # on_delete=models.SET_NULL
     )
@@ -752,7 +748,6 @@ class Channel(models.Model):
     orderers = models.ManyToManyField(
         to="Node",
         help_text="Orderer list in the channel",
-        null=True,
     )
 
     # class ChainCode(models.Model):

@@ -8,28 +8,16 @@ import os
 
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
-from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
-from api.auth import IsOperatorAuthenticated
 from api.utils.common import with_common_response
 from api.exceptions import ResourceExists, ResourceNotFound, ResourceInUse
 from api.models import (
-    Agent,
     Node,
     Organization,
-    Port,
-    FabricCA,
-    FabricNodeType,
-    FabricCAServerType,
-    NodeUser,
-    FabricPeer,
-    PeerCa,
-    PeerCaUser,
 )
 from api.routes.organization.serializers import (
     OrganizationQuery,
@@ -40,15 +28,17 @@ from api.routes.organization.serializers import (
     OrganizationUpdateBody,
 )
 from api.routes.user.serializers import UserIDSerializer
-from api.models import UserProfile, Organization, Network
+from api.models import UserProfile, Organization
 from api.routes.user.serializers import UserListSerializer, UserQuerySerializer
 from api.lib.pki import CryptoGen, CryptoConfig
 from api.utils import zip_dir, zip_file
 from api.config import CELLO_HOME
-from api.auth import TokenAuth
 from api.utils.node_config import NodeConfig
 
-from api.common import ok, err
+from api.common import (
+    ok, 
+    #err
+)
 
 LOG = logging.getLogger(__name__)
 

@@ -3,27 +3,20 @@
 #
 import logging
 
-from django.core.validators import FileExtensionValidator
 from rest_framework import serializers
 from api.common.enums import (
     Operation,
-    NetworkType,
-    FabricNodeType,
-    FabricVersions,
-    HostType,
 )
 from api.common.serializers import PageQuerySerializer
 from api.models import (
     Node,
     Port,
     FabricCA,
-    validate_file,
     NodeUser,
     FabricPeer,
     PeerCa,
     PeerCaUser,
 )
-from api.utils.common import to_form_paras
 
 LOG = logging.getLogger(__name__)
 

@@ -17,20 +17,15 @@ from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from api.routes.network.serializers import (
     NetworkQuery,
     NetworkListResponse,
-    NetworkOperationBody,
-    ChannelBody,
-    ChannelID,
-    ChannelCreateBody,
     NetworkMemberResponse,
     NetworkCreateBody,
     NetworkIDSerializer,
 )
 from api.utils.common import with_common_response
-from api.common.enums import NodeStatus
 from api.lib.configtxgen import ConfigTX, ConfigTxGen
 from api.models import Network, Node, Port
 from api.config import CELLO_HOME
-from api.utils import zip_dir, zip_file
+from api.utils import zip_file
 from api.auth import TokenAuth
 from api.lib.agent import AgentHandler
 from api.common import ok, err
