@@ -129,4 +129,22 @@ Can you find anyone better at playing chains? :)
 ## Incubation Notice
 This project is a Hyperledger project in _Incubation_. It was proposed to the community and documented [here](https://docs.google.com/document/d/1E2i5GRqWsIag7KTxjQ_jQdDiWcuikv3KqXeuw7NaceM/edit), and was approved by [Hyperledger TSC at 2017-01-07](https://lists.hyperledger.org/pipermail/hyperledger-tsc/2017-January/000535.html). Information on what _Incubation_ entails can be found in the [Hyperledger Project Lifecycle document](https://goo.gl/4edNRc).
 
+## Inclusive Language Statement
+
+These guiding principles are very important to the maintainers and therefore
+we respectfully ask all contributors to abide by them as well:
+
+- Consider that users who will read the docs are from different backgrounds and
+cultures and that they have different preferences.
+- Avoid potential offensive terms and, for instance, prefer "allow list and
+deny list" to "white list and black list".
+- We believe that we all have a role to play to improve our world, and even if
+writing inclusive documentation might not look like a huge improvement, it's a
+first step in the right direction.
+- We suggest to refer to
+[Microsoft bias free writing guidelines](https://docs.microsoft.com/en-us/style-guide/bias-free-communication)
+and
+[Google inclusive doc writing guide](https://developers.google.com/style/inclusive-documentation)
+as starting points.
+
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
