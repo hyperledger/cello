@@ -120,23 +120,6 @@ class NodeViewSet(viewsets.ViewSet):
                 nodes = Node.objects.filter(**query_filter)
                 p = Paginator(nodes, per_page)
                 nodes = p.page(page)
-                nodes = [
-                    {
-                        "id": str(node.id),
-                        "name": node.name,
-                        "type": node.type,
-                        "organization": node.organization,
-                        "urls": node.urls,
-                        "network": str(node.organization.network.id) if node.organization.network else None,
-                        "agents": node.agent if node.agent else None,
-                        #"channel": str(node.organization.channel.id) if node.organization.channel else None,
-                        "ports": node.port,
-                        "created_at": node.created_at,
-                        "status": node.status
-                    }
-                    for node in nodes
-                ]
-
                 response = NodeListSerializer({"total": p.count, "data": nodes})
                 return Response(data=ok(response.data), status=status.HTTP_200_OK)
         except Exception as e:
