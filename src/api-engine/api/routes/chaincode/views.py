@@ -22,6 +22,7 @@ from api.lib.peer.chaincode import ChainCode as PeerChainCode
 from api.common.serializers import PageQuerySerializer
 from api.auth import TokenAuth
 from api.utils.common import with_common_response
+from api.exceptions import ResourceNotFound
 
 from api.routes.chaincode.serializers import (
     ChainCodePackageBody,
@@ -135,7 +136,10 @@ class ChainCodeViewSet(viewsets.ViewSet):
                         break
 
                 org = request.user.organization
-                peer_node = Node.objects.get(type="peer", organization=org.id)
+                qs = Node.objects.filter(type="peer", organization=org)
+                if not qs.exists():
+                    raise ResourceNotFound
+                peer_node = qs.first()
                 envs = init_env_vars(peer_node, org)
 
                 peer_channel_cli = PeerChainCode("v2.2.0", **envs)
