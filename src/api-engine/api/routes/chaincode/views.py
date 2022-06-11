@@ -182,7 +182,10 @@ class ChainCodeViewSet(viewsets.ViewSet):
                 break
 
             org = request.user.organization
-            peer_node = Node.objects.get(type="peer", organization=org.id)
+            qs = Node.objects.filter(type="peer", organization=org)
+            if not qs.exists():
+                raise ResourceNotFound
+            peer_node = qs.first()
             envs = init_env_vars(peer_node, org)
 
             peer_channel_cli = PeerChainCode("v2.2.0", **envs)
@@ -207,7 +210,10 @@ class ChainCodeViewSet(viewsets.ViewSet):
     def query_installed(self, request):
         try:
             org = request.user.organization
-            peer_node = Node.objects.get(type="peer", organization=org.id)
+            qs = Node.objects.filter(type="peer", organization=org)
+            if not qs.exists():
+                raise ResourceNotFound
+            peer_node = qs.first()
             envs = init_env_vars(peer_node, org)
 
             timeout = "5s"
@@ -233,7 +239,10 @@ class ChainCodeViewSet(viewsets.ViewSet):
     def get_installed_package(self, request):
         try:
             org = request.user.organization
-            peer_node = Node.objects.get(type="peer", organization=org.id)
+            qs = Node.objects.filter(type="peer", organization=org)
+            if not qs.exists():
+                raise ResourceNotFound
+            peer_node = qs.first()
             envs = init_env_vars(peer_node, org)
 
             timeout = "5s"
@@ -270,7 +279,10 @@ class ChainCodeViewSet(viewsets.ViewSet):
                 sequence = serializer.validated_data.get("sequence")
 
                 org = request.user.organization
-                orderer_node = Node.objects.get(type="orderer", organization=org.id)
+                qs = Node.objects.filter(type="orderer", organization=org)
+                if not qs.exists():
+                    raise ResourceNotFound
+                orderer_node = qs.first()
 
                 orderer_tls_dir = "{}/{}/crypto-config/ordererOrganizations/{}/orderers/{}/msp/tlscacerts" \
                                   .format(CELLO_HOME, org.name, org.name.split(".", 1)[1], orderer_node.name + "." +
@@ -279,8 +291,10 @@ class ChainCodeViewSet(viewsets.ViewSet):
                 for _, _, files in os.walk(orderer_tls_dir):
                     orderer_tls_root_cert = orderer_tls_dir + "/" + files[0]
                     break
-
-                peer_node = Node.objects.get(type="peer", organization=org.id)
+                qs = Node.objects.filter(type="peer", organization=org)
+                if not qs.exists():
+                    raise ResourceNotFound
+                peer_node = qs.first()
                 envs = init_env_vars(peer_node, org)
 
                 peer_channel_cli = PeerChainCode("v2.2.0", **envs)
@@ -306,7 +320,10 @@ class ChainCodeViewSet(viewsets.ViewSet):
     def query_approved(self, request):
         try:
             org = request.user.organization
-            peer_node = Node.objects.get(type="peer", organization=org.id)
+            qs = Node.objects.filter(type="peer", organization=org)
+            if not qs.exists():
+                raise ResourceNotFound
+            peer_node = qs.first()
             envs = init_env_vars(peer_node, org)
 
             channel_name = request.data.get("channel_name")
@@ -344,7 +361,10 @@ class ChainCodeViewSet(viewsets.ViewSet):
                 orderer_url = serializer.validated_data.get("orderer_url")
                 sequence = serializer.validated_data.get("sequence")
                 org = request.user.organization
-                orderer_node = Node.objects.get(type="orderer", organization=org.id)
+                qs = Node.objects.filter(type="orderer", organization=org)
+                if not qs.exists():
+                    raise ResourceNotFound
+                orderer_node = qs.first()
 
                 orderer_tls_dir = "{}/{}/crypto-config/ordererOrganizations/{}/orderers/{}/msp/tlscacerts" \
                     .format(CELLO_HOME, org.name, org.name.split(".", 1)[1], orderer_node.name + "." +
@@ -355,7 +375,10 @@ class ChainCodeViewSet(viewsets.ViewSet):
                     orderer_tls_root_cert = orderer_tls_dir + "/" + files[0]
                     break
 
-                peer_node = Node.objects.get(type="peer", organization=org.id)
+                qs = Node.objects.filter(type="peer", organization=org)
+                if not qs.exists():
+                    raise ResourceNotFound
+                peer_node = qs.first()
                 envs = init_env_vars(peer_node, org)
 
                 peer_channel_cli = PeerChainCode("v2.2.0", **envs)
@@ -393,7 +416,10 @@ class ChainCodeViewSet(viewsets.ViewSet):
                 sequence = serializer.validated_data.get("sequence")
                 peer_list = serializer.validated_data.get("peer_list")
                 org = request.user.organization
-                orderer_node = Node.objects.get(type="orderer", organization=org.id)
+                qs = Node.objects.filter(type="orderer", organization=org)
+                if not qs.exists():
+                    raise ResourceNotFound
+                orderer_node = qs.first()
 
                 orderer_tls_dir = "{}/{}/crypto-config/ordererOrganizations/{}/orderers/{}/msp/tlscacerts" \
                     .format(CELLO_HOME, org.name, org.name.split(".", 1)[1], orderer_node.name + "." +
@@ -402,8 +428,11 @@ class ChainCodeViewSet(viewsets.ViewSet):
                 for _, _, files in os.walk(orderer_tls_dir):
                     orderer_tls_root_cert = orderer_tls_dir + "/" + files[0]
                     break
-
-                peer_node = Node.objects.get(type="peer", organization=org.id)
+                
+                qs = Node.objects.filter(type="peer", organization=org)
+                if not qs.exists():
+                    raise ResourceNotFound
+                peer_node = qs.first()
                 envs = init_env_vars(peer_node, org)
 
                 peer_root_certs = []
@@ -446,8 +475,10 @@ class ChainCodeViewSet(viewsets.ViewSet):
                 channel_name = request.data.get("channel_name")
                 chaincode_name = request.data.get("chaincode_name")
                 org = request.user.organization
-
-                peer_node = Node.objects.get(type="peer", organization=org.id)
+                qs = Node.objects.filter(type="peer", organization=org)
+                if not qs.exists():
+                    raise ResourceNotFound
+                peer_node = qs.first()
                 envs = init_env_vars(peer_node, org)
                 peer_channel_cli = PeerChainCode("v2.2.0", **envs)
                 code, chaincodes_commited = peer_channel_cli.lifecycle_query_committed(channel_name, chaincode_name)
