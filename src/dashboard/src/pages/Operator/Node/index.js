@@ -566,39 +566,11 @@ class Index extends PureComponent {
             </a>
           </Menu.Item>
         )}
-        {
-          record.status === 'stopped' &&
-          <Menu.Item>
-            <a onClick={() => this.operationForNode('start', record)}>
-              {intl.formatMessage({
-                id: 'app.operator.node.table.operation.start',
-                defaultMessage: 'Start',
-              })}
-            </a>
-          </Menu.Item>
-        }
-        {
-          record.status === 'running' &&
-          <Menu.Item>
-            <a onClick={() => this.operationForNode('stop', record)}>
-              {intl.formatMessage({
-                id: 'app.operator.node.table.operation.stop',
-                defaultMessage: 'Stop',
-              })}
-            </a>
-          </Menu.Item>
-        }
-        {
-          record.status === 'stopped' &&
-          <Menu.Item>
-            <a onClick={() => this.operationForNode('restart', record)}>
-              {intl.formatMessage({
-                id: 'app.operator.node.table.operation.restart',
-                defaultMessage: 'Restart',
-              })}
-            </a>
-          </Menu.Item>
-        }
+        <Menu.Item>
+          <a onClick={() => this.handleDeleteNode(record)}>
+            {intl.formatMessage({ id: 'form.menu.item.delete', defaultMessage: 'Delete' })}
+          </a>
+        </Menu.Item>
       </Menu>
     );
 
@@ -652,9 +624,26 @@ class Index extends PureComponent {
         }),
         render: (text, record) => (
           <Fragment>
-            <a className={styles.danger} onClick={() => this.handleDeleteNode(record)}>
-              {intl.formatMessage({ id: 'form.menu.item.delete', defaultMessage: 'Delete' })}
-            </a>
+            {
+              record.status === 'running' &&
+              <a onClick={() => this.operationForNode('stop', record)}>
+                {intl.formatMessage({
+                  id: 'app.operator.node.table.operation.stop',
+                  defaultMessage: 'Stop',
+                })}
+              </a>
+            }
+            {
+              record.status === 'stopped' &&
+              <Menu.Item>
+                <a onClick={() => this.operationForNode('start', record)}>
+                  {intl.formatMessage({
+                    id: 'app.operator.node.table.operation.start',
+                    defaultMessage: 'Start',
+                  })}
+                </a>
+              </Menu.Item>
+            }
             <Divider type="vertical" />
             <MoreBtn {...record} />
           </Fragment>
