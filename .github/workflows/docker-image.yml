@@ -1,0 +1,22 @@
+name: Cello CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build images
+      run: |
+        docker build . --file "build_image/docker/common/api-engine/Dockerfile.in" --tag hyperledger/cello-api-engine:$(date +%s)
+        docker build . --file "build_image/docker/common/nginx/Dockerfile.in" --tag hyperledger/cello-nginx:$(date +%s)
+        docker build . --file "build_image/docker/common/dashboard/Dockerfile.in" --tag hyperledger/cello-dashboard:$(date +%s)
+        docker build . --file "build_image/docker/agent/ansible/Dockerfile.in" --tag hyperledger/cello-ansible-agent:$(date +%s)

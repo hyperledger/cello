@@ -17,11 +17,13 @@ stages:
   displayName: Check license and documents
   jobs:
   - job: CheckLicenseAndDocs
+    condition: false
     steps:
     - template: ci/check-license-and-docs.yml
 
 - stage: ProcessComponents
   displayName: ProcessComponents
+  condition: false
   jobs:
   - template: ci/process-components.yml
     parameters:
