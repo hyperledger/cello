@@ -110,6 +110,8 @@ ingress.extensions/ingress-api-engine   *                 80      7s
 $ make stop
 ```
 
+* Check [troubleshoot](https://github.com/hyperledger/cello/blob/main/docs/setup/server.md#3-troubleshoot) section if you get any question.
+
 
 ## Main Features
 * Manage the lifecycle of blockchains, e.g., create/start/stop/delete/keep health automatically.
