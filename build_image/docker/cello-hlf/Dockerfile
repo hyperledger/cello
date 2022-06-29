@@ -27,7 +27,7 @@ ENV DEBIAN_FRONTEND noninteractive
 
 # Only useful for this Dockerfile
 ENV FABRIC_ROOT=$GOPATH/src/github.com/hyperledger/fabric \
-    FABRIC_CA_ROOT=$GOPATH/src/github.com/hyperledger/fabric-ca
+        FABRIC_CA_ROOT=$GOPATH/src/github.com/hyperledger/fabric-ca
 
 # BASE_VERSION is used in metadata.Version as major version
 ENV BASE_VERSION=2.2.0
@@ -42,9 +42,9 @@ ENV TWO_DIGIT_VERSION=2.2
 
 ENV BASE_DOCKER_NS=hyperledger
 ENV LD_FLAGS="-X github.com/hyperledger/fabric/common/metadata.Version=${PROJECT_VERSION} \
-              -X github.com/hyperledger/fabric/common/metadata.BaseDockerLabel=org.hyperledger.fabric \
-              -X github.com/hyperledger/fabric/common/metadata.DockerNamespace=hyperledger \
-              -X github.com/hyperledger/fabric/common/metadata.BaseDockerNamespace=hyperledger"
+        -X github.com/hyperledger/fabric/common/metadata.BaseDockerLabel=org.hyperledger.fabric \
+        -X github.com/hyperledger/fabric/common/metadata.DockerNamespace=hyperledger \
+        -X github.com/hyperledger/fabric/common/metadata.BaseDockerNamespace=hyperledger"
 
 # -X github.com/hyperledger/fabric/common/metadata.Experimental=true \
 # -linkmode external -extldflags '-static -lpthread'"
@@ -54,18 +54,18 @@ ENV FABRIC_CFG_PATH=/etc/hyperledger/fabric
 
 # peer env
 ENV CORE_PEER_MSPCONFIGPATH=$FABRIC_CFG_PATH/msp \
-    FABRIC_LOGGING_SPEC=DEBUG
+        FABRIC_LOGGING_SPEC=DEBUG
 
 # orderer env
 ENV ORDERER_GENERAL_LOCALMSPDIR=$FABRIC_CFG_PATH/msp \
-    ORDERER_GENERAL_LISTENADDRESS=0.0.0.0 \
-    ORDERER_GENERAL_GENESISPROFILE=TwoOrgsOrdererGenesis
+        ORDERER_GENERAL_LISTENADDRESS=0.0.0.0 \
+        ORDERER_GENERAL_GENESISPROFILE=TwoOrgsOrdererGenesis
 
 # ca env. ca-server and ca-client will check the following env in order, to get the home cfg path
 ENV FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server \
-    FABRIC_CA_SERVER_HOME=/etc/hyperledger/fabric-ca-server \
-    FABRIC_CA_CLIENT_HOME=/root/.fabric-ca-client \
-    CA_CFG_PATH=/etc/hyperledger/fabric-ca
+        FABRIC_CA_SERVER_HOME=/etc/hyperledger/fabric-ca-server \
+        FABRIC_CA_CLIENT_HOME=/root/.fabric-ca-client \
+        CA_CFG_PATH=/etc/hyperledger/fabric-ca
 
 RUN mkdir -p /var/hyperledger/production \
         $GOPATH/src/github.com/hyperledger \
@@ -80,11 +80,11 @@ RUN mkdir -p /var/hyperledger/production \
 
 # Install development dependencies
 RUN apt-get update \
-        && apt-get install -y apt-utils python3-dev \
+        && apt-get install -y apt-utils python3-dev docker-compose-plugin\
         && apt-get install -y libsnappy-dev zlib1g-dev libbz2-dev libyaml-dev libltdl-dev libtool \
         && apt-get install -y python3-pip \
         && apt-get install -y vim tree jq unzip \
-        && pip3 install behave nose docker-compose \
+        && pip3 install behave nose \
         && pip3 install pyinotify \
         && rm -rf /var/cache/apt
 
@@ -109,7 +109,7 @@ RUN cd $GOPATH/src/github.com/hyperledger \
         && unzip v${PROJECT_VERSION}.zip \
         && rm v${PROJECT_VERSION}.zip \
         && mv fabric-${PROJECT_VERSION} fabric \
-	&& echo "*                hard    nofile          65536" >> /etc/security/limits.conf \
+        && echo "*                hard    nofile          65536" >> /etc/security/limits.conf \
         && echo "*                soft    nofile          8192" >> /etc/security/limits.conf \
         && cp -r $FABRIC_ROOT/sampleconfig/* $FABRIC_CFG_PATH/
 
@@ -141,10 +141,10 @@ RUN cd $GOPATH/src/github.com/hyperledger \
         && unzip v${HLF_CA_VERSION}.zip \
         && rm v${HLF_CA_VERSION}.zip \
         && mv fabric-ca-${HLF_CA_VERSION} fabric-ca \
-# This will install fabric-ca-server and fabric-ca-client into $GOPATH/bin/
+        # This will install fabric-ca-server and fabric-ca-client into $GOPATH/bin/
         && go install -ldflags "-X github.com/hyperledger/fabric-ca/lib/metadata.Version=$PROJECT_VERSION -linkmode external -extldflags '-static -lpthread'" github.com/hyperledger/fabric-ca/cmd/... \
-# Copy example ca and key files
-#&& cp $FABRIC_CA_ROOT/images/fabric-ca/payload/*.pem $FABRIC_CA_HOME/ \
+        # Copy example ca and key files
+        #&& cp $FABRIC_CA_ROOT/images/fabric-ca/payload/*.pem $FABRIC_CA_HOME/ \
         && go clean
 
 # This is useful to debug local code with mapping inside

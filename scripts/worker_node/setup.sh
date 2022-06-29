@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-# This script will try setup a valid environment for the docker-compose running.
+# This script will try setup a valid environment for the docker compose running.
 # It should be triggered by the `make setup-worker`, and safe to repeat.
 # 1) Install required softwares;
 # 2) Download blockchain images.

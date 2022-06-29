@@ -202,17 +202,17 @@ doc: ##@Create local online documentation and start serve
 
 # Use like "make log service=dashboard"
 log: ##@Log tail special service log, Use like "make log service=dashboard"
-	docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} logs --tail=200 -f ${service}
+	docker compose -f bootup/docker-compose-files/${COMPOSE_FILE} logs --tail=200 -f ${service}
 
 logs: ##@Log tail for all service log
-	docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} logs -f --tail=200
+	docker compose -f bootup/docker-compose-files/${COMPOSE_FILE} logs -f --tail=200
 
 image-clean: clean ##@Clean all existing images to rebuild
 	echo "Clean all cello related images, may need to remove all containers before"
 	docker images | grep "cello-" | awk '{print $3}' | xargs docker rmi -f
 
 start-docker-compose:
-	docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} up -d --force-recreate --remove-orphans
+	docker compose -f bootup/docker-compose-files/${COMPOSE_FILE} up -d --force-recreate --remove-orphans
 
 start: ##@Service Start service
 	if [ "$(CONFIG_DOCKER_COMPOSE_DEPLOY)" = "y" ]; then \
@@ -223,7 +223,7 @@ start: ##@Service Start service
 
 stop-docker-compose:
 	echo "Stop all services with bootup/docker-compose-files/${COMPOSE_FILE}..."
-	docker-compose -f bootup/docker-compose-files/${COMPOSE_FILE} stop
+	docker compose -f bootup/docker-compose-files/${COMPOSE_FILE} stop
 	echo "Stop all services successfully"
  
 
@@ -244,7 +244,7 @@ test-api:
 	@$(MAKE) -C tests/postman/ test-api
 
 check-dashboard:
-	docker-compose -f tests/dashboard/docker-compose.yml up --abort-on-container-exit || (echo "check dashboard failed $$?"; exit 1)
+	docker compose -f tests/dashboard/docker-compose.yml up --abort-on-container-exit || (echo "check dashboard failed $$?"; exit 1)
 
 stop-k8s:
 	@$(MAKE) -C bootup/kubernetes stop
