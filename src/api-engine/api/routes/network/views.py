@@ -111,16 +111,16 @@ class NetworkViewSet(viewsets.ViewSet):
             node = Node.objects.get(id=pk)
             org = node.organization
             if org is None:
-                raise ResourceNotFound
+                raise ResourceNotFound(detail="Organization Not Found")
             network = org.network
             if network is None:
-                raise ResourceNotFound
+                raise ResourceNotFound(detail="Network Not Found")
             agent = org.agent.get()
             if agent is None:
-                raise ResourceNotFound
+                raise ResourceNotFound(detail="Agent Not Found")
             ports = Port.objects.filter(node=node)
             if ports is None:
-                raise ResourceNotFound
+                raise ResourceNotFound(detail="Port Not Found")
 
             info = {}
 
@@ -155,7 +155,7 @@ class NetworkViewSet(viewsets.ViewSet):
             if cid:
                 node_qs.update(cid=cid, status="running")
             else:
-                raise ResourceNotFound
+                raise ResourceNotFound(detail="Container Not Built")
         except Exception as e:
             raise e
 
@@ -181,12 +181,12 @@ class NetworkViewSet(viewsets.ViewSet):
 
                 try:
                     if Network.objects.get(name=name):
-                        raise ResourceExists
+                        raise ResourceExists(detail="Network exists")
                 except ObjectDoesNotExist:
                     pass
                 org = request.user.organization
                 if org.network:
-                    raise ResourceExists
+                    raise ResourceExists(detail="Network exists for the organization")
 
                 orderers = []
                 peers = []

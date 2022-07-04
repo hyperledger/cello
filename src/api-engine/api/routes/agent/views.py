@@ -167,7 +167,7 @@ class AgentViewSet(viewsets.ViewSet):
                         name=name
                     ).count()
                     if agent_count > 0:
-                        raise ResourceExists
+                        raise ResourceExists("Agent Exists")
 
                     body.update({"name": name})
 
@@ -176,7 +176,7 @@ class AgentViewSet(viewsets.ViewSet):
 
                 org = request.user.organization
                 if org.agent.all():
-                    raise ResourceExists
+                    raise ResourceExists("Agent Exists for the Organization")
                 else:
                     body.update({"organization": org})
 

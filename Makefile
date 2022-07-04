@@ -186,6 +186,7 @@ clean:
 
 deep-clean:
 	make clean
+	make remove-hyperledger-fabric-containers
 	make image-clean
 
 
@@ -235,6 +236,14 @@ remove-docker-compose:
 		rm -rf /opt/cello; \
 	fi
 	echo "Remove all services successfully"
+
+remove-hyperledger-fabric-containers:
+	echo "Remove all nodes ..."
+	if docker ps -a | grep "hyperledger-fabric"; then \
+		docker ps -a | grep "hyperledger-fabric" | awk '{print $1}' | xargs docker rm -f >/dev/null 2>&1; \
+		rm -rf /opt/hyperledger; \
+	fi
+	echo "Remove all nodes successfully"
 
 start-k8s:
 	@$(MAKE) -C bootup/kubernetes init-yaml
