@@ -10,6 +10,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 
 from api.exceptions import ResourceExists, CustomError
 from api.models import UserProfile
@@ -18,6 +19,7 @@ from api.routes.user.serializers import (
     UserIDSerializer,
     UserQuerySerializer,
     UserListSerializer,
+    UserUpdateSerializer
 )
 from api.utils.common import with_common_response
 
@@ -27,19 +29,6 @@ ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
 
 
 class UserViewSet(viewsets.ViewSet):
-    #authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
-
-    # def get_permissions(self):
-    #     permission_classes = []
-    #
-    #     if self.action not in ["auth"]:
-    #         permission_classes = (
-    #             IsAuthenticated,
-    #             any_of(IsAdminAuthenticated, IsOperatorAuthenticated),
-    #         )
-    #
-    #     return [permission() for permission in permission_classes]
-
     @swagger_auto_schema(
         query_serializer=UserQuerySerializer,
         responses=with_common_response(
@@ -158,9 +147,14 @@ class UserViewSet(viewsets.ViewSet):
         Delete attribute of user
         """
         pass
-
-    @swagger_auto_schema(method="post", responses=with_common_response())
-    @action(methods=["post"], detail=True, url_path="password")
+    @swagger_auto_schema(
+        method="post",
+        request_body=UserUpdateSerializer,
+        responses=with_common_response(
+            {status.HTTP_200_OK: "OK"}
+        )
+    )
+    @action(methods=["post"], detail=True, url_path="password", permission_classes=[IsAuthenticated,])
     def password(self, request, pk=None):
         """
         post:
@@ -168,4 +162,14 @@ class UserViewSet(viewsets.ViewSet):
 
         Update/Reset password for user
         """
-        pass
+        serializer = UserUpdateSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            password = serializer.validated_data.get("password")
+            user = request.user
+            user.set_password(password)
+            user.save()
+            response = UserIDSerializer(data={"id": user.id})
+            if response.is_valid(raise_exception=True):
+                return Response(
+                    response.validated_data, status=status.HTTP_200_OK
+                )
