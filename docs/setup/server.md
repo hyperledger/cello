@@ -2,8 +2,8 @@
 
 * Hardware: 4c8g100g
 * Linux Kernel >= 3.0.0
-* Docker engine: 17.15.5+
-* docker-compose: 1.24.1+
+* Docker engine: 20.10.17+
+* docker compose: 2.6.1+
 
 ## 2. Setup Steps
 
@@ -16,10 +16,12 @@ $ git clone https://github.com/hyperledger/cello.git
 ### 2.2 Prepare environment
 
 1. docker [how install](https://get.docker.com)
-2. docker-compose [how install](https://docs.docker.com/compose/install/)
+2. docker compose (`we switched to` [Docker Compose V2](https://docs.docker.com/compose/#compose-v2-and-the-new-docker-compose-command)) [how install](https://docs.docker.com/compose/install/)
 3. make `all script for cello service management is written in Makefile`
 4. kubernetes (`optional`) [how install](https://kubernetes.io/docs/setup/)
 5. node [how install](https://nodejs.org/en/download/)
+
+As Docker Compose V1 will reach its [end of life](https://www.docker.com/blog/announcing-compose-v2-general-availability/) in April 2023, we switched Docker Compose to V2. Please ensure that you install the correct version.
 
 ### 2.3 Build local images(optional)
 

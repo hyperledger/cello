@@ -28,7 +28,7 @@ A typical usage scenario is illustrated as:
 Environmental preparation:
 
 1. docker [how install](https://get.docker.com)
-2. docker-compose [how install](https://docs.docker.com/compose/install/)
+2. docker compose(`we switched to` [Docker Compose V2](https://docs.docker.com/compose/#compose-v2-and-the-new-docker-compose-command)) [how install](https://docs.docker.com/compose/install/)
 3. make `all script for cello service management is written in Makefile`
 4. kubernetes (`optional`) [how install](https://kubernetes.io/docs/setup/)
 5. node [how install](https://nodejs.org/en/download/)
