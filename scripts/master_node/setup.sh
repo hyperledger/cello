@@ -64,7 +64,7 @@ install_software() {
 			command -v curl >/dev/null 2>&1 || { echo_r >&2 "No curl found, try installing";sudo apt-get install -y curl; }
 			command -v pip >/dev/null 2>&1 || { echo_r >&2 "No pip found, try installing";sudo apt-get install -y python-pip; }
 			command -v docker >/dev/null 2>&1 || { echo_r >&2 "No docker-engine found, try installing"; curl -sSL https://get.docker.com/ | sh; sudo service docker restart; }
-			command -v docker-compose >/dev/null 2>&1 || { echo_r >&2 "No docker-compose found, try installing"; sudo pip install 'docker-compose>=1.17.0'; }
+			command -v docker compose >/dev/null 2>&1 || { echo_r >&2 "No docker compose found, try installing"; sudo apt-get install -y docker-compose-plugin; }
 			sudo apt-get install -y tox nfs-common;
 			;;
 		linuxmint)
@@ -114,7 +114,7 @@ install_software() {
 
 echo_b "Make sure have installed: python-pip, tox, curl and docker-engine"
 install_list=()
-for software in pip tox curl docker docker-compose; do
+for software in pip tox curl docker "docker compose"; do
 	command -v ${software} >/dev/null 2>&1 || { install_list+=($software); break; }
 done
 [ -z "$install_list" ] || install_software $install_list

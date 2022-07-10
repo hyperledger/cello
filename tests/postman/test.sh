@@ -11,6 +11,6 @@
 #        echo "API tests ${filename} passed";
 #    fi
 #done
-docker-compose up --abort-on-container-exit
+docker compose up --abort-on-container-exit
 
 cp ${ROOT_PATH}/tests/postman/junitResult.xml ${ROOT_PATH}/
