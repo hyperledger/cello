@@ -103,7 +103,7 @@ class ChainCodeViewSet(viewsets.ViewSet):
                 file_path = os.path.join(FABRIC_CHAINCODE_STORE, id)
                 if not os.path.exists(file_path):
                     os.makedirs(file_path)
-                fileziped = os.path.join(secure(file_path), file.name)
+                fileziped = os.path.join(file_path, file.name)
                 with open(fileziped, 'wb') as f:
                     for chunk in file.chunks():
                         f.write(chunk)
@@ -115,7 +115,7 @@ class ChainCodeViewSet(viewsets.ViewSet):
                 # When there is go.mod in the chain code, execute the go mod vendor command to obtain dependencies.
                 chaincode_path = file_path
                 found = False
-                for _, dirs, _ in os.walk(secure_file_path(file_path)):
+                for _, dirs, _ in os.walk(file_path):
                     if found:
                         break
                     elif dirs:
@@ -131,7 +131,7 @@ class ChainCodeViewSet(viewsets.ViewSet):
                                 break
                 # if can not find go.mod, use the dir after extract zipped_file
                 if not found:
-                    for _, dirs, _ in os.walk(secure_file_path(file_path)):
+                    for _, dirs, _ in os.walk(file_path):
                         chaincode_path = file_path+"/"+dirs[0]
                         break
 
@@ -144,7 +144,7 @@ class ChainCodeViewSet(viewsets.ViewSet):
 
                 peer_channel_cli = PeerChainCode("v2.2.0", **envs)
                 res = peer_channel_cli.lifecycle_package(name, version, chaincode_path, language)
-                os.system("rm -rf {}/*".format(secure_file_path(file_path)))
+                os.system("rm -rf {}/*".format(file_path))
                 os.system("mv {}.tar.gz {}".format(name, file_path))
                 if res != 0:
                     return Response(err("package chaincode failed."), status=status.HTTP_400_BAD_REQUEST)
@@ -177,7 +177,7 @@ class ChainCodeViewSet(viewsets.ViewSet):
         try:
             cc_targz = ""
             file_path = os.path.join(FABRIC_CHAINCODE_STORE, chaincode_id)
-            for _, _, files in os.walk secure_file_path(file_path):
+            for _, _, files in os.walk(file_path):
                 cc_targz = os.path.join(file_path + "/" + files[0])
                 break
 
