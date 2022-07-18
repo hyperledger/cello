@@ -145,7 +145,7 @@ class ChainCodeViewSet(viewsets.ViewSet):
                 peer_channel_cli = PeerChainCode("v2.2.0", **envs)
                 res = peer_channel_cli.lifecycle_package(name, version, chaincode_path, language)
                 os.system("rm -rf {}/*".format(file_path))
-                os.system("mv {}.tar.gz {}".format(name, secure_file_path(file_path))
+                os.system("mv {}.tar.gz {}".format(name, secure_file_path(file_path)))
                 if res != 0:
                     return Response(err("package chaincode failed."), status=status.HTTP_400_BAD_REQUEST)
                 chaincode = ChainCode(
