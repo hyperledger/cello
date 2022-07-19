@@ -94,6 +94,7 @@ class UserAuthResponseSerializer(serializers.Serializer):
     scope = serializers.CharField(help_text="Scopes for token")
     token_type = serializers.CharField(help_text="Type of token")
 
+
 class UserUpdateSerializer(serializers.Serializer):
     password = serializers.CharField(
         help_text="New password for login", max_length=64

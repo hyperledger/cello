@@ -50,7 +50,7 @@ class ConfigTxGen:
         try:
             call([self.configtxgen, "-configPath", "{}/{}/".format(self.filepath, self.network),
                   "-profile", "{}".format(profile),
-                  "-outputCreateChannelTx", "{}/{}/{}".format(self.filepath, self.network, "channel-artifacts/"+outputCreateChannelTx),
+                  "-outputCreateChannelTx", "{}/{}/{}".format(self.filepath, self.network, "channel-artifacts/" + outputCreateChannelTx),
                   "-channelID", "{}".format(channelid)])
         except Exception as e:
             err_msg = "configtxgen genesis fail! "
@@ -68,4 +68,4 @@ class ConfigTxGen:
 
 
 if __name__ == "__main__":
-    ConfigTxGen("net").channeltx("testchannel","testchannel")
+    ConfigTxGen("net").channeltx("testchannel", "testchannel")

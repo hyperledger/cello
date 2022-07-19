@@ -192,7 +192,7 @@ class NodeInListSerializer(NodeIDSerializer, serializers.ModelSerializer):
         extra_kwargs = {
             "id": {"required": True, "read_only": False},
             "created_at": {"required": True, "read_only": False},
-            #"ca": {"required": False, "allow_null": True},
+            # "ca": {"required": False, "allow_null": True},
         }
 
 
@@ -222,7 +222,6 @@ class NodeInfoSerializer(NodeIDSerializer, serializers.ModelSerializer):
     agent_id = serializers.UUIDField(
         help_text="Agent ID", required=False, allow_null=True
     )
-
 
     class Meta:
         model = Node

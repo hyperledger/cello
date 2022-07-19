@@ -1,3 +1,6 @@
+#
+# SPDX-License-Identifier: Apache-2.0
+#
 import os
 import json
 import subprocess
@@ -21,7 +24,7 @@ class Channel(BasicEnv):
             else:
                 ORDERER_CA = os.getenv("ORDERER_CA")
                 res = os.system("{} channel create -c {} -o {} -f {} --outputBlock {} --timeout {} --tls --cafile {}"
-                    .format(self.peer, channel, orderer_url, channel_tx, output_block, time_out, ORDERER_CA))
+                                .format(self.peer, channel, orderer_url, channel_tx, output_block, time_out, ORDERER_CA))
 
             # The return value of os.system is not the result of executing the program. It is a 16 bit number,
             #  and its high bit is the return code
@@ -62,7 +65,7 @@ class Channel(BasicEnv):
             res = os.system("{} channel update -c {}  -f {} -o {}"
                             .format(self.peer, channel, channel_tx, orderer_url))
         except Exception as e:
-            err_msg = "update channel failed for {e}!"
+            err_msg = "update channel failed for {}!".format(e)
             raise Exception(err_msg)
         res = res >> 8
         return res

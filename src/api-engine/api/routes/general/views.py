@@ -21,7 +21,6 @@ from api.config import CELLO_HOME
 from api.utils.jwt import jwt_response_payload_handler
 from datetime import datetime
 from rest_framework_jwt.settings import api_settings
- 
 
 
 LOG = logging.getLogger(__name__)
@@ -33,7 +32,7 @@ class RegisterViewSet(viewsets.ViewSet):
         try:
             serializer = RegisterBody(data=request.data)
             if serializer.is_valid(raise_exception=True):
-                #username = serializer.validated_data.get("username")
+                # username = serializer.validated_data.get("username")
                 email = serializer.validated_data.get("email")
                 orgname = serializer.validated_data.get("orgName")
                 password = serializer.validated_data.get("password")
@@ -63,9 +62,7 @@ class RegisterViewSet(viewsets.ViewSet):
                     return Response(
                         err("Orgnization already exists!"), status=status.HTTP_409_CONFLICT
                     )
-                
 
-                
                 CryptoConfig(orgname).create(0, 0)
                 CryptoGen(orgname).generate()
 
@@ -116,6 +113,7 @@ class RegisterViewSet(viewsets.ViewSet):
             raise e
 
         return msp, tls
+
 
 class CustomObtainJSONWebToken(ObtainJSONWebToken):
 

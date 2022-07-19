@@ -49,4 +49,3 @@ class CryptoGen:
         except Exception as e:
             err_msg = "cryptogen extend fail for {}!".format(e)
             raise Exception(err_msg)
-

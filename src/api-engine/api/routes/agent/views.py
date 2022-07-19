@@ -245,8 +245,8 @@ class AgentViewSet(viewsets.ViewSet):
             serializer = AgentUpdateBody(data=request.data)
             if serializer.is_valid(raise_exception=True):
                 name = serializer.validated_data.get("name")
-                #urls = serializer.validated_data.get("urls")
-                #organization = request.user.organization
+                # urls = serializer.validated_data.get("urls")
+                # organization = request.user.organization
                 try:
                     if Agent.objects.get(name=name):
                         raise ResourceExists
@@ -291,7 +291,7 @@ class AgentViewSet(viewsets.ViewSet):
                         agent.log_level = log_level
                     agent.save()
 
-                    return Response(ok(None),status=status.HTTP_202_ACCEPTED)
+                    return Response(ok(None), status=status.HTTP_202_ACCEPTED)
         except ResourceNotFound as e:
             raise e
         except Exception as e:

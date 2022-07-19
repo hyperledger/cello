@@ -1,3 +1,6 @@
+#
+# SPDX-License-Identifier: Apache-2.0
+#
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -6,9 +9,6 @@ import os
 import zipfile
 
 from drf_yasg.utils import swagger_auto_schema
-#
-# SPDX-License-Identifier: Apache-2.0
-#
 from api.config import FABRIC_CHAINCODE_STORE
 from api.config import CELLO_HOME
 from api.models import (
@@ -120,8 +120,8 @@ class ChainCodeViewSet(viewsets.ViewSet):
                         break
                     elif dirs:
                         for each in dirs:
-                            chaincode_path += "/"+each
-                            if os.path.exists(chaincode_path+"/go.mod"):
+                            chaincode_path += "/" + each
+                            if os.path.exists(chaincode_path + "/go.mod"):
                                 cwd = os.getcwd()
                                 print("cwd:", cwd)
                                 os.chdir(chaincode_path)
@@ -132,7 +132,7 @@ class ChainCodeViewSet(viewsets.ViewSet):
                 # if can not find go.mod, use the dir after extract zipped_file
                 if not found:
                     for _, dirs, _ in os.walk(file_path):
-                        chaincode_path = file_path+"/"+dirs[0]
+                        chaincode_path = file_path + "/" + dirs[0]
                         break
 
                 org = request.user.organization
@@ -162,8 +162,8 @@ class ChainCodeViewSet(viewsets.ViewSet):
                     err(e.args), status=status.HTTP_400_BAD_REQUEST
                 )
             return Response(
-                          ok("success"), status=status.HTTP_200_OK
-                )
+                           ok("success"), status=status.HTTP_200_OK
+                            )
 
     @swagger_auto_schema(
         method="post",
@@ -299,9 +299,9 @@ class ChainCodeViewSet(viewsets.ViewSet):
 
                 peer_channel_cli = PeerChainCode("v2.2.0", **envs)
                 code, content = peer_channel_cli.lifecycle_approve_for_my_org(orderer_url, orderer_tls_root_cert, channel_name,
-                                                                    chaincode_name, chaincode_version, policy, sequence)
+                                                                              chaincode_name, chaincode_version, policy, sequence)
                 if code != 0:
-                    return Response(err(" lifecycle_approve_for_my_org failed. err: "+content), status=status.HTTP_400_BAD_REQUEST)
+                    return Response(err(" lifecycle_approve_for_my_org failed. err: " + content), status=status.HTTP_400_BAD_REQUEST)
             except Exception as e:
                 return Response(
                     err(e.args), status=status.HTTP_400_BAD_REQUEST
@@ -428,7 +428,7 @@ class ChainCodeViewSet(viewsets.ViewSet):
                 for _, _, files in os.walk(orderer_tls_dir):
                     orderer_tls_root_cert = orderer_tls_dir + "/" + files[0]
                     break
-                
+
                 qs = Node.objects.filter(type="peer", organization=org)
                 if not qs.exists():
                     raise ResourceNotFound
@@ -442,16 +442,16 @@ class ChainCodeViewSet(viewsets.ViewSet):
                     peer_tls_cert = "{}/{}/crypto-config/peerOrganizations/{}/peers/{}/tls/ca.crt" \
                                     .format(CELLO_HOME, org.name, org.name, peer_node.name + "." + org.name)
                     print(peer_node.port)
-                    port = peer_node.port.all()[0].internal
+                    # port = peer_node.port.all()[0].internal
                     # port = ports[0].internal
-                    peer_address = peer_node.name + "." + org.name+":"+str(7051)
+                    peer_address = peer_node.name + "." + org.name + ":" + str(7051)
                     peer_address_list.append(peer_address)
                     peer_root_certs.append(peer_tls_cert)
 
                 peer_channel_cli = PeerChainCode("v2.2.0", **envs)
                 code = peer_channel_cli.lifecycle_commit(orderer_url, orderer_tls_root_cert, channel_name,
-                                                                  chaincode_name, chaincode_version, policy,
-                                                                  peer_address_list, peer_root_certs, sequence)
+                                                         chaincode_name, chaincode_version, policy,
+                                                         peer_address_list, peer_root_certs, sequence)
                 if code != 0:
                     return Response(err("commit failed."), status=status.HTTP_400_BAD_REQUEST)
 
@@ -471,27 +471,26 @@ class ChainCodeViewSet(viewsets.ViewSet):
     )
     @action(detail=False, methods=['get'])
     def query_committed(self, request):
-            try:
-                channel_name = request.data.get("channel_name")
-                chaincode_name = request.data.get("chaincode_name")
-                org = request.user.organization
-                qs = Node.objects.filter(type="peer", organization=org)
-                if not qs.exists():
-                    raise ResourceNotFound
-                peer_node = qs.first()
-                envs = init_env_vars(peer_node, org)
-                peer_channel_cli = PeerChainCode("v2.2.0", **envs)
-                code, chaincodes_commited = peer_channel_cli.lifecycle_query_committed(channel_name, chaincode_name)
-                if code != 0:
-                    return Response(err("query committed failed."), status=status.HTTP_400_BAD_REQUEST)
-            except Exception as e:
-                return Response(
-                err(e.args), status=status.HTTP_400_BAD_REQUEST
-                )
+        try:
+            channel_name = request.data.get("channel_name")
+            chaincode_name = request.data.get("chaincode_name")
+            org = request.user.organization
+            qs = Node.objects.filter(type="peer", organization=org)
+            if not qs.exists():
+                raise ResourceNotFound
+            peer_node = qs.first()
+            envs = init_env_vars(peer_node, org)
+            peer_channel_cli = PeerChainCode("v2.2.0", **envs)
+            code, chaincodes_commited = peer_channel_cli.lifecycle_query_committed(channel_name, chaincode_name)
+            if code != 0:
+                return Response(err("query committed failed."), status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
             return Response(
-                ok(chaincodes_commited), status=status.HTTP_200_OK
+                err(e.args), status=status.HTTP_400_BAD_REQUEST
             )
-
+        return Response(
+            ok(chaincodes_commited), status=status.HTTP_200_OK
+        )
 
 
 def init_env_vars(node, org):
@@ -510,7 +509,7 @@ def init_env_vars(node, org):
 
     envs = {
         "CORE_PEER_TLS_ENABLED": "true",
-        "CORE_PEER_LOCALMSPID": "{}MSP".format(org_name.capitalize()), # "Org1.cello.comMSP"
+        "CORE_PEER_LOCALMSPID": "{}MSP".format(org_name.capitalize()),  # "Org1.cello.comMSP"
         "CORE_PEER_TLS_ROOTCERT_FILE": "{}/{}/peers/{}/tls/ca.crt".format(dir_node, org_name, node.name + "." + org_name),
         "CORE_PEER_ADDRESS": "{}:{}".format(
             node.name + "." + org_name, str(7051)),

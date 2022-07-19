@@ -109,4 +109,3 @@ class CryptoConfig:
         except Exception as e:
             err_msg = "CryptoConfig delete failed for {}!".format(e)
             raise Exception(err_msg)
-

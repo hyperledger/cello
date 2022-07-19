@@ -34,7 +34,7 @@ class DockerAgent(AgentBase):
         """
         try:
             port_map = {str(port.internal): str(port.external) for port in info.get("ports")}
-            
+
             data = {
                 'msp': info.get("msp")[2:-1],
                 'tls': info.get("tls")[2:-1],
@@ -77,7 +77,7 @@ class DockerAgent(AgentBase):
             else:
                 raise response.reason
         except Exception as e:
-                raise e
+            raise e
 
     def restart(self, *args, **kwargs):
         try:
@@ -87,7 +87,7 @@ class DockerAgent(AgentBase):
             else:
                 raise response.reason
         except Exception as e:
-                raise e
+            raise e
 
     def stop(self, *args, **kwargs):
         try:
@@ -97,7 +97,7 @@ class DockerAgent(AgentBase):
             else:
                 raise response.reason
         except Exception as e:
-                raise e
+            raise e
 
     def get(self, *args, **kwargs):
         try:
@@ -107,4 +107,4 @@ class DockerAgent(AgentBase):
             else:
                 raise response.reason
         except Exception as e:
-                raise e
+            raise e

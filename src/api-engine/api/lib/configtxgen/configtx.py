@@ -6,9 +6,11 @@ import os
 from copy import deepcopy
 from api.config import CELLO_HOME
 
+
 def load_configtx(filepath):
-     with open(filepath, 'r', encoding='utf-8') as f:
-           return yaml.load(f,Loader=yaml.FullLoader)
+    with open(filepath, 'r', encoding='utf-8') as f:
+        return yaml.load(f, Loader=yaml.FullLoader)
+
 
 class ConfigTX:
     """Class represents crypto-config yaml."""
@@ -46,36 +48,36 @@ class ConfigTX:
                     application: application
                     option: option
                 return:
-        """ 
+        """
         OrdererDefaults = self.template["Orderer"]
         ChannelDefaults = self.template["Channel"]
         ApplicationDefaults = self.template["Application"]
         ChannelCapabilities = self.template["Capabilities"]["Channel"]
         OrdererCapabilities = self.template["Capabilities"]["Orderer"]
-        ApplicationCapabilities = self.template["Capabilities"]["Application"]         
-        
+        ApplicationCapabilities = self.template["Capabilities"]["Application"]
+
         OrdererOrganizations = []
         OrdererAddress = []
         Consenters = []
-        
+
         for orderer in orderers:
-            OrdererMSP = orderer["name"].capitalize()+"Orderer"
+            OrdererMSP = orderer["name"].capitalize() + "Orderer"
             OrdererOrg = dict(Name=orderer["name"].split(".")[0].capitalize() + "Orderer",
-                                             ID='{}MSP'.format(OrdererMSP),
-                                             MSPDir='{}/{}/crypto-config/ordererOrganizations/{}/msp'.format(self.filepath,orderer["name"],orderer['name'].split(".", 1)[1]),
-                                             Policies=dict(Readers=dict(Type="Signature",Rule="OR('{}MSP.member')".format(OrdererMSP)),
-                                                           Writers=dict(Type="Signature",Rule="OR('{}MSP.member')".format(OrdererMSP)),
-                                                           Admins=dict(Type="Signature",Rule="OR('{}MSP.admin')".format(OrdererMSP)))
-                        )
+                              ID='{}MSP'.format(OrdererMSP),
+                              MSPDir='{}/{}/crypto-config/ordererOrganizations/{}/msp'.format(self.filepath, orderer["name"], orderer['name'].split(".", 1)[1]),
+                              Policies=dict(Readers=dict(Type="Signature", Rule="OR('{}MSP.member')".format(OrdererMSP)),
+                              Writers=dict(Type="Signature", Rule="OR('{}MSP.member')".format(OrdererMSP)),
+                              Admins=dict(Type="Signature", Rule="OR('{}MSP.admin')".format(OrdererMSP)))
+                              )
             for host in orderer['hosts']:
                 OrdererAddress.append('{}.{}:{}'.format(host['name'], orderer['name'].split(".", 1)[1], 7050))
                 Consenters.append(dict(
                     Host='{}.{}'.format(host['name'], orderer['name'].split(".", 1)[1]),
                     Port=7050,
                     ClientTLSCert='{}/{}/crypto-config/ordererOrganizations/{}/orderers/{}.{}/tls/server.crt'
-                                           .format(self.filepath, orderer['name'], orderer['name'].split(".", 1)[1],host['name'], orderer['name'].split(".", 1)[1]),
+                                  .format(self.filepath, orderer['name'], orderer['name'].split(".", 1)[1], host['name'], orderer['name'].split(".", 1)[1]),
                     ServerTLSCert='{}/{}/crypto-config/ordererOrganizations/{}/orderers/{}.{}/tls/server.crt'
-                                           .format(self.filepath, orderer['name'], orderer['name'].split(".", 1)[1], host['name'], orderer['name'].split(".", 1)[1])))
+                                  .format(self.filepath, orderer['name'], orderer['name'].split(".", 1)[1], host['name'], orderer['name'].split(".", 1)[1])))
             OrdererOrg["OrdererEndpoints"] = deepcopy(OrdererAddress)
             OrdererOrganizations.append(OrdererOrg)
 
@@ -85,12 +87,12 @@ class ConfigTX:
             PeerMSP = peer["name"].capitalize()
             PeerOrganizations.append(dict(Name=peer["name"].split(".")[0].capitalize(),
                                           ID='{}MSP'.format(PeerMSP),
-                                          MSPDir='{}/{}/crypto-config/peerOrganizations/{}/msp'.format(self.filepath,peer['name'],peer['name']),
-                                          #AnchorPeers=[{'Port': peer["hosts"][0]["port"], 'Host': '{}.{}'.format(peer["hosts"][0]["name"],peer["name"])}],
-                                          Policies=dict(Readers=dict(Type="Signature",Rule="OR('{}MSP.member')".format(PeerMSP)),
-                                                        Writers=dict(Type="Signature",Rule="OR('{}MSP.member')".format(PeerMSP)),
-                                                        Admins=dict(Type="Signature",Rule="OR('{}MSP.admin')".format(PeerMSP)),
-                                                        Endorsement=dict(Type="Signature",Rule="OR('{}MSP.member')".format(PeerMSP)))
+                                          MSPDir='{}/{}/crypto-config/peerOrganizations/{}/msp'.format(self.filepath, peer['name'], peer['name']),
+                                          # AnchorPeers=[{'Port': peer["hosts"][0]["port"], 'Host': '{}.{}'.format(peer["hosts"][0]["name"],peer["name"])}],
+                                          Policies=dict(Readers=dict(Type="Signature", Rule="OR('{}MSP.member')".format(PeerMSP)),
+                                                        Writers=dict(Type="Signature", Rule="OR('{}MSP.member')".format(PeerMSP)),
+                                                        Admins=dict(Type="Signature", Rule="OR('{}MSP.admin')".format(PeerMSP)),
+                                                        Endorsement=dict(Type="Signature", Rule="OR('{}MSP.member')".format(PeerMSP)))
                                           ))
         Organizations = OrdererOrganizations + PeerOrganizations
         Capabilities = dict(
@@ -106,8 +108,8 @@ class ConfigTX:
                 Readers=dict(Type="ImplicitMeta", Rule="ANY Readers"),
                 Writers=dict(Type="ImplicitMeta", Rule="ANY Writers"),
                 Admins=dict(Type="ImplicitMeta", Rule="MAJORITY Admins"),
-                BlockValidation=dict(Type="ImplicitMeta",Rule="ANY Writers")
-            )
+                BlockValidation=dict(Type="ImplicitMeta", Rule="ANY Writers")
+                 )
         Orderer["EtcdRaft"]["Consenters"] = deepcopy(Consenters)
         Channel = deepcopy(ChannelDefaults)
         Channel["Capabilities"] = Capabilities["Channel"]
@@ -144,11 +146,11 @@ class ConfigTX:
                 Profiles = configtx["Profiles"]
                 Channel = configtx["Channel"]
                 Application = configtx["Application"]
-                Capabilities = configtx["Capabilities"]["Application"]        
+                Capabilities = configtx["Capabilities"]["Application"]
                 PeerOrganizations = []
                 for org in configtx["Organizations"]:
                     for item in organizations:
-                        if org["ID"] == item.capitalize()+"MSP":
+                        if org["ID"] == item.capitalize() + "MSP":
                             PeerOrganizations.append(org)
                 if PeerOrganizations == []:
                     raise Exception("can't find organnization")
@@ -167,7 +169,7 @@ class ConfigTX:
 
 
 if __name__ == "__main__":
-    orderers=[{"name":"org1.cello.com","hosts":[{"name": "orderer1", "port":8051}]}]
+    orderers = [{"name": "org1.cello.com", "hosts": [{"name": "orderer1", "port": 8051}]}]
     # peers = [{"name": "org1.cello.com", "hosts": [{"name": "foo", "port": 7051},{"name": "car", "port": 7052}]},
     #         {"name": "org2.cello.com", "hosts": [{"name": "zoo", "port": 7053}]}]
     peers = [{"name": "org1.cello.com", "hosts": [{"name": "foo", "port": 7051}, {"name": "car", "port": 7052}]}]

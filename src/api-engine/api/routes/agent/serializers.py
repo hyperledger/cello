@@ -106,7 +106,7 @@ class K8SParameterSerializer(serializers.ModelSerializer):
 
 
 class AgentCreateBody(serializers.ModelSerializer):
-    #organization = serializers.UUIDField(help_text=IDHelpText)
+    # organization = serializers.UUIDField(help_text=IDHelpText)
 
     def to_form_paras(self):
         custom_paras = to_form_paras(self)
@@ -178,7 +178,6 @@ class AgentUpdateBody(AgentIDSerializer, serializers.ModelSerializer):
             "urls",
             "organization",
         )
-
 
 
 class AgentResponseSerializer(AgentIDSerializer, serializers.ModelSerializer):
@@ -253,9 +252,9 @@ class AgentApplySerializer(serializers.ModelSerializer):
     class Meta:
         model = Agent
         fields = (
-            "type", 
+            "type",
             # "capacity"
-            )
+             )
         extra_kwargs = {
             "type": {"required": True},
             # "capacity": {"required": True},

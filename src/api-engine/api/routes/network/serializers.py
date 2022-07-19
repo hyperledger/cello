@@ -30,6 +30,7 @@ class NetworkQuery(serializers.Serializer):
         help_text=NetworkStatus.get_info("Network Status:", list_str=True),
         choices=NetworkStatus.to_choices(True),
     )
+
     class Meta:
         model = Network
         fields = ("page", "per_page", "name")

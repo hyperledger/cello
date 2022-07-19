@@ -1,3 +1,6 @@
+#
+# SPDX-License-Identifier: Apache-2.0
+#
 import os
 import json
 import subprocess
@@ -20,7 +23,7 @@ class ChainCode(BasicEnv):
         :return 0 means success.
         """
         try:
-            label = cc_name+"_"+cc_version
+            label = cc_name + "_" + cc_version
             res = os.system("{} lifecycle chaincode package {}.tar.gz --path {} --lang {} --label {}"
                             .format(self.peer, cc_name, cc_path, language, label))
             res = res >> 8
@@ -111,7 +114,7 @@ class ChainCode(BasicEnv):
         """
         try:
             res, installed = self.lifecycle_query_installed("3s")
-            cc_label = cc_name+"_"+chaincode_version
+            cc_label = cc_name + "_" + chaincode_version
             package_id = ""
             for each in installed['installed_chaincodes']:
                 if each['label'] == cc_label:
@@ -252,7 +255,7 @@ class ChainCode(BasicEnv):
                 for i in range(len(peerlist)):
                     command_str_without_tls = command_str_without_tls + peer_addresses_format
                 res = os.system(command_str_without_tls.format(self.peer, orderer_url, channel_name, cc_name,
-                                chaincode_version, sequency, policy, *peer_addressed))      #--collections-config {}
+                                chaincode_version, sequency, policy, *peer_addressed))      # --collections-config {}
             else:
                 for i in range(len(peerlist)):
                     command_str_with_tls = command_str_with_tls + peer_addresses_format

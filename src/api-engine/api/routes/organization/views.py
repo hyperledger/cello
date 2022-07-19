@@ -28,7 +28,7 @@ from api.routes.organization.serializers import (
     OrganizationUpdateBody,
 )
 from api.routes.user.serializers import UserIDSerializer
-from api.models import UserProfile, Organization
+from api.models import UserProfile
 from api.routes.user.serializers import UserListSerializer, UserQuerySerializer
 from api.lib.pki import CryptoGen, CryptoConfig
 from api.utils import zip_dir, zip_file
@@ -36,8 +36,8 @@ from api.config import CELLO_HOME
 from api.utils.node_config import NodeConfig
 
 from api.common import (
-    ok, 
-    #err
+    ok,
+    # err
 )
 
 LOG = logging.getLogger(__name__)
@@ -45,8 +45,8 @@ LOG = logging.getLogger(__name__)
 
 class OrganizationViewSet(viewsets.ViewSet):
     """Class represents orgnization related operations."""
-    #authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
-    #permission_classes = (IsAuthenticated, IsOperatorAuthenticated)
+    # authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
+    # permission_classes = (IsAuthenticated, IsOperatorAuthenticated)
 
     @swagger_auto_schema(
         query_serializer=OrganizationQuery,
@@ -147,7 +147,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         :return: null
         """
         for i in range(num):
-            nodeName = "peer"+str(i) if nodeType == "peer" else "orderer"+str(i)
+            nodeName = "peer" + str(i) if nodeType == "peer" else "orderer" + str(i)
             self._generate_config(nodeType, org.name, nodeName)
             msp, tls, cfg = self._conversion_msp_tls_cfg(nodeType, org.name, nodeName)
             urls = "{}.{}".format(nodeName, org.name)
@@ -327,14 +327,14 @@ class OrganizationViewSet(viewsets.ViewSet):
         serializer = OrganizationUpdateBody(data=request.data)
         if serializer.is_valid(raise_exception=True):
             name = serializer.validated_data.get("name")
-            agents = serializer.validated_data.get("agents")
-            network = serializer.validated_data.get("network")
-            channel = serializer.validated_data.get("channel")
+            # agents = serializer.validated_data.get("agents")
+            # network = serializer.validated_data.get("network")
+            # channel = serializer.validated_data.get("channel")
             try:
                 Organization.objects.get(name=name)
             except ObjectDoesNotExist:
                 pass
-            organization = Organization.objects.filter(name=name).update(agents=agents,network=network.id,channel=channel.id)
+            # organization = Organization.objects.filter(name=name).update(agents=agents, network=network.id, channel=channel.id)
 
             return Response(status=status.HTTP_204_NO_CONTENT)
 
