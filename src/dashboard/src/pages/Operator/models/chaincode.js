@@ -1,7 +1,4 @@
-import {
-  listChainCode,
-  uploadChainCode
-} from '@/services/chaincode';
+import { listChainCode, uploadChainCode } from '@/services/chaincode';
 
 export default {
   namespace: 'chainCode',

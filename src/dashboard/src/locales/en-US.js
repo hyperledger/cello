@@ -40,5 +40,5 @@ export default {
   ...fabricCa,
   ...operatorNetwork,
   ...operatorChannel,
-  ...operatorChainCode
+  ...operatorChainCode,
 };

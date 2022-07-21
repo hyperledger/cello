@@ -19,7 +19,8 @@ export default {
   'app.operator.node.modal.label.attributes': 'Attributes',
   'app.operator.node.modal.success': 'Registered User Successful.',
   'app.operator.node.delete.title': 'Delete Node',
-  'app.operator.node.delete.confirm': 'Deleting node {name} may cause abnormality in the blockchain network. Confirm delete?',
+  'app.operator.node.delete.confirm':
+    'Deleting node {name} may cause abnormality in the blockchain network. Confirm delete?',
   'app.operator.node.delete.success': 'Delete Node Successful.',
   'app.operator.node.operation.start.success': 'Start Node Successful.',
   'app.operator.node.operation.stop.success': 'Stop Node Successful.',
