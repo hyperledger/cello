@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Layout, message } from 'antd';
 import Animate from 'rc-animate';
+import router from 'umi/router';
 import { connect, formatMessage } from 'umi';
 import GlobalHeader from '@/components/GlobalHeader';
 import TopNavHeader from '@/components/TopNavHeader';

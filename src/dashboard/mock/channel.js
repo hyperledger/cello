@@ -1,7 +1,7 @@
 import Mock from 'mockjs';
 import faker from 'faker';
 import paginator from 'cello-paginator';
-import organizations from './organization';
+// import organizations from './organization';
 
 const channels = Mock.mock({
   'data|11': [
@@ -28,9 +28,9 @@ const channels = Mock.mock({
           name() {
             return faker.company.companyName();
           },
-        }
+        },
       ],
-      create_ts: '@datetime'
+      create_ts: '@datetime',
     },
   ],
 });
@@ -47,7 +47,7 @@ function getChannels(req, res) {
 function createChannel(req, res) {
   const message = req.body;
   const channel = {
-    id : message.id,
+    id: message.id,
     name: message.name,
     network: {
       id() {
@@ -64,7 +64,7 @@ function createChannel(req, res) {
           name() {
             return faker.company.companyName();
           },
-        }
+        },
       ],
       network: {
         id() {
@@ -78,7 +78,7 @@ function createChannel(req, res) {
   };
   channels.data.push(channel);
 
-  res.send({success: true});
+  res.send({ success: true });
 }
 
 export default {

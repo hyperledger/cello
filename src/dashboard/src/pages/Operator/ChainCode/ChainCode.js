@@ -2,14 +2,13 @@
  SPDX-License-Identifier: Apache-2.0
 */
 import React, { PureComponent, Fragment } from 'react';
-import { connect, injectIntl, history } from 'umi';
-import { Card, Button, Modal, Input, Upload } from 'antd';
+import { connect, injectIntl, useIntl } from 'umi';
+import { Card, Button, Modal, Input, Upload, Divider, message } from 'antd';
 import { PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import StandardTable from '@/components/StandardTable';
+import { Form, Select } from 'antd/lib/index';
 import styles from './styles.less';
-import { useIntl } from "umi";
-import {Form, Select} from "antd/lib/index";
 
 const FormItem = Form.Item;
 const { Option } = Select;
@@ -17,20 +16,31 @@ const { Option } = Select;
 const UploadChainCode = props => {
   const [form] = Form.useForm();
   const intl = useIntl();
-  const { modalVisible, handleUpload, handleModalVisible, uploading, fetchChainCodes, newFile, setFile } = props;
+  const {
+    modalVisible,
+    handleUpload,
+    handleModalVisible,
+    uploading,
+    fetchChainCodes,
+    newFile,
+    setFile,
+  } = props;
 
   const uploadCallback = response => {
     if (response.status !== 'successful') {
-      message.error(intl.formatMessage({
-        id: 'app.operator.chainCode.form.create.fail',
-        defaultMessage: 'Upload chain code failed',
-      }));
-    }
-    else {
-      message.success(intl.formatMessage({
-        id: 'app.operator.chainCode.form.create.success',
-        defaultMessage: 'Upload chain code succeed',
-      }));
+      message.error(
+        intl.formatMessage({
+          id: 'app.operator.chainCode.form.create.fail',
+          defaultMessage: 'Upload chain code failed',
+        })
+      );
+    } else {
+      message.success(
+        intl.formatMessage({
+          id: 'app.operator.chainCode.form.create.success',
+          defaultMessage: 'Upload chain code succeed',
+        })
+      );
       form.resetFields();
       handleModalVisible();
       fetchChainCodes();
@@ -49,18 +59,18 @@ const UploadChainCode = props => {
   const formItemLayout = {
     labelCol: {
       xs: { span: 24 },
-      sm: { span: 7 }
+      sm: { span: 7 },
     },
     wrapperCol: {
       xs: { span: 24 },
       sm: { span: 12 },
-      md: { span: 10 }
-    }
+      md: { span: 10 },
+    },
   };
 
   const languageOptions = ['golang', 'java', 'nodejs'].map(item => (
     <Option value={item} key={item}>
-      <span style={{color: '#8c8f88'}}>{item}</span>
+      <span style={{ color: '#8c8f88' }}>{item}</span>
     </Option>
   ));
 
@@ -74,30 +84,26 @@ const UploadChainCode = props => {
     },
   };
 
-  const normFile = (e) => {
+  const normFile = e => {
     if (Array.isArray(e)) {
       return e;
     }
     return newFile;
   };
 
-  return(
+  return (
     <Modal
       destroyOnClose
       title={intl.formatMessage({
         id: 'app.operator.chainCode.form.create.header.title',
         defaultMessage: 'Upload Chain code',
       })}
-      confirmLoading={ uploading }
-      visible={ modalVisible }
-      onOk={ onSubmit }
-      onCancel={() => handleModalVisible(false) }
+      confirmLoading={uploading}
+      visible={modalVisible}
+      onOk={onSubmit}
+      onCancel={() => handleModalVisible(false)}
     >
-      <Form
-        onFinish={ onFinish }
-        form={form}
-        preserve={false}
-      >
+      <Form onFinish={onFinish} form={form} preserve={false}>
         <FormItem
           {...formItemLayout}
           label={intl.formatMessage({
@@ -105,7 +111,7 @@ const UploadChainCode = props => {
             defaultMessage: 'Name',
           })}
           name="name"
-          initialValue=''
+          initialValue=""
           rules={[
             {
               required: true,
@@ -130,7 +136,7 @@ const UploadChainCode = props => {
             defaultMessage: 'Version',
           })}
           name="version"
-          initialValue=''
+          initialValue=""
           rules={[
             {
               required: true,
@@ -174,7 +180,7 @@ const UploadChainCode = props => {
             defaultMessage: 'md5',
           })}
           name="md5"
-          initialValue=''
+          initialValue=""
           rules={[
             {
               required: true,
@@ -228,14 +234,14 @@ const UploadChainCode = props => {
 @connect(({ chainCode, loading }) => ({
   chainCode,
   loadingChainCodes: loading.effects['chainCode/listChainCode'],
-  uploading: loading.effects['chainCode/uploadChainCode']
+  uploading: loading.effects['chainCode/uploadChainCode'],
 }))
 class ChainCode extends PureComponent {
   state = {
     selectedRows: [],
     formValues: {},
     newFile: '',
-    modalVisible: false
+    modalVisible: false,
   };
 
   componentDidMount() {
@@ -275,7 +281,7 @@ class ChainCode extends PureComponent {
 
   handleModalVisible = visible => {
     this.setState({
-      modalVisible: !!visible
+      modalVisible: !!visible,
     });
   };
 
@@ -290,7 +296,7 @@ class ChainCode extends PureComponent {
     dispatch({
       type: 'chainCode/uploadChainCode',
       payload: formData,
-      callback
+      callback,
     });
   };
 
@@ -299,7 +305,7 @@ class ChainCode extends PureComponent {
   };
 
   setFile = file => {
-    this.setState({newFile: file});
+    this.setState({ newFile: file });
   };
 
   render() {
@@ -308,7 +314,7 @@ class ChainCode extends PureComponent {
       chainCode: { chainCodes, pagination },
       loadingChainCodes,
       intl,
-      uploading
+      uploading,
     } = this.props;
 
     const formProps = {
@@ -363,14 +369,21 @@ class ChainCode extends PureComponent {
           id: 'form.table.header.operation',
           defaultMessage: 'Operation',
         }),
+        // eslint-disable-next-line no-unused-vars
         render: (text, record) => (
           <Fragment>
             <a>
-              {intl.formatMessage({ id: 'app.operator.chainCode.table.operate.install', defaultMessage: 'Install' })}
+              {intl.formatMessage({
+                id: 'app.operator.chainCode.table.operate.install',
+                defaultMessage: 'Install',
+              })}
             </a>
             <Divider type="vertical" />
             <a className={styles.danger}>
-              {intl.formatMessage({ id: 'app.operator.chainCode.table.operate.delete', defaultMessage: 'Delete' })}
+              {intl.formatMessage({
+                id: 'app.operator.chainCode.table.operate.delete',
+                defaultMessage: 'Delete',
+              })}
             </a>
           </Fragment>
         ),

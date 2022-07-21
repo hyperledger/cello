@@ -3,7 +3,7 @@ import { Card, Form, Input, Button, Select, message } from 'antd';
 import { compose } from 'redux';
 import { connect, withRouter, history, injectIntl } from 'umi';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
-import { getAuthority } from '@/utils/authority';
+// import { getAuthority } from '@/utils/authority';
 
 const FormItem = Form.Item;
 const { Option } = Select;
@@ -13,7 +13,6 @@ const { Option } = Select;
   submitting: loading.effects['network/createNetwork'],
 }))
 class CreateNetwork extends React.Component {
-
   clickCancel = () => {
     history.push('/operator/network');
   };
@@ -33,8 +32,7 @@ class CreateNetwork extends React.Component {
         )
       );
       history.push('/operator/network');
-    }
-    else {
+    } else {
       message.error(
         intl.formatMessage(
           {
@@ -63,9 +61,7 @@ class CreateNetwork extends React.Component {
 
   render() {
     const { intl } = this.props;
-    const {
-      submitting,
-    } = this.props;
+    const { submitting } = this.props;
 
     const formItemLayout = {
       labelCol: {
@@ -100,14 +96,12 @@ class CreateNetwork extends React.Component {
 
     return (
       <PageHeaderWrapper
-        title={
-          intl.formatMessage({
-            id: 'app.operator.newNetwork.title',
-            defaultMessage: 'New Network',
-          })
-        }
+        title={intl.formatMessage({
+          id: 'app.operator.newNetwork.title',
+          defaultMessage: 'New Network',
+        })}
       >
-        <Card bordered={false} >
+        <Card bordered={false}>
           <Form
             onFinish={this.handleSubmit}
             onFinishFailed={this.onFinishFailed}
@@ -155,9 +149,7 @@ class CreateNetwork extends React.Component {
                 },
               ]}
             >
-              <Select>
-                {networkConsensusOptions}
-              </Select>
+              <Select>{networkConsensusOptions}</Select>
             </FormItem>
             <FormItem
               {...formItemLayout}
@@ -176,9 +168,7 @@ class CreateNetwork extends React.Component {
                 },
               ]}
             >
-              <Select>
-                {networkDatabaseOptions}
-              </Select>
+              <Select>{networkDatabaseOptions}</Select>
             </FormItem>
 
             <FormItem {...submitFormLayout} style={{ marginTop: 32 }}>

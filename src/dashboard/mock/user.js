@@ -87,8 +87,8 @@ export default {
           role: 'admin',
           email: 'admin@cello.com',
           organization: {
-            "id": "a760606b-f55d-40bb-8e06-4c9da5ad49a6",
-            "name": "org1.cello.com"
+            id: 'a760606b-f55d-40bb-8e06-4c9da5ad49a6',
+            name: 'org1.cello.com',
           },
         },
       });
@@ -102,8 +102,8 @@ export default {
           role: 'member',
           email: 'member@cello.com',
           organization: {
-            "id": "a760606b-f55d-40bb-8e06-4c9da5ad49a6",
-            "name": "org1.cello.com"
+            id: 'a760606b-f55d-40bb-8e06-4c9da5ad49a6',
+            name: 'org1.cello.com',
           },
         },
       });
@@ -120,20 +120,20 @@ export default {
     if (!email || email === '') {
       res.send({
         success: false,
-        message: 'email is necessary!'
+        message: 'email is necessary!',
       });
       return;
     }
     if (!orgName || orgName === '') {
       res.send({
         success: false,
-        message: 'orgName is necessary!'
+        message: 'orgName is necessary!',
       });
       return;
     }
     let success = true;
     let message = '';
-    organizations.organizations.data.forEach(function(value){
+    organizations.organizations.data.forEach(value => {
       if (value.name === orgName) {
         success = false;
         message = 'The org is exist!';
@@ -142,18 +142,18 @@ export default {
     if (!success) {
       res.send({
         success,
-        message
+        message,
       });
       return;
     }
     organizations.organizations.data.push({
       id: Mock.Random.guid(),
       name: orgName,
-      created_at: Date.now()
+      created_at: Date.now(),
     });
     res.send({
       success: true,
-      message: 'register success!'
+      message: 'register success!',
     });
   },
   'GET /api/v1/500': (req, res) => {
