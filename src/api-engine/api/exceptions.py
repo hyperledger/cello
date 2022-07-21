@@ -1,3 +1,6 @@
+#
+# SPDX-License-Identifier: Apache-2.0
+#
 from rest_framework.exceptions import APIException
 from rest_framework import status
 from api.common.enums import ErrorCode
@@ -35,5 +38,3 @@ class CustomError(BadException):
 class NoResource(BadException):
     default_detail = ErrorCode.NoResource.display_string
     default_code = ErrorCode.NoResource.value
-
-

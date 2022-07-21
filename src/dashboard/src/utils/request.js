@@ -32,7 +32,7 @@ const errorHandler = error => {
   if (status === 400) {
     const api = url.split('/').pop();
 
-    if (api === 'login'){
+    if (api === 'login') {
       notification.error({
         message: '用户名或密码错误。',
       });
@@ -56,15 +56,14 @@ const errorHandler = error => {
     return;
   }
 
-  if (status === 409){
+  if (status === 409) {
     const api = url.split('/').pop();
-    if (api === 'register'){
+    if (api === 'register') {
       notification.error({
         message: '邮箱地址或组织名已存在。',
       });
       return;
     }
-
   }
 
   notification.error({
@@ -91,42 +90,41 @@ const request = extend({
 });
 
 request.interceptors.request.use(async (url, options) => {
-
   const token = window.localStorage.getItem('cello-token');
-  if( token ){
-    //如果有token 就走token逻辑
+  if (token) {
+    // 如果有token 就走token逻辑
     const headers = {
       Authorization: `JWT ${token}`,
     };
 
-    return ({
-      url: url,
-      options: { ...options, headers: headers },
-    });
+    return {
+      url,
+      options: { ...options, headers },
+    };
   }
-  return ({
-    url: url,
-    options: options,
-  });
+  return {
+    url,
+    options,
+  };
 });
 
-//第一个拦截器有可能返回Promise,那么Promise由第二个拦截器处理
+// 第一个拦截器有可能返回Promise,那么Promise由第二个拦截器处理
 request.interceptors.request.use(async (url, options) => {
   const token = localStorage.getItem('cello-token');
-  if( token ){
-    //如果有token 就走token逻辑
+  if (token) {
+    // 如果有token 就走token逻辑
     const headers = {
       Authorization: `JWT ${token}`,
     };
-    return ({
-      url: url,
-      options: { ...options, headers: headers },
-    });
+    return {
+      url,
+      options: { ...options, headers },
+    };
   }
-  return ({
-    url: url,
-    options: options,
-  });
+  return {
+    url,
+    options,
+  };
 });
 
 export default request;

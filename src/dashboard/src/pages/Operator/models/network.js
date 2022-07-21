@@ -1,9 +1,4 @@
-import {
-  listNetwork,
-  createNetwork,
-  updateNetwork,
-  deleteNetwork,
-} from '@/services/network';
+import { listNetwork, createNetwork, deleteNetwork } from '@/services/network';
 
 export default {
   namespace: 'network',

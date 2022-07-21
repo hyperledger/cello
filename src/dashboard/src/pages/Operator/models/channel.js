@@ -1,8 +1,4 @@
-import {
-  listChannel,
-  createChannel,
-  getChannel,
-} from '@/services/channel';
+import { listChannel, createChannel } from '@/services/channel';
 
 export default {
   namespace: 'channel',

@@ -2,16 +2,15 @@
  SPDX-License-Identifier: Apache-2.0
 */
 import React, { PureComponent, Fragment } from 'react';
-import { connect, injectIntl, history } from 'umi';
+import { connect, injectIntl, useIntl } from 'umi';
 import { Card, Button, Modal, message, Divider, Input, Select, Form, Tag } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import StandardTable from '@/components/StandardTable';
 import styles from './styles.less';
-import { useIntl } from "umi";
 
 const FormItem = Form.Item;
-const { Option } = Select;
+// const { Option } = Select;
 
 const CreateChannel = props => {
   const [form] = Form.useForm();
@@ -20,16 +19,19 @@ const CreateChannel = props => {
 
   const createCallback = response => {
     if (response.status !== 'successful') {
-      message.error(intl.formatMessage({
-        id: 'app.operator.channel.form.create.fail',
-        defaultMessage: 'Create channel failed',
-      }));
-    }
-    else {
-      message.success(intl.formatMessage({
-        id: 'app.operator.channel.form.create.success',
-        defaultMessage: 'Create channel succeed',
-      }));
+      message.error(
+        intl.formatMessage({
+          id: 'app.operator.channel.form.create.fail',
+          defaultMessage: 'Create channel failed',
+        })
+      );
+    } else {
+      message.success(
+        intl.formatMessage({
+          id: 'app.operator.channel.form.create.success',
+          defaultMessage: 'Create channel succeed',
+        })
+      );
       form.resetFields();
       handleModalVisible();
       fetchChannels();
@@ -47,13 +49,13 @@ const CreateChannel = props => {
   const formItemLayout = {
     labelCol: {
       xs: { span: 24 },
-      sm: { span: 7 }
+      sm: { span: 7 },
     },
     wrapperCol: {
       xs: { span: 24 },
       sm: { span: 12 },
-      md: { span: 10 }
-    }
+      md: { span: 10 },
+    },
   };
 
   const peers = [];
@@ -61,14 +63,14 @@ const CreateChannel = props => {
 
   Object.keys(nodes).forEach(item => {
     if (nodes[item].type === 'peer') {
-      peers.push({label: nodes[item].name, value: nodes[item].id});
-    }
-    else {
-      orderers.push({label: nodes[item].name, value: nodes[item].id});
+      peers.push({ label: nodes[item].name, value: nodes[item].id });
+    } else {
+      orderers.push({ label: nodes[item].name, value: nodes[item].id });
     }
   });
 
-  const tagRender = (props) => {
+  // eslint-disable-next-line no-shadow
+  const tagRender = props => {
     const { label, closable, onClose } = props;
     const onPreventMouseDown = event => {
       event.preventDefault();
@@ -76,7 +78,7 @@ const CreateChannel = props => {
     };
     return (
       <Tag
-        color={'cyan'}
+        color="cyan"
         onMouseDown={onPreventMouseDown}
         closable={closable}
         onClose={onClose}
@@ -87,23 +89,19 @@ const CreateChannel = props => {
     );
   };
 
-  return(
+  return (
     <Modal
       destroyOnClose
       title={intl.formatMessage({
         id: 'app.operator.channel.form.create.header.title',
         defaultMessage: 'Create Channel',
       })}
-      confirmLoading={ creating }
-      visible={ modalVisible }
-      onOk={ onSubmit }
-      onCancel={() => handleModalVisible(false) }
+      confirmLoading={creating}
+      visible={modalVisible}
+      onOk={onSubmit}
+      onCancel={() => handleModalVisible(false)}
     >
-      <Form
-        onFinish={ onFinish }
-        form={form}
-        preserve={false}
-      >
+      <Form onFinish={onFinish} form={form} preserve={false}>
         <FormItem
           {...formItemLayout}
           label={intl.formatMessage({
@@ -111,7 +109,7 @@ const CreateChannel = props => {
             defaultMessage: 'Name',
           })}
           name="name"
-          initialValue=''
+          initialValue=""
           rules={[
             {
               required: true,
@@ -147,7 +145,7 @@ const CreateChannel = props => {
           ]}
         >
           <Select
-            mode={"multiple"}
+            mode="multiple"
             options={orderers}
             tagRender={tagRender}
             dropdownClassName={styles.dropdownClassName}
@@ -171,7 +169,7 @@ const CreateChannel = props => {
           ]}
         >
           <Select
-            mode={"multiple"}
+            mode="multiple"
             options={peers}
             tagRender={tagRender}
             dropdownClassName={styles.dropdownClassName}
@@ -186,13 +184,13 @@ const CreateChannel = props => {
   channel,
   node,
   loadingChannels: loading.effects['channel/listChannel'],
-  creating: loading.effects['channel/createChannel']
+  creating: loading.effects['channel/createChannel'],
 }))
 class Channel extends PureComponent {
   state = {
     selectedRows: [],
     formValues: {},
-    modalVisible: false
+    modalVisible: false,
   };
 
   componentDidMount() {
@@ -236,7 +234,7 @@ class Channel extends PureComponent {
 
   handleModalVisible = visible => {
     this.setState({
-      modalVisible: !!visible
+      modalVisible: !!visible,
     });
   };
 
@@ -244,13 +242,13 @@ class Channel extends PureComponent {
     this.handleModalVisible(true);
   };
 
-  handleCreate = ( values, callback ) => {
+  handleCreate = (values, callback) => {
     const { dispatch } = this.props;
 
     dispatch({
       type: 'channel/createChannel',
       payload: values,
-      callback
+      callback,
     });
   };
 
@@ -261,7 +259,7 @@ class Channel extends PureComponent {
       node: { nodes },
       loadingChannels,
       intl,
-      creating
+      creating,
     } = this.props;
 
     const formProps = {
@@ -271,7 +269,7 @@ class Channel extends PureComponent {
       fetchChannels: this.fetchChannels,
       creating,
       intl,
-      nodes
+      nodes,
     };
 
     const columns = [
@@ -287,18 +285,17 @@ class Channel extends PureComponent {
           id: 'app.operator.channel.table.header.network',
           defaultMessage: 'Network',
         }),
-        render: (text, record) => (record.network.name),
+        render: (text, record) => record.network.name,
       },
       {
         title: intl.formatMessage({
           id: 'form.table.header.operation',
           defaultMessage: 'Operation',
         }),
+        // eslint-disable-next-line no-unused-vars
         render: (text, record) => (
           <Fragment>
-            <a>
-              {intl.formatMessage({ id: 'form.menu.item.update', defaultMessage: 'Update' })}
-            </a>
+            <a>{intl.formatMessage({ id: 'form.menu.item.update', defaultMessage: 'Update' })}</a>
             <Divider type="vertical" />
             <a className={styles.danger}>
               {intl.formatMessage({ id: 'form.menu.item.delete', defaultMessage: 'Delete' })}

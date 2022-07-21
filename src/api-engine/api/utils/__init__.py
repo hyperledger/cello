@@ -32,11 +32,10 @@ def custom_exception_handler(exc, context):
                 response.data["code"] = ErrorCode.ParseError.value
                 response.data["detail"] = ErrorCode.ParseError.display_string
             elif isinstance(response.data.get("detail"), ErrorDetail):
-                #response.data["code"] = response.data.get("detail").code
+                # response.data["code"] = response.data.get("detail").code
                 response.data = err(response.data.get("detail"))
             else:
                 response.data["code"] = ErrorCode.Unknown.value
                 response.data["detail"] = ErrorCode.Unknown.display_string
-
 
     return response

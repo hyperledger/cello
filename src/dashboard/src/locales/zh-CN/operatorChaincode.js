@@ -19,5 +19,5 @@ export default {
   'app.operator.chainCode.form.create.md5': 'md5',
   'app.operator.chainCode.form.create.checkMd5': '请输入md5',
   'app.operator.chainCode.form.create.file': '文件',
-  'app.operator.chainCode.form.create.fileSelect': '请选择链码文件'
+  'app.operator.chainCode.form.create.fileSelect': '请选择链码文件',
 };

@@ -19,16 +19,15 @@ const ApplyAgentForm = props => {
   };
   const onFinish = values => {
     if (action === 'update') {
-      handleSubmit({name: values.name, id: agentData.id}, action);
-    }
-    else {
+      handleSubmit({ name: values.name, id: agentData.id }, action);
+    } else {
       handleSubmit(values, action);
     }
   };
   const agentTypeValues = ['docker', 'kubernetes'];
   const agentTypeOptions = agentTypeValues.map(item => (
     <Option value={item} key={item}>
-      <span style={{color: '#8c8f88'}}>{item}</span>
+      <span style={{ color: '#8c8f88' }}>{item}</span>
     </Option>
   ));
   const width = { width: '120px' };
@@ -45,7 +44,7 @@ const ApplyAgentForm = props => {
   };
   return (
     <Modal
-      destroyOnClose={true}
+      destroyOnClose
       title={intl.formatMessage({
         id: 'app.operator.applyAgent.title',
         defaultMessage: 'Apply for agent',
@@ -56,11 +55,7 @@ const ApplyAgentForm = props => {
       onOk={onSubmit}
       onCancel={() => handleModalVisible(false)}
     >
-      <Form
-        onFinish={onFinish}
-        form={form}
-        preserve={false}
-      >
+      <Form onFinish={onFinish} form={form} preserve={false}>
         <FormItem
           {...formItemLayout}
           label={intl.formatMessage({
@@ -104,7 +99,7 @@ const ApplyAgentForm = props => {
             },
           ]}
         >
-          <Input placeholder="http://192.168.0.10:5001" disabled={action==='update'} />
+          <Input placeholder="http://192.168.0.10:5001" disabled={action === 'update'} />
         </FormItem>
         <FormItem
           {...formItemLayout}
@@ -124,7 +119,9 @@ const ApplyAgentForm = props => {
             },
           ]}
         >
-          <Select defaultActiveFirstOption={false} style={width} disabled={action==='update'}>{agentTypeOptions}</Select>
+          <Select defaultActiveFirstOption={false} style={width} disabled={action === 'update'}>
+            {agentTypeOptions}
+          </Select>
         </FormItem>
       </Form>
     </Modal>
@@ -142,7 +139,7 @@ class Agent extends PureComponent {
   state = {
     modalVisible: false,
     action: 'create',
-    agentData: {}
+    agentData: {},
   };
 
   componentDidMount() {
@@ -178,7 +175,7 @@ class Agent extends PureComponent {
     }
   };
 
-  submitCallback = (response) => {
+  submitCallback = response => {
     if (response.status === 'successful') {
       const { intl } = this.props;
       if (response.action === 'create') {
@@ -188,8 +185,7 @@ class Agent extends PureComponent {
             defaultMessage: 'Successful application for agent.',
           })
         );
-      }
-      else {
+      } else {
         message.success(
           intl.formatMessage({
             id: 'app.operator.updateAgent.success',
@@ -206,7 +202,7 @@ class Agent extends PureComponent {
     this.setState({
       modalVisible: !!visible,
       action: action || 'create',
-      agentData: data || {}
+      agentData: data || {},
     });
   };
 
@@ -215,14 +211,13 @@ class Agent extends PureComponent {
     if (action === 'create') {
       dispatch({
         type: 'agent/applyAgent',
-        payload: {data: values, action},
+        payload: { data: values, action },
         callback: this.submitCallback,
       });
-    }
-    else {
+    } else {
       dispatch({
         type: 'agent/updateAgent',
-        payload: {data: values, action},
+        payload: { data: values, action },
         callback: this.submitCallback,
       });
     }
@@ -333,16 +328,19 @@ class Agent extends PureComponent {
   render() {
     const {
       agent: { agents, pagination },
+      // eslint-disable-next-line no-unused-vars
       organization: { organizations },
       loadingAgents,
       applyingAgent,
       user: {
+        // eslint-disable-next-line no-unused-vars
         currentUser: { organization = {} },
       },
       intl,
     } = this.props;
 
     const { modalVisible, action, agentData } = this.state;
+    // eslint-disable-next-line no-unused-vars
     const userRole = getAuthority()[0];
 
     function badgeStatus(status) {
@@ -398,7 +396,7 @@ class Agent extends PureComponent {
       handleModalVisible: this.handleModalVisible,
       confirmLoading: applyingAgent,
       action,
-      agentData
+      agentData,
     };
 
     return (

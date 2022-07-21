@@ -100,8 +100,7 @@ class Network extends PureComponent {
         })
       );
       this.queryNetworkList();
-    }
-    else {
+    } else {
       message.error(
         intl.formatMessage({
           id: 'app.operator.network.delete.fail',
@@ -141,9 +140,7 @@ class Network extends PureComponent {
         }),
         render: (text, record) => (
           <Fragment>
-            <a>
-              {intl.formatMessage({ id: 'form.menu.item.update', defaultMessage: 'Update' })}
-            </a>
+            <a>{intl.formatMessage({ id: 'form.menu.item.update', defaultMessage: 'Update' })}</a>
             <Divider type="vertical" />
             <a className={styles.danger} onClick={() => this.handleDeleteNetwork(record)}>
               {intl.formatMessage({ id: 'form.menu.item.delete', defaultMessage: 'Delete' })}
@@ -162,7 +159,7 @@ class Network extends PureComponent {
         <Card bordered={false}>
           <div className={styles.tableList}>
             <div className={styles.tableListOperator}>
-              <Button type="primary" onClick={()=>this.newNetwork()}>
+              <Button type="primary" onClick={() => this.newNetwork()}>
                 <PlusOutlined />
                 {intl.formatMessage({ id: 'form.button.new', defaultMessage: 'New' })}
               </Button>

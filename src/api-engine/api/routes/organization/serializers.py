@@ -22,11 +22,11 @@ class OrganizationCreateBody(serializers.ModelSerializer):
     orderernum = serializers.IntegerField(
         source='org_orderernum', help_text="Total number of orderer", required=True
     )
+
     class Meta:
         model = Organization
         fields = ("name", "peernum", "orderernum")
         extra_kwargs = {"name": {"required": True}}
-
 
 
 class OrganizationUpdateBody(serializers.ModelSerializer):

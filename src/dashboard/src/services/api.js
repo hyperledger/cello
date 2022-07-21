@@ -1,4 +1,4 @@
-//import { extend } from 'umi-request';
+// import { extend } from 'umi-request';
 import request from '@/utils/request';
 
 // eslint-disable-next-line import/prefer-default-export

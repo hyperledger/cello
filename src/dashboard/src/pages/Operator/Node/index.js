@@ -2,7 +2,7 @@
  SPDX-License-Identifier: Apache-2.0
 */
 import React, { PureComponent, Fragment } from 'react';
-import { connect, history, injectIntl, useIntl } from 'umi';
+import { connect, injectIntl, useIntl } from 'umi';
 import {
   Card,
   Button,
@@ -15,7 +15,7 @@ import {
   Input,
   Select,
   InputNumber,
-  Badge
+  Badge,
 } from 'antd';
 import { DownOutlined, PlusOutlined } from '@ant-design/icons';
 import moment from 'moment';
@@ -183,16 +183,19 @@ const CreateNode = props => {
 
   const createCallback = response => {
     if (response.status !== 'successful') {
-      message.error(intl.formatMessage({
-        id: 'app.operator.node.new.createFail',
-        defaultMessage: 'Create node failed',
-      }));
-    }
-    else {
-      message.success(intl.formatMessage({
-        id: 'app.operator.node.new.createSuccess',
-        defaultMessage: 'Create node succeed',
-      }));
+      message.error(
+        intl.formatMessage({
+          id: 'app.operator.node.new.createFail',
+          defaultMessage: 'Create node failed',
+        })
+      );
+    } else {
+      message.success(
+        intl.formatMessage({
+          id: 'app.operator.node.new.createSuccess',
+          defaultMessage: 'Create node succeed',
+        })
+      );
       form.resetFields();
       handleModalVisible();
       queryNodeList();
@@ -210,39 +213,35 @@ const CreateNode = props => {
   const formItemLayout = {
     labelCol: {
       xs: { span: 24 },
-      sm: { span: 7 }
+      sm: { span: 7 },
     },
     wrapperCol: {
       xs: { span: 24 },
       sm: { span: 12 },
-      md: { span: 10 }
-    }
+      md: { span: 10 },
+    },
   };
 
   const types = ['ca', 'orderer', 'peer'];
   const typeOptions = types.map(item => (
     <Option value={item} key={item}>
-      <span style={{color: '#8c8f88'}}>{item}</span>
+      <span style={{ color: '#8c8f88' }}>{item}</span>
     </Option>
   ));
 
-  return(
+  return (
     <Modal
       destroyOnClose
       title={intl.formatMessage({
         id: 'app.operator.node.new.title',
         defaultMessage: 'Create Node',
       })}
-      confirmLoading={ creating }
-      visible={ createModalVisible }
-      onOk={ onSubmit }
-      onCancel={() => handleModalVisible(false) }
+      confirmLoading={creating}
+      visible={createModalVisible}
+      onOk={onSubmit}
+      onCancel={() => handleModalVisible(false)}
     >
-      <Form
-        onFinish={ onFinish }
-        form={form}
-        preserve={false}
-      >
+      <Form onFinish={onFinish} form={form} preserve={false}>
         <FormItem
           {...formItemLayout}
           label={intl.formatMessage({
@@ -250,7 +249,7 @@ const CreateNode = props => {
             defaultMessage: 'Name',
           })}
           name="name"
-          initialValue=''
+          initialValue=""
           rules={[
             {
               required: true,
@@ -285,7 +284,7 @@ const CreateNode = props => {
             },
           ]}
         >
-          <Select defaultActiveFirstOption={false} >{typeOptions}</Select>
+          <Select defaultActiveFirstOption={false}>{typeOptions}</Select>
         </FormItem>
         <FormItem
           {...formItemLayout}
@@ -294,7 +293,7 @@ const CreateNode = props => {
             defaultMessage: 'Number',
           })}
           name="num"
-          initialValue='1'
+          initialValue="1"
           rules={[
             {
               required: true,
@@ -311,7 +310,7 @@ const CreateNode = props => {
               defaultMessage: 'Number',
             })}
             min={1}
-            style={{width: '100%'}}
+            style={{ width: '100%' }}
           />
         </FormItem>
       </Form>
@@ -323,7 +322,7 @@ const CreateNode = props => {
   node,
   loadingNodes: loading.effects['node/listNode'],
   registeringUser: loading.effects['node/registerUserToNode'],
-  creating: loading.effects['node/createNode']
+  creating: loading.effects['node/createNode'],
 }))
 class Index extends PureComponent {
   state = {
@@ -442,7 +441,8 @@ class Index extends PureComponent {
       content: intl.formatMessage(
         {
           id: 'app.operator.node.delete.confirm',
-          defaultMessage: 'Deleting node {name} may cause abnormality in the blockchain network. Confirm delete?',
+          defaultMessage:
+            'Deleting node {name} may cause abnormality in the blockchain network. Confirm delete?',
         },
         {
           name: row.name,
@@ -487,17 +487,17 @@ class Index extends PureComponent {
 
   handleCreateModalVisible = visible => {
     this.setState({
-      createModalVisible: !!visible
+      createModalVisible: !!visible,
     });
   };
 
-  handleCreate = ( values, callback ) => {
+  handleCreate = (values, callback) => {
     const { dispatch } = this.props;
 
     dispatch({
       type: 'node/createNode',
       payload: values,
-      callback
+      callback,
     });
   };
 
@@ -511,7 +511,7 @@ class Index extends PureComponent {
       loadingNodes,
       registeringUser,
       intl,
-      creating
+      creating,
     } = this.props;
 
     const formProps = {
@@ -529,7 +529,7 @@ class Index extends PureComponent {
       handleModalVisible: this.handleCreateModalVisible,
       creating,
       intl,
-      queryNodeList: this.queryNodeList
+      queryNodeList: this.queryNodeList,
     };
 
     function badgeStatus(status) {
@@ -624,17 +624,15 @@ class Index extends PureComponent {
         }),
         render: (text, record) => (
           <Fragment>
-            {
-              record.status === 'running' &&
+            {record.status === 'running' && (
               <a onClick={() => this.operationForNode('stop', record)}>
                 {intl.formatMessage({
                   id: 'app.operator.node.table.operation.stop',
                   defaultMessage: 'Stop',
                 })}
               </a>
-            }
-            {
-              record.status === 'stopped' &&
+            )}
+            {record.status === 'stopped' && (
               <Menu.Item>
                 <a onClick={() => this.operationForNode('start', record)}>
                   {intl.formatMessage({
@@ -643,7 +641,7 @@ class Index extends PureComponent {
                   })}
                 </a>
               </Menu.Item>
-            }
+            )}
             <Divider type="vertical" />
             <MoreBtn {...record} />
           </Fragment>

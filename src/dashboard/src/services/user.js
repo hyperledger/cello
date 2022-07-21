@@ -7,6 +7,7 @@ export async function query() {
   return request('/api/v1/users');
 }
 
+// eslint-disable-next-line consistent-return
 export async function queryCurrent() {
   const token = localStorage.getItem('cello-token');
   if (token && token !== '')

@@ -32,6 +32,7 @@ from api.routes.channel.serializers import (
 )
 from api.common import ok, err
 
+
 class ChannelViewSet(viewsets.ViewSet):
     """Class represents Channel related operations."""
     authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
@@ -105,20 +106,20 @@ class ChannelViewSet(viewsets.ViewSet):
                 block_path = "{}/{}/channel-artifacts/{}.block".format(CELLO_HOME, org.network.name, name)
                 ordering_node = Node.objects.get(id=orderers[0])
                 peer_node = Node.objects.get(id=peers[0])
-                envs = init_env_vars(peer_node,org)
+                envs = init_env_vars(peer_node, org)
                 peer_channel_cli = PeerChannel("v2.2.0", **envs)
                 peer_channel_cli.create(
                     channel=name,
-                    orderer_url= "{}.{}:{}".format(ordering_node.name,org.name.split(".", 1)[1], str(7050)),
+                    orderer_url="{}.{}:{}".format(ordering_node.name, org.name.split(".", 1)[1], str(7050)),
                     channel_tx=tx_path,
                     output_block=block_path
                 )
                 for i in range(len(peers)):
-                    peer_node =  Node.objects.get(id=peers[i])
-                    envs = init_env_vars(peer_node,org)
-                    #envs["CORE_PEER_LOCALMSPID"] = '{}MSP'.format(peer_node.name.split(".")[0].capitalize()) #Org1MSP
-                    join_peers(envs,block_path)
-                
+                    peer_node = Node.objects.get(id=peers[i])
+                    envs = init_env_vars(peer_node, org)
+                    # envs["CORE_PEER_LOCALMSPID"] = '{}MSP'.format(peer_node.name.split(".")[0].capitalize()) #Org1MSP
+                    join_peers(envs, block_path)
+
                 channel = Channel(
                     name=name,
                     network=org.network
@@ -205,11 +206,11 @@ def init_env_vars(node, org):
 
     envs = {
         "CORE_PEER_TLS_ENABLED": "true",
-        "CORE_PEER_LOCALMSPID": "{}MSP".format(org_name.capitalize()), # "Org1.cello.comMSP"
+        "CORE_PEER_LOCALMSPID": "{}MSP".format(org_name.capitalize()),  # "Org1.cello.comMSP"
         "CORE_PEER_TLS_ROOTCERT_FILE": "{}/{}/peers/{}/tls/ca.crt".format(dir_node, org_name, node.name + "." + org_name),
         "CORE_PEER_ADDRESS": "{}:{}".format(
-            node.name +"." + org_name, str(7051)),
-        "CORE_PEER_MSPCONFIGPATH":"{}/{}/users/Admin@{}/msp".format(dir_node, org_name, org_name),
+            node.name + "." + org_name, str(7051)),
+        "CORE_PEER_MSPCONFIGPATH": "{}/{}/users/Admin@{}/msp".format(dir_node, org_name, org_name),
         "FABRIC_CFG_PATH": "{}/{}/peers/{}/".format(dir_node, org_name, node.name + "." + org_name),
         "ORDERER_CA": "{}/msp/tlscacerts/tlsca.{}-cert.pem".format(dir_certificate, org_domain)
     }

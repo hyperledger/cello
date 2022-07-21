@@ -15,7 +15,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
-from api.common.enums import  AgentOperation
+from api.common.enums import AgentOperation
 from api.exceptions import CustomError, NoResource, ResourceExists, ResourceInUse
 from api.exceptions import ResourceNotFound
 from api.models import (
@@ -275,14 +275,14 @@ class NodeViewSet(viewsets.ViewSet):
 
                 agent = organization.agent.get()
                 if agent:
-                    nodes = Node.objects.filter(name=node_name+"0", organization=organization, type=node_type)
+                    nodes = Node.objects.filter(name=node_name + "0", organization=organization, type=node_type)
                     if nodes:
                         raise ResourceExists
                 else:
                     raise NoResource
                 for n in range(num):
 
-                    name = node_name+str(n)
+                    name = node_name + str(n)
 
                     urls = "{}.{}".format(name, organization.name)
                     nodes = {
@@ -437,7 +437,7 @@ class NodeViewSet(viewsets.ViewSet):
             ports = Port.objects.filter(node=node)
             if ports is None:
                 raise ResourceNotFound
-            
+
             info = {}
             org_name = org.name if node.type == "peer" else org.name.split(".", 1)[1]
             # get info of node, e.g, tls, msp, config.
@@ -498,14 +498,16 @@ class NodeViewSet(viewsets.ViewSet):
 
                 if action == "start" and node_status == "paused":
                     node_qs.update(status="restarting")
-                    res = True if agent.start() else False 
-                    if res: node_qs.update(status="running")
+                    res = True if agent.start() else False
+                    if res:
+                        node_qs.update(status="running")
                     return Response(
                         ok({"restart": res}), status=status.HTTP_201_CREATED
-                    )    
+                    )
                 elif action == "stop" and node_status == "running":
-                    res =  True if agent.stop() else False
-                    if res: node_qs.update(status="paused")
+                    res = True if agent.stop() else False
+                    if res:
+                        node_qs.update(status="paused")
                     return Response(
                         ok({"stop": res}), status=status.HTTP_201_CREATED
                     )
@@ -541,22 +543,25 @@ class NodeViewSet(viewsets.ViewSet):
                 node.save()
                 if node.type == "orderer":
                     orderer_cnt = Node.objects.filter(type="orderer", organization__network=node.organization.network).count()
-                    if orderer_cnt == 1: raise ResourceInUse
+                    if orderer_cnt == 1:
+                        raise ResourceInUse
                 agent.stop()
                 res = True if agent.delete() else False
                 if res:
                     fabric_path = "{}/{}".format(FABRIC_NODE, infos["container_name"])
-                    if os.path.exists(fabric_path): shutil.rmtree(fabric_path, True)
+                    if os.path.exists(fabric_path):
+                        shutil.rmtree(fabric_path, True)
                     prod_path = "{}/{}".format(PRODUCTION_NODE, infos["container_name"])
-                    if os.path.exists(prod_path): shutil.rmtree(prod_path, True)
+                    if os.path.exists(prod_path):
+                        shutil.rmtree(prod_path, True)
                     node.delete()
-                    #node.status = "exited"
-                    #node.save()
+                    # node.status = "exited"
+                    # node.save()
                 else:
-                    return Response(ok({"delete":False}), status=status.HTTP_202_ACCEPTED)
+                    return Response(ok({"delete": False}), status=status.HTTP_202_ACCEPTED)
             except ObjectDoesNotExist:
                 raise ResourceNotFound
-            return Response(ok({"delete":True}), status=status.HTTP_202_ACCEPTED)
+            return Response(ok({"delete": True}), status=status.HTTP_202_ACCEPTED)
         except (ResourceNotFound, ResourceInUse) as e:
             raise e
         except Exception as e:

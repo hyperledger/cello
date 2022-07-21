@@ -38,11 +38,11 @@ class LoginPage extends Component {
   registerSubmit = (err, values) => {
     if (!err) {
       const { dispatch } = this.props;
-      delete values.passwordAgain;
+      const { passwordAgain, ...newValues } = values;
       dispatch({
         type: 'login/register',
         payload: {
-          ...values,
+          ...newValues,
         },
       });
     }
@@ -170,16 +170,16 @@ class LoginPage extends Component {
                 name="passwordAgain"
                 placeholder={`${intl.formatMessage({ id: 'app.register.passwordAgain' })}`}
                 rules={[
-                  ({getFieldValue}) => (
-                    {
-                      validator(role, value){
-                        if (value !== getFieldValue("password")){
-                          return Promise.reject(intl.formatMessage({ id: 'validation.password.twice' }));
-                        }
-                        return Promise.resolve();
+                  ({ getFieldValue }) => ({
+                    validator(role, value) {
+                      if (value !== getFieldValue('password')) {
+                        return Promise.reject(
+                          intl.formatMessage({ id: 'validation.password.twice' })
+                        );
                       }
-                    }
-                  )
+                      return Promise.resolve();
+                    },
+                  }),
                 ]}
               />
               <Submit loading={registering}>

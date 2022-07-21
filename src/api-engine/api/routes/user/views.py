@@ -147,6 +147,7 @@ class UserViewSet(viewsets.ViewSet):
         Delete attribute of user
         """
         pass
+
     @swagger_auto_schema(
         method="post",
         request_body=UserUpdateSerializer,
@@ -154,7 +155,7 @@ class UserViewSet(viewsets.ViewSet):
             {status.HTTP_200_OK: "OK"}
         )
     )
-    @action(methods=["post"], detail=True, url_path="password", permission_classes=[IsAuthenticated,])
+    @action(methods=["post"], detail=True, url_path="password", permission_classes=[IsAuthenticated, ])
     def password(self, request, pk=None):
         """
         post:

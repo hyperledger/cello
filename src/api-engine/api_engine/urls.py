@@ -33,7 +33,7 @@ from api.routes.node.views import NodeViewSet
 from api.routes.organization.views import OrganizationViewSet
 from api.routes.user.views import UserViewSet
 from api.routes.file.views import FileViewSet
-from api.routes.general.views import RegisterViewSet,CustomObtainJSONWebToken
+from api.routes.general.views import RegisterViewSet, CustomObtainJSONWebToken
 from api.routes.channel.views import ChannelViewSet
 from api.routes.chaincode.views import ChainCodeViewSet
 
@@ -41,7 +41,7 @@ from api.routes.chaincode.views import ChainCodeViewSet
 DEBUG = getattr(settings, "DEBUG")
 API_VERSION = os.getenv("API_VERSION")
 WEBROOT = os.getenv("WEBROOT")
-#WEBROOT = "/".join(WEBROOT.split("/")[1:]) + "/"
+# WEBROOT = "/".join(WEBROOT.split("/")[1:]) + "/"
 WEBROOT = "api/v1/"
 
 swagger_info = openapi.Info(
@@ -74,7 +74,7 @@ router.register("chaincodes", ChainCodeViewSet, basename="chaincode")
 urlpatterns = router.urls
 
 urlpatterns += [
-    #path("auth", obtain_jwt_token),
+    # path("auth", obtain_jwt_token),
     path("token-verify", verify_jwt_token),
     path("login", CustomObtainJSONWebToken.as_view()),
     path("docs/", SchemaView.with_ui("swagger", cache_timeout=0), name="docs"),

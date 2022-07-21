@@ -177,7 +177,7 @@ class NetworkViewSet(viewsets.ViewSet):
             if serializer.is_valid(raise_exception=True):
                 name = serializer.validated_data.get("name")
                 consensus = serializer.validated_data.get("consensus")
-                database = serializer.validated_data.get("database")
+                # database = serializer.validated_data.get("database")
 
                 try:
                     if Network.objects.get(name=name):

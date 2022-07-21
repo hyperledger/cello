@@ -2,9 +2,9 @@ import React from 'react';
 import { Link, useIntl, connect } from 'umi';
 import { PageHeader, Tabs, Typography } from 'antd';
 import classNames from 'classnames';
+import MenuContext from '@/layouts/MenuContext';
 import GridContent from './GridContent';
 import styles from './index.less';
-import MenuContext from '@/layouts/MenuContext';
 import { conversionBreadcrumbList } from './breadcrumb';
 
 const { Title } = Typography;

@@ -12,6 +12,6 @@ export async function createChannel(params) {
   });
 }
 
-  export async function getChannel(id) {
+export async function getChannel(id) {
   return request(`/api/v1/channels/${id}`);
 }

@@ -1,4 +1,6 @@
-
+#
+# SPDX-License-Identifier: Apache-2.0
+#
 """Class represents response format.
         {
             status, successful/fail
@@ -7,6 +9,8 @@
         }
 
     """
+
+
 def ok(data):
     return {
         "data": data,

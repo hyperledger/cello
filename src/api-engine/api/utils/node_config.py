@@ -6,6 +6,7 @@ import os
 import yaml
 from api.config import CELLO_HOME
 
+
 class NodeConfig:
     """Class represents crypto-config yaml."""
 
@@ -130,5 +131,3 @@ class NodeConfig:
         src = self.ca_file
         dst = self.__from_dst(node, "ca")
         self._render(src, dst, **kwargs)
-
-
