@@ -70,21 +70,25 @@ class Channel(BasicEnv):
         res = res >> 8
         return res
 
-    def fetch(self, option, channel, orderer_url, time_out="90s"):
+    def fetch(self, option, channel):
         """
         Fetch a specified block, writing it to a file e.g. <channelID>.block.
         params:
             option: block option newest|oldest|config|(block number).
             channel: channel id.
-            orderer_url: Ordering service endpoint.
         """
         try:
-            res = os.system("{} channel fetch {} -c {} -o {} --timeout {}".format(
-                self.peer, option, channel, orderer_url, time_out))
+            res = subprocess.call(args=[
+                self.peer,
+                "channel",
+                "fetch",
+                "{}".format(option),
+                "-c",
+                channel
+                ])
         except Exception as e:
             err_msg = "fetch a specified block failed {}!".format(e)
             raise Exception(err_msg)
-        res = res >> 8
         return res
 
     def signconfigtx(self, channel_tx):

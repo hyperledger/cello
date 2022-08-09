@@ -33,6 +33,7 @@ from api.common.enums import (
     FabricVersions,
 )
 from api.utils.common import make_uuid, random_name, hash_file
+from api.config import CELLO_HOME
 
 SUPER_USER_TOKEN = getattr(settings, "ADMIN_TOKEN", "")
 MAX_CAPACITY = getattr(settings, "MAX_AGENT_CAPACITY", 100)
@@ -750,6 +751,8 @@ class Channel(models.Model):
         help_text="Orderer list in the channel",
     )
 
+    def get_channel_config_path(self):
+        return "/var/www/server/" + self.name +"_config.block"
     # class ChainCode(models.Model):
     #     id = models.UUIDField(
     #         primary_key=True,
