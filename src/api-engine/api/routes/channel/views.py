@@ -1,7 +1,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-from distutils.command.config import config
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
