@@ -147,4 +147,4 @@ def to_dict(data, org_name):
             res = groups.get(org_name, None) 
             if res != None:
                 return res
-    return {"error": "can't find org's config"}
+    return {"error": "can't find channel config"}
