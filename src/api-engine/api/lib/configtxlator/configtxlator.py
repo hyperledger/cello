@@ -1,7 +1,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-from subprocess import call
+from subprocess import call, run
 from api.config import FABRIC_TOOL
 
 
@@ -10,9 +10,8 @@ class ConfigTxLator:
     Class represents configtxlator CLI.
     """
 
-    def __init__(self, filepath="", configtxlator=FABRIC_TOOL, version="2.2.0"):
+    def __init__(self, configtxlator=FABRIC_TOOL, version="2.2.0"):
         self.configtxlator = configtxlator + "/configtxlator"
-        self.filepath = filepath
         self.version = version
 
     def proto_encode(self, input, type, output):
@@ -25,16 +24,17 @@ class ConfigTxLator:
             output: A file to write the output to.
         """
         try:
-            call([self.configtxlator,
-                  "--input", "{}/{}".format(self.filepath, input),
-                  "--type", type,
-                  "--output", "{}/{}".format(self.filepath, output),
-                  ])
+            res = call([self.configtxlator,
+                  "proto_encode",
+                  "--input={}".format(input),
+                  "--type={}".format(type),
+                  "--output={}".format(output),
+                ])
         except Exception as e:
             err_msg = "configtxlator proto decode fail! "
             raise Exception(err_msg + str(e))
 
-    def proto_decode(self, input, type, output):
+    def proto_decode(self, input, type):
         """
         Converts a proto message to JSON.
 
@@ -44,11 +44,16 @@ class ConfigTxLator:
             output: A file to write the output to.
         """
         try:
-            call([self.configtxlator,
-                  "--input", "{}/{}".format(self.filepath, input),
-                  "--type", type,
-                  "--output", "{}/{}".format(self.filepath, output),
-                  ])
+            res = run([self.configtxlator,
+                  "proto_decode",
+                  "--type={}".format(type),
+                  "--input={}".format(input),
+                  ], 
+                  capture_output= True)
+            if res.returncode == 0 :
+                return res.stdout
+            else:
+                return res.stderr
         except Exception as e:
             err_msg = "configtxlator proto decode fail! "
             raise Exception(err_msg + str(e))
@@ -66,10 +71,11 @@ class ConfigTxLator:
         """
         try:
             call([self.configtxlator,
-                  "--original", original,
-                  "--updated", updated,
-                  "--channel_id", channel_id,
-                  "--output", "{}/{}".format(self.filepath, output)
+                  "compute_update",
+                  "--original={}".format(original),
+                  "--updated={}".format(updated),
+                  "--channel_id={}".format(channel_id),
+                  "--output={}".format(output),
                   ])
         except Exception as e:
             err_msg = "configtxlator compute update fail! "

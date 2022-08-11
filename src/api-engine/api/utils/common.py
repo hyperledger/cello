@@ -12,6 +12,7 @@ from functools import reduce, partial
 from api.common.serializers import BadResponseSerializer
 import uuid
 from zipfile import ZipFile
+from json import loads
 
 
 def make_uuid():
@@ -129,3 +130,21 @@ def zip_file(dirpath, outFullName):
     zfile = ZipFile(outFullName, "w")
     zfile.write(dirpath, dirpath.rsplit("/", 1)[1])
     zfile.close()
+
+def to_dict(data, org_name):
+    """
+    Parse org config from channel config block.
+    
+    :param data: channel config block in json format.
+    :param org_name: the organization prefix name
+    :return organization config
+    """
+    config = loads(data)
+    if config.get("data") != None:
+        payloads = config["data"]["data"]
+        for p in payloads:
+            groups = p["payload"]["data"]["config"]["channel_group"]["groups"]["Application"]["groups"]
+            res = groups.get(org_name, None) 
+            if res != None:
+                return res
+    return {"error": "can't find channel config"}
