@@ -325,6 +325,8 @@ class NodeOperationSerializer(serializers.Serializer):
         choices=Operation.to_choices(True),
     )
 
+class NodeConfigFileSerializer(serializers.ModelSerializer):
+    files = serializers.FileField()
 
 # class NodeFileCreateSerializer(serializers.ModelSerializer):
 #     def to_form_paras(self):
