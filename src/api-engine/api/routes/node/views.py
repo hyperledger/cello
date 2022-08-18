@@ -36,7 +36,8 @@ from api.routes.node.serializers import (
     NodeListSerializer,
     NodeUpdateBody,
     # NodeFileCreateSerializer,
-    NodeInfoSerializer,
+    # NodeInfoSerializer,
+    NodeStatusSerializer,
     NodeUserCreateSerializer,
     NodeUserIDSerializer,
     NodeUserPatchSerializer,
@@ -636,7 +637,7 @@ class NodeViewSet(viewsets.ViewSet):
 
     @swagger_auto_schema(
         responses=with_common_response(
-            with_common_response({status.HTTP_200_OK: NodeInfoSerializer})
+            with_common_response({status.HTTP_200_OK: NodeStatusSerializer})
         )
     )
     def retrieve(self, request, pk=None):
@@ -654,18 +655,18 @@ class NodeViewSet(viewsets.ViewSet):
             except ObjectDoesNotExist:
                 raise ResourceNotFound
             else:
-                # Set file url of node
-                if node.file:
-                    node.file = request.build_absolute_uri(node.file.url)
-                ports = Port.objects.filter(node=node)
-                node.links = [
-                    {
-                        "internal_port": port.internal,
-                        "url": "%s:%s" % (node.agent.ip, port.external),
-                    }
-                    for port in ports
-                ]
-                response = NodeInfoSerializer(node)
+                # Set file url of node, we only need node status for now
+                # if node.file:
+                #     node.file = request.build_absolute_uri(node.file.url)
+                # ports = Port.objects.filter(node=node)
+                # node.links = [
+                #     {
+                #         "internal_port": port.internal,
+                #         "url": "%s:%s" % (node.agent.ip, port.external),
+                #     }
+                #     for port in ports
+                # ]
+                response = NodeStatusSerializer(node)
                 return Response(ok(data=response.data), status=status.HTTP_200_OK)
         except Exception as e:
             return Response(

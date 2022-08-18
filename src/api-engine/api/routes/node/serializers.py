@@ -244,6 +244,17 @@ class NodeInfoSerializer(NodeIDSerializer, serializers.ModelSerializer):
             "created_at": {"required": True, "read_only": False},
         }
 
+class NodeStatusSerializer(NodeIDSerializer, serializers.ModelSerializer):
+    class Meta:
+        model = Node
+        fields = (
+            "status",
+        )
+        extra_kwargs = {
+            "id": {"required": True, "read_only": False},
+            "created_at": {"required": True, "read_only": False},
+        }
+
 
 class NodeCreateBody(serializers.ModelSerializer):
     num = serializers.IntegerField(help_text="number of node")
