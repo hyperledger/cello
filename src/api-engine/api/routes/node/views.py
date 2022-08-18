@@ -9,6 +9,7 @@ import threading
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
+from django.http import HttpResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -43,6 +44,7 @@ from api.routes.node.serializers import (
     NodeUserPatchSerializer,
     NodeUserQuerySerializer,
     NodeUserListSerializer,
+    NodeConfigFileSerializer,
 )
 from api.tasks import operate_node
 from api.utils.common import with_common_response
@@ -672,6 +674,50 @@ class NodeViewSet(viewsets.ViewSet):
             return Response(
                 err(e.args), status=status.HTTP_400_BAD_REQUEST
             )
+
+    @swagger_auto_schema(
+        methods=["get"],
+        responses=with_common_response({status.HTTP_200_OK: NodeConfigFileSerializer}),
+    )
+    @action(methods=["get", "post"], detail=True, url_path="config", url_name="config")
+    def node_config(self, request, pk=None):
+        """
+        Download/upload the node config file
+        """
+        if request.method == "GET":
+            try:
+                self._validate_organization(request)
+                organization = request.user.organization
+                org = organization.name
+                try:
+                    node = Node.objects.get(
+                        id=pk, organization=organization
+                    )
+                except ObjectDoesNotExist:
+                    raise ResourceNotFound
+                else:
+                    # Get the config file from local storage
+                    try:
+                        if node.type == "peer":
+                            dir_node = "{}/{}/crypto-config/peerOrganizations/{}/peers/{}/" \
+                                .format(CELLO_HOME, org, org, node.name + "." + org)
+                            cname = "peer_config.zip"
+                        else:
+                            dir_node = "{}/{}/crypto-config/ordererOrganizations/{}/orderers/{}/" \
+                                .format(CELLO_HOME, org, org.split(".", 1)[1], node.name + "." + org.split(".", 1)[1])
+                            cname = "orderer_config.zip"
+                        config_file = open("{}{}".format(dir_node, cname), "rb")
+                        response = HttpResponse(config_file, content_type="application/zip")
+                        response['Content-Disposition'] = "attachment; filename={}".format(cname)
+                        return response
+                    except Exception as e:
+                        raise e
+            except Exception as e:
+                return Response(
+                    err(e.args), status=status.HTTP_400_BAD_REQUEST
+                )
+        else:
+            pass
 
     def _register_user(self, request, pk=None):
         serializer = NodeUserCreateSerializer(data=request.data)
