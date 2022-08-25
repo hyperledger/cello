@@ -9,11 +9,14 @@ import threading
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 from django.http import HttpResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
 from api.common.enums import AgentOperation
@@ -66,6 +69,7 @@ LOG = logging.getLogger(__name__)
 
 class NodeViewSet(viewsets.ViewSet):
     authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
+    parser_classes = [MultiPartParser]
 
     # Only operator can update node info
     # def get_permissions(self):
@@ -679,45 +683,69 @@ class NodeViewSet(viewsets.ViewSet):
         methods=["get"],
         responses=with_common_response({status.HTTP_200_OK: NodeConfigFileSerializer}),
     )
+    @swagger_auto_schema(
+        methods=["post"],
+        request_body=NodeConfigFileSerializer,
+        responses=with_common_response({status.HTTP_202_ACCEPTED: "Accepted"}),
+    )
     @action(methods=["get", "post"], detail=True, url_path="config", url_name="config")
     def node_config(self, request, pk=None):
         """
         Download/upload the node config file
         """
-        if request.method == "GET":
+        try:
+            self._validate_organization(request)
+            organization = request.user.organization
+            org = organization.name
             try:
-                self._validate_organization(request)
-                organization = request.user.organization
-                org = organization.name
-                try:
-                    node = Node.objects.get(
-                        id=pk, organization=organization
-                    )
-                except ObjectDoesNotExist:
-                    raise ResourceNotFound
-                else:
-                    # Get the config file from local storage
-                    try:
-                        if node.type == "peer":
-                            dir_node = "{}/{}/crypto-config/peerOrganizations/{}/peers/{}/" \
-                                .format(CELLO_HOME, org, org, node.name + "." + org)
-                            cname = "peer_config.zip"
-                        else:
-                            dir_node = "{}/{}/crypto-config/ordererOrganizations/{}/orderers/{}/" \
-                                .format(CELLO_HOME, org, org.split(".", 1)[1], node.name + "." + org.split(".", 1)[1])
-                            cname = "orderer_config.zip"
-                        config_file = open("{}{}".format(dir_node, cname), "rb")
-                        response = HttpResponse(config_file, content_type="application/zip")
-                        response['Content-Disposition'] = "attachment; filename={}".format(cname)
-                        return response
-                    except Exception as e:
-                        raise e
-            except Exception as e:
-                return Response(
-                    err(e.args), status=status.HTTP_400_BAD_REQUEST
+                node = Node.objects.get(
+                    id=pk, organization=organization
                 )
-        else:
-            pass
+            except ObjectDoesNotExist:
+                raise ResourceNotFound
+            # Get file locations based on node type
+            if node.type == "peer":
+                dir_node = "{}/{}/crypto-config/peerOrganizations/{}/peers/{}/" \
+                    .format(CELLO_HOME, org, org, node.name + "." + org)
+                cname = "peer_config.zip"
+                name = "core.yaml"
+            else:
+                dir_node = "{}/{}/crypto-config/ordererOrganizations/{}/orderers/{}/" \
+                    .format(CELLO_HOME, org, org.split(".", 1)[1], node.name + "." + org.split(".", 1)[1])
+                cname = "orderer_config.zip"
+                name = "orderer.yaml"
+        except Exception as e:
+            return Response(
+                err(e.args), status=status.HTTP_400_BAD_REQUEST
+            )
+        if request.method == "GET":
+            # Get the config file from local storage
+            try:
+                config_file = open("{}{}".format(dir_node, cname), "rb")
+                response = HttpResponse(config_file, content_type="application/zip")
+                response['Content-Disposition'] = "attachment; filename={}".format(cname)
+                return response
+            except Exception as e:
+                raise e
+        elif request.method == "POST":
+            # Update yaml, zip files, and the database field
+            try:
+                new_config_file = request.data['file']
+                if os.path.exists("{}{}".format(dir_node, name)):
+                    os.remove("{}{}".format(dir_node, name))
+                with open("{}{}".format(dir_node, name), 'wb+') as f:
+                    for chunk in new_config_file.chunks():
+                        f.write(chunk)
+                if os.path.exists("{}{}".format(dir_node, cname)):
+                    os.remove("{}{}".format(dir_node, cname))
+                zip_file("{}{}".format(dir_node, name), "{}{}".format(dir_node, cname))
+                with open("{}{}".format(dir_node, cname), "rb") as f_cfg:
+                    cfg = base64.b64encode(f_cfg.read())
+                node.config_file = cfg
+                node.save()
+                return Response(status=status.HTTP_202_ACCEPTED)
+            except Exception as e:
+                raise e
 
     def _register_user(self, request, pk=None):
         serializer = NodeUserCreateSerializer(data=request.data)
