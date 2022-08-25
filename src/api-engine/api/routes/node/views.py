@@ -9,8 +9,6 @@ import threading
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
 from django.http import HttpResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status
