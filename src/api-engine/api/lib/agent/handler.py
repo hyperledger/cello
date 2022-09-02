@@ -61,3 +61,8 @@ class AgentHandler(object):
         self._agent.stop()
 
         return True
+
+    def update_config(self, config_file, node_type):
+        self._agent.update_config(config_file, node_type)
+
+        return True

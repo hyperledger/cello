@@ -108,3 +108,20 @@ class DockerAgent(AgentBase):
                 raise response.reason
         except Exception as e:
             raise e
+
+    def update_config(self, config_file, node_type):
+        try:
+            cmd = 'bash /tmp/update.sh "{} node start"'.format(node_type)
+            data = {
+                'peer_config_file': config_file,
+                'orderer_config_file': config_file,
+                'action': 'update',
+                'cmd': cmd
+            }
+            response = post('{}/api/v1/nodes/{}'.format(self._urls, self._cname), data=data)
+            if response.status_code == 200:
+                return True
+            else:
+                raise response.reason
+        except Exception as e:
+            raise e
