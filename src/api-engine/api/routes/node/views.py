@@ -14,7 +14,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.parsers import MultiPartParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
 from api.common.enums import AgentOperation
@@ -67,7 +67,7 @@ LOG = logging.getLogger(__name__)
 
 class NodeViewSet(viewsets.ViewSet):
     authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
-    parser_classes = [MultiPartParser]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     # Only operator can update node info
     # def get_permissions(self):
@@ -741,6 +741,9 @@ class NodeViewSet(viewsets.ViewSet):
                     cfg = base64.b64encode(f_cfg.read())
                 node.config_file = cfg
                 node.save()
+                infos = self._agent_params(pk)
+                agent = AgentHandler(infos)
+                agent.update_config(cfg, node.type)
                 return Response(status=status.HTTP_202_ACCEPTED)
             except Exception as e:
                 raise e
