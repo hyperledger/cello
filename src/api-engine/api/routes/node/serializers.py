@@ -244,6 +244,7 @@ class NodeInfoSerializer(NodeIDSerializer, serializers.ModelSerializer):
             "created_at": {"required": True, "read_only": False},
         }
 
+
 class NodeStatusSerializer(NodeIDSerializer, serializers.ModelSerializer):
     class Meta:
         model = Node
@@ -324,6 +325,7 @@ class NodeOperationSerializer(serializers.Serializer):
         help_text=Operation.get_info("Operation for node:", list_str=True),
         choices=Operation.to_choices(True),
     )
+
 
 class NodeConfigFileSerializer(serializers.ModelSerializer):
     files = serializers.FileField()
