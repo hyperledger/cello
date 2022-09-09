@@ -194,13 +194,14 @@ class ChannelViewSet(viewsets.ViewSet):
                 return Response(status=status.HTTP_202_ACCEPTED)
             except ObjectDoesNotExist:
                 raise ResourceNotFound
+
     @swagger_auto_schema(
         responses=with_common_response({status.HTTP_200_OK: "Accepted"}),
     )
     @action(
-        methods=["get"], 
+        methods=["get"],
         detail=True,
-         url_path="config"
+        url_path="config"
     )
     def get_channel_org_config(self, request, pk=None):
         try:
@@ -208,21 +209,22 @@ class ChannelViewSet(viewsets.ViewSet):
             channel = Channel.objects.get(id=pk)
             path = channel.get_channel_config_path()
             node = Node.objects.filter(
-                organization=org, 
-                type=FabricNodeType.Peer.name.lower(), 
+                organization=org,
+                type=FabricNodeType.Peer.name.lower(),
                 status=NodeStatus.Running.name.lower()
             ).first()
             dir_node = "{}/{}/crypto-config/peerOrganizations".format(
-            CELLO_HOME, org.name)
+                CELLO_HOME, org.name)
             env = {
                 "FABRIC_CFG_PATH": "{}/{}/peers/{}/".format(dir_node, org.name, node.name + "." + org.name),
             }
             peer_channel_cli = PeerChannel("v2.2.0", **env)
             peer_channel_cli.fetch(option="config", channel=channel.name)
-            config = ConfigTxLator().proto_decode(input=path,type="common.Block")
+            config = ConfigTxLator().proto_decode(input=path, type="common.Block")
         except ObjectDoesNotExist:
             raise ResourceNotFound
-        return Response(data=to_dict(config, org.name.split(".")[0].capitalize()),status=status.HTTP_200_OK)
+        return Response(data=to_dict(config, org.name.split(".")[0].capitalize()), status=status.HTTP_200_OK)
+
 
 def init_env_vars(node, org):
     """

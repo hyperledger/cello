@@ -85,7 +85,7 @@ class Channel(BasicEnv):
                 "{}".format(option),
                 "-c",
                 channel
-                ])
+                                       ])
         except Exception as e:
             err_msg = "fetch a specified block failed {}!".format(e)
             raise Exception(err_msg)

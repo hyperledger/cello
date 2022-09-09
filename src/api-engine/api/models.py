@@ -752,7 +752,7 @@ class Channel(models.Model):
     )
 
     def get_channel_config_path(self):
-        return "/var/www/server/" + self.name +"_config.block"
+        return "/var/www/server/" + self.name + "_config.block"
     # class ChainCode(models.Model):
     #     id = models.UUIDField(
     #         primary_key=True,

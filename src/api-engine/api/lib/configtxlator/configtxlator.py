@@ -24,12 +24,12 @@ class ConfigTxLator:
             output: A file to write the output to.
         """
         try:
-            res = call([self.configtxlator,
+            call([self.configtxlator,
                   "proto_encode",
                   "--input={}".format(input),
                   "--type={}".format(type),
                   "--output={}".format(output),
-                ])
+                  ])
         except Exception as e:
             err_msg = "configtxlator proto decode fail! "
             raise Exception(err_msg + str(e))
@@ -45,11 +45,11 @@ class ConfigTxLator:
         """
         try:
             res = run([self.configtxlator,
-                  "proto_decode",
-                  "--type={}".format(type),
-                  "--input={}".format(input),
-                  ], 
-                  capture_output= True)
+                       "proto_decode",
+                       "--type={}".format(type),
+                       "--input={}".format(input),
+                       ],
+                      capture_output=True)
             if res.returncode == 0 :
                 return res.stdout
             else:
