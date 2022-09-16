@@ -34,7 +34,7 @@ export async function deleteNode(params) {
 }
 
 export async function operateNode(params) {
-  return request('/api/v1/nodes/${params.id}/operations', {
+  return request(`/api/v1/nodes/${params.id}/operations`, {
     method: 'POST',
     data: { action: params.message }
   });
