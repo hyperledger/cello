@@ -207,7 +207,7 @@ const CreateNode = props => {
   };
 
   const onFinish = values => {
-    values.num = parseInt(values.num);
+    values.num = parseInt(values.num, 10);
     handleCreate(values, createCallback);
   };
 
