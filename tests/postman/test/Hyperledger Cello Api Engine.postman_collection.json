@@ -2766,6 +2766,57 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Peer Join Channel",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "JWT {{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/home/ppx/Desktop/channel1.block"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8080/api/v1/nodes/:node_id/block",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"nodes",
+						":node_id",
+						"block"
+					],
+					"variable": [
+						{
+							"key": "node_id",
+							"value": "ecef0a57-1fe3-435c-9a08-71fababc3460"
+						}
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"event": [
