@@ -61,6 +61,7 @@ from api.utils.node_config import NodeConfig
 from api.lib.agent import AgentHandler
 from api.utils.port_picker import set_ports_mapping, find_available_ports
 from api.common import ok, err
+from api.routes.channel.views import init_env_vars, join_peers
 
 LOG = logging.getLogger(__name__)
 
@@ -747,6 +748,35 @@ class NodeViewSet(viewsets.ViewSet):
                 return Response(status=status.HTTP_202_ACCEPTED)
             except Exception as e:
                 raise e
+
+    @action(methods=["post"], detail=True, url_path="block", url_name="block")
+    def block_file(self, request, pk=None):
+        '''
+        Peer join channel by uploading a genesis block file
+        '''
+        try:
+            self._validate_organization(request)
+            organization = request.user.organization
+            org = organization.name
+            try:
+                node = Node.objects.get(
+                    id=pk, organization=organization
+                )
+            except ObjectDoesNotExist:
+                raise ResourceNotFound
+            envs = init_env_vars(node, organization)
+            block_path = "{}/{}/crypto-config/peerOrganizations/{}/peers/{}/{}.block" \
+                .format(CELLO_HOME, org, org, node.name + "." + org, "channel")
+            uploaded_block_file = request.data['file']
+            with open(block_path, 'wb+') as f:
+                for chunk in uploaded_block_file.chunks():
+                    f.write(chunk)
+            join_peers(envs, block_path)
+            return Response(status=status.HTTP_202_ACCEPTED)
+        except Exception as e:
+            return Response(
+                err(e.args), status=status.HTTP_400_BAD_REQUEST
+            )
 
     def _register_user(self, request, pk=None):
         serializer = NodeUserCreateSerializer(data=request.data)
