@@ -1,15 +1,16 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-from cmath import log
+import logging
 import json
+
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 #
-import logging
+
 from drf_yasg.utils import swagger_auto_schema
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -256,14 +257,16 @@ class ChannelViewSet(viewsets.ViewSet):
                     type=FabricNodeType.Peer.name.lower(),
                     status=NodeStatus.Running.name.lower()
                 )
+
                 for node in nodes:
                     dir_node = "{}/{}/crypto-config/peerOrganizations".format(
                         CELLO_HOME, org.name)
                     env = {
                         "FABRIC_CFG_PATH": "{}/{}/peers/{}/".format(dir_node, org.name, node.name + "." + org.name),
                     }
-                    PeerChannel("v2.2.0", **env).signconfigtx(channel.get_channel_artifacts_path(CFG_DELTA_ENV_PB))
-                               
+                    cli = PeerChannel("v2.2.0", **env)
+                    cli.signconfigtx(channel.get_channel_artifacts_path(CFG_DELTA_ENV_PB))
+                            
                 # Save updated config to db.
                 channel.config = temp_config
                 channel.save()
