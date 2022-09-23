@@ -116,7 +116,8 @@ def zip_dir(dirpath, outFullName):
     for path, dirnames, filenames in os.walk(dirpath):
         fpath = dir_dst + path.replace(dirpath, '')
         for filename in filenames:
-            zdir.write(os.path.join(path, filename), os.path.join(fpath, filename))
+            zdir.write(os.path.join(path, filename),
+                       os.path.join(fpath, filename))
     zdir.close()
 
 
@@ -144,6 +145,7 @@ def parse_block_file(data):
     if config.get("data"):
         return config.get("data").get("data")[0].get("payload").get("data").get("config")
     return {"error": "can't find channel config"}
+
 
 def to_dict(data):
     return loads(data)
