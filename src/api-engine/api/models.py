@@ -763,7 +763,6 @@ class Channel(models.Model):
     def get_channel_artifacts_path(self, artifact):
         return CELLO_HOME + "/" + self.network.name + "/" + artifact
 
-
     # class ChainCode(models.Model):
     #     id = models.UUIDField(
     #         primary_key=True,
