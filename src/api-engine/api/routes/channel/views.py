@@ -1,11 +1,15 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
+from cmath import log
+import json
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
-
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+#
+import logging
 from drf_yasg.utils import swagger_auto_schema
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -13,7 +17,7 @@ from django.core.paginator import Paginator
 
 from api.config import CELLO_HOME
 from api.common.serializers import PageQuerySerializer
-from api.utils.common import with_common_response, to_dict
+from api.utils.common import with_common_response, parse_block_file, to_dict
 from api.auth import TokenAuth
 from api.lib.configtxgen import ConfigTX, ConfigTxGen
 from api.lib.peer.channel import Channel as PeerChannel
@@ -38,10 +42,21 @@ from api.common.enums import (
     FabricNodeType,
 )
 
+LOG = logging.getLogger(__name__)
+
+CFG_JSON = "cfg.json"
+CFG_PB = "cfg.pb"
+DELTA_PB = "delta.pb"
+DELTA_JSON = "delta.json"
+UPDATED_CFG_JSON = "update_cfg.json"
+UPDATED_CFG_PB = "update_cfg.pb"
+CFG_DELTA_ENV_JSON = "cfg_delta_env.json"
+CFG_DELTA_ENV_PB = "cfg_delta_env.pb"
 
 class ChannelViewSet(viewsets.ViewSet):
     """Class represents Channel related operations."""
     authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     @swagger_auto_schema(
         query_serializer=PageQuerySerializer,
@@ -177,20 +192,81 @@ class ChannelViewSet(viewsets.ViewSet):
         """
         serializer = ChannelUpdateSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            peers = serializer.validated_data.get("peers")
+            msp_id = serializer.validated_data.get("msp_id")
+            config = serializer.validated_data.get("config")
             channel = Channel.objects.get(id=pk)
+            org = request.user.organization
             try:
-                org = request.user.organization
-                org_name = org.name
-                msp_id = org_name.split(".")[0].capitalize()
-                dir_node = "{}/{}/crypto-config/peerOrganizations".format(
-                    CELLO_HOME, org_name)
-                peer_cli_envs = {
-                    "CORE_PEER_LOCALMSPID": msp_id,
-                    "CORE_PEER_MSPCONFIGPATH": "{}/{}/users/Admin@{}/msp".format(
-                        dir_node, org_name, org_name),
+                # Add new org msp
+                temp_config = channel.config
+                temp_config["channel_group"]["groups"]["Application"]["groups"][msp_id] = config
+                LOG.info("updated_config", temp_config)
+      
+                # Update and save the config with new org      
+                with open(channel.get_channel_artifacts_path(UPDATED_CFG_JSON), 'w', encoding='utf-8') as f:
+                    LOG.info("channel_updated_config.save.success")
+                    json.dump(temp_config, f, sort_keys=False)
+    
+                # Encode it into pb.     
+                ConfigTxLator().proto_encode(
+                    input=channel.get_channel_artifacts_path(UPDATED_CFG_JSON), 
+                    type="common.Config", 
+                    output= channel.get_channel_artifacts_path(UPDATED_CFG_PB),
+                )
+                
+                # Calculate the config delta between pb files
+                ConfigTxLator().compute_update(
+                    original=channel.get_channel_artifacts_path(CFG_PB),
+                    updated=channel.get_channel_artifacts_path(UPDATED_CFG_PB),
+                    channel_id=channel.name,
+                    output=channel.get_channel_artifacts_path(DELTA_PB),
+                )
+                # Decode the config delta pb into json
+                config_update = ConfigTxLator().proto_decode(
+                    input=channel.get_channel_artifacts_path(DELTA_PB),
+                    type="common.ConfigUpdate",
+                )
+                # Wrap the config update as envelope
+                updated_config = {
+                    "payload": {
+                        "header": {
+                            "channel_header": {
+                                "channel_id": channel.name,
+                                "type": 2,
+                            }
+                        },
+                        "data": {
+                            "config_update": to_dict(config_update)
+                        }
+                    }
                 }
-                join_peers(peers, peer_cli_envs, dir_node, org, channel.name)
+                with open(channel.get_channel_artifacts_path(CFG_JSON), 'w', encoding='utf-8') as f:
+                    json.dump(updated_config, f, sort_keys=False)
+               
+                # Encode the config update envelope into pb
+                ConfigTxLator().proto_encode(
+                    input=channel.get_channel_artifacts_path(CFG_JSON), 
+                    type="common.Envelope", 
+                    output= channel.get_channel_artifacts_path(CFG_DELTA_ENV_PB),
+                )
+
+                # Peers to send the update transaction
+                nodes = Node.objects.filter(
+                    organization=org,
+                    type=FabricNodeType.Peer.name.lower(),
+                    status=NodeStatus.Running.name.lower()
+                )
+                for node in nodes:
+                    dir_node = "{}/{}/crypto-config/peerOrganizations".format(
+                        CELLO_HOME, org.name)
+                    env = {
+                        "FABRIC_CFG_PATH": "{}/{}/peers/{}/".format(dir_node, org.name, node.name + "." + org.name),
+                    }
+                    PeerChannel("v2.2.0", **env).signconfigtx(channel.get_channel_artifacts_path(CFG_DELTA_ENV_PB))
+                               
+                # Save updated config to db.
+                channel.config = temp_config
+                channel.save()
                 return Response(status=status.HTTP_202_ACCEPTED)
             except ObjectDoesNotExist:
                 raise ResourceNotFound
@@ -198,32 +274,46 @@ class ChannelViewSet(viewsets.ViewSet):
     @swagger_auto_schema(
         responses=with_common_response({status.HTTP_200_OK: "Accepted"}),
     )
-    @action(
-        methods=["get"],
-        detail=True,
-        url_path="config"
-    )
+    @action(methods=["get"],detail=True,url_path="configs")
     def get_channel_org_config(self, request, pk=None):
         try:
             org = request.user.organization
             channel = Channel.objects.get(id=pk)
             path = channel.get_channel_config_path()
-            node = Node.objects.filter(
-                organization=org,
-                type=FabricNodeType.Peer.name.lower(),
-                status=NodeStatus.Running.name.lower()
-            ).first()
-            dir_node = "{}/{}/crypto-config/peerOrganizations".format(
-                CELLO_HOME, org.name)
-            env = {
-                "FABRIC_CFG_PATH": "{}/{}/peers/{}/".format(dir_node, org.name, node.name + "." + org.name),
-            }
-            peer_channel_cli = PeerChannel("v2.2.0", **env)
-            peer_channel_cli.fetch(option="config", channel=channel.name)
-            config = ConfigTxLator().proto_decode(input=path, type="common.Block")
+            if channel.config:
+                return Response(data=channel.config, status=status.HTTP_200_OK)
+            else:
+                node = Node.objects.filter(
+                    organization=org,
+                    type=FabricNodeType.Peer.name.lower(),
+                    status=NodeStatus.Running.name.lower()
+                ).first()
+                dir_node = "{}/{}/crypto-config/peerOrganizations".format(
+                    CELLO_HOME, org.name)
+                env = {
+                    "FABRIC_CFG_PATH": "{}/{}/peers/{}/".format(dir_node, org.name, node.name + "." + org.name),
+                }
+                peer_channel_cli = PeerChannel("v2.2.0", **env)
+                peer_channel_cli.fetch(option="config", channel=channel.name)
+                
+                # Decode latest config block into json
+                config = ConfigTxLator().proto_decode(input=path, type="common.Block")
+                config = parse_block_file(config)
+                # Save  as a json file for future usage
+                with open(channel.get_channel_artifacts_path(CFG_JSON), 'w', encoding='utf-8') as f:
+                        json.dump(config, f, sort_keys=False)
+                # Encode block file as pb
+                ConfigTxLator().proto_encode(
+                    input=channel.get_channel_artifacts_path(CFG_JSON), 
+                    type="common.Config", 
+                    output= channel.get_channel_artifacts_path(CFG_PB),
+                )
+                channel.config = config
+                channel.save()
+                return Response(data=config, status=status.HTTP_200_OK)
         except ObjectDoesNotExist:
             raise ResourceNotFound
-        return Response(data=to_dict(config, org.name.split(".")[0].capitalize()), status=status.HTTP_200_OK)
+             
 
 
 def init_env_vars(node, org):

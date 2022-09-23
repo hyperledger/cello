@@ -29,13 +29,10 @@ class ChannelIDSerializer(serializers.Serializer):
     id = serializers.UUIDField(help_text="Channel ID")
 
 
-class ChannelUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Channel
-        fields = (
-            "name",
-        )
-
+class ChannelUpdateSerializer(serializers.Serializer):
+    msp_id = serializers.CharField(
+        max_length=128, help_text="MSP ID of Organization")
+    config = serializers.JSONField(help_text="Channel config file")
 
 class ChannelOrgListSerializer(serializers.Serializer):
     id = serializers.UUIDField(help_text="Organization ID")

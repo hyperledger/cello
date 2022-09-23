@@ -132,7 +132,7 @@ def zip_file(dirpath, outFullName):
     zfile.close()
 
 
-def to_dict(data, org_name):
+def parse_block_file(data):
     """
     Parse org config from channel config block.
 
@@ -141,11 +141,9 @@ def to_dict(data, org_name):
     :return organization config
     """
     config = loads(data)
-    if config.get("data") is not None:
-        payloads = config["data"]["data"]
-        for p in payloads:
-            groups = p["payload"]["data"]["config"]["channel_group"]["groups"]["Application"]["groups"]
-            res = groups.get(org_name, None)
-            if res is not None:
-                return res
+    if config.get("data"):
+        return config.get("data").get("data")[0].get("payload").get("data").get("config")
     return {"error": "can't find channel config"}
+
+def to_dict(data):
+    return loads(data)
