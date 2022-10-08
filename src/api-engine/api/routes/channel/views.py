@@ -1,6 +1,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
+from copy import deepcopy
 import logging
 import json
 
@@ -29,6 +30,8 @@ from api.exceptions import (
 from api.models import (
     Channel,
     Node,
+    Organization,
+    Network,
 )
 from api.routes.channel.serializers import (
     ChannelCreateBody,
@@ -37,6 +40,7 @@ from api.routes.channel.serializers import (
     ChannelResponseSerializer,
     ChannelUpdateSerializer
 )
+
 from api.common import ok, err
 from api.common.enums import (
     NodeStatus,
@@ -199,20 +203,38 @@ class ChannelViewSet(viewsets.ViewSet):
         """
         serializer = ChannelUpdateSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            msp_id = serializer.validated_data.get("msp_id")
-            config = serializer.validated_data.get("config")
             channel = Channel.objects.get(id=pk)
             org = request.user.organization
             try:
-                # Add new org msp
-                temp_config = channel.config
-                temp_config["channel_group"]["groups"]["Application"]["groups"][msp_id] = config
-                LOG.info("updated_config", temp_config)
+                data = request.FILES["data"]
+                config = data.config
+                org = data.org
+                #TODO: Validate uploaded config file
 
+                #TODO: Read current channel from local disk
+                with open(channel.get_channel_artifacts_path(CFG_JSON), 'r', encoding='utf-8') as f:
+                    LOG.info("load current config success")
+                    current_config = json.load(config, f, sort_keys=False)
+            
+                # Create a new org
+                network = Network.objects.get(pk = org.network.id)
+                new_org = Organization.objects.create(
+                    name = org.name,
+                    msp = config.msp,
+                    tls = config.tls,
+                    network = network,
+                    agents = org.agents,
+                )
+                LOG.info("new org created")
+                # Read uploaded file in cache without saving it on disk.
+                updated_config = deepcopy(current_config)
+                updated_config["channel_group"]["groups"]["Application"]["groups"][org.msp_id] = config.msp
+                LOG.info("update config success")
+                
                 # Update and save the config with new org
                 with open(channel.get_channel_artifacts_path(UPDATED_CFG_JSON), 'w', encoding='utf-8') as f:
-                    LOG.info("channel_updated_config.save.success")
-                    json.dump(temp_config, f, sort_keys=False)
+                    LOG.info("save updated config success")
+                    json.dump(current_config, f, sort_keys=False)
 
                 # Encode it into pb.
                 ConfigTxLator().proto_encode(
@@ -220,6 +242,7 @@ class ChannelViewSet(viewsets.ViewSet):
                     type="common.Config",
                     output=channel.get_channel_artifacts_path(UPDATED_CFG_PB),
                 )
+                LOG.info("encode config to pb success")
 
                 # Calculate the config delta between pb files
                 ConfigTxLator().compute_update(
@@ -228,11 +251,13 @@ class ChannelViewSet(viewsets.ViewSet):
                     channel_id=channel.name,
                     output=channel.get_channel_artifacts_path(DELTA_PB),
                 )
+                LOG.info("compute config delta success")
                 # Decode the config delta pb into json
                 config_update = ConfigTxLator().proto_decode(
                     input=channel.get_channel_artifacts_path(DELTA_PB),
                     type="common.ConfigUpdate",
                 )
+                LOG.info("decode config delta to json success")
                 # Wrap the config update as envelope
                 updated_config = {
                     "payload": {
@@ -248,6 +273,7 @@ class ChannelViewSet(viewsets.ViewSet):
                     }
                 }
                 with open(channel.get_channel_artifacts_path(CFG_JSON), 'w', encoding='utf-8') as f:
+                    LOG.info("save config to json success")
                     json.dump(updated_config, f, sort_keys=False)
 
                 # Encode the config update envelope into pb
@@ -256,6 +282,7 @@ class ChannelViewSet(viewsets.ViewSet):
                     type="common.Envelope",
                     output=channel.get_channel_artifacts_path(CFG_DELTA_ENV_PB),
                 )
+                LOG.info("Encode the config update envelope success")
 
                 # Peers to send the update transaction
                 nodes = Node.objects.filter(
@@ -273,10 +300,11 @@ class ChannelViewSet(viewsets.ViewSet):
                     cli = PeerChannel("v2.2.0", **env)
                     cli.signconfigtx(
                         channel.get_channel_artifacts_path(CFG_DELTA_ENV_PB))
+                    LOG.info("Peers to send the update transaction success")
 
-                # Save updated config to db.
-                channel.config = temp_config
-                channel.save()
+                # Save a new organization to db.
+                new_org.save()
+                LOG.info("new_org save success")
                 return Response(status=status.HTTP_202_ACCEPTED)
             except ObjectDoesNotExist:
                 raise ResourceNotFound
@@ -290,37 +318,40 @@ class ChannelViewSet(viewsets.ViewSet):
             org = request.user.organization
             channel = Channel.objects.get(id=pk)
             path = channel.get_channel_config_path()
-            if channel.config:
-                return Response(data=channel.config, status=status.HTTP_200_OK)
-            else:
-                node = Node.objects.filter(
-                    organization=org,
-                    type=FabricNodeType.Peer.name.lower(),
-                    status=NodeStatus.Running.name.lower()
-                ).first()
-                dir_node = "{}/{}/crypto-config/peerOrganizations".format(
-                    CELLO_HOME, org.name)
-                env = {
-                    "FABRIC_CFG_PATH": "{}/{}/peers/{}/".format(dir_node, org.name, node.name + "." + org.name),
-                }
-                peer_channel_cli = PeerChannel("v2.2.0", **env)
-                peer_channel_cli.fetch(option="config", channel=channel.name)
+            node = Node.objects.filter(
+                organization=org,
+                type=FabricNodeType.Peer.name.lower(),
+                status=NodeStatus.Running.name.lower()
+            ).first()
+            dir_node = "{}/{}/crypto-config/peerOrganizations".format(
+                CELLO_HOME, org.name)
+            env = {
+                "FABRIC_CFG_PATH": "{}/{}/peers/{}/".format(dir_node, org.name, node.name + "." + org.name),
+            }
+            peer_channel_cli = PeerChannel("v2.2.0", **env)
+            peer_channel_cli.fetch(option="config", channel=channel.name)
 
-                # Decode latest config block into json
-                config = ConfigTxLator().proto_decode(input=path, type="common.Block")
-                config = parse_block_file(config)
-                # Save  as a json file for future usage
-                with open(channel.get_channel_artifacts_path(CFG_JSON), 'w', encoding='utf-8') as f:
-                    json.dump(config, f, sort_keys=False)
-                # Encode block file as pb
-                ConfigTxLator().proto_encode(
-                    input=channel.get_channel_artifacts_path(CFG_JSON),
-                    type="common.Config",
-                    output=channel.get_channel_artifacts_path(CFG_PB),
-                )
-                channel.config = config
-                channel.save()
-                return Response(data=config, status=status.HTTP_200_OK)
+            # Decode latest config block into json
+            config = ConfigTxLator().proto_decode(input=path, type="common.Block")
+            config = parse_block_file(config)
+
+            # Prepare return data
+            data = {
+                "config": config,
+                "organization": org.name,
+                "msp_id": '{}MSP'.format(node.name.split(".")[0].capitalize()) #TODO: create a method on Organization or Node to return msp_id
+            }
+
+            # Save  as a json file for future usage
+            with open(channel.get_channel_artifacts_path(CFG_JSON), 'w', encoding='utf-8') as f:
+                json.dump(config, f, sort_keys=False)
+            # Encode block file as pb
+            ConfigTxLator().proto_encode(
+                input=channel.get_channel_artifacts_path(CFG_JSON),
+                type="common.Config",
+                output=channel.get_channel_artifacts_path(CFG_PB),
+            )
+            return Response(data=data, status=status.HTTP_200_OK)
         except ObjectDoesNotExist:
             raise ResourceNotFound
 
