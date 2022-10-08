@@ -209,28 +209,28 @@ class ChannelViewSet(viewsets.ViewSet):
                 data = request.FILES["data"]
                 config = data.config
                 org = data.org
-                #TODO: Validate uploaded config file
+                # TODO: Validate uploaded config file
 
-                #TODO: Read current channel from local disk
+                # TODO: Read current channel from local disk
                 with open(channel.get_channel_artifacts_path(CFG_JSON), 'r', encoding='utf-8') as f:
                     LOG.info("load current config success")
                     current_config = json.load(config, f, sort_keys=False)
-            
+
                 # Create a new org
-                network = Network.objects.get(pk = org.network.id)
+                network = Network.objects.get(pk=org.network.id)
                 new_org = Organization.objects.create(
-                    name = org.name,
-                    msp = config.msp,
-                    tls = config.tls,
-                    network = network,
-                    agents = org.agents,
+                    name=org.name,
+                    msp=config.msp,
+                    tls=config.tls,
+                    network=network,
+                    agents=org.agents,
                 )
                 LOG.info("new org created")
                 # Read uploaded file in cache without saving it on disk.
                 updated_config = deepcopy(current_config)
                 updated_config["channel_group"]["groups"]["Application"]["groups"][org.msp_id] = config.msp
                 LOG.info("update config success")
-                
+
                 # Update and save the config with new org
                 with open(channel.get_channel_artifacts_path(UPDATED_CFG_JSON), 'w', encoding='utf-8') as f:
                     LOG.info("save updated config success")
@@ -339,7 +339,8 @@ class ChannelViewSet(viewsets.ViewSet):
             data = {
                 "config": config,
                 "organization": org.name,
-                "msp_id": '{}MSP'.format(node.name.split(".")[0].capitalize()) #TODO: create a method on Organization or Node to return msp_id
+                # TODO: create a method on Organization or Node to return msp_id
+                "msp_id": '{}MSP'.format(node.name.split(".")[0].capitalize())
             }
 
             # Save  as a json file for future usage
