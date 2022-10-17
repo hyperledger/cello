@@ -530,7 +530,6 @@ class Index extends PureComponent {
         defaultMessage: 'Download Node Config File Successful.',
       })
     );
-    console.log(response.response);
     const dispositionHeader = response.response.headers.get('Content-Disposition');
     const blob = response.data;
     const link = document.createElement('a');
