@@ -27,6 +27,14 @@ import styles from '../styles.less';
 const FormItem = Form.Item;
 const { Option } = Select;
 
+// function str2bytes (str) {
+//    var bytes = new Uint8Array(str.length);
+//    for (var i=0; i<str.length; i++) {
+//       bytes[i] = str.charCodeAt(i);
+//     }
+//     return bytes;
+// }
+
 const RegisterUserForm = props => {
   const {
     registerUserFormVisible,
@@ -502,6 +510,37 @@ class Index extends PureComponent {
     });
   };
 
+  handleDownloadConfig = row => {
+    const { dispatch } = this.props;
+    const params = {
+      id: row.id,
+    };
+    dispatch({
+      type: 'node/downloadNodeConfig',
+      payload: params,
+      callback: this.downloadCallBack,
+    });
+  };
+
+  downloadCallBack = response => {
+    const { intl } = this.props;
+    message.success(
+      intl.formatMessage({
+        id: 'app.operator.node.download.success',
+        defaultMessage: 'Download Node Config File Successful.',
+      })
+    );
+    console.log(response.response);
+    const dispositionHeader = response.response.headers.get('Content-Disposition');
+    const blob = response.data;
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(new Blob([blob], { type: 'application/zip' }));
+    link.download = dispositionHeader.split('filename=')[1];
+    document.body.appendChild(link);
+    link.click();
+    URL.revokeObjectURL(link.href);
+  };
+
   render() {
     const { selectedRows, registerUserFormVisible, targetNodeId, createModalVisible } = this.state;
 
@@ -564,6 +603,13 @@ class Index extends PureComponent {
                 id: 'app.operator.node.table.operation.registerUser',
                 defaultMessage: 'Register User',
               })}
+            </a>
+          </Menu.Item>
+        )}
+        {(record.type === 'peer' || record.type === 'orderer') && (
+          <Menu.Item>
+            <a onClick={() => this.handleDownloadConfig(record)}>
+              {intl.formatMessage({ id: 'form.menu.item.download', defaultMessage: 'Download' })}
             </a>
           </Menu.Item>
         )}

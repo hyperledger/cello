@@ -39,3 +39,11 @@ export async function operateNode(params) {
     data: { action: params.message },
   });
 }
+
+export async function downloadNodeConfig(params) {
+  return request(`/api/v1/nodes/${params.id}/config`, {
+    method: 'GET',
+    responseType: 'blob',
+    getResponse: true,
+  });
+}
