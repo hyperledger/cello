@@ -41,7 +41,8 @@ class ConfigTxLator:
         params:
             input: A file containing the JSON document.
             type:  The type of protobuf structure to decode to. For example, 'common.Config'.
-            output: A file to write the output to.
+        return:
+            config
         """
         try:
             res = run([self.configtxlator,
