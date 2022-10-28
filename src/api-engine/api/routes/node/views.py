@@ -789,6 +789,7 @@ class NodeViewSet(viewsets.ViewSet):
                 for chunk in uploaded_block_file.chunks():
                     f.write(chunk)
             join_peers(envs, block_path)
+            os.remove(block_path)
             return Response(status=status.HTTP_202_ACCEPTED)
         except Exception as e:
             return Response(
