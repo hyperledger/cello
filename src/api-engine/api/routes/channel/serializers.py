@@ -32,7 +32,9 @@ class ChannelIDSerializer(serializers.Serializer):
 class ChannelUpdateSerializer(serializers.Serializer):
     msp_id = serializers.CharField(
         max_length=128, help_text="MSP ID of Organization")
-    config = serializers.JSONField(help_text="Channel config file")
+    data = serializers.FileField(help_text="Channel config file")
+    org_type = serializers.CharField(
+        max_length=24, help_text="Organization type")
 
 
 class ChannelOrgListSerializer(serializers.Serializer):

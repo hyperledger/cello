@@ -1,0 +1,644 @@
+{
+    "config": {
+        "channel_group": {
+            "groups": {
+                "Application": {
+                    "groups": {
+                        "Org2": {
+                            "groups": {},
+                            "mod_policy": "Admins",
+                            "policies": {
+                                "Admins": {
+                                    "mod_policy": "Admins",
+                                    "policy": {
+                                        "type": 1,
+                                        "value": {
+                                            "identities": [
+                                                {
+                                                    "principal": {
+                                                        "msp_identifier": "Org2.cello.comMSP",
+                                                        "role": "ADMIN"
+                                                    },
+                                                    "principal_classification": "ROLE"
+                                                }
+                                            ],
+                                            "rule": {
+                                                "n_out_of": {
+                                                    "n": 1,
+                                                    "rules": [
+                                                        {
+                                                            "signed_by": 0
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "version": 0
+                                        }
+                                    },
+                                    "version": "0"
+                                },
+                                "Endorsement": {
+                                    "mod_policy": "Admins",
+                                    "policy": {
+                                        "type": 1,
+                                        "value": {
+                                            "identities": [
+                                                {
+                                                    "principal": {
+                                                        "msp_identifier": "Org2.cello.comMSP",
+                                                        "role": "MEMBER"
+                                                    },
+                                                    "principal_classification": "ROLE"
+                                                }
+                                            ],
+                                            "rule": {
+                                                "n_out_of": {
+                                                    "n": 1,
+                                                    "rules": [
+                                                        {
+                                                            "signed_by": 0
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "version": 0
+                                        }
+                                    },
+                                    "version": "0"
+                                },
+                                "Readers": {
+                                    "mod_policy": "Admins",
+                                    "policy": {
+                                        "type": 1,
+                                        "value": {
+                                            "identities": [
+                                                {
+                                                    "principal": {
+                                                        "msp_identifier": "Org2.cello.comMSP",
+                                                        "role": "MEMBER"
+                                                    },
+                                                    "principal_classification": "ROLE"
+                                                }
+                                            ],
+                                            "rule": {
+                                                "n_out_of": {
+                                                    "n": 1,
+                                                    "rules": [
+                                                        {
+                                                            "signed_by": 0
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "version": 0
+                                        }
+                                    },
+                                    "version": "0"
+                                },
+                                "Writers": {
+                                    "mod_policy": "Admins",
+                                    "policy": {
+                                        "type": 1,
+                                        "value": {
+                                            "identities": [
+                                                {
+                                                    "principal": {
+                                                        "msp_identifier": "Org2.cello.comMSP",
+                                                        "role": "MEMBER"
+                                                    },
+                                                    "principal_classification": "ROLE"
+                                                }
+                                            ],
+                                            "rule": {
+                                                "n_out_of": {
+                                                    "n": 1,
+                                                    "rules": [
+                                                        {
+                                                            "signed_by": 0
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "version": 0
+                                        }
+                                    },
+                                    "version": "0"
+                                }
+                            },
+                            "values": {
+                                "MSP": {
+                                    "mod_policy": "Admins",
+                                    "value": {
+                                        "config": {
+                                            "admins": [],
+                                            "crypto_config": {
+                                                "identity_identifier_hash_function": "SHA256",
+                                                "signature_hash_family": "SHA2"
+                                            },
+                                            "fabric_node_ous": {
+                                                "admin_ou_identifier": {
+                                                    "certificate": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNJakNDQWNtZ0F3SUJBZ0lRVE5TZ3hLa1NSM1RINWl5YkJ1N0dyVEFLQmdncWhrak9QUVFEQWpCY01Rc3cKQ1FZRFZRUUdFd0pEVGpFTE1Ba0dBMVVFQ0JNQ1ExQXhDekFKQmdOVkJBY1RBa0pLTVJjd0ZRWURWUVFLRXc1dgpjbWN5TG1ObGJHeHZMbU52YlRFYU1CZ0dBMVVFQXhNUlkyRXViM0puTWk1alpXeHNieTVqYjIwd0hoY05Nakl4Ck1ERXlNREV6TmpBd1doY05Nekl4TURBNU1ERXpOakF3V2pCY01Rc3dDUVlEVlFRR0V3SkRUakVMTUFrR0ExVUUKQ0JNQ1ExQXhDekFKQmdOVkJBY1RBa0pLTVJjd0ZRWURWUVFLRXc1dmNtY3lMbU5sYkd4dkxtTnZiVEVhTUJnRwpBMVVFQXhNUlkyRXViM0puTWk1alpXeHNieTVqYjIwd1dUQVRCZ2NxaGtqT1BRSUJCZ2dxaGtqT1BRTUJCd05DCkFBUUNCdEc3S0oyRzhickpaRE55MTQ3WmI1cTIrd1pFTVc0Tmh3YXIwc0cwUUlnQ2RXOHU2WWJKTEVPbkhoS3AKa21JTkI5RVp2YktSWkZub2crNmlFQkxabzIwd2F6QU9CZ05WSFE4QkFmOEVCQU1DQWFZd0hRWURWUjBsQkJZdwpGQVlJS3dZQkJRVUhBd0lHQ0NzR0FRVUZCd01CTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3S1FZRFZSME9CQ0lFCklJUXJHSWdlMEwzbXlzQ25UcDdJVVI2VS9FNnFiTWVFWG1wMDAxd1NyVkRSTUFvR0NDcUdTTTQ5QkFNQ0EwY0EKTUVRQ0lCaWdhTWlzcW9XZ0pKOThid0pGMjV0NVhuKzZ6eU4zZWlRMGo2WlN5aEFzQWlBMTVQUzllL1FEcFhhegovaWwwenJmODIrbWFEYmRKQ0dIVVhBOC9aNWx2NWc9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==",
+                                                    "organizational_unit_identifier": "admin"
+                                                },
+                                                "client_ou_identifier": {
+                                                    "certificate": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNJakNDQWNtZ0F3SUJBZ0lRVE5TZ3hLa1NSM1RINWl5YkJ1N0dyVEFLQmdncWhrak9QUVFEQWpCY01Rc3cKQ1FZRFZRUUdFd0pEVGpFTE1Ba0dBMVVFQ0JNQ1ExQXhDekFKQmdOVkJBY1RBa0pLTVJjd0ZRWURWUVFLRXc1dgpjbWN5TG1ObGJHeHZMbU52YlRFYU1CZ0dBMVVFQXhNUlkyRXViM0puTWk1alpXeHNieTVqYjIwd0hoY05Nakl4Ck1ERXlNREV6TmpBd1doY05Nekl4TURBNU1ERXpOakF3V2pCY01Rc3dDUVlEVlFRR0V3SkRUakVMTUFrR0ExVUUKQ0JNQ1ExQXhDekFKQmdOVkJBY1RBa0pLTVJjd0ZRWURWUVFLRXc1dmNtY3lMbU5sYkd4dkxtTnZiVEVhTUJnRwpBMVVFQXhNUlkyRXViM0puTWk1alpXeHNieTVqYjIwd1dUQVRCZ2NxaGtqT1BRSUJCZ2dxaGtqT1BRTUJCd05DCkFBUUNCdEc3S0oyRzhickpaRE55MTQ3WmI1cTIrd1pFTVc0Tmh3YXIwc0cwUUlnQ2RXOHU2WWJKTEVPbkhoS3AKa21JTkI5RVp2YktSWkZub2crNmlFQkxabzIwd2F6QU9CZ05WSFE4QkFmOEVCQU1DQWFZd0hRWURWUjBsQkJZdwpGQVlJS3dZQkJRVUhBd0lHQ0NzR0FRVUZCd01CTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3S1FZRFZSME9CQ0lFCklJUXJHSWdlMEwzbXlzQ25UcDdJVVI2VS9FNnFiTWVFWG1wMDAxd1NyVkRSTUFvR0NDcUdTTTQ5QkFNQ0EwY0EKTUVRQ0lCaWdhTWlzcW9XZ0pKOThid0pGMjV0NVhuKzZ6eU4zZWlRMGo2WlN5aEFzQWlBMTVQUzllL1FEcFhhegovaWwwenJmODIrbWFEYmRKQ0dIVVhBOC9aNWx2NWc9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==",
+                                                    "organizational_unit_identifier": "client"
+                                                },
+                                                "enable": true,
+                                                "orderer_ou_identifier": {
+                                                    "certificate": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNJakNDQWNtZ0F3SUJBZ0lRVE5TZ3hLa1NSM1RINWl5YkJ1N0dyVEFLQmdncWhrak9QUVFEQWpCY01Rc3cKQ1FZRFZRUUdFd0pEVGpFTE1Ba0dBMVVFQ0JNQ1ExQXhDekFKQmdOVkJBY1RBa0pLTVJjd0ZRWURWUVFLRXc1dgpjbWN5TG1ObGJHeHZMbU52YlRFYU1CZ0dBMVVFQXhNUlkyRXViM0puTWk1alpXeHNieTVqYjIwd0hoY05Nakl4Ck1ERXlNREV6TmpBd1doY05Nekl4TURBNU1ERXpOakF3V2pCY01Rc3dDUVlEVlFRR0V3SkRUakVMTUFrR0ExVUUKQ0JNQ1ExQXhDekFKQmdOVkJBY1RBa0pLTVJjd0ZRWURWUVFLRXc1dmNtY3lMbU5sYkd4dkxtTnZiVEVhTUJnRwpBMVVFQXhNUlkyRXViM0puTWk1alpXeHNieTVqYjIwd1dUQVRCZ2NxaGtqT1BRSUJCZ2dxaGtqT1BRTUJCd05DCkFBUUNCdEc3S0oyRzhickpaRE55MTQ3WmI1cTIrd1pFTVc0Tmh3YXIwc0cwUUlnQ2RXOHU2WWJKTEVPbkhoS3AKa21JTkI5RVp2YktSWkZub2crNmlFQkxabzIwd2F6QU9CZ05WSFE4QkFmOEVCQU1DQWFZd0hRWURWUjBsQkJZdwpGQVlJS3dZQkJRVUhBd0lHQ0NzR0FRVUZCd01CTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3S1FZRFZSME9CQ0lFCklJUXJHSWdlMEwzbXlzQ25UcDdJVVI2VS9FNnFiTWVFWG1wMDAxd1NyVkRSTUFvR0NDcUdTTTQ5QkFNQ0EwY0EKTUVRQ0lCaWdhTWlzcW9XZ0pKOThid0pGMjV0NVhuKzZ6eU4zZWlRMGo2WlN5aEFzQWlBMTVQUzllL1FEcFhhegovaWwwenJmODIrbWFEYmRKQ0dIVVhBOC9aNWx2NWc9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==",
+                                                    "organizational_unit_identifier": "orderer"
+                                                },
+                                                "peer_ou_identifier": {
+                                                    "certificate": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNJakNDQWNtZ0F3SUJBZ0lRVE5TZ3hLa1NSM1RINWl5YkJ1N0dyVEFLQmdncWhrak9QUVFEQWpCY01Rc3cKQ1FZRFZRUUdFd0pEVGpFTE1Ba0dBMVVFQ0JNQ1ExQXhDekFKQmdOVkJBY1RBa0pLTVJjd0ZRWURWUVFLRXc1dgpjbWN5TG1ObGJHeHZMbU52YlRFYU1CZ0dBMVVFQXhNUlkyRXViM0puTWk1alpXeHNieTVqYjIwd0hoY05Nakl4Ck1ERXlNREV6TmpBd1doY05Nekl4TURBNU1ERXpOakF3V2pCY01Rc3dDUVlEVlFRR0V3SkRUakVMTUFrR0ExVUUKQ0JNQ1ExQXhDekFKQmdOVkJBY1RBa0pLTVJjd0ZRWURWUVFLRXc1dmNtY3lMbU5sYkd4dkxtTnZiVEVhTUJnRwpBMVVFQXhNUlkyRXViM0puTWk1alpXeHNieTVqYjIwd1dUQVRCZ2NxaGtqT1BRSUJCZ2dxaGtqT1BRTUJCd05DCkFBUUNCdEc3S0oyRzhickpaRE55MTQ3WmI1cTIrd1pFTVc0Tmh3YXIwc0cwUUlnQ2RXOHU2WWJKTEVPbkhoS3AKa21JTkI5RVp2YktSWkZub2crNmlFQkxabzIwd2F6QU9CZ05WSFE4QkFmOEVCQU1DQWFZd0hRWURWUjBsQkJZdwpGQVlJS3dZQkJRVUhBd0lHQ0NzR0FRVUZCd01CTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3S1FZRFZSME9CQ0lFCklJUXJHSWdlMEwzbXlzQ25UcDdJVVI2VS9FNnFiTWVFWG1wMDAxd1NyVkRSTUFvR0NDcUdTTTQ5QkFNQ0EwY0EKTUVRQ0lCaWdhTWlzcW9XZ0pKOThid0pGMjV0NVhuKzZ6eU4zZWlRMGo2WlN5aEFzQWlBMTVQUzllL1FEcFhhegovaWwwenJmODIrbWFEYmRKQ0dIVVhBOC9aNWx2NWc9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==",
+                                                    "organizational_unit_identifier": "peer"
+                                                }
+                                            },
+                                            "intermediate_certs": [],
+                                            "name": "Org2.cello.comMSP",
+                                            "organizational_unit_identifiers": [],
+                                            "revocation_list": [],
+                                            "root_certs": [
+                                                "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNJakNDQWNtZ0F3SUJBZ0lRVE5TZ3hLa1NSM1RINWl5YkJ1N0dyVEFLQmdncWhrak9QUVFEQWpCY01Rc3cKQ1FZRFZRUUdFd0pEVGpFTE1Ba0dBMVVFQ0JNQ1ExQXhDekFKQmdOVkJBY1RBa0pLTVJjd0ZRWURWUVFLRXc1dgpjbWN5TG1ObGJHeHZMbU52YlRFYU1CZ0dBMVVFQXhNUlkyRXViM0puTWk1alpXeHNieTVqYjIwd0hoY05Nakl4Ck1ERXlNREV6TmpBd1doY05Nekl4TURBNU1ERXpOakF3V2pCY01Rc3dDUVlEVlFRR0V3SkRUakVMTUFrR0ExVUUKQ0JNQ1ExQXhDekFKQmdOVkJBY1RBa0pLTVJjd0ZRWURWUVFLRXc1dmNtY3lMbU5sYkd4dkxtTnZiVEVhTUJnRwpBMVVFQXhNUlkyRXViM0puTWk1alpXeHNieTVqYjIwd1dUQVRCZ2NxaGtqT1BRSUJCZ2dxaGtqT1BRTUJCd05DCkFBUUNCdEc3S0oyRzhickpaRE55MTQ3WmI1cTIrd1pFTVc0Tmh3YXIwc0cwUUlnQ2RXOHU2WWJKTEVPbkhoS3AKa21JTkI5RVp2YktSWkZub2crNmlFQkxabzIwd2F6QU9CZ05WSFE4QkFmOEVCQU1DQWFZd0hRWURWUjBsQkJZdwpGQVlJS3dZQkJRVUhBd0lHQ0NzR0FRVUZCd01CTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3S1FZRFZSME9CQ0lFCklJUXJHSWdlMEwzbXlzQ25UcDdJVVI2VS9FNnFiTWVFWG1wMDAxd1NyVkRSTUFvR0NDcUdTTTQ5QkFNQ0EwY0EKTUVRQ0lCaWdhTWlzcW9XZ0pKOThid0pGMjV0NVhuKzZ6eU4zZWlRMGo2WlN5aEFzQWlBMTVQUzllL1FEcFhhegovaWwwenJmODIrbWFEYmRKQ0dIVVhBOC9aNWx2NWc9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg=="
+                                            ],
+                                            "signing_identity": null,
+                                            "tls_intermediate_certs": [],
+                                            "tls_root_certs": [
+                                                "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNLakNDQWRDZ0F3SUJBZ0lSQUs3b2JOd2FCemY1V2lpYm80UjBGUWd3Q2dZSUtvWkl6ajBFQXdJd1h6RUwKTUFrR0ExVUVCaE1DUTA0eEN6QUpCZ05WQkFnVEFrTlFNUXN3Q1FZRFZRUUhFd0pDU2pFWE1CVUdBMVVFQ2hNTwpiM0puTWk1alpXeHNieTVqYjIweEhUQWJCZ05WQkFNVEZIUnNjMk5oTG05eVp6SXVZMlZzYkc4dVkyOXRNQjRYCkRUSXlNVEF4TWpBeE16WXdNRm9YRFRNeU1UQXdPVEF4TXpZd01Gb3dYekVMTUFrR0ExVUVCaE1DUTA0eEN6QUoKQmdOVkJBZ1RBa05RTVFzd0NRWURWUVFIRXdKQ1NqRVhNQlVHQTFVRUNoTU9iM0puTWk1alpXeHNieTVqYjIweApIVEFiQmdOVkJBTVRGSFJzYzJOaExtOXlaekl1WTJWc2JHOHVZMjl0TUZrd0V3WUhLb1pJemowQ0FRWUlLb1pJCnpqMERBUWNEUWdBRTBOMGJkZnkvNTZDR2phUE9qQ0s2eElGeU1TWDhoOG1XUzBSN05TQnpaUXRMTUlPTXhEVHcKemRqNlhCYWsvUkVISGNDQmdFakdHSFhtZlA0QS9QRk9ocU50TUdzd0RnWURWUjBQQVFIL0JBUURBZ0dtTUIwRwpBMVVkSlFRV01CUUdDQ3NHQVFVRkJ3TUNCZ2dyQmdFRkJRY0RBVEFQQmdOVkhSTUJBZjhFQlRBREFRSC9NQ2tHCkExVWREZ1FpQkNDSzU1cWtGTnkxd0I4Q2NOS1g4S3M5cHlCUDVobVRQVEtnYldpc0VnbXQyekFLQmdncWhrak8KUFFRREFnTklBREJGQWlFQTlWaXMvTWQyTU8yeGZsWjh5Wi9YT21scHBPMXQ3Zi93OEsxTXI3eEJWM0FDSUNkegpLbGR4emN1R3lWNWo5OTloUStpdTRlOEVKZjFNQ0RnWU9pdFBISzlqCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K"
+                                            ]
+                                        },
+                                        "type": 0
+                                    },
+                                    "version": "0"
+                                }
+                            },
+                            "version": "0"
+                        }
+                    },
+                    "mod_policy": "Admins",
+                    "policies": {
+                        "Admins": {
+                            "mod_policy": "Admins",
+                            "policy": {
+                                "type": 3,
+                                "value": {
+                                    "rule": "MAJORITY",
+                                    "sub_policy": "Admins"
+                                }
+                            },
+                            "version": "0"
+                        },
+                        "Endorsement": {
+                            "mod_policy": "Admins",
+                            "policy": {
+                                "type": 3,
+                                "value": {
+                                    "rule": "MAJORITY",
+                                    "sub_policy": "Endorsement"
+                                }
+                            },
+                            "version": "0"
+                        },
+                        "LifecycleEndorsement": {
+                            "mod_policy": "Admins",
+                            "policy": {
+                                "type": 3,
+                                "value": {
+                                    "rule": "MAJORITY",
+                                    "sub_policy": "Endorsement"
+                                }
+                            },
+                            "version": "0"
+                        },
+                        "Readers": {
+                            "mod_policy": "Admins",
+                            "policy": {
+                                "type": 3,
+                                "value": {
+                                    "rule": "ANY",
+                                    "sub_policy": "Readers"
+                                }
+                            },
+                            "version": "0"
+                        },
+                        "Writers": {
+                            "mod_policy": "Admins",
+                            "policy": {
+                                "type": 3,
+                                "value": {
+                                    "rule": "ANY",
+                                    "sub_policy": "Writers"
+                                }
+                            },
+                            "version": "0"
+                        }
+                    },
+                    "values": {
+                        "ACLs": {
+                            "mod_policy": "Admins",
+                            "value": {
+                                "acls": {
+                                    "_lifecycle/CheckCommitReadiness": {
+                                        "policy_ref": "/Channel/Application/Writers"
+                                    },
+                                    "_lifecycle/CommitChaincodeDefinition": {
+                                        "policy_ref": "/Channel/Application/Writers"
+                                    },
+                                    "_lifecycle/QueryChaincodeDefinition": {
+                                        "policy_ref": "/Channel/Application/Readers"
+                                    },
+                                    "_lifecycle/QueryChaincodeDefinitions": {
+                                        "policy_ref": "/Channel/Application/Readers"
+                                    },
+                                    "cscc/GetConfigBlock": {
+                                        "policy_ref": "/Channel/Application/Readers"
+                                    },
+                                    "cscc/GetConfigTree": {
+                                        "policy_ref": "/Channel/Application/Readers"
+                                    },
+                                    "cscc/SimulateConfigTreeUpdate": {
+                                        "policy_ref": "/Channel/Application/Readers"
+                                    },
+                                    "event/Block": {
+                                        "policy_ref": "/Channel/Application/Readers"
+                                    },
+                                    "event/FilteredBlock": {
+                                        "policy_ref": "/Channel/Application/Readers"
+                                    },
+                                    "lscc/ChaincodeExists": {
+                                        "policy_ref": "/Channel/Application/Readers"
+                                    },
+                                    "lscc/GetChaincodeData": {
+                                        "policy_ref": "/Channel/Application/Readers"
+                                    },
+                                    "lscc/GetDeploymentSpec": {
+                                        "policy_ref": "/Channel/Application/Readers"
+                                    },
+                                    "lscc/GetInstantiatedChaincodes": {
+                                        "policy_ref": "/Channel/Application/Readers"
+                                    },
+                                    "peer/ChaincodeToChaincode": {
+                                        "policy_ref": "/Channel/Application/Readers"
+                                    },
+                                    "peer/Propose": {
+                                        "policy_ref": "/Channel/Application/Writers"
+                                    },
+                                    "qscc/GetBlockByHash": {
+                                        "policy_ref": "/Channel/Application/Readers"
+                                    },
+                                    "qscc/GetBlockByNumber": {
+                                        "policy_ref": "/Channel/Application/Readers"
+                                    },
+                                    "qscc/GetBlockByTxID": {
+                                        "policy_ref": "/Channel/Application/Readers"
+                                    },
+                                    "qscc/GetChainInfo": {
+                                        "policy_ref": "/Channel/Application/Readers"
+                                    },
+                                    "qscc/GetTransactionByID": {
+                                        "policy_ref": "/Channel/Application/Readers"
+                                    }
+                                }
+                            },
+                            "version": "0"
+                        },
+                        "Capabilities": {
+                            "mod_policy": "Admins",
+                            "value": {
+                                "capabilities": {
+                                    "V2_0": {}
+                                }
+                            },
+                            "version": "0"
+                        }
+                    },
+                    "version": "1"
+                },
+                "Orderer": {
+                    "groups": {
+                        "Org2Orderer": {
+                            "groups": {},
+                            "mod_policy": "Admins",
+                            "policies": {
+                                "Admins": {
+                                    "mod_policy": "Admins",
+                                    "policy": {
+                                        "type": 1,
+                                        "value": {
+                                            "identities": [
+                                                {
+                                                    "principal": {
+                                                        "msp_identifier": "Org2.cello.comOrdererMSP",
+                                                        "role": "ADMIN"
+                                                    },
+                                                    "principal_classification": "ROLE"
+                                                }
+                                            ],
+                                            "rule": {
+                                                "n_out_of": {
+                                                    "n": 1,
+                                                    "rules": [
+                                                        {
+                                                            "signed_by": 0
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "version": 0
+                                        }
+                                    },
+                                    "version": "0"
+                                },
+                                "Readers": {
+                                    "mod_policy": "Admins",
+                                    "policy": {
+                                        "type": 1,
+                                        "value": {
+                                            "identities": [
+                                                {
+                                                    "principal": {
+                                                        "msp_identifier": "Org2.cello.comOrdererMSP",
+                                                        "role": "MEMBER"
+                                                    },
+                                                    "principal_classification": "ROLE"
+                                                }
+                                            ],
+                                            "rule": {
+                                                "n_out_of": {
+                                                    "n": 1,
+                                                    "rules": [
+                                                        {
+                                                            "signed_by": 0
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "version": 0
+                                        }
+                                    },
+                                    "version": "0"
+                                },
+                                "Writers": {
+                                    "mod_policy": "Admins",
+                                    "policy": {
+                                        "type": 1,
+                                        "value": {
+                                            "identities": [
+                                                {
+                                                    "principal": {
+                                                        "msp_identifier": "Org2.cello.comOrdererMSP",
+                                                        "role": "MEMBER"
+                                                    },
+                                                    "principal_classification": "ROLE"
+                                                }
+                                            ],
+                                            "rule": {
+                                                "n_out_of": {
+                                                    "n": 1,
+                                                    "rules": [
+                                                        {
+                                                            "signed_by": 0
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "version": 0
+                                        }
+                                    },
+                                    "version": "0"
+                                }
+                            },
+                            "values": {
+                                "Endpoints": {
+                                    "mod_policy": "Admins",
+                                    "value": {
+                                        "addresses": [
+                                            "orderer0.cello.com:7050"
+                                        ]
+                                    },
+                                    "version": "0"
+                                },
+                                "MSP": {
+                                    "mod_policy": "Admins",
+                                    "value": {
+                                        "config": {
+                                            "admins": [],
+                                            "crypto_config": {
+                                                "identity_identifier_hash_function": "SHA256",
+                                                "signature_hash_family": "SHA2"
+                                            },
+                                            "fabric_node_ous": {
+                                                "admin_ou_identifier": {
+                                                    "certificate": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNEekNDQWJhZ0F3SUJBZ0lSQU14V1IvSm03OWhZdm5abERFQTFPclV3Q2dZSUtvWkl6ajBFQXdJd1VqRUwKTUFrR0ExVUVCaE1DUTA0eEN6QUpCZ05WQkFnVEFrTlFNUXN3Q1FZRFZRUUhFd0pDU2pFU01CQUdBMVVFQ2hNSgpZMlZzYkc4dVkyOXRNUlV3RXdZRFZRUURFd3hqWVM1alpXeHNieTVqYjIwd0hoY05Nakl4TURFeU1ERXpOakF3CldoY05Nekl4TURBNU1ERXpOakF3V2pCU01Rc3dDUVlEVlFRR0V3SkRUakVMTUFrR0ExVUVDQk1DUTFBeEN6QUoKQmdOVkJBY1RBa0pLTVJJd0VBWURWUVFLRXdsalpXeHNieTVqYjIweEZUQVRCZ05WQkFNVERHTmhMbU5sYkd4dgpMbU52YlRCWk1CTUdCeXFHU000OUFnRUdDQ3FHU000OUF3RUhBMElBQkEvS3dBWFk1OEZZOVpaNTZEUUUvQkpwClNhUzlxaDRTNUhlUmNqcUhQcnFSZHZHOEJXYWNxblJoZTVLMDMzbTN6VysvRlo2UXl6OHpBeWRoNTBHQTFBZWoKYlRCck1BNEdBMVVkRHdFQi93UUVBd0lCcGpBZEJnTlZIU1VFRmpBVUJnZ3JCZ0VGQlFjREFnWUlLd1lCQlFVSApBd0V3RHdZRFZSMFRBUUgvQkFVd0F3RUIvekFwQmdOVkhRNEVJZ1Fnei92OVcyai83MWk2WkdJVy9ET1Zud1NzClBoK1kyOE8rUzhmUUR4clRsMG93Q2dZSUtvWkl6ajBFQXdJRFJ3QXdSQUlnY21nb2J6WGpJUnJpODlGL1NGUXcKVnE1N2FqWFNDMS81QlpOWE1waDhQOEVDSUIrOVNhRHRpc0g1a01QUWN3a0x0NThCdE9sN0FodzlKV3dSdWFnRwppQ3luCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K",
+                                                    "organizational_unit_identifier": "admin"
+                                                },
+                                                "client_ou_identifier": {
+                                                    "certificate": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNEekNDQWJhZ0F3SUJBZ0lSQU14V1IvSm03OWhZdm5abERFQTFPclV3Q2dZSUtvWkl6ajBFQXdJd1VqRUwKTUFrR0ExVUVCaE1DUTA0eEN6QUpCZ05WQkFnVEFrTlFNUXN3Q1FZRFZRUUhFd0pDU2pFU01CQUdBMVVFQ2hNSgpZMlZzYkc4dVkyOXRNUlV3RXdZRFZRUURFd3hqWVM1alpXeHNieTVqYjIwd0hoY05Nakl4TURFeU1ERXpOakF3CldoY05Nekl4TURBNU1ERXpOakF3V2pCU01Rc3dDUVlEVlFRR0V3SkRUakVMTUFrR0ExVUVDQk1DUTFBeEN6QUoKQmdOVkJBY1RBa0pLTVJJd0VBWURWUVFLRXdsalpXeHNieTVqYjIweEZUQVRCZ05WQkFNVERHTmhMbU5sYkd4dgpMbU52YlRCWk1CTUdCeXFHU000OUFnRUdDQ3FHU000OUF3RUhBMElBQkEvS3dBWFk1OEZZOVpaNTZEUUUvQkpwClNhUzlxaDRTNUhlUmNqcUhQcnFSZHZHOEJXYWNxblJoZTVLMDMzbTN6VysvRlo2UXl6OHpBeWRoNTBHQTFBZWoKYlRCck1BNEdBMVVkRHdFQi93UUVBd0lCcGpBZEJnTlZIU1VFRmpBVUJnZ3JCZ0VGQlFjREFnWUlLd1lCQlFVSApBd0V3RHdZRFZSMFRBUUgvQkFVd0F3RUIvekFwQmdOVkhRNEVJZ1Fnei92OVcyai83MWk2WkdJVy9ET1Zud1NzClBoK1kyOE8rUzhmUUR4clRsMG93Q2dZSUtvWkl6ajBFQXdJRFJ3QXdSQUlnY21nb2J6WGpJUnJpODlGL1NGUXcKVnE1N2FqWFNDMS81QlpOWE1waDhQOEVDSUIrOVNhRHRpc0g1a01QUWN3a0x0NThCdE9sN0FodzlKV3dSdWFnRwppQ3luCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K",
+                                                    "organizational_unit_identifier": "client"
+                                                },
+                                                "enable": true,
+                                                "orderer_ou_identifier": {
+                                                    "certificate": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNEekNDQWJhZ0F3SUJBZ0lSQU14V1IvSm03OWhZdm5abERFQTFPclV3Q2dZSUtvWkl6ajBFQXdJd1VqRUwKTUFrR0ExVUVCaE1DUTA0eEN6QUpCZ05WQkFnVEFrTlFNUXN3Q1FZRFZRUUhFd0pDU2pFU01CQUdBMVVFQ2hNSgpZMlZzYkc4dVkyOXRNUlV3RXdZRFZRUURFd3hqWVM1alpXeHNieTVqYjIwd0hoY05Nakl4TURFeU1ERXpOakF3CldoY05Nekl4TURBNU1ERXpOakF3V2pCU01Rc3dDUVlEVlFRR0V3SkRUakVMTUFrR0ExVUVDQk1DUTFBeEN6QUoKQmdOVkJBY1RBa0pLTVJJd0VBWURWUVFLRXdsalpXeHNieTVqYjIweEZUQVRCZ05WQkFNVERHTmhMbU5sYkd4dgpMbU52YlRCWk1CTUdCeXFHU000OUFnRUdDQ3FHU000OUF3RUhBMElBQkEvS3dBWFk1OEZZOVpaNTZEUUUvQkpwClNhUzlxaDRTNUhlUmNqcUhQcnFSZHZHOEJXYWNxblJoZTVLMDMzbTN6VysvRlo2UXl6OHpBeWRoNTBHQTFBZWoKYlRCck1BNEdBMVVkRHdFQi93UUVBd0lCcGpBZEJnTlZIU1VFRmpBVUJnZ3JCZ0VGQlFjREFnWUlLd1lCQlFVSApBd0V3RHdZRFZSMFRBUUgvQkFVd0F3RUIvekFwQmdOVkhRNEVJZ1Fnei92OVcyai83MWk2WkdJVy9ET1Zud1NzClBoK1kyOE8rUzhmUUR4clRsMG93Q2dZSUtvWkl6ajBFQXdJRFJ3QXdSQUlnY21nb2J6WGpJUnJpODlGL1NGUXcKVnE1N2FqWFNDMS81QlpOWE1waDhQOEVDSUIrOVNhRHRpc0g1a01QUWN3a0x0NThCdE9sN0FodzlKV3dSdWFnRwppQ3luCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K",
+                                                    "organizational_unit_identifier": "orderer"
+                                                },
+                                                "peer_ou_identifier": {
+                                                    "certificate": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNEekNDQWJhZ0F3SUJBZ0lSQU14V1IvSm03OWhZdm5abERFQTFPclV3Q2dZSUtvWkl6ajBFQXdJd1VqRUwKTUFrR0ExVUVCaE1DUTA0eEN6QUpCZ05WQkFnVEFrTlFNUXN3Q1FZRFZRUUhFd0pDU2pFU01CQUdBMVVFQ2hNSgpZMlZzYkc4dVkyOXRNUlV3RXdZRFZRUURFd3hqWVM1alpXeHNieTVqYjIwd0hoY05Nakl4TURFeU1ERXpOakF3CldoY05Nekl4TURBNU1ERXpOakF3V2pCU01Rc3dDUVlEVlFRR0V3SkRUakVMTUFrR0ExVUVDQk1DUTFBeEN6QUoKQmdOVkJBY1RBa0pLTVJJd0VBWURWUVFLRXdsalpXeHNieTVqYjIweEZUQVRCZ05WQkFNVERHTmhMbU5sYkd4dgpMbU52YlRCWk1CTUdCeXFHU000OUFnRUdDQ3FHU000OUF3RUhBMElBQkEvS3dBWFk1OEZZOVpaNTZEUUUvQkpwClNhUzlxaDRTNUhlUmNqcUhQcnFSZHZHOEJXYWNxblJoZTVLMDMzbTN6VysvRlo2UXl6OHpBeWRoNTBHQTFBZWoKYlRCck1BNEdBMVVkRHdFQi93UUVBd0lCcGpBZEJnTlZIU1VFRmpBVUJnZ3JCZ0VGQlFjREFnWUlLd1lCQlFVSApBd0V3RHdZRFZSMFRBUUgvQkFVd0F3RUIvekFwQmdOVkhRNEVJZ1Fnei92OVcyai83MWk2WkdJVy9ET1Zud1NzClBoK1kyOE8rUzhmUUR4clRsMG93Q2dZSUtvWkl6ajBFQXdJRFJ3QXdSQUlnY21nb2J6WGpJUnJpODlGL1NGUXcKVnE1N2FqWFNDMS81QlpOWE1waDhQOEVDSUIrOVNhRHRpc0g1a01QUWN3a0x0NThCdE9sN0FodzlKV3dSdWFnRwppQ3luCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K",
+                                                    "organizational_unit_identifier": "peer"
+                                                }
+                                            },
+                                            "intermediate_certs": [],
+                                            "name": "Org2.cello.comOrdererMSP",
+                                            "organizational_unit_identifiers": [],
+                                            "revocation_list": [],
+                                            "root_certs": [
+                                                "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNEekNDQWJhZ0F3SUJBZ0lSQU14V1IvSm03OWhZdm5abERFQTFPclV3Q2dZSUtvWkl6ajBFQXdJd1VqRUwKTUFrR0ExVUVCaE1DUTA0eEN6QUpCZ05WQkFnVEFrTlFNUXN3Q1FZRFZRUUhFd0pDU2pFU01CQUdBMVVFQ2hNSgpZMlZzYkc4dVkyOXRNUlV3RXdZRFZRUURFd3hqWVM1alpXeHNieTVqYjIwd0hoY05Nakl4TURFeU1ERXpOakF3CldoY05Nekl4TURBNU1ERXpOakF3V2pCU01Rc3dDUVlEVlFRR0V3SkRUakVMTUFrR0ExVUVDQk1DUTFBeEN6QUoKQmdOVkJBY1RBa0pLTVJJd0VBWURWUVFLRXdsalpXeHNieTVqYjIweEZUQVRCZ05WQkFNVERHTmhMbU5sYkd4dgpMbU52YlRCWk1CTUdCeXFHU000OUFnRUdDQ3FHU000OUF3RUhBMElBQkEvS3dBWFk1OEZZOVpaNTZEUUUvQkpwClNhUzlxaDRTNUhlUmNqcUhQcnFSZHZHOEJXYWNxblJoZTVLMDMzbTN6VysvRlo2UXl6OHpBeWRoNTBHQTFBZWoKYlRCck1BNEdBMVVkRHdFQi93UUVBd0lCcGpBZEJnTlZIU1VFRmpBVUJnZ3JCZ0VGQlFjREFnWUlLd1lCQlFVSApBd0V3RHdZRFZSMFRBUUgvQkFVd0F3RUIvekFwQmdOVkhRNEVJZ1Fnei92OVcyai83MWk2WkdJVy9ET1Zud1NzClBoK1kyOE8rUzhmUUR4clRsMG93Q2dZSUtvWkl6ajBFQXdJRFJ3QXdSQUlnY21nb2J6WGpJUnJpODlGL1NGUXcKVnE1N2FqWFNDMS81QlpOWE1waDhQOEVDSUIrOVNhRHRpc0g1a01QUWN3a0x0NThCdE9sN0FodzlKV3dSdWFnRwppQ3luCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K"
+                                            ],
+                                            "signing_identity": null,
+                                            "tls_intermediate_certs": [],
+                                            "tls_root_certs": [
+                                                "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNGVENDQWJ5Z0F3SUJBZ0lSQU8rcUJVUkJUbkxPWU1rUnB3cVpLMjR3Q2dZSUtvWkl6ajBFQXdJd1ZURUwKTUFrR0ExVUVCaE1DUTA0eEN6QUpCZ05WQkFnVEFrTlFNUXN3Q1FZRFZRUUhFd0pDU2pFU01CQUdBMVVFQ2hNSgpZMlZzYkc4dVkyOXRNUmd3RmdZRFZRUURFdzkwYkhOallTNWpaV3hzYnk1amIyMHdIaGNOTWpJeE1ERXlNREV6Ck5qQXdXaGNOTXpJeE1EQTVNREV6TmpBd1dqQlZNUXN3Q1FZRFZRUUdFd0pEVGpFTE1Ba0dBMVVFQ0JNQ1ExQXgKQ3pBSkJnTlZCQWNUQWtKS01SSXdFQVlEVlFRS0V3bGpaV3hzYnk1amIyMHhHREFXQmdOVkJBTVREM1JzYzJOaApMbU5sYkd4dkxtTnZiVEJaTUJNR0J5cUdTTTQ5QWdFR0NDcUdTTTQ5QXdFSEEwSUFCQnM0UU5ibW90dXRZWFBQCmRFWDl2K0M4WHlBeGNDSk80RytQNWZ4NnIzd1FSeUdZNWg1d3RkU2VqS1ZlVnMyOFdjcG5Bb1N0a2kyYW9tdDYKb28rWTdtT2piVEJyTUE0R0ExVWREd0VCL3dRRUF3SUJwakFkQmdOVkhTVUVGakFVQmdnckJnRUZCUWNEQWdZSQpLd1lCQlFVSEF3RXdEd1lEVlIwVEFRSC9CQVV3QXdFQi96QXBCZ05WSFE0RUlnUWc2OHNGazRHVEtDaVdoM2RjCkplekFiY0tNSHNmS1NidW50MkFuV2FVOGhNOHdDZ1lJS29aSXpqMEVBd0lEUndBd1JBSWdLN0lFd3JnbGd2Q0cKK1lyOE1vclNvb0ZLMmFQWHFYM0xLUi9JZWhYcEVkQUNJR1VlalkwdVZ5TEo5R1ZNY0czSUdmYk1WT0huOGJtNApDNnp6NnoxQlkvNnUKLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo="
+                                            ]
+                                        },
+                                        "type": 0
+                                    },
+                                    "version": "0"
+                                }
+                            },
+                            "version": "0"
+                        }
+                    },
+                    "mod_policy": "Admins",
+                    "policies": {
+                        "Admins": {
+                            "mod_policy": "Admins",
+                            "policy": {
+                                "type": 3,
+                                "value": {
+                                    "rule": "MAJORITY",
+                                    "sub_policy": "Admins"
+                                }
+                            },
+                            "version": "0"
+                        },
+                        "BlockValidation": {
+                            "mod_policy": "Admins",
+                            "policy": {
+                                "type": 3,
+                                "value": {
+                                    "rule": "ANY",
+                                    "sub_policy": "Writers"
+                                }
+                            },
+                            "version": "0"
+                        },
+                        "Readers": {
+                            "mod_policy": "Admins",
+                            "policy": {
+                                "type": 3,
+                                "value": {
+                                    "rule": "ANY",
+                                    "sub_policy": "Readers"
+                                }
+                            },
+                            "version": "0"
+                        },
+                        "Writers": {
+                            "mod_policy": "Admins",
+                            "policy": {
+                                "type": 3,
+                                "value": {
+                                    "rule": "ANY",
+                                    "sub_policy": "Writers"
+                                }
+                            },
+                            "version": "0"
+                        }
+                    },
+                    "values": {
+                        "BatchSize": {
+                            "mod_policy": "Admins",
+                            "value": {
+                                "absolute_max_bytes": 10485760,
+                                "max_message_count": 500,
+                                "preferred_max_bytes": 2097152
+                            },
+                            "version": "0"
+                        },
+                        "BatchTimeout": {
+                            "mod_policy": "Admins",
+                            "value": {
+                                "timeout": "2s"
+                            },
+                            "version": "0"
+                        },
+                        "Capabilities": {
+                            "mod_policy": "Admins",
+                            "value": {
+                                "capabilities": {
+                                    "V2_0": {}
+                                }
+                            },
+                            "version": "0"
+                        },
+                        "ChannelRestrictions": {
+                            "mod_policy": "Admins",
+                            "value": null,
+                            "version": "0"
+                        },
+                        "ConsensusType": {
+                            "mod_policy": "Admins",
+                            "value": {
+                                "metadata": null,
+                                "state": "STATE_NORMAL",
+                                "type": "solo"
+                            },
+                            "version": "0"
+                        }
+                    },
+                    "version": "0"
+                }
+            },
+            "mod_policy": "Admins",
+            "policies": {
+                "Admins": {
+                    "mod_policy": "Admins",
+                    "policy": {
+                        "type": 3,
+                        "value": {
+                            "rule": "MAJORITY",
+                            "sub_policy": "Admins"
+                        }
+                    },
+                    "version": "0"
+                },
+                "Readers": {
+                    "mod_policy": "Admins",
+                    "policy": {
+                        "type": 3,
+                        "value": {
+                            "rule": "ANY",
+                            "sub_policy": "Readers"
+                        }
+                    },
+                    "version": "0"
+                },
+                "Writers": {
+                    "mod_policy": "Admins",
+                    "policy": {
+                        "type": 3,
+                        "value": {
+                            "rule": "ANY",
+                            "sub_policy": "Writers"
+                        }
+                    },
+                    "version": "0"
+                }
+            },
+            "values": {
+                "BlockDataHashingStructure": {
+                    "mod_policy": "Admins",
+                    "value": {
+                        "width": 4294967295
+                    },
+                    "version": "0"
+                },
+                "Capabilities": {
+                    "mod_policy": "Admins",
+                    "value": {
+                        "capabilities": {
+                            "V2_0": {}
+                        }
+                    },
+                    "version": "0"
+                },
+                "Consortium": {
+                    "mod_policy": "Admins",
+                    "value": {
+                        "name": "SampleConsortium"
+                    },
+                    "version": "0"
+                },
+                "HashingAlgorithm": {
+                    "mod_policy": "Admins",
+                    "value": {
+                        "name": "SHA256"
+                    },
+                    "version": "0"
+                },
+                "OrdererAddresses": {
+                    "mod_policy": "/Channel/Orderer/Admins",
+                    "value": {
+                        "addresses": [
+                            "orderer0.cello.com:7050"
+                        ]
+                    },
+                    "version": "0"
+                }
+            },
+            "version": "0"
+        },
+        "sequence": "1"
+    },
+    "organization": "org2.cello.com",
+    "msp_id": "Org3MSP"
+}

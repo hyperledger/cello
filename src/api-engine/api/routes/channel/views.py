@@ -2,11 +2,12 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 from copy import deepcopy
+from distutils.log import Log
 import logging
 import json
 
 from rest_framework import viewsets, status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, parser_classes
 from rest_framework.response import Response
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
@@ -64,7 +65,7 @@ class ChannelViewSet(viewsets.ViewSet):
     authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
-    @swagger_auto_schema(
+    @ swagger_auto_schema(
         query_serializer=PageQuerySerializer,
         responses=with_common_response(
             {status.HTTP_201_CREATED: ChannelListResponse}
@@ -206,35 +207,41 @@ class ChannelViewSet(viewsets.ViewSet):
             channel = Channel.objects.get(id=pk)
             org = request.user.organization
             try:
-                data = request.FILES["data"]
-                config = data.config
-                org = data.org
-                # TODO: Validate uploaded config file
+                # Read uploaded file in cache without saving it on disk.
+                file = request.FILES.get('data').read()
+                json_data = file.decode('utf8').replace("'", '"')
+                data = json.loads(json_data)
+                msp_id = serializer.validated_data.get("msp_id")
+                org_type = serializer.validated_data.get("org_type")
+                # Validate uploaded config file
+                try:
+                    config = data["config"]["channel_group"]["groups"][org_type]["groups"][msp_id]
+                except KeyError:
+                    LOG.error("config file not found")
+                    raise ResourceNotFound
 
-                # TODO: Read current channel from local disk
-                with open(channel.get_channel_artifacts_path(CFG_JSON), 'r', encoding='utf-8') as f:
-                    LOG.info("load current config success")
-                    current_config = json.load(config, f, sort_keys=False)
+                try:
+                    # Read current channel config from local disk
+                    with open(channel.get_channel_artifacts_path(CFG_JSON), 'r', encoding='utf-8') as f:
+                        LOG.info("load current config success")
+                        current_config = json.load(f)
+                except FileNotFoundError:
+                    LOG.error("current config file not found")
+                    raise ResourceNotFound
 
                 # Create a new org
-                network = Network.objects.get(pk=org.network.id)
                 new_org = Organization.objects.create(
                     name=org.name,
-                    msp=config.msp,
-                    tls=config.tls,
-                    network=network,
-                    agents=org.agents,
                 )
                 LOG.info("new org created")
-                # Read uploaded file in cache without saving it on disk.
                 updated_config = deepcopy(current_config)
-                updated_config["channel_group"]["groups"]["Application"]["groups"][org.msp_id] = config.msp
-                LOG.info("update config success")
+                updated_config["channel_group"]["groups"]["Application"]["groups"][msp_id] = config
+                LOG.info("update config success", updated_config)
 
                 # Update and save the config with new org
                 with open(channel.get_channel_artifacts_path(UPDATED_CFG_JSON), 'w', encoding='utf-8') as f:
                     LOG.info("save updated config success")
-                    json.dump(current_config, f, sort_keys=False)
+                    json.dump(updated_config, f, sort_keys=False)
 
                 # Encode it into pb.
                 ConfigTxLator().proto_encode(
@@ -340,10 +347,10 @@ class ChannelViewSet(viewsets.ViewSet):
                 "config": config,
                 "organization": org.name,
                 # TODO: create a method on Organization or Node to return msp_id
-                "msp_id": '{}MSP'.format(node.name.split(".")[0].capitalize())
+                "msp_id": '{}'.format(org.name.split(".")[0].capitalize())
             }
 
-            # Save  as a json file for future usage
+            # Save as a json file for future usage
             with open(channel.get_channel_artifacts_path(CFG_JSON), 'w', encoding='utf-8') as f:
                 json.dump(config, f, sort_keys=False)
             # Encode block file as pb
