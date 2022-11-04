@@ -282,7 +282,8 @@ class NodeViewSet(viewsets.ViewSet):
 
                 agent = organization.agent.get()
                 if agent:
-                    nodes = Node.objects.filter(name=node_name + "0", organization=organization, type=node_type)
+                    nodes = Node.objects.filter(
+                        name=node_name + "0", organization=organization, type=node_type)
                     if nodes:
                         raise ResourceExists
                 else:
@@ -299,7 +300,8 @@ class NodeViewSet(viewsets.ViewSet):
                     CryptoConfig(organization.name).update(nodes)
                     CryptoGen(organization.name).extend()
                     self._generate_config(node_type, organization.name, name)
-                    msp, tls, cfg = self._conversion_msp_tls_cfg(node_type, organization.name, name)
+                    msp, tls, cfg = self._conversion_msp_tls_cfg(
+                        node_type, organization.name, name)
 
                     node = Node(
                         name=name,
@@ -316,7 +318,8 @@ class NodeViewSet(viewsets.ViewSet):
                     self._set_port(node_type, node, agent)
                     if node.organization.network:
                         try:
-                            threading.Thread(target=self._start_node, args=(node.id,)).start()
+                            threading.Thread(
+                                target=self._start_node, args=(node.id,)).start()
                         except Exception as e:
                             raise e
 
@@ -348,11 +351,13 @@ class NodeViewSet(viewsets.ViewSet):
             ports = find_available_ports(ip, node.id, agent.id, 2)
             set_ports_mapping(
                 node.id,
-                [{"internal": 7051, "external": ports[0]}, {"internal": 7053, "external": ports[1]}],
+                [{"internal": 7051, "external": ports[0]}, {
+                    "internal": 7053, "external": ports[1]}],
                 True)
         else:
             ports = find_available_ports(ip, node.id, agent.id, 1)
-            set_ports_mapping(node.id, [{"internal": 7050, "external": ports[0]}], True)
+            set_ports_mapping(
+                node.id, [{"internal": 7050, "external": ports[0]}], True)
 
     def _conversion_msp_tls_cfg(self, type, org, node):
         """
@@ -384,7 +389,8 @@ class NodeViewSet(viewsets.ViewSet):
             with open("{}tls.zip".format(dir_node), "rb") as f_tls:
                 tls = base64.b64encode(f_tls.read())
 
-            zip_file("{}{}".format(dir_node, name), "{}{}".format(dir_node, cname))
+            zip_file("{}{}".format(dir_node, name),
+                     "{}{}".format(dir_node, cname))
             with open("{}{}".format(dir_node, cname), "rb") as f_cfg:
                 cfg = base64.b64encode(f_cfg.read())
         except Exception as e:
@@ -407,8 +413,10 @@ class NodeViewSet(viewsets.ViewSet):
         if type == "peer":
             args.update({"peer_id": "{}.{}".format(node, org)})
             args.update({"peer_address": "{}.{}:{}".format(node, org, 7051)})
-            args.update({"peer_gossip_externalEndpoint": "{}.{}:{}".format(node, org, 7051)})
-            args.update({"peer_chaincodeAddress": "{}.{}:{}".format(node, org, 7052)})
+            args.update(
+                {"peer_gossip_externalEndpoint": "{}.{}:{}".format(node, org, 7051)})
+            args.update(
+                {"peer_chaincodeAddress": "{}.{}:{}".format(node, org, 7052)})
             args.update({"peer_tls_enabled": True})
             args.update({"peer_localMspId": "{}MSP".format(org.capitalize())})
 
@@ -416,7 +424,8 @@ class NodeViewSet(viewsets.ViewSet):
             a.peer(node, **args)
         else:
             args.update({"General_ListenPort": 7050})
-            args.update({"General_LocalMSPID": "{}OrdererMSP".format(org.capitalize())})
+            args.update(
+                {"General_LocalMSPID": "{}OrdererMSP".format(org.capitalize())})
             args.update({"General_TLS_Enabled": True})
             args.update({"General_BootstrapFile": "genesis.block"})
 
@@ -446,7 +455,8 @@ class NodeViewSet(viewsets.ViewSet):
                 raise ResourceNotFound
 
             info = {}
-            org_name = org.name if node.type == "peer" else org.name.split(".", 1)[1]
+            org_name = org.name if node.type == "peer" else org.name.split(".", 1)[
+                1]
             # get info of node, e.g, tls, msp, config.
             info["status"] = node.status
             info["msp"] = node.msp
@@ -549,16 +559,19 @@ class NodeViewSet(viewsets.ViewSet):
                 node.status = "removing"
                 node.save()
                 if node.type == "orderer":
-                    orderer_cnt = Node.objects.filter(type="orderer", organization__network=node.organization.network).count()
+                    orderer_cnt = Node.objects.filter(
+                        type="orderer", organization__network=node.organization.network).count()
                     if orderer_cnt == 1:
                         raise ResourceInUse
                 agent.stop()
                 res = True if agent.delete() else False
                 if res:
-                    fabric_path = "{}/{}".format(FABRIC_NODE, infos["container_name"])
+                    fabric_path = "{}/{}".format(FABRIC_NODE,
+                                                 infos["container_name"])
                     if os.path.exists(fabric_path):
                         shutil.rmtree(fabric_path, True)
-                    prod_path = "{}/{}".format(PRODUCTION_NODE, infos["container_name"])
+                    prod_path = "{}/{}".format(PRODUCTION_NODE,
+                                               infos["container_name"])
                     if os.path.exists(prod_path):
                         shutil.rmtree(prod_path, True)
                     node.delete()
@@ -681,7 +694,8 @@ class NodeViewSet(viewsets.ViewSet):
 
     @swagger_auto_schema(
         methods=["get"],
-        responses=with_common_response({status.HTTP_200_OK: NodeConfigFileSerializer}),
+        responses=with_common_response(
+            {status.HTTP_200_OK: NodeConfigFileSerializer}),
     )
     @swagger_auto_schema(
         methods=["post"],
@@ -722,8 +736,10 @@ class NodeViewSet(viewsets.ViewSet):
             # Get the config file from local storage
             try:
                 config_file = open("{}{}".format(dir_node, cname), "rb")
-                response = HttpResponse(config_file, content_type="application/zip")
-                response['Content-Disposition'] = "attachment; filename={}".format(cname)
+                response = HttpResponse(
+                    config_file, content_type="application/zip")
+                response['Content-Disposition'] = "attachment; filename={}".format(
+                    cname)
                 return response
             except Exception as e:
                 raise e
@@ -742,7 +758,8 @@ class NodeViewSet(viewsets.ViewSet):
                         f.write(chunk)
                 if os.path.exists("{}{}".format(dir_node, cname)):
                     os.remove("{}{}".format(dir_node, cname))
-                zip_file("{}{}".format(dir_node, name), "{}{}".format(dir_node, cname))
+                zip_file("{}{}".format(dir_node, name),
+                         "{}{}".format(dir_node, cname))
                 with open("{}{}".format(dir_node, cname), "rb") as f_cfg:
                     cfg = base64.b64encode(f_cfg.read())
                 node.config_file = cfg

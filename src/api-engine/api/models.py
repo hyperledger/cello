@@ -750,9 +750,19 @@ class Channel(models.Model):
         to="Node",
         help_text="Orderer list in the channel",
     )
+    config = models.JSONField(
+        help_text="Channel config",
+        default=dict,
+        null=True,
+        blank=True,
+    )
 
     def get_channel_config_path(self):
         return "/var/www/server/" + self.name + "_config.block"
+
+    def get_channel_artifacts_path(self, artifact):
+        return CELLO_HOME + "/" + self.network.name + "/" + artifact
+
     # class ChainCode(models.Model):
     #     id = models.UUIDField(
     #         primary_key=True,
