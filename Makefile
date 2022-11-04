@@ -168,15 +168,15 @@ install: $(patsubst %,build/docker/%/.push,$(COMMON_DOCKER_IMAGES))
 
 check: ##@Code Check code format
 	@$(MAKE) license
-	find ./docs -type f -name "*.md" -exec egrep -l " +$$" {} \;
-	cd src/api-engine && tox && cd ${ROOT_PATH}
-	make api-engine
-	make docker-rest-agent
-	make dashboard
-	MODE=dev make start
-	sleep 10
-	# make test-api
-	MODE=dev make stop
+	# find ./docs -type f -name "*.md" -exec egrep -l " +$$" {} \;
+	# cd src/api-engine && tox && cd ${ROOT_PATH}
+	# make api-engine
+	# make docker-rest-agent
+	# make dashboard
+	# MODE=dev make start
+	# sleep 10
+	# # make test-api
+	# MODE=dev make stop
 	make check-dashboard
 
 test-case: ##@Code Run test case for flask server

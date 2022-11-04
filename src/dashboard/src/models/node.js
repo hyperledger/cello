@@ -7,6 +7,7 @@ import {
   createNode,
   downloadNodeConfig,
   uploadNodeConfig,
+  nodeJoinChannel,
 } from '@/services/node';
 
 export default {
@@ -100,6 +101,15 @@ export default {
     },
     *uploadNodeConfig({ payload, callback }, { call }) {
       const response = yield call(uploadNodeConfig, payload);
+      if (callback) {
+        callback({
+          payload,
+          ...response,
+        });
+      }
+    },
+    *nodeJoinChannel({ payload, callback }, { call }) {
+      const response = yield call(nodeJoinChannel, payload);
       if (callback) {
         callback({
           payload,

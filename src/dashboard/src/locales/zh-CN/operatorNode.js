@@ -23,6 +23,7 @@ export default {
   'app.operator.node.delete.success': '删除节点成功。',
   'app.operator.node.download.success': '下载节点配置文件成功。',
   'app.operator.node.upload.success': '上传节点配置文件成功。',
+  'app.operator.node.joinChannel.success': '加入通道成功。',
   'app.operator.node.operation.start.success': '启动节点成功。',
   'app.operator.node.operation.stop.success': '停止节点成功。',
   'app.operator.node.operation.restart.success': '重启节点成功。',

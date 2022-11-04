@@ -564,6 +564,29 @@ class Index extends PureComponent {
     );
   };
 
+  handleJoinChannel = (row, formData) => {
+    const { dispatch } = this.props;
+    const params = {
+      id: row.id,
+      form: formData,
+    };
+    dispatch({
+      type: 'node/nodeJoinChannel',
+      payload: params,
+      callback: this.joinCallBack,
+    });
+  };
+
+  joinCallBack = () => {
+    const { intl } = this.props;
+    message.success(
+      intl.formatMessage({
+        id: 'app.operator.node.joinChannel.success',
+        defaultMessage: 'Join Channel succeed',
+      })
+    );
+  };
+
   render() {
     const { selectedRows, registerUserFormVisible, targetNodeId, createModalVisible } = this.state;
 
@@ -664,6 +687,34 @@ class Index extends PureComponent {
             >
               <a style={{ color: 'inherit' }}>
                 {intl.formatMessage({ id: 'form.menu.item.upload', defaultMessage: 'Upload' })}
+              </a>
+            </Upload>
+          </Menu.Item>
+        )}
+        {record.type === 'peer' && (
+          <Menu.Item>
+            <Upload
+              {...{
+                showUploadList: false,
+                customRequest: dummyRequest,
+                onChange: info => {
+                  if (info.file.name.split('.').pop() !== 'block') {
+                    message.error('Only accept block file.');
+                    return;
+                  }
+                  if (info.file.status === 'done') {
+                    const formData = new FormData();
+                    formData.append('file', info.fileList[0].originFileObj);
+                    this.handleJoinChannel(record, formData);
+                  }
+                },
+              }}
+            >
+              <a style={{ color: 'inherit' }}>
+                {intl.formatMessage({
+                  id: 'form.menu.item.joinChannel',
+                  defaultMessage: 'Join Channel',
+                })}
               </a>
             </Upload>
           </Menu.Item>

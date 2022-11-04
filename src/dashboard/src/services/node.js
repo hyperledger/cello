@@ -54,3 +54,10 @@ export async function uploadNodeConfig(params) {
     body: params.form,
   });
 }
+
+export async function nodeJoinChannel(params) {
+  return request(`/api/v1/nodes/${params.id}/block`, {
+    method: 'POST',
+    body: params.form,
+  });
+}
