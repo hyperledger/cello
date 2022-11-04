@@ -6,6 +6,7 @@ import base64
 import shutil
 import os
 import threading
+import yaml
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
@@ -730,6 +731,10 @@ class NodeViewSet(viewsets.ViewSet):
             # Update yaml, zip files, and the database field
             try:
                 new_config_file = request.data['file']
+                try:
+                    yaml.safe_load(new_config_file)
+                except yaml.YAMLError:
+                    return Response(err("Unable to parse this YAML file."), status=status.HTTP_400_BAD_REQUEST)
                 if os.path.exists("{}{}".format(dir_node, name)):
                     os.remove("{}{}".format(dir_node, name))
                 with open("{}{}".format(dir_node, name), 'wb+') as f:

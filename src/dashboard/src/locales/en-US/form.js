@@ -5,6 +5,7 @@ export default {
   'form.button.new': 'New',
   'form.table.header.operation': 'Operation',
   'form.menu.item.download': 'Download',
+  'form.menu.item.upload': 'Upload',
   'form.menu.item.delete': 'Delete',
   'form.input.placeholder': 'Please input',
   'form.menu.item.update': 'Update',

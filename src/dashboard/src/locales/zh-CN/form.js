@@ -5,6 +5,7 @@ export default {
   'form.button.new': '新建',
   'form.table.header.operation': '操作',
   'form.menu.item.download': '下载',
+  'form.menu.item.upload': '上传',
   'form.menu.item.delete': '删除',
   'form.input.placeholder': '请输入',
   'form.menu.item.update': '更新',

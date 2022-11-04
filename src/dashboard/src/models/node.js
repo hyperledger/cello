@@ -6,6 +6,7 @@ import {
   operateNode,
   createNode,
   downloadNodeConfig,
+  uploadNodeConfig,
 } from '@/services/node';
 
 export default {
@@ -95,6 +96,15 @@ export default {
       const response = yield call(downloadNodeConfig, payload);
       if (callback) {
         callback(response);
+      }
+    },
+    *uploadNodeConfig({ payload, callback }, { call }) {
+      const response = yield call(uploadNodeConfig, payload);
+      if (callback) {
+        callback({
+          payload,
+          ...response,
+        });
       }
     },
   },
