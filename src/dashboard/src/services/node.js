@@ -47,3 +47,17 @@ export async function downloadNodeConfig(params) {
     getResponse: true,
   });
 }
+
+export async function uploadNodeConfig(params) {
+  return request(`/api/v1/nodes/${params.id}/config`, {
+    method: 'POST',
+    body: params.form,
+  });
+}
+
+export async function nodeJoinChannel(params) {
+  return request(`/api/v1/nodes/${params.id}/block`, {
+    method: 'POST',
+    body: params.form,
+  });
+}

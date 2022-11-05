@@ -16,6 +16,7 @@ import {
   Select,
   InputNumber,
   Badge,
+  Upload,
 } from 'antd';
 import { DownOutlined, PlusOutlined } from '@ant-design/icons';
 import moment from 'moment';
@@ -540,6 +541,52 @@ class Index extends PureComponent {
     URL.revokeObjectURL(link.href);
   };
 
+  handleUploadConfig = (row, formData) => {
+    const { dispatch } = this.props;
+    const params = {
+      id: row.id,
+      form: formData,
+    };
+    dispatch({
+      type: 'node/uploadNodeConfig',
+      payload: params,
+      callback: this.uploadCallBack,
+    });
+  };
+
+  uploadCallBack = () => {
+    const { intl } = this.props;
+    message.success(
+      intl.formatMessage({
+        id: 'app.operator.node.upload.success',
+        defaultMessage: 'Upload config file succeed',
+      })
+    );
+  };
+
+  handleJoinChannel = (row, formData) => {
+    const { dispatch } = this.props;
+    const params = {
+      id: row.id,
+      form: formData,
+    };
+    dispatch({
+      type: 'node/nodeJoinChannel',
+      payload: params,
+      callback: this.joinCallBack,
+    });
+  };
+
+  joinCallBack = () => {
+    const { intl } = this.props;
+    message.success(
+      intl.formatMessage({
+        id: 'app.operator.node.joinChannel.success',
+        defaultMessage: 'Join Channel succeed',
+      })
+    );
+  };
+
   render() {
     const { selectedRows, registerUserFormVisible, targetNodeId, createModalVisible } = this.state;
 
@@ -593,6 +640,13 @@ class Index extends PureComponent {
       return statusOfBadge;
     }
 
+    // prevent the default http upload request in antd
+    const dummyRequest = ({ onSuccess }) => {
+      setTimeout(() => {
+        onSuccess('ok');
+      }, 0);
+    };
+
     const menu = record => (
       <Menu>
         {record.type === 'ca' && (
@@ -610,6 +664,59 @@ class Index extends PureComponent {
             <a onClick={() => this.handleDownloadConfig(record)}>
               {intl.formatMessage({ id: 'form.menu.item.download', defaultMessage: 'Download' })}
             </a>
+          </Menu.Item>
+        )}
+        {(record.type === 'peer' || record.type === 'orderer') && (
+          <Menu.Item>
+            <Upload
+              {...{
+                showUploadList: false,
+                customRequest: dummyRequest,
+                onChange: info => {
+                  if (info.file.name.split('.').pop() !== 'yaml') {
+                    message.error('Only accept yaml file.');
+                    return;
+                  }
+                  if (info.file.status === 'done') {
+                    const formData = new FormData();
+                    formData.append('file', info.fileList[0].originFileObj);
+                    this.handleUploadConfig(record, formData);
+                  }
+                },
+              }}
+            >
+              <a style={{ color: 'inherit' }}>
+                {intl.formatMessage({ id: 'form.menu.item.upload', defaultMessage: 'Upload' })}
+              </a>
+            </Upload>
+          </Menu.Item>
+        )}
+        {record.type === 'peer' && (
+          <Menu.Item>
+            <Upload
+              {...{
+                showUploadList: false,
+                customRequest: dummyRequest,
+                onChange: info => {
+                  if (info.file.name.split('.').pop() !== 'block') {
+                    message.error('Only accept block file.');
+                    return;
+                  }
+                  if (info.file.status === 'done') {
+                    const formData = new FormData();
+                    formData.append('file', info.fileList[0].originFileObj);
+                    this.handleJoinChannel(record, formData);
+                  }
+                },
+              }}
+            >
+              <a style={{ color: 'inherit' }}>
+                {intl.formatMessage({
+                  id: 'form.menu.item.joinChannel',
+                  defaultMessage: 'Join Channel',
+                })}
+              </a>
+            </Upload>
           </Menu.Item>
         )}
         <Menu.Item>
