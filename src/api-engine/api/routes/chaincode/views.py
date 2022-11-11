@@ -4,7 +4,7 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from rest_framework_jwt.authentication import JSONWebTokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 import os
 import zipfile
 
@@ -20,7 +20,6 @@ from django.core.paginator import Paginator
 
 from api.lib.peer.chaincode import ChainCode as PeerChainCode
 from api.common.serializers import PageQuerySerializer
-from api.auth import TokenAuth
 from api.utils.common import with_common_response
 from api.exceptions import ResourceNotFound
 
@@ -36,7 +35,7 @@ from api.common import ok, err
 
 class ChainCodeViewSet(viewsets.ViewSet):
     """Class represents Channel related operations."""
-    authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
+    permission_classes = [IsAuthenticated, ]
 
     @swagger_auto_schema(
         query_serializer=PageQuerySerializer,
@@ -74,7 +73,8 @@ class ChainCodeViewSet(viewsets.ViewSet):
                     }
                     for chaincode in chaincodes_pages
                 ]
-                response = ChaincodeListResponse({"data": chanincodes_list, "total": chaincodes.count()})
+                response = ChaincodeListResponse(
+                    {"data": chanincodes_list, "total": chaincodes.count()})
                 return Response(data=ok(response.data), status=status.HTTP_200_OK)
             except Exception as e:
                 return Response(
@@ -143,7 +143,8 @@ class ChainCodeViewSet(viewsets.ViewSet):
                 envs = init_env_vars(peer_node, org)
 
                 peer_channel_cli = PeerChainCode("v2.2.0", **envs)
-                res = peer_channel_cli.lifecycle_package(name, version, chaincode_path, language)
+                res = peer_channel_cli.lifecycle_package(
+                    name, version, chaincode_path, language)
                 os.system("rm -rf {}/*".format(file_path))
                 os.system("mv {}.tar.gz {}".format(name, file_path))
                 if res != 0:
@@ -162,8 +163,8 @@ class ChainCodeViewSet(viewsets.ViewSet):
                     err(e.args), status=status.HTTP_400_BAD_REQUEST
                 )
             return Response(
-                           ok("success"), status=status.HTTP_200_OK
-                            )
+                ok("success"), status=status.HTTP_200_OK
+            )
 
     @swagger_auto_schema(
         method="post",
@@ -218,7 +219,8 @@ class ChainCodeViewSet(viewsets.ViewSet):
 
             timeout = "5s"
             peer_channel_cli = PeerChainCode("v2.2.0", **envs)
-            res, installed_chaincodes = peer_channel_cli.lifecycle_query_installed(timeout)
+            res, installed_chaincodes = peer_channel_cli.lifecycle_query_installed(
+                timeout)
             if res != 0:
                 return Response(err("query installed chaincode failed."), status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
@@ -272,7 +274,8 @@ class ChainCodeViewSet(viewsets.ViewSet):
             try:
                 channel_name = serializer.validated_data.get("channel_name")
                 chaincode_name = serializer.validated_data.get("chaincode_name")
-                chaincode_version = serializer.validated_data.get("chaincode_version")
+                chaincode_version = serializer.validated_data.get(
+                    "chaincode_version")
                 policy = serializer.validated_data.get("policy")
                 # Perhaps the orderer's port is best stored in the database
                 orderer_url = serializer.validated_data.get("orderer_url")
@@ -330,7 +333,8 @@ class ChainCodeViewSet(viewsets.ViewSet):
             cc_name = request.data.get("chaincode_name")
 
             peer_channel_cli = PeerChainCode("v2.2.0", **envs)
-            code, content = peer_channel_cli.lifecycle_query_approved(channel_name, cc_name)
+            code, content = peer_channel_cli.lifecycle_query_approved(
+                channel_name, cc_name)
             if code != 0:
                 return Response(err("query_approved failed."), status=status.HTTP_400_BAD_REQUEST)
 
@@ -355,7 +359,8 @@ class ChainCodeViewSet(viewsets.ViewSet):
             try:
                 channel_name = serializer.validated_data.get("channel_name")
                 chaincode_name = serializer.validated_data.get("chaincode_name")
-                chaincode_version = serializer.validated_data.get("chaincode_version")
+                chaincode_version = serializer.validated_data.get(
+                    "chaincode_version")
                 policy = serializer.validated_data.get("policy")
                 # Perhaps the orderer's port is best stored in the database
                 orderer_url = serializer.validated_data.get("orderer_url")
@@ -409,7 +414,8 @@ class ChainCodeViewSet(viewsets.ViewSet):
             try:
                 channel_name = serializer.validated_data.get("channel_name")
                 chaincode_name = serializer.validated_data.get("chaincode_name")
-                chaincode_version = serializer.validated_data.get("chaincode_version")
+                chaincode_version = serializer.validated_data.get(
+                    "chaincode_version")
                 policy = serializer.validated_data.get("policy")
                 # Perhaps the orderer's port is best stored in the database
                 orderer_url = serializer.validated_data.get("orderer_url")
@@ -444,7 +450,8 @@ class ChainCodeViewSet(viewsets.ViewSet):
                     print(peer_node.port)
                     # port = peer_node.port.all()[0].internal
                     # port = ports[0].internal
-                    peer_address = peer_node.name + "." + org.name + ":" + str(7051)
+                    peer_address = peer_node.name + \
+                        "." + org.name + ":" + str(7051)
                     peer_address_list.append(peer_address)
                     peer_root_certs.append(peer_tls_cert)
 
@@ -481,7 +488,8 @@ class ChainCodeViewSet(viewsets.ViewSet):
             peer_node = qs.first()
             envs = init_env_vars(peer_node, org)
             peer_channel_cli = PeerChainCode("v2.2.0", **envs)
-            code, chaincodes_commited = peer_channel_cli.lifecycle_query_committed(channel_name, chaincode_name)
+            code, chaincodes_commited = peer_channel_cli.lifecycle_query_committed(
+                channel_name, chaincode_name)
             if code != 0:
                 return Response(err("query committed failed."), status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
@@ -509,7 +517,8 @@ def init_env_vars(node, org):
 
     envs = {
         "CORE_PEER_TLS_ENABLED": "true",
-        "CORE_PEER_LOCALMSPID": "{}MSP".format(org_name.capitalize()),  # "Org1.cello.comMSP"
+        # "Org1.cello.comMSP"
+        "CORE_PEER_LOCALMSPID": "{}MSP".format(org_name.capitalize()),
         "CORE_PEER_TLS_ROOTCERT_FILE": "{}/{}/peers/{}/tls/ca.crt".format(dir_node, org_name, node.name + "." + org_name),
         "CORE_PEER_ADDRESS": "{}:{}".format(
             node.name + "." + org_name, str(7051)),

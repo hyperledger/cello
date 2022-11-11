@@ -16,7 +16,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from rest_framework_jwt.authentication import JSONWebTokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 from api.common.enums import AgentOperation
 from api.exceptions import CustomError, NoResource, ResourceExists, ResourceInUse
@@ -50,7 +50,6 @@ from api.routes.node.serializers import (
 )
 from api.tasks import operate_node
 from api.utils.common import with_common_response
-from api.auth import TokenAuth
 from api.lib.pki import CryptoGen, CryptoConfig
 from api.utils import zip_dir, zip_file
 from api.config import (
@@ -68,7 +67,7 @@ LOG = logging.getLogger(__name__)
 
 
 class NodeViewSet(viewsets.ViewSet):
-    authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
+    permission_classes = [IsAuthenticated, ]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     # Only operator can update node info

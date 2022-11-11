@@ -8,12 +8,9 @@ from django.core.paginator import Paginator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
-from api.auth import IsOperatorAuthenticated, IsAdminAuthenticated
 from api.common.enums import HostType
 from api.exceptions import (
     ResourceNotFound,
@@ -22,7 +19,7 @@ from api.exceptions import (
     NoResource,
     ResourceInUse,
 )
-from api.models import Agent, KubernetesConfig, Organization
+from api.models import Agent, KubernetesConfig
 from api.routes.agent.serializers import (
     AgentQuery,
     AgentListResponse,
@@ -33,8 +30,7 @@ from api.routes.agent.serializers import (
     AgentInfoSerializer,
     AgentApplySerializer,
 )
-from api.utils.common import with_common_response, any_of
-from api.auth import TokenAuth
+from api.utils.common import with_common_response
 from api.common import ok, err
 
 LOG = logging.getLogger(__name__)
@@ -42,18 +38,7 @@ LOG = logging.getLogger(__name__)
 
 class AgentViewSet(viewsets.ViewSet):
     """Class represents agent related operations."""
-    authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
-
-    # def get_permissions(self):
-    #     if self.action in ["apply", "list", "release", "retrieve"]:
-    #         permission_classes = (
-    #             IsAuthenticated,
-    #             any_of(IsAdminAuthenticated, IsOperatorAuthenticated),
-    #         )
-    #     else:
-    #         permission_classes = (IsAuthenticated, IsOperatorAuthenticated)
-    #
-    #     return [permission() for permission in permission_classes]
+    permission_classes = [IsAuthenticated, ]
 
     @swagger_auto_schema(
         query_serializer=AgentQuery,

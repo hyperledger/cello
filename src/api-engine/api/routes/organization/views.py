@@ -45,8 +45,6 @@ LOG = logging.getLogger(__name__)
 
 class OrganizationViewSet(viewsets.ViewSet):
     """Class represents orgnization related operations."""
-    # authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
-    # permission_classes = (IsAuthenticated, IsOperatorAuthenticated)
 
     @swagger_auto_schema(
         query_serializer=OrganizationQuery,
@@ -147,9 +145,11 @@ class OrganizationViewSet(viewsets.ViewSet):
         :return: null
         """
         for i in range(num):
-            nodeName = "peer" + str(i) if nodeType == "peer" else "orderer" + str(i)
+            nodeName = "peer" + \
+                str(i) if nodeType == "peer" else "orderer" + str(i)
             self._generate_config(nodeType, org.name, nodeName)
-            msp, tls, cfg = self._conversion_msp_tls_cfg(nodeType, org.name, nodeName)
+            msp, tls, cfg = self._conversion_msp_tls_cfg(
+                nodeType, org.name, nodeName)
             urls = "{}.{}".format(nodeName, org.name)
             node = Node(
                 name=nodeName,
@@ -193,7 +193,8 @@ class OrganizationViewSet(viewsets.ViewSet):
             with open("{}tls.zip".format(dir_node), "rb") as f_tls:
                 tls = base64.b64encode(f_tls.read())
 
-            zip_file("{}{}".format(dir_node, name), "{}{}".format(dir_node, cname))
+            zip_file("{}{}".format(dir_node, name),
+                     "{}{}".format(dir_node, cname))
             with open("{}{}".format(dir_node, cname), "rb") as f_cfg:
                 cfg = base64.b64encode(f_cfg.read())
         except Exception as e:
@@ -216,8 +217,10 @@ class OrganizationViewSet(viewsets.ViewSet):
         if type == "peer":
             args.update({"peer_id": "{}.{}".format(node, org)})
             args.update({"peer_address": "{}.{}:{}".format(node, org, 7051)})
-            args.update({"peer_gossip_externalEndpoint": "{}.{}:{}".format(node, org, 7051)})
-            args.update({"peer_chaincodeAddress": "{}.{}:{}".format(node, org, 7052)})
+            args.update(
+                {"peer_gossip_externalEndpoint": "{}.{}:{}".format(node, org, 7051)})
+            args.update(
+                {"peer_chaincodeAddress": "{}.{}:{}".format(node, org, 7052)})
             args.update({"peer_tls_enabled": True})
             args.update({"peer_localMspId": "{}MSP".format(org.capitalize())})
 
@@ -225,7 +228,8 @@ class OrganizationViewSet(viewsets.ViewSet):
             a.peer(node, **args)
         else:
             args.update({"General_ListenPort": 7050})
-            args.update({"General_LocalMSPID": "{}OrdererMSP".format(org.capitalize())})
+            args.update(
+                {"General_LocalMSPID": "{}OrdererMSP".format(org.capitalize())})
             args.update({"General_TLS_Enabled": True})
             args.update({"General_BootstrapFile": "genesis.block"})
 

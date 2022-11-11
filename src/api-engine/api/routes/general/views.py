@@ -4,10 +4,12 @@
 import logging
 import base64
 
+from django.contrib.auth import authenticate
 from rest_framework import viewsets, status
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from rest_framework.response import Response
-from rest_framework_jwt.views import ObtainJSONWebToken
 from api.models import UserProfile, Organization
 from api.routes.general.serializers import (
     RegisterBody,
@@ -18,21 +20,19 @@ from api.lib.pki import CryptoGen, CryptoConfig
 from api.utils import zip_dir
 from api.common import ok, err
 from api.config import CELLO_HOME
-from api.utils.jwt import jwt_response_payload_handler
-from datetime import datetime
-from rest_framework_jwt.settings import api_settings
-
+from .serializers import (
+    LoginBody,
+    LoginSuccessBody,
+)
 
 LOG = logging.getLogger(__name__)
 
 
 class RegisterViewSet(viewsets.ViewSet):
-
     def create(self, request):
         try:
             serializer = RegisterBody(data=request.data)
             if serializer.is_valid(raise_exception=True):
-                # username = serializer.validated_data.get("username")
                 email = serializer.validated_data.get("email")
                 orgname = serializer.validated_data.get("orgName")
                 password = serializer.validated_data.get("password")
@@ -115,23 +115,23 @@ class RegisterViewSet(viewsets.ViewSet):
         return msp, tls
 
 
-class CustomObtainJSONWebToken(ObtainJSONWebToken):
-
-    def post(self, request):
-        serializer = self.get_serializer(
-            data=request.data
-        )
-        if serializer.is_valid():
-            user = serializer.object.get('user') or request.user
-            token = serializer.object.get('token')
-            response_data = jwt_response_payload_handler(token, user, request)
-            response = Response(response_data)
-            if api_settings.JWT_AUTH_COOKIE:
-                expiration = (datetime.utcnow() +
-                              api_settings.JWT_EXPIRATION_DELTA)
-                response.set_cookie(api_settings.JWT_AUTH_COOKIE,
-                                    token,
-                                    expires=expiration,
-                                    httponly=True)
-            return response
-        return Response(err(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
+class CelloTokenObtainPairView(TokenObtainPairView):
+    def post(self, request, *args, **kwargs):
+        serializer = LoginBody(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            user = authenticate(
+                request,
+                username=serializer.validated_data['email'],
+                password=serializer.validated_data['password'])
+            if user is not None:
+                refresh = RefreshToken.for_user(user)
+                data = {
+                    'token': str(refresh.access_token),
+                    'user': user,
+                }
+                response = LoginSuccessBody(instance=data)
+                return Response(
+                    data=ok(response.data),
+                    status=200,
+                )
+        return super().post(request, *args, **kwargs)

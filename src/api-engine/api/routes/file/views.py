@@ -8,7 +8,6 @@ from django.core.exceptions import PermissionDenied
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
 from api.auth import IsOperatorAuthenticated, IsAdminAuthenticated
 from api.exceptions import CustomError
@@ -25,7 +24,6 @@ LOG = logging.getLogger(__name__)
 
 
 class FileViewSet(viewsets.ViewSet):
-    authentication_classes = (JSONWebTokenAuthentication,)
     permission_classes = (
         IsAuthenticated,
         any_of(IsAdminAuthenticated, IsOperatorAuthenticated),

@@ -9,11 +9,11 @@ import os
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
 from django.core.paginator import Paginator
 from django.core.exceptions import ObjectDoesNotExist
 from api.exceptions import ResourceNotFound, ResourceExists
-from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from api.routes.network.serializers import (
     NetworkQuery,
     NetworkListResponse,
@@ -26,7 +26,6 @@ from api.lib.configtxgen import ConfigTX, ConfigTxGen
 from api.models import Network, Node, Port
 from api.config import CELLO_HOME
 from api.utils import zip_file
-from api.auth import TokenAuth
 from api.lib.agent import AgentHandler
 from api.common import ok, err
 import threading
@@ -35,8 +34,7 @@ LOG = logging.getLogger(__name__)
 
 
 class NetworkViewSet(viewsets.ViewSet):
-
-    authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
+    permission_classes = [IsAuthenticated, ]
 
     def _genesis2base64(self, network):
         """
@@ -49,7 +47,8 @@ class NetworkViewSet(viewsets.ViewSet):
             dir_node = "{}/{}/".format(CELLO_HOME, network)
             name = "genesis.block"
             zname = "block.zip"
-            zip_file("{}{}".format(dir_node, name), "{}{}".format(dir_node, zname))
+            zip_file("{}{}".format(dir_node, name),
+                     "{}{}".format(dir_node, zname))
             with open("{}{}".format(dir_node, zname), "rb") as f_block:
                 block = base64.b64encode(f_block.read())
             return block
@@ -124,7 +123,8 @@ class NetworkViewSet(viewsets.ViewSet):
 
             info = {}
 
-            org_name = org.name if node.type == "peer" else org.name.split(".", 1)[1]
+            org_name = org.name if node.type == "peer" else org.name.split(".", 1)[
+                1]
             # get info of node, e.g, tls, msp, config.
             info["status"] = node.status
             info["msp"] = node.msp
@@ -186,7 +186,8 @@ class NetworkViewSet(viewsets.ViewSet):
                     pass
                 org = request.user.organization
                 if org.network:
-                    raise ResourceExists(detail="Network exists for the organization")
+                    raise ResourceExists(
+                        detail="Network exists for the organization")
 
                 orderers = []
                 peers = []
@@ -199,18 +200,21 @@ class NetworkViewSet(viewsets.ViewSet):
                     elif node.type == "orderer":
                         orderers[0]["hosts"].append({"name": node.name})
 
-                ConfigTX(name).create(consensus=consensus, orderers=orderers, peers=peers)
+                ConfigTX(name).create(consensus=consensus,
+                                      orderers=orderers, peers=peers)
                 ConfigTxGen(name).genesis()
 
                 block = self._genesis2base64(name)
-                network = Network(name=name, consensus=consensus, genesisblock=block)
+                network = Network(
+                    name=name, consensus=consensus, genesisblock=block)
                 network.save()
                 org.network = network
                 org.save()
                 nodes = Node.objects.filter(organization=org)
                 for node in nodes:
                     try:
-                        threading.Thread(target=self._start_node, args=(node.id,)).start()
+                        threading.Thread(target=self._start_node,
+                                         args=(node.id,)).start()
                     except Exception as e:
                         raise e
 
