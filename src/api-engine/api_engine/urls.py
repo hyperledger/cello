@@ -24,7 +24,10 @@ from rest_framework import permissions
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework.routers import DefaultRouter
-from rest_framework_jwt.views import verify_jwt_token
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 from django.conf.urls.static import static
 
 from api.routes.network.views import NetworkViewSet
@@ -33,9 +36,10 @@ from api.routes.node.views import NodeViewSet
 from api.routes.organization.views import OrganizationViewSet
 from api.routes.user.views import UserViewSet
 from api.routes.file.views import FileViewSet
-from api.routes.general.views import RegisterViewSet, CustomObtainJSONWebToken
+from api.routes.general.views import RegisterViewSet
 from api.routes.channel.views import ChannelViewSet
 from api.routes.chaincode.views import ChainCodeViewSet
+from api.routes.general.views import CelloTokenObtainPairView
 
 
 DEBUG = getattr(settings, "DEBUG")
@@ -66,7 +70,6 @@ router.register("nodes", NodeViewSet, basename="node")
 router.register("organizations", OrganizationViewSet, basename="organization")
 router.register("users", UserViewSet, basename="user")
 router.register("files", FileViewSet, basename="file")
-# router.register("login2", LoginViewSet, basename="login2")
 router.register("register", RegisterViewSet, basename="register")
 router.register("channels", ChannelViewSet, basename="channel")
 router.register("chaincodes", ChainCodeViewSet, basename="chaincode")
@@ -74,9 +77,8 @@ router.register("chaincodes", ChainCodeViewSet, basename="chaincode")
 urlpatterns = router.urls
 
 urlpatterns += [
-    # path("auth", obtain_jwt_token),
-    path("token-verify", verify_jwt_token),
-    path("login", CustomObtainJSONWebToken.as_view()),
+    path('login', CelloTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('login/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path("docs/", SchemaView.with_ui("swagger", cache_timeout=0), name="docs"),
     path("redoc/", SchemaView.with_ui("redoc", cache_timeout=0), name="redoc"),
 ]

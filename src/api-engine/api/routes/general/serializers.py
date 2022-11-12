@@ -1,6 +1,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
-#
+
+from api.routes.user.serializers import UserInfoSerializer
 from rest_framework import serializers
 
 
@@ -23,6 +24,10 @@ class RegisterResponse(serializers.Serializer):
 
 
 class LoginBody(serializers.Serializer):
-    orgName = serializers.CharField(help_text="name of Organization")
-    username = serializers.CharField(help_text="name of user")
+    email = serializers.CharField(help_text="email of user")
     password = serializers.CharField(help_text="password of user")
+
+
+class LoginSuccessBody(serializers.Serializer):
+    token = serializers.CharField(help_text="access token")
+    user = UserInfoSerializer()

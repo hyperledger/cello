@@ -8,8 +8,8 @@ import json
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from rest_framework.permissions import IsAuthenticated
 #
 
 from drf_yasg.utils import swagger_auto_schema
@@ -20,7 +20,6 @@ from django.core.paginator import Paginator
 from api.config import CELLO_HOME
 from api.common.serializers import PageQuerySerializer
 from api.utils.common import with_common_response, parse_block_file, to_dict
-from api.auth import TokenAuth
 from api.lib.configtxgen import ConfigTX, ConfigTxGen
 from api.lib.peer.channel import Channel as PeerChannel
 from api.lib.configtxlator.configtxlator import ConfigTxLator
@@ -61,7 +60,7 @@ CFG_DELTA_ENV_PB = "cfg_delta_env.pb"
 
 class ChannelViewSet(viewsets.ViewSet):
     """Class represents Channel related operations."""
-    authentication_classes = (JSONWebTokenAuthentication, TokenAuth)
+    permission_classes = [IsAuthenticated, ]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     @ swagger_auto_schema(

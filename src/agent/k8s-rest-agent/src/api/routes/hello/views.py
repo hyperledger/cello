@@ -3,11 +3,9 @@ import os
 
 from rest_framework import viewsets, status
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework.decorators import action, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from api.auth import JSONWebTokenAuthentication, IstioJWTAuthentication
 from api.utils.mixins import PermissionsPerMethodMixin
 
 LOG = logging.getLogger(__name__)
@@ -15,7 +13,6 @@ APP_VERSION = os.getenv("APP_VERSION", "v1")
 
 
 class HelloViewSet(PermissionsPerMethodMixin, viewsets.ViewSet):
-    authentication_classes = (IstioJWTAuthentication,)
 
     @swagger_auto_schema(
         operation_summary="Hello world", operation_description="Hello world"
