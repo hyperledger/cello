@@ -23,7 +23,7 @@ In brief, if you want to contribute, create or find some `To Do` item, and assig
 
 ## 3. Questions and discussions
 
-* [Chat](https://chat.hyperledger.org/channel/cello): technical discussions and questions, login with your LFID.
+* [Chat](https://discord.gg/hyperledger): technical discussions and questions
 
 ## 4. Code Commit Steps
 
@@ -98,7 +98,7 @@ docs %
 
 Notice you will get a GitHub PR url like `https://github.com/hyperledger/cello/pull/145`, open it and check the status.
 
-After the ci checking passed, add [reviewers](https://wiki.hyperledger.org/projects/cello#contributors) to the reviewer list and also post the GitHub PR url in the [chat channel](https://chat.hyperledger.org/channel/cello). The patch will be merged into the `master` branch after passing the review, then mark the Jira item as `Done`.
+After the ci checking passed, add [reviewers](https://wiki.hyperledger.org/projects/cello#contributors) to the reviewer list and also post the GitHub PR url in the chat channel. The patch will be merged into the `master` branch after passing the review, then mark the Jira item as `Done`.
 
 * If you need to refine the patch further as the reviewers may suggest, you can change on the same branch, and commit the new code with `git commit -a --amend`, and then use the `git review` command again.
 
