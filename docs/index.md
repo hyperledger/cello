@@ -41,7 +41,7 @@ For additional helps, feel free to take the following channels:
 
 * [Wikipage](https://wiki.hyperledger.org/projects/cello): Lots of information and documentation about the project, e.g., meeting schedule, design doc.
 * [Mail List](mailto:hyperledger-cello@lists.hyperledger.org): General technical topics with Cello project.
-* [RocketChat Room](https://chat.hyperledger.org/channel/cello): Real-time online discussions.
+* [Discord](https://discord.gg/hyperledger): Real-time online discussions.
 * [Jira Board](https://jira.hyperledger.org/projects/CE/issues): Find development status, report bug, or help [contribute code](contributing.md).
 * [GitHub](https://github.com/hyperledger/cello): Development related code and patchsets, welcome to [contribute](contributing.md).
 * [Stack Overflow](https://stackoverflow.com/questions/tagged/hyperledger-cello): Stack overflow discussion questions about cello.
