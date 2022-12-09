@@ -25,7 +25,7 @@ from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
+    TokenVerifyView,
     TokenRefreshView,
 )
 from django.conf.urls.static import static
@@ -79,6 +79,7 @@ urlpatterns = router.urls
 urlpatterns += [
     path('login', CelloTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('login/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('token-verify', TokenVerifyView.as_view(), name='token_verify'),
     path("docs/", SchemaView.with_ui("swagger", cache_timeout=0), name="docs"),
     path("redoc/", SchemaView.with_ui("redoc", cache_timeout=0), name="redoc"),
 ]
