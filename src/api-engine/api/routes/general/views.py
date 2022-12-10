@@ -1,28 +1,35 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-import logging
-import base64
-
-from django.contrib.auth import authenticate
-from rest_framework import viewsets, status
-from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
-from rest_framework.response import Response
-from api.models import UserProfile, Organization
+from .serializers import (
+    LoginBody,
+    LoginSuccessBody,
+    TokenVerifyRequest,
+)
+from api.config import CELLO_HOME
+from api.common import ok, err
+from api.utils import zip_dir
+from api.lib.pki import CryptoGen, CryptoConfig
 from api.routes.general.serializers import (
     RegisterBody,
     RegisterResponse,
 
 )
-from api.lib.pki import CryptoGen, CryptoConfig
-from api.utils import zip_dir
-from api.common import ok, err
-from api.config import CELLO_HOME
-from .serializers import (
-    LoginBody,
-    LoginSuccessBody,
+from api.models import UserProfile, Organization
+from rest_framework.response import Response
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+import logging
+import base64
+
+from django.contrib.auth import authenticate
+from rest_framework import viewsets, status
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenVerifyView,
+)
+from rest_framework_simplejwt.tokens import (
+    RefreshToken,
+    AccessToken,
 )
 
 LOG = logging.getLogger(__name__)
@@ -128,6 +135,28 @@ class CelloTokenObtainPairView(TokenObtainPairView):
                 data = {
                     'token': str(refresh.access_token),
                     'user': user,
+                }
+                response = LoginSuccessBody(instance=data)
+                return Response(
+                    data=ok(response.data),
+                    status=200,
+                )
+        return super().post(request, *args, **kwargs)
+
+
+class CelloTokenVerifyView(TokenVerifyView):
+    def post(self, request, *args, **kwargs):
+        serializer = TokenVerifyRequest(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            access_token = AccessToken(
+                token=serializer.validated_data["token"],
+            )
+            user = UserProfile.objects.get(pk=access_token['user_id'])
+            if user is not None:
+                data = {
+                    'token': str(access_token.token),
+                    'user': user
+
                 }
                 response = LoginSuccessBody(instance=data)
                 return Response(
