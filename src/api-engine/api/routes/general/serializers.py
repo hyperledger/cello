@@ -31,3 +31,7 @@ class LoginBody(serializers.Serializer):
 class LoginSuccessBody(serializers.Serializer):
     token = serializers.CharField(help_text="access token")
     user = UserInfoSerializer()
+
+
+class TokenVerifyRequest(serializers.Serializer):
+    token = serializers.CharField(help_text="access token")

@@ -25,7 +25,6 @@ from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import (
-    TokenVerifyView,
     TokenRefreshView,
 )
 from django.conf.urls.static import static
@@ -39,7 +38,10 @@ from api.routes.file.views import FileViewSet
 from api.routes.general.views import RegisterViewSet
 from api.routes.channel.views import ChannelViewSet
 from api.routes.chaincode.views import ChainCodeViewSet
-from api.routes.general.views import CelloTokenObtainPairView
+from api.routes.general.views import (
+    CelloTokenObtainPairView,
+    CelloTokenVerifyView,
+)
 
 
 DEBUG = getattr(settings, "DEBUG")
@@ -79,7 +81,7 @@ urlpatterns = router.urls
 urlpatterns += [
     path('login', CelloTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('login/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('token-verify', TokenVerifyView.as_view(), name='token_verify'),
+    path('token-verify', CelloTokenVerifyView.as_view(), name='token_verify'),
     path("docs/", SchemaView.with_ui("swagger", cache_timeout=0), name="docs"),
     path("redoc/", SchemaView.with_ui("redoc", cache_timeout=0), name="redoc"),
 ]
