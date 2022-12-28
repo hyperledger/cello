@@ -1,4 +1,4 @@
-FROM python:3.6
+FROM python:3.8
 COPY src/agent/docker-rest-agent/requirements.txt /
 ARG pip=pip.conf.bak
 COPY src/agent/docker-rest-agent/pip.conf /root/.pip/$pip
