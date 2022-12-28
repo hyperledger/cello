@@ -11,4 +11,5 @@ export default {
   'app.operator.channel.form.create.checkOrderer': 'Please select orderer',
   'app.operator.channel.form.create.fail': 'Create channel failed',
   'app.operator.channel.form.create.success': 'Create channel succeed',
+  'app.operator.channel.download.success': 'Download Channel Config File Successful.',
 };

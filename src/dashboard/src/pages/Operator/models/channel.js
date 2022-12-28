@@ -1,4 +1,4 @@
-import { listChannel, createChannel } from '@/services/channel';
+import { listChannel, createChannel, getNodeConfig } from '@/services/channel';
 
 export default {
   namespace: 'channel',
@@ -33,6 +33,12 @@ export default {
     },
     *createChannel({ payload, callback }, { call }) {
       const response = yield call(createChannel, payload);
+      if (callback) {
+        callback(response);
+      }
+    },
+    *getNodeConfig({ payload, callback }, { call }) {
+      const response = yield call(getNodeConfig, payload);
       if (callback) {
         callback(response);
       }
