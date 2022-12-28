@@ -11,4 +11,5 @@ export default {
   'app.operator.channel.form.create.checkOrderer': '请选择orderer节点',
   'app.operator.channel.form.create.fail': '创建通道失败',
   'app.operator.channel.form.create.success': '创建通道成功',
+  'app.operator.channel.download.success': '下载通道配置成功',
 };

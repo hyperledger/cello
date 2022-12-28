@@ -252,6 +252,36 @@ class Channel extends PureComponent {
     });
   };
 
+  handleDownloadConfig = row => {
+    const { dispatch } = this.props;
+    const params = {
+      id: row.id,
+    };
+    dispatch({
+      type: 'channel/getNodeConfig',
+      payload: params,
+      callback: this.downloadCallBack,
+    });
+  };
+
+  downloadCallBack = response => {
+    const { intl } = this.props;
+    message.success(
+      intl.formatMessage({
+        id: 'app.operator.channel.download.success',
+        defaultMessage: 'Download Channel Config File Successful.',
+      })
+    );
+    const blob = response.data;
+    const prettyJSON = JSON.stringify(blob, null, 2);
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(new Blob([prettyJSON], { type: 'application/json' }));
+    link.download = 'configs.json';
+    document.body.appendChild(link);
+    link.click();
+    URL.revokeObjectURL(link.href);
+  };
+
   render() {
     const { selectedRows, modalVisible } = this.state;
     const {
@@ -296,6 +326,10 @@ class Channel extends PureComponent {
         render: (text, record) => (
           <Fragment>
             <a>{intl.formatMessage({ id: 'form.menu.item.update', defaultMessage: 'Update' })}</a>
+            <Divider type="vertical" />
+            <a onClick={() => this.handleDownloadConfig(record)}>
+              {intl.formatMessage({ id: 'form.menu.item.download', defaultMessage: 'Download' })}
+            </a>
             <Divider type="vertical" />
             <a className={styles.danger}>
               {intl.formatMessage({ id: 'form.menu.item.delete', defaultMessage: 'Delete' })}
