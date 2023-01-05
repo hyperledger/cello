@@ -12,4 +12,13 @@ export default {
   'app.operator.channel.form.create.fail': '创建通道失败',
   'app.operator.channel.form.create.success': '创建通道成功',
   'app.operator.channel.download.success': '下载通道配置成功',
+  'app.operator.channel.form.update.success': '更新通道配置成功',
+  'app.operator.channel.form.update.fail': '更新通道配置失败',
+  'app.operator.channel.form.update.header.title': '更新通道',
+  'app.operator.channel.form.update.orgType': 'Org类型',
+  'app.operator.channel.update.required.orgType': '请选择Org类型',
+  'app.operator.channel.form.update.mspId': 'MSP ID',
+  'app.operator.channel.form.update.checkMSPId': '请输入MSP ID',
+  'app.operator.channel.form.update.file': '通道配置文件',
+  'app.operator.channel.form.update.fileSelect': '请选择通道配置文件',
 };

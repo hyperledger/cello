@@ -3,14 +3,14 @@
 */
 import React, { PureComponent, Fragment } from 'react';
 import { connect, injectIntl, useIntl } from 'umi';
-import { Card, Button, Modal, message, Divider, Input, Select, Form, Tag } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { Card, Button, Modal, message, Divider, Input, Select, Form, Tag, Upload } from 'antd';
+import { PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import StandardTable from '@/components/StandardTable';
 import styles from './styles.less';
 
 const FormItem = Form.Item;
-// const { Option } = Select;
+const { Option } = Select;
 
 const CreateChannel = props => {
   const [form] = Form.useForm();
@@ -97,7 +97,7 @@ const CreateChannel = props => {
         defaultMessage: 'Create Channel',
       })}
       confirmLoading={creating}
-      visible={modalVisible}
+      open={modalVisible}
       onOk={onSubmit}
       onCancel={() => handleModalVisible(false)}
     >
@@ -180,17 +180,183 @@ const CreateChannel = props => {
   );
 };
 
+const UpdateChannel = props => {
+  const [form] = Form.useForm();
+  const intl = useIntl();
+  const {
+    updateModalVisible,
+    handleUpdate,
+    handleModalVisible,
+    updating,
+    fetchChannels,
+    channelData,
+    newFile,
+    setFile,
+  } = props;
+
+  const updateCallback = response => {
+    if (response.status === 'successful') {
+      message.success(
+        intl.formatMessage({
+          id: 'app.operator.channel.form.update.success',
+          defaultMessage: 'Update channel succeed',
+        })
+      );
+      form.resetFields();
+      handleModalVisible();
+      fetchChannels();
+    }
+  };
+
+  const onSubmit = () => {
+    form.submit();
+  };
+
+  const onFinish = values => {
+    handleUpdate(channelData.id, values, updateCallback);
+  };
+
+  const normFile = e => {
+    if (Array.isArray(e)) {
+      return e;
+    }
+    return newFile;
+  };
+
+  const uploadProps = {
+    onRemove: () => {
+      setFile(null);
+    },
+    beforeUpload: file => {
+      setFile(file);
+      return false;
+    },
+  };
+
+  const orgTypes = ['Application', 'Orderer'];
+  const orgTypeOptions = orgTypes.map(item => (
+    <Option value={item} key={item}>
+      <span>{item}</span>
+    </Option>
+  ));
+
+  const formItemLayout = {
+    labelCol: {
+      xs: { span: 24 },
+      sm: { span: 7 },
+    },
+    wrapperCol: {
+      xs: { span: 24 },
+      sm: { span: 12 },
+      md: { span: 10 },
+    },
+  };
+
+  return (
+    <Modal
+      destroyOnClose
+      title={intl.formatMessage({
+        id: 'app.operator.channel.form.update.header.title',
+        defaultMessage: 'Update Channel',
+      })}
+      confirmLoading={updating}
+      open={updateModalVisible}
+      onOk={onSubmit}
+      onCancel={() => handleModalVisible(false)}
+    >
+      <Form onFinish={onFinish} form={form} preserve={false}>
+        <FormItem
+          {...formItemLayout}
+          label={intl.formatMessage({
+            id: 'app.operator.channel.form.update.mspId',
+            defaultMessage: 'MSP ID',
+          })}
+          name="msp_id"
+          initialValue=""
+          rules={[
+            {
+              required: true,
+              message: intl.formatMessage({
+                id: 'app.operator.channel.form.update.checkMSPId',
+                defaultMessage: 'Please enter the MSP id',
+              }),
+            },
+          ]}
+        >
+          <Input
+            placeholder={intl.formatMessage({
+              id: 'app.operator.channel.form.update.mspId',
+              defaultMessage: 'MSP id',
+            })}
+          />
+        </FormItem>
+        <FormItem
+          {...formItemLayout}
+          label={intl.formatMessage({
+            id: 'app.operator.channel.form.update.orgType',
+            defaultMessage: 'Org Type',
+          })}
+          name="org_type"
+          rules={[
+            {
+              required: true,
+              message: intl.formatMessage({
+                id: 'app.operator.channel.form.update.required.orgType',
+                defaultMessage: 'Please select Org type.',
+              }),
+            },
+          ]}
+        >
+          <Select>{orgTypeOptions}</Select>
+        </FormItem>
+        <FormItem
+          {...formItemLayout}
+          label={intl.formatMessage({
+            id: 'app.operator.channel.form.update.file',
+            defaultMessage: 'Channel config file',
+          })}
+          name="data"
+          getValueFromEvent={normFile}
+          rules={[
+            {
+              required: true,
+              message: intl.formatMessage({
+                id: 'app.operator.channel.form.update.fileSelect',
+                defaultMessage: 'Please select the channel config file',
+              }),
+            },
+          ]}
+        >
+          <Upload {...uploadProps}>
+            <Button disabled={!!newFile}>
+              <UploadOutlined />
+              {intl.formatMessage({
+                id: 'app.operator.channel.form.update.fileSelect',
+                defaultMessage: 'Please select the channel config file',
+              })}
+            </Button>
+          </Upload>
+        </FormItem>
+      </Form>
+    </Modal>
+  );
+};
+
 @connect(({ channel, node, loading }) => ({
   channel,
   node,
   loadingChannels: loading.effects['channel/listChannel'],
   creating: loading.effects['channel/createChannel'],
+  updating: loading.effects['channel/updateChannel'],
 }))
 class Channel extends PureComponent {
   state = {
     selectedRows: [],
     formValues: {},
     modalVisible: false,
+    updateModalVisible: false,
+    channelData: {},
+    newFile: '',
   };
 
   componentDidMount() {
@@ -238,6 +404,21 @@ class Channel extends PureComponent {
     });
   };
 
+  handleUpdateModalVisible = (visible, record) => {
+    this.setState({
+      updateModalVisible: !!visible,
+      channelData: record,
+    });
+  };
+
+  onUpdateChannel = record => {
+    this.handleUpdateModalVisible(true, record);
+  };
+
+  setFile = file => {
+    this.setState({ newFile: file });
+  };
+
   onCreateChannel = () => {
     this.handleModalVisible(true);
   };
@@ -282,14 +463,31 @@ class Channel extends PureComponent {
     URL.revokeObjectURL(link.href);
   };
 
+  handleUpdate = (id, values, callback) => {
+    const { dispatch } = this.props;
+    const formData = new FormData();
+
+    Object.keys(values).forEach(key => {
+      formData.append(key, values[key]);
+    });
+
+    dispatch({
+      type: 'channel/updateChannel',
+      id,
+      payload: formData,
+      callback,
+    });
+  };
+
   render() {
-    const { selectedRows, modalVisible } = this.state;
+    const { selectedRows, modalVisible, channelData, updateModalVisible, newFile } = this.state;
     const {
       channel: { channels, pagination },
       node: { nodes },
       loadingChannels,
       intl,
       creating,
+      updating,
     } = this.props;
 
     const formProps = {
@@ -300,6 +498,18 @@ class Channel extends PureComponent {
       creating,
       intl,
       nodes,
+    };
+
+    const updateFormProps = {
+      updateModalVisible,
+      handleUpdate: this.handleUpdate,
+      handleModalVisible: this.handleUpdateModalVisible,
+      fetchChannels: this.fetchChannels,
+      updating,
+      intl,
+      channelData,
+      newFile,
+      setFile: this.setFile,
     };
 
     const columns = [
@@ -325,7 +535,9 @@ class Channel extends PureComponent {
         // eslint-disable-next-line no-unused-vars
         render: (text, record) => (
           <Fragment>
-            <a>{intl.formatMessage({ id: 'form.menu.item.update', defaultMessage: 'Update' })}</a>
+            <a onClick={() => this.onUpdateChannel(record)}>
+              {intl.formatMessage({ id: 'form.menu.item.update', defaultMessage: 'Update' })}
+            </a>
             <Divider type="vertical" />
             <a onClick={() => this.handleDownloadConfig(record)}>
               {intl.formatMessage({ id: 'form.menu.item.download', defaultMessage: 'Download' })}
@@ -368,6 +580,7 @@ class Channel extends PureComponent {
           </div>
         </Card>
         <CreateChannel {...formProps} />
+        <UpdateChannel {...updateFormProps} />
       </PageHeaderWrapper>
     );
   }
