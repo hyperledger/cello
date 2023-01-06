@@ -23,3 +23,10 @@ export async function getNodeConfig(params) {
     getResponse: true,
   });
 }
+
+export async function updateChannelConfig(id, params) {
+  return request(`/api/v1/channels/${id}`, {
+    method: 'PUT',
+    data: params,
+  });
+}

@@ -310,7 +310,7 @@ class ChannelViewSet(viewsets.ViewSet):
                 # Save a new organization to db.
                 new_org.save()
                 LOG.info("new_org save success")
-                return Response(status=status.HTTP_202_ACCEPTED)
+                return Response(ok(None), status=status.HTTP_202_ACCEPTED)
             except ObjectDoesNotExist:
                 raise ResourceNotFound
 
