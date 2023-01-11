@@ -1,7 +1,7 @@
 import { extend } from 'umi-request';
 import { notification } from 'antd';
 import { history } from 'umi';
-import {stringify} from "qs";
+import { stringify } from "qs";
 
 const codeMessage = {
   200: '服务器成功返回请求的数据。',
