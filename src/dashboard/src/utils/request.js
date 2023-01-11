@@ -1,6 +1,7 @@
 import { extend } from 'umi-request';
 import { notification } from 'antd';
 import { history } from 'umi';
+import {stringify} from "qs";
 
 const codeMessage = {
   200: '服务器成功返回请求的数据。',
@@ -50,8 +51,11 @@ const errorHandler = error => {
     });
     // @HACK
     /* eslint-disable no-underscore-dangle */
-    window.g_app._store.dispatch({
-      type: 'login/logout',
+    history.replace({
+      pathname: '/user/login',
+      search: stringify({
+        redirect: window.location.href,
+      }),
     });
     return;
   }
