@@ -49,8 +49,7 @@ const errorHandler = error => {
     notification.error({
       message: '未登录或登录已过期，请重新登录。',
     });
-    // @HACK
-    /* eslint-disable no-underscore-dangle */
+
     history.replace({
       pathname: '/user/login',
       search: stringify({
