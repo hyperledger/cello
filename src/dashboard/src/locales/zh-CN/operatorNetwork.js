@@ -5,7 +5,7 @@ export default {
   'app.operator.network.table.header.type': '类型',
   'app.operator.network.new': '新建网络',
   'app.operator.network.delete.fail': '删除网络失败。',
-  'app.operator.network.delete.success': '删除组织成功。',
+  'app.operator.network.delete.success': '删除网络成功。',
   'app.operator.network.form.delete.title': '删除网络',
   'app.operator.network.form.delete.content': '确认删除网络 {name}?',
   'app.operator.network.table.header.version': '版本',
