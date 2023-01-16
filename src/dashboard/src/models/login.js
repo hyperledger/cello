@@ -72,7 +72,7 @@ export default {
       reloadAuthorized();
       const { redirect } = getPageQuery();
       // redirect
-      if (window.location.pathname !== '/user/login' && !redirect) {
+      if (window.location.hash.indexOf('/user/login') === -1 && !redirect) {
         yield put(
           history.replace({
             pathname: '/user/login',
