@@ -25,12 +25,12 @@ from api.lib.peer.channel import Channel as PeerChannel
 from api.lib.configtxlator.configtxlator import ConfigTxLator
 from api.exceptions import (
     ResourceNotFound,
+    NoResource
 )
 from api.models import (
     Channel,
     Node,
     Organization,
-    Network,
 )
 from api.routes.channel.serializers import (
     ChannelCreateBody,
@@ -127,6 +127,16 @@ class ChannelViewSet(viewsets.ViewSet):
 
             try:
                 org = request.user.organization
+                # Check if nodes are running
+                for i in range(len(orderers)):
+                    o = Node.objects.get(id=orderers[i])
+                    if o.status != "running":
+                        raise NoResource
+                for i in range(len(peers)):
+                    p = Node.objects.get(id=peers[i])
+                    if p.status != "running":
+                        raise NoResource
+
                 ConfigTX(org.network.name).createChannel(name, [org.name])
                 ConfigTxGen(org.network.name).channeltx(
                     profile=name, channelid=name, outputCreateChannelTx="{}.tx".format(name))
