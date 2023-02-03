@@ -542,10 +542,6 @@ class Channel extends PureComponent {
             <a onClick={() => this.handleDownloadConfig(record)}>
               {intl.formatMessage({ id: 'form.menu.item.download', defaultMessage: 'Download' })}
             </a>
-            <Divider type="vertical" />
-            <a className={styles.danger}>
-              {intl.formatMessage({ id: 'form.menu.item.delete', defaultMessage: 'Delete' })}
-            </a>
           </Fragment>
         ),
       },
