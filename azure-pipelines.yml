@@ -4,44 +4,44 @@
 # https://aka.ms/yaml
 
 trigger:
-- main
+  - main
 
 pool:
-  vmImage: 'ubuntu-18.04'
+  vmImage: "ubuntu-18.04"
 
 variables:
   - group: credentials
 
 stages:
-- stage: PreCheck
-  displayName: Check license and documents
-  jobs:
-  - job: CheckLicenseAndDocs
-    condition: false
-    steps:
-    - template: ci/check-license-and-docs.yml
+  - stage: PreCheck
+    displayName: Check license and documents
+    jobs:
+      - job: CheckLicenseAndDocs
+        condition: false
+        steps:
+          - template: ci/check-license-and-docs.yml
 
-- stage: ProcessComponents
-  displayName: ProcessComponents
-  condition: false
-  jobs:
-  - template: ci/process-components.yml
-    parameters:
-      param:
-      - name: dashandapi
-        pretest: "dashandapi_pre.yml"
-        posttest: "dashandapi_post.yml"
-        images:
-        - imagename: "hyperledger/cello-api-engine"
-          dockerfile: "build_image/docker/common/api-engine/Dockerfile.in"
-        - imagename: "hyperledger/cello-nginx"
-          dockerfile: "build_image/docker/common/nginx/Dockerfile.in"
-        - imagename: "hyperledger/cello-dashboard"
-          dockerfile: "build_image/docker/common/dashboard/Dockerfile.in"
-      - name: ansibleagent
-        images:
-        - imagename: "hyperledger/cello-ansible-agent"
-          dockerfile: "build_image/docker/agent/ansible/Dockerfile.in"
+  - stage: ProcessComponents
+    displayName: ProcessComponents
+    condition: false
+    jobs:
+      - template: ci/process-components.yml
+        parameters:
+          param:
+            - name: dashandapi
+              pretest: "dashandapi_pre.yml"
+              posttest: "dashandapi_post.yml"
+              images:
+                - imagename: "hyperledger/cello-api-engine"
+                  dockerfile: "build_image/docker/common/api-engine/Dockerfile.in"
+                - imagename: "hyperledger/cello-nginx"
+                  dockerfile: "build_image/docker/common/nginx/Dockerfile.in"
+                - imagename: "hyperledger/cello-dashboard"
+                  dockerfile: "build_image/docker/common/dashboard/Dockerfile.in"
+          # - name: ansibleagent
+          #   images:
+          #   - imagename: "hyperledger/cello-ansible-agent"
+          #     dockerfile: "build_image/docker/agent/ansible/Dockerfile.in"
 #     - name: fabricoperator
 #       images:
 #       - imagename: "hyperledger/cello-k8s-operator-agent"

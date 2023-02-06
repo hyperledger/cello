@@ -1,1 +1,0 @@
-envsubst < /toolset/ca_config.yaml > /etc/hyperledger/fabric-ca-server-config/fabric-ca-server-config.yaml
