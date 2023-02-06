@@ -7,10 +7,6 @@ steps:
       echo Checking changes in ${{ parameters.componentName }}
       dashandapi=("src/api-engine/" "src/dashboard/"
         "build_image/docker/common/")
-      ansibleagent=("src/agent/ansible/"
-        "build_image/docker/agent/ansible")
-      fabricoperator=("src/agent/fabric-operator/"
-        "build_image/docker/fabric-operator/")
 
       allchanges=$(git diff --name-only HEAD HEAD~1)
       echo 'changed files in the pull request'
@@ -40,4 +36,4 @@ steps:
         echo 'No changes found for the component'
         echo "##vso[task.setvariable variable=ContinueJob]False"
       fi
-    displayName: 'Check changes'
+    displayName: "Check changes"
