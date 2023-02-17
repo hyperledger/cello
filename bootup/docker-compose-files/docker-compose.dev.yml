@@ -17,6 +17,8 @@ services:
       - "${DASHBOARD_SERVICE_PORT}:8081"
     networks:
       - cello-net
+    depends_on:
+      - cello-api-engine
 
   # pg database
   cello-postgres:
@@ -33,13 +35,6 @@ services:
       - /opt/cello/pgdata:/var/lib/postgresql/data
     networks:
       - cello-net
-
-  cello-redis:
-    image: redis:4.0.13
-    hostname: cello-redis
-    container_name: cello-redis
-    volumes:
-    - /opt/cello/redis:/data
 
   # api engine service of cello 
   cello-api-engine:
