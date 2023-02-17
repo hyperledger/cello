@@ -555,6 +555,7 @@ class NodeViewSet(viewsets.ViewSet):
                 node = Node.objects.get(id=pk)
                 infos = self._agent_params(pk)
                 agent = AgentHandler(infos)
+                agent_exist = agent.get()
                 node.status = "removing"
                 node.save()
                 if node.type == "orderer":
@@ -562,8 +563,11 @@ class NodeViewSet(viewsets.ViewSet):
                         type="orderer", organization__network=node.organization.network).count()
                     if orderer_cnt == 1:
                         raise ResourceInUse
-                agent.stop()
-                res = True if agent.delete() else False
+                if agent_exist:
+                    agent.stop()
+                    res = True if agent.delete() else False
+                else:
+                    res = True
                 if res:
                     fabric_path = "{}/{}".format(FABRIC_NODE,
                                                  infos["container_name"])
