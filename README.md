@@ -75,6 +75,8 @@ If environment is prepared, then we can start cello service.
   $ make deep-clean
   ```
 
+- Visit Cello dashboard at `localhost:8081`
+
 - Check [troubleshoot](https://github.com/hyperledger/cello/blob/main/docs/setup/server.md#3-troubleshoot) section if you get any question.
 
 ## Main Features
