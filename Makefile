@@ -104,6 +104,20 @@ docker-clean: stop image-clean ##@Clean all existing images
 license:
 	scripts/check_license.sh
 
+check: ##@Code Check code format
+	@$(MAKE) license
+	find ./docs -type f -name "*.md" -exec egrep -l " +$$" {} \;
+	cd src/api-engine && tox && cd ${ROOT_PATH}
+	make docker-compose
+	MODE=dev make start
+	sleep 10
+	# make test-api
+	MODE=dev make stop
+	make check-dashboard
+
+check-dashboard:
+	docker compose -f tests/dashboard/docker-compose.yml up --abort-on-container-exit || (echo "check dashboard failed $$?"; exit 1)
+
 clean:
 	make remove-docker-compose
 
@@ -186,3 +200,5 @@ local: docker-compose start-docker-compose
 	dashboard \
 	docker-compose \
 	local \
+	check \ 
+	check-dashboard \
