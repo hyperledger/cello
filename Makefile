@@ -154,9 +154,6 @@ stop: ##@Service Stop service
 
 restart: stop start ##@Service Restart service
 
-start-dashboard:
-	make -C src/dashboard start;
-
 api-engine: # for debug only now
 	docker build -t hyperledger/cello-api-engine:latest -f build_image/docker/common/api-engine/Dockerfile.in ./ --platform linux/$(ARCH); \
 	
@@ -187,7 +184,5 @@ local: docker-compose start-docker-compose
 	fabric \
 	docker-rest-agent \
 	dashboard \
-	start-dashboard \
 	docker-compose \
 	local \
-
