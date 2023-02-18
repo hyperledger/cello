@@ -97,7 +97,7 @@ fi
 # downloadImages $ARCH_1_1 $IMG_TAG_1_1 $BASEIMAGE_RELEASE_1_1 $HLF_VERSION_1_1 $BASEIMAGE_RELEASE_1_1  #kafka and zookeeper have the same IMG_TAG as baseimage in 1.1
 # downloadImages $ARCH_1_2 $IMG_TAG_1_2 $BASEIMAGE_RELEASE_1_2 $HLF_VERSION_1_2 $BASEIMAGE_RELEASE_1_2  #kafka and zookeeper have the same IMG_TAG as baseimage in 1.2
 
-echo_b "Downloading fabric images from DockerHub...with tag = ${IMG_TAG}... need a while"
+echo_b "Downloading fabric images from DockerHub... need a while"
 HLF_IMG=yeasy/hyperledger-fabric:2.2.0
 if [ -z "$(docker images -q ${HLF_IMG} 2> /dev/null)" ]; then  # not exist
     docker pull ${HLF_IMG}
