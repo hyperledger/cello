@@ -46,9 +46,10 @@ If environment is prepared, then we can start cello service.
 
   - Build docker images
     ```bash
-    $ make docker-compose
+    $ make docker
     ```
   - Then run services locally then
+
     ```bash
     $ make start
     ```
@@ -69,10 +70,16 @@ If environment is prepared, then we can start cello service.
   $ make stop
   ```
 
-- Clean all images and local storage
+- Clean all containers
 
   ```bash
-  $ make deep-clean
+  $ make clean
+  ```
+
+- Check available make rules
+
+  ```bash
+  $ make help
   ```
 
 - Visit Cello dashboard at `localhost:8081`
