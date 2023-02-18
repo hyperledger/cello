@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-# Local `/opt/cello/mongo` will be used for the db storage.
+# Local `/opt/cello` will be used for the db storage.
 
 #  cello-nginx: proxy to access operator dashboard service, listen on 8080
 #  cello-operator-dashboard: dashboard service for operators

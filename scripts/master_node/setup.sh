@@ -47,7 +47,7 @@ get_distribution() {
 
 USER=`whoami`
 DISTRO=$(get_distribution)
-DB_DIR=/opt/${PROJECT}/mongo
+DB_DIR=/opt/${PROJECT}/postgres
 
 echo_b "user: ${USER}, distro: ${DISTRO}, db_dir: ${DB_DIR}"
 echo_b "It is recommended to use Ubuntu 18.04 OS."
@@ -128,7 +128,7 @@ fi
 echo_b "Download required Docker images for Cello Services..."
 bash ./download_images.sh
 
-echo_b "Checking local storage path ${DB_DIR}, which will be mounted to Workers later..."
+echo_b "Checking local storage path ${DB_DIR}, which will be mounted to API engine service later..."
 [ ! -d ${DB_DIR} ] \
 	&& echo_r "Local database path ${DB_DIR} not existed, creating one" \
 	&& sudo mkdir -p ${DB_DIR} \

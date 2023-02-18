@@ -5,12 +5,23 @@
 #
 # -------------------------------------------------------------
 # This makefile defines the following targets, feel free to run "make help" to see help info
-#
-#   - clean:          Cleans the build area
-#   - dockerhub-pull: Pulling service images from dockerhub
-#   - reset:          Clean up and remove local storage (only use for development)
+# 	- all (default): Builds all targets and runs all tests/checks
+#   - license:		  Checks sourrce files for Apache license header
+#   - check:          Setup as master node, and runs all tests/checks, will be triggered by CI
+#   - help:           Output the help instructions for each command
+#   - doc:       	  Start a local web service to explore the documentation
+#   - docker[-clean]: Build/clean docker images locally
 #   - start:          Start the cello service
 #   - stop:           Stop the cello service, and remove all service containers
+#   - restart:        Stop the cello service and then start
+#   - setup-master:   Setup the host as a master node, install pkg and download docker images
+#   - setup-worker:   Setup the host as a worker node, install pkg and download docker images
+#   - clean:          Cleans the docker containers.
+#   - deep-clean: 	  Clean up all docker images and local storage.
+#   - docker-compose: Start development docker-compose.
+#   - local: 		  Run all services ad-hoc
+#   - reset:          Clean up and remove local storage (only use for development)
+
 
 GREEN  := $(shell tput -Txterm setaf 2)
 WHITE  := $(shell tput -Txterm setaf 7)
@@ -99,9 +110,21 @@ else
 	export DEBUG?=True
 endif
 
-docker-clean: stop image-clean ##@Clean all existing images
+HELP_FUN = \
+	%help; \
+	while(<>) { push @{$$help{$$2 // 'options'}}, [$$1, $$3] if /^([a-zA-Z\-]+)\s*:.*\#\#(?:@([a-zA-Z\-]+))?\s(.*)$$/ }; \
+	print "usage: make [target]\n\n"; \
+	for (sort keys %help) { \
+		print "${WHITE}$$_:${RESET}\n"; \
+		for (@{$$help{$$_}}) { \
+			$$sep = " " x (32 - length $$_->[0]); \
+			print "  ${YELLOW}$$_->[0]${RESET}$$sep${GREEN}$$_->[1]${RESET}\n"; \
+	}; \
+	print "\n"; }
 
-license:
+all: check
+
+license:  ##@Code Check source files for Apache license header
 	scripts/check_license.sh
 
 check: ##@Code Check code format
@@ -115,49 +138,21 @@ check: ##@Code Check code format
 	MODE=dev make stop
 	make check-dashboard
 
-check-dashboard:
-	docker compose -f tests/dashboard/docker-compose.yml up --abort-on-container-exit || (echo "check dashboard failed $$?"; exit 1)
+doc: ##@Documentation Build local online documentation and start serve
+	command -v mkdocs >/dev/null 2>&1 || pip install -r docs/requirements.txt || pip3 -r docs/requirements.txt
+	mkdocs serve -f mkdocs.yml
 
-clean:
-	make remove-docker-compose
+help: ##@Help Show this help.
+	@perl -e '$(HELP_FUN)' $(MAKEFILE_LIST)
 
-deep-clean:
-	make clean
-	make remove-hyperledger-fabric-containers
-	make image-clean
-	rm -rf $(LOCAL_STORAGE_PATH)
-
-image-clean: clean ##@Clean all existing images to rebuild
-	echo "Clean all cello related images, may need to remove all containers before"
-	docker images | grep "cello-" | awk '{print $3}' | xargs docker rmi -f
-
-start-docker-compose:
-	docker compose -f bootup/docker-compose-files/${COMPOSE_FILE} up -d --force-recreate --remove-orphans
+docker: images ##@Build Build all required docker images locally
+	
+docker-clean:##@Clean Clean docker images locally  
+	make stop
+	make clean-images
 
 start: ##@Service Start service
 	make start-docker-compose
-	
-stop-docker-compose:
-	echo "Stop all services with bootup/docker-compose-files/${COMPOSE_FILE}..."
-	docker compose -f bootup/docker-compose-files/${COMPOSE_FILE} stop
-	echo "Stop all services successfully"
-
-remove-docker-compose:
-	make stop-docker-compose
-	echo "Remove all services with bootup/docker-compose-files/${COMPOSE_FILE}..."
-	if docker ps -a | grep "cello-"; then \
-		docker ps -a | grep "cello-" | awk '{print $1}' | xargs docker rm -f >/dev/null 2>&1; \
-		rm -rf /opt/cello; \
-	fi
-	echo "Remove all services successfully"
-
-remove-hyperledger-fabric-containers:
-	echo "Remove all nodes ..."
-	if docker ps -a | grep "hyperledger-fabric"; then \
-		docker ps -a | grep "hyperledger-fabric" | awk '{print $1}' | xargs docker rm -f >/dev/null 2>&1; \
-		rm -rf /opt/hyperledger; \
-	fi
-	echo "Remove all nodes successfully"
 
 stop: ##@Service Stop service
 	if [ "$(CONFIG_DOCKER_COMPOSE_DEPLOY)" = "y" ]; then \
@@ -166,39 +161,91 @@ stop: ##@Service Stop service
 		make stop-k8s; \
 	fi
 
-restart: stop start ##@Service Restart service
+restart: stop start ##@Service Restart services
 
-api-engine: # for debug only now
-	docker build -t hyperledger/cello-api-engine:latest -f build_image/docker/common/api-engine/Dockerfile.in ./ --platform linux/$(ARCH); \
+setup-master: ##@Environment Setup dependency for master node
+	cd scripts/master_node && bash setup.sh
+
+setup-worker: ##@Environment Setup dependency for worker node
+	cd scripts/worker_node && bash setup.sh $(WORKER_TYPE)
+
+clean: ##@Clean Stop services and clean docker containers.
+	make stop
+	if docker ps -a | grep "cello-"; then \
+		docker ps -a | grep "cello-" | awk '{print $1}' | xargs docker rm -f >/dev/null 2>&1; \
+	fi
+
+deep-clean: ##@Clean Stop services, clean docker images and remove mounted local storage.
+	make stop
+	make clean
+	make clean-docker-images
+	rm -rf $(LOCAL_STORAGE_PATH)
+
+docker-compose:##@Development Start development docker-compose
+	api-engine fabric docker-rest-agent dashboard
+
+reset:##@Development clean up and remove local storage (only use for development)
+	make clean 
+	echo "Clean up and remove all local storage..."
+	rm -rf ${LOCAL_STORAGE_PATH}/*
+
+local:##@Development Run all services ad-hoc
+	make docker-compose start-docker-compose 
+
+## Help rules
+clean-images: 
+	make clean
+	echo "Clean all cello related images, may need to remove all containers before"
+	docker images | grep "cello-" | awk '{print $3}' | xargs docker rmi -f
+
+check-dashboard:
+	docker compose -f tests/dashboard/docker-compose.yml up --abort-on-container-exit || (echo "check dashboard failed $$?"; exit 1)
+
+start-docker-compose:
+	docker compose -f bootup/docker-compose-files/${COMPOSE_FILE} up -d --force-recreate --remove-orphans
+
+stop-docker-compose:
+	echo "Stop all services with bootup/docker-compose-files/${COMPOSE_FILE}..."
+	docker compose -f bootup/docker-compose-files/${COMPOSE_FILE} stop
+	echo "Stop all services successfully"
+
+images: api-engine docker-rest-agent fabric dashboard
+
+api-engine: 
+	docker build -t hyperledger/cello-api-engine:latest -f build_image/docker/common/api-engine/Dockerfile.in ./ --platform linux/$(ARCH)
 	
-docker-rest-agent: # for debug only now
-	docker build -t hyperledger/cello-agent-docker:latest -f build_image/docker/agent/docker-rest-agent/Dockerfile.in ./ --build-arg pip=$(PIP) --platform linux/$(ARCH); \
+docker-rest-agent:
+	docker build -t hyperledger/cello-agent-docker:latest -f build_image/docker/agent/docker-rest-agent/Dockerfile.in ./ --build-arg pip=$(PIP) --platform linux/$(ARCH)
 
 fabric:
 	docker image pull yeasy/hyperledger-fabric:2.2.0
 
-dashboard: # for debug only now
+dashboard:
 	docker build -t hyperledger/cello-dashboard:latest -f build_image/docker/common/dashboard/Dockerfile.in ./
 
-docker-compose: api-engine fabric docker-rest-agent dashboard
 
-local: docker-compose start-docker-compose 
 
 
 .PHONY: \
-	deep-clean \
-	docker-clean \
+	all \
 	license \
-	stop-docker-compose \
-	remove-docker-compose \
-	remove-hyperledger-fabric-containers \
-	restart \
+	check \
+	doc \ 
+	help \
+	docker \
+	docker-clean \
 	start \
+	stop \
+	restart \
+	clean \
+	deep-clean \
 	api-engine \
 	fabric \
-	docker-rest-agent \
 	dashboard \
 	docker-compose \
+	reset \
 	local \
-	check \ 
-	check-dashboard \
+	clean-images \
+	start-docker-compose \
+	stop-docker-compose \
+	images \
