@@ -184,7 +184,7 @@ deep-clean: ##@Clean Stop services, clean docker images and remove mounted local
 docker-compose: api-engine fabric docker-rest-agent dashboard ##@Development Start development docker-compose
 	
 
-reset:##@Development clean up and remove local storage (only use for development)
+reset:##@Development Clean up and remove local storage (only use for development)
 	make clean 
 	echo "Clean up and remove all local storage..."
 	rm -rf ${LOCAL_STORAGE_PATH}/*
