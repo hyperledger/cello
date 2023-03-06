@@ -36,13 +36,15 @@ Environmental preparation:
 
 If environment is prepared, then we can start cello service.
 
-- Start service locally
+- Run Services
+
+* Start service locally
 
   ```bash
   $ make local
   ```
 
-- Optional: Build essential images for cello service (the docker hub image auto build haven't ready, in the future you can ignore this step.)
+* Optional: Build essential images for cello service (the docker hub image auto build haven't ready, in the future you can ignore this step.)
 
   - Build docker images
     ```bash
@@ -54,7 +56,7 @@ If environment is prepared, then we can start cello service.
     $ make start
     ```
 
-- After service started up, if use docker-compose method, you can see output:
+* After service started up, if use docker-compose method, you can see output:
 
   ```bash
   CONTAINER ID   IMAGE                            COMMAND                  CREATED         STATUS         PORTS                                                                                  NAMES
@@ -64,33 +66,36 @@ If environment is prepared, then we can start cello service.
   a272a06d8280   hyperledger/cello-dashboard      "bash -c 'nginx -g '…"   4 seconds ago   Up 2 seconds   80/tcp, 0.0.0.0:8081->8081/tcp, :::8081->8081/tcp                                      cello-dashboard
   ```
 
-- Stop cello service.<!---, same as start, need set the `DEPLOY_METHOD` variable.-->
+* Stop cello service.<!---, same as start, need set the `DEPLOY_METHOD` variable.-->
 
   ```bash
   $ make stop
   ```
 
-- Clean all containers
+* Clean all containers
 
   ```bash
   $ make clean
   ```
 
-- Check available make rules
+* Check available make rules
 
   ```bash
   $ make help
   ```
 
-- Visit Cello dashboard at `localhost:8081`
+* Visit Cello dashboard at `localhost:8081`
 
 - Check [troubleshoot](https://github.com/hyperledger/cello/blob/main/docs/setup/server.md#3-troubleshoot) section if you get any question.
 
 ## Main Features
 
 - Manage the lifecycle of blockchains, e.g., create/start/stop/delete/keep health automatically.
+
 - Support customized (e.g., size, consensus) blockchains request, currently we mainly support [Hyperledger fabric](https://github.com/hyperledger/fabric).
+
 - Support native Docker host, swarm or Kubernetes as the worker nodes. More supports on the way.
+
 - Support heterogeneous architecture, e.g., X86, POWER and Z, from bare-metal servers to virtual machines.
 - Extend with monitor, log, health and analytics features by employing additional components.
 
