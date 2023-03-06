@@ -10,9 +10,9 @@ Api engine supply the core function, all operations through the api service.
 
 Host path mappings:
 
-- /opt/cello/api-engine/media:/var/www/media {>>store all media files<<}
-- /var/run/docker.sock:/var/run/docker.sock {>>Used for agent containers launch, which will deploy fabric, eg. network<<}
-- (==optional==) $ROOT_PATH/src/api-engine:/var/www/server {>>When run in debug mode, MODE=dev, will mapping the source code into container, ROOT_PATH is the source code path.<<}
+* /opt/cello/api-engine/media:/var/www/media {>>store all media files<<}
+* /var/run/docker.sock:/var/run/docker.sock {>>Used for agent containers launch, which will deploy fabric, eg. network<<}
+* (==optional==) $ROOT_PATH/src/api-engine:/var/www/server {>>When run in debug mode, MODE=dev, will mapping the source code into container, ROOT_PATH is the source code path.<<}
 
 #### 1.1.2 API Engine Tasks
 
@@ -26,7 +26,7 @@ Store all the data in postgres database, and the storage path is mapping out on 
 
 Host path mappings:
 
-- /opt/cello/postgres:/var/lib/postgresql/data {>>Store all db data.<<}
+* /opt/cello/postgres:/var/lib/postgresql/data {>>Store all db data.<<}
 
 #### 1.1.4 Redis
 
