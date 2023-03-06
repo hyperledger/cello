@@ -125,8 +125,10 @@ if [ `sudo docker ps -qa|wc -l` -gt 0 ]; then
 	docker ps -a
 fi
 
-echo_b "Download required Docker images for Cello Services..."
-bash ./download_images.sh
+# echo_b "Download required Docker images for Cello Services..."
+# bash ./download_images.sh
+echo_b "Build required Docker images for Cello Services..."
+bash ./build_images.sh
 
 echo_b "Checking local storage path ${DB_DIR}, which will be mounted to API engine service later..."
 [ ! -d ${DB_DIR} ] \

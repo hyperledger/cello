@@ -6,22 +6,21 @@
 # -------------------------------------------------------------
 # This makefile defines the following targets, feel free to run "make help" to see help info
 # 	- all (default): Builds all targets and runs all tests/checks
-#   - license:		  Checks sourrce files for Apache license header
+#   - clean:          Cleans the docker containers.
 #   - check:          Setup as master node, and runs all tests/checks, will be triggered by CI
-#   - help:           Output the help instructions for each command
+#   - deep-clean: 	  Clean up all docker images and local storage.
 #   - doc:       	  Start a local web service to explore the documentation
 #   - docker[-clean]: Build/clean docker images locally
-#   - start:          Start the cello service
-#   - stop:           Stop the cello service, and remove all service containers
+#   - docker-compose: Start development docker-compose.
+#   - license:		  Checks sourrce files for Apache license header
+#   - local: 		  Run all services ad-hoc
+#   - help:           Output the help instructions for each command
+#   - reset:          Clean up and remove local storage (only use for development)
 #   - restart:        Stop the cello service and then start
 #   - setup-master:   Setup the host as a master node, install pkg and download docker images
 #   - setup-worker:   Setup the host as a worker node, install pkg and download docker images
-#   - clean:          Cleans the docker containers.
-#   - deep-clean: 	  Clean up all docker images and local storage.
-#   - docker-compose: Start development docker-compose.
-#   - local: 		  Run all services ad-hoc
-#   - reset:          Clean up and remove local storage (only use for development)
-
+#   - start:          Start the cello service
+#   - stop:           Stop the cello service, and remove all service containers
 
 GREEN  := $(shell tput -Txterm setaf 2)
 WHITE  := $(shell tput -Txterm setaf 7)
