@@ -6,7 +6,7 @@
 # -------------------------------------------------------------
 # This makefile defines the following targets, feel free to run "make help" to see help info
 #
-# 	- all (default):  Builds all targets and runs all tests/checks
+#   - all (default):  Builds all targets and runs all tests/checks
 #   - clean:          Cleans the docker containers.
 #   - check:          Setup as master node, and runs all tests/checks, will be triggered by CI
 #   - deep-clean: 	  Clean up all docker images and local storage.
