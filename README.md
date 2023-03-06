@@ -15,10 +15,10 @@ Hyperledger Cello is a blockchain provision and operation system, which helps ma
 
 Using Cello, everyone can easily:
 
-- Build up a Blockchain as a Service (BaaS) platform quickly from scratch.
-- Provision customizable Blockchains instantly, e.g., a Hyperledger fabric network v1.0.
-- Maintain a pool of running blockchain networks on top of baremetals, Virtual Clouds (e.g., virtual machines, vsphere Clouds), Container clusters (e.g., Docker, Swarm, Kubernetes).
-- Check the system status, adjust the chain numbers, scale resources... through dashboards.
+* Build up a Blockchain as a Service (BaaS) platform quickly from scratch.
+* Provision customizable Blockchains instantly, e.g., a Hyperledger fabric network v1.0.
+* Maintain a pool of running blockchain networks on top of baremetals, Virtual Clouds (e.g., virtual machines, vsphere Clouds), Container clusters (e.g., Docker, Swarm, Kubernetes).
+* Check the system status, adjust the chain numbers, scale resources... through dashboards.
 
 A typical usage scenario is illustrated as:
 
@@ -36,8 +36,6 @@ Environmental preparation:
 
 If environment is prepared, then we can start cello service.
 
-- Run Services
-
 * Start service locally
 
   ```bash
@@ -46,11 +44,11 @@ If environment is prepared, then we can start cello service.
 
 * Optional: Build essential images for cello service (the docker hub image auto build haven't ready, in the future you can ignore this step.)
 
-  - Build docker images
+  * Build docker images
     ```bash
     $ make docker
     ```
-  - Then run services locally then
+  * Then run services locally then
 
     ```bash
     $ make start
@@ -86,18 +84,19 @@ If environment is prepared, then we can start cello service.
 
 * Visit Cello dashboard at `localhost:8081`
 
-- Check [troubleshoot](https://github.com/hyperledger/cello/blob/main/docs/setup/server.md#3-troubleshoot) section if you get any question.
+* Check [troubleshoot](https://github.com/hyperledger/cello/blob/main/docs/setup/server.md#3-troubleshoot) section if you get any question.
 
 ## Main Features
 
-- Manage the lifecycle of blockchains, e.g., create/start/stop/delete/keep health automatically.
+* Manage the lifecycle of blockchains, e.g., create/start/stop/delete/keep health automatically.
 
-- Support customized (e.g., size, consensus) blockchains request, currently we mainly support [Hyperledger fabric](https://github.com/hyperledger/fabric).
+* Support customized (e.g., size, consensus) blockchains request, currently we mainly support [Hyperledger fabric](https://github.com/hyperledger/fabric).
 
-- Support native Docker host, swarm or Kubernetes as the worker nodes. More supports on the way.
+* Support native Docker host, swarm or Kubernetes as the worker nodes. More supports on the way.
 
-- Support heterogeneous architecture, e.g., X86, POWER and Z, from bare-metal servers to virtual machines.
-- Extend with monitor, log, health and analytics features by employing additional components.
+* Support heterogeneous architecture, e.g., X86, POWER and Z, from bare-metal servers to virtual machines.
+
+* Extend with monitor, log, health and analytics features by employing additional components.
 
 ## Documentation, Getting Started and Develop Guideline
 
@@ -118,14 +117,14 @@ This project is a Hyperledger project in _Incubation_. It was proposed to the co
 These guiding principles are very important to the maintainers and therefore
 we respectfully ask all contributors to abide by them as well:
 
-- Consider that users who will read the docs are from different backgrounds and
+* Consider that users who will read the docs are from different backgrounds and
   cultures and that they have different preferences.
-- Avoid potential offensive terms and, for instance, prefer "allow list and
+* Avoid potential offensive terms and, for instance, prefer "allow list and
   deny list" to "white list and black list".
-- We believe that we all have a role to play to improve our world, and even if
+* We believe that we all have a role to play to improve our world, and even if
   writing inclusive documentation might not look like a huge improvement, it's a
   first step in the right direction.
-- We suggest to refer to
+* We suggest to refer to
   [Microsoft bias free writing guidelines](https://docs.microsoft.com/en-us/style-guide/bias-free-communication)
   and
   [Google inclusive doc writing guide](https://developers.google.com/style/inclusive-documentation)
