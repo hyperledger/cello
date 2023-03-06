@@ -123,8 +123,11 @@ HELP_FUN = \
 
 all: check
 
-license:  ##@Code Check source files for Apache license header
-	scripts/check_license.sh
+clean: ##@Clean Stop services and clean docker containers.
+	make stop
+	if docker ps -a | grep "cello-"; then \
+		docker ps -a | grep "cello-" | awk '{print $1}' | xargs docker rm -f >/dev/null 2>&1; \
+	fi
 
 check: ##@Code Check code format
 	@$(MAKE) license
@@ -137,18 +140,45 @@ check: ##@Code Check code format
 	MODE=dev make stop
 	make check-dashboard
 
+deep-clean: ##@Clean Stop services, clean docker images and remove mounted local storage.
+	make stop
+	make clean
+	make clean-docker-images
+	rm -rf $(LOCAL_STORAGE_PATH)
+
 doc: ##@Documentation Build local online documentation and start serve
 	command -v mkdocs >/dev/null 2>&1 || pip install -r docs/requirements.txt || pip3 -r docs/requirements.txt
 	mkdocs serve -f mkdocs.yml
 
-help: ##@Help Show this help.
-	@perl -e '$(HELP_FUN)' $(MAKEFILE_LIST)
-
 docker: images ##@Build Build all required docker images locally
-	
+
 docker-clean:##@Clean Clean docker images locally  
 	make stop
 	make clean-images
+
+docker-compose: api-engine fabric docker-rest-agent dashboard ##@Development Start development docker-compose
+
+license:  ##@Code Check source files for Apache license header
+	scripts/check_license.sh
+
+local:##@Development Run all services ad-hoc
+	make docker-compose start-docker-compose 
+
+help: ##@Help Show this help.
+	@perl -e '$(HELP_FUN)' $(MAKEFILE_LIST)
+
+reset:##@Development Clean up and remove local storage (only use for development)
+	make clean 
+	echo "Clean up and remove all local storage..."
+	rm -rf ${LOCAL_STORAGE_PATH}/*
+
+restart: stop start ##@Service Restart services
+
+setup-master: ##@Environment Setup dependency for master node
+	cd scripts/master_node && bash setup.sh
+
+setup-worker: ##@Environment Setup dependency for worker node
+	cd scripts/worker_node && bash setup.sh $(WORKER_TYPE)
 
 start: ##@Service Start service
 	make start-docker-compose
@@ -159,37 +189,6 @@ stop: ##@Service Stop service
 	else \
 		make stop-k8s; \
 	fi
-
-restart: stop start ##@Service Restart services
-
-setup-master: ##@Environment Setup dependency for master node
-	cd scripts/master_node && bash setup.sh
-
-setup-worker: ##@Environment Setup dependency for worker node
-	cd scripts/worker_node && bash setup.sh $(WORKER_TYPE)
-
-clean: ##@Clean Stop services and clean docker containers.
-	make stop
-	if docker ps -a | grep "cello-"; then \
-		docker ps -a | grep "cello-" | awk '{print $1}' | xargs docker rm -f >/dev/null 2>&1; \
-	fi
-
-deep-clean: ##@Clean Stop services, clean docker images and remove mounted local storage.
-	make stop
-	make clean
-	make clean-docker-images
-	rm -rf $(LOCAL_STORAGE_PATH)
-
-docker-compose: api-engine fabric docker-rest-agent dashboard ##@Development Start development docker-compose
-	
-
-reset:##@Development Clean up and remove local storage (only use for development)
-	make clean 
-	echo "Clean up and remove all local storage..."
-	rm -rf ${LOCAL_STORAGE_PATH}/*
-
-local:##@Development Run all services ad-hoc
-	make docker-compose start-docker-compose 
 
 ## Help rules
 clean-images: 
