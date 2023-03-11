@@ -46,15 +46,15 @@ for IMG in dashboard nginx api-engine; do
 done
 
 # We now use official images instead of customized one
-docker pull mongo:3.4.10
+# docker pull mongo:3.4.10
 
 # NFS service
-docker pull itsthenetwork/nfs-server-alpine:9
+# docker pull itsthenetwork/nfs-server-alpine:9
 
 # Database server
-docker pull mariadb:10.3.10
+# docker pull mariadb:10.3.10
 
 # Keycloak is help access the database
-docker pull jboss/keycloak:4.5.0.Final
+# docker pull jboss/keycloak:4.5.0.Final
 
 echo_g "All Image downloaded "
