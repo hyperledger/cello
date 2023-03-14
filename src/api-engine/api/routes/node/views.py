@@ -563,11 +563,32 @@ class NodeViewSet(viewsets.ViewSet):
                         type="orderer", organization__network=node.organization.network).count()
                     if orderer_cnt == 1:
                         raise ResourceInUse
-                if agent_exist:
-                    agent.stop()
-                    res = True if agent.delete() else False
-                else:
+                # if agent not exist or no continer is created for node, do not try to stop/delete container
+                if not agent_exist or not node.cid:
                     res = True
+                else:
+                    # try to stop/delete container 3 times
+                    for i in range(3):
+                        try:
+                            response = agent.stop()
+                            if response != True:
+                                res = False
+                                LOG.info("Retry to stop/delete container %d time(s).", i + 1)
+                                LOG.error("Exception when agent stops/deletes container: %s", e)
+                                continue
+                            response = agent.delete()
+                            if response != True:
+                                res = False
+                                LOG.info("Retry to stop/delete container %d time(s).", i + 1)
+                                LOG.error("Exception when agent stops/deletes container: %s", e)
+                                continue
+                            res = True
+                        except Exception as e:
+                            res = False
+                            LOG.info("Retry to stop/delete container %d time(s).", i + 1)
+                            LOG.error("Exception when agent stops/deletes container: %s", e)
+                            continue
+                        break
                 if res:
                     fabric_path = "{}/{}".format(FABRIC_NODE,
                                                  infos["container_name"])
