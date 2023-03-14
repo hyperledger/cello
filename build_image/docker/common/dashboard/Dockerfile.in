@@ -1,4 +1,4 @@
-FROM node:14.13.1
+FROM node:14.17
 
 WORKDIR /usr/src/app/
 USER root
