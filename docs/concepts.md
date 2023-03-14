@@ -17,7 +17,8 @@ Host path mappings:
 #### 1.1.2 API Engine Tasks
 
 This component run all the async longtime task for api engine, it's receive tasks through redis, and can dynamic set the thread pool.
-    ```
+
+```
 
 #### 1.1.3 Postgres
 
@@ -41,8 +42,9 @@ Host path mappings:
 
 ### 2.1 [Kubernetes](agents/kubernetes.md)
 
-### 2.2 [Ansible](agents/ansible.md)
+### 2.2 [Fabric Operator](agents/fabric-operator.md)
 
 [^1]: running containers of cello master service
 
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
+```
