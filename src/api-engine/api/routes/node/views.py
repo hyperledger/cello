@@ -568,6 +568,7 @@ class NodeViewSet(viewsets.ViewSet):
                     res = True
                 else:
                     # try to stop/delete container 3 times
+                    # TODO: optimize the retry logic
                     for i in range(3):
                         try:
                             response = agent.stop()
