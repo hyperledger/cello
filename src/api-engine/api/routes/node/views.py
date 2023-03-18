@@ -555,6 +555,7 @@ class NodeViewSet(viewsets.ViewSet):
                 node = Node.objects.get(id=pk)
                 infos = self._agent_params(pk)
                 agent = AgentHandler(infos)
+                agent_exist = agent.get()
                 node.status = "removing"
                 node.save()
                 if node.type == "orderer":
@@ -562,8 +563,29 @@ class NodeViewSet(viewsets.ViewSet):
                         type="orderer", organization__network=node.organization.network).count()
                     if orderer_cnt == 1:
                         raise ResourceInUse
-                agent.stop()
-                res = True if agent.delete() else False
+                res = False
+                # if agent not exist or no continer is created for node, do not try to stop/delete container
+                if not agent_exist or not node.cid:
+                    res = True
+                else:
+                    # try to stop/delete container 3 times
+                    # TODO: optimize the retry logic
+                    for i in range(3):
+                        LOG.info("Retry to stop/delete container %d time(s).", i + 1)
+                        try:
+                            response = agent.stop()
+                            if response != True:
+                                LOG.error("Failed when agent stops/deletes container: %s", response)
+                                continue
+                            response = agent.delete()
+                            if response != True:
+                                LOG.error("Failed when agent stops/deletes container: %s", response)
+                                continue
+                            res = True
+                        except Exception as e:
+                            LOG.error("Exception when agent stops/deletes container: %s", e)
+                            continue
+                        break
                 if res:
                     fabric_path = "{}/{}".format(FABRIC_NODE,
                                                  infos["container_name"])

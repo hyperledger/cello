@@ -66,3 +66,9 @@ class AgentHandler(object):
         self._agent.update_config(config_file, node_type)
 
         return True
+
+    def get(self):
+        try:
+            return self._agent.get()
+        except Exception as e:
+            return False
