@@ -211,7 +211,11 @@ stop-docker-compose:
 images: api-engine docker-rest-agent fabric dashboard
 
 api-engine: 
-	docker build -t hyperledger/cello-api-engine:latest -f build_image/docker/common/api-engine/Dockerfile.in ./ --platform linux/$(ARCH)
+	if [ "$(ARCH)" = "arm64" ]; then \
+		docker build -t hyperledger/cello-api-engine:latest -f build_image/docker/common/api-engine/Dockerfile.in ./ --platform linux/amd64; \
+	else \
+		docker build -t hyperledger/cello-api-engine:latest -f build_image/docker/common/api-engine/Dockerfile.in ./ --platform linux/$(ARCH); \
+	fi
 	
 docker-rest-agent:
 	docker build -t hyperledger/cello-agent-docker:latest -f build_image/docker/agent/docker-rest-agent/Dockerfile.in ./ --build-arg pip=$(PIP) --platform linux/$(ARCH)
