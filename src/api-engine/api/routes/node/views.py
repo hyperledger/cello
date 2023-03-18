@@ -563,6 +563,7 @@ class NodeViewSet(viewsets.ViewSet):
                         type="orderer", organization__network=node.organization.network).count()
                     if orderer_cnt == 1:
                         raise ResourceInUse
+                res = False
                 # if agent not exist or no continer is created for node, do not try to stop/delete container
                 if not agent_exist or not node.cid:
                     res = True
@@ -570,23 +571,18 @@ class NodeViewSet(viewsets.ViewSet):
                     # try to stop/delete container 3 times
                     # TODO: optimize the retry logic
                     for i in range(3):
+                        LOG.info("Retry to stop/delete container %d time(s).", i + 1)
                         try:
                             response = agent.stop()
                             if response != True:
-                                res = False
-                                LOG.info("Retry to stop/delete container %d time(s).", i + 1)
-                                LOG.error("Exception when agent stops/deletes container: %s", response)
+                                LOG.error("Failed when agent stops/deletes container: %s", response)
                                 continue
                             response = agent.delete()
                             if response != True:
-                                res = False
-                                LOG.info("Retry to stop/delete container %d time(s).", i + 1)
-                                LOG.error("Exception when agent stops/deletes container: %s", response)
+                                LOG.error("Failed when agent stops/deletes container: %s", response)
                                 continue
                             res = True
                         except Exception as e:
-                            res = False
-                            LOG.info("Retry to stop/delete container %d time(s).", i + 1)
                             LOG.error("Exception when agent stops/deletes container: %s", e)
                             continue
                         break
