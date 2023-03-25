@@ -29,6 +29,11 @@ YELLOW := $(shell tput -Txterm setaf 3)
 RESET  := $(shell tput -Txterm sgr0)
 ARCH   := $(shell uname -m)
 
+# set the arm64 ARCH to amd64 for compatibility reason
+ifeq ($(ARCH), arm64)
+    ARCH := amd64
+endif
+
 #Set the source of PIP in docker agent image
 PIP=pip.conf.bak
 
@@ -46,6 +51,7 @@ DOCKER_BASE_x86_64=python:3.6
 DOCKER_BASE_ppc64le=ppc64le/python:3.6
 DOCKER_BASE_s390x=s390x/python:3.6
 DOCKER_BASE_arm64=python:3.6
+DOCKER_BASE_amd64=python:3.6
 DOCKER_BASE=$(DOCKER_BASE_$(ARCH))
 BASE_VERSION ?= $(ARCH)-$(VERSION)
 
