@@ -1,4 +1,4 @@
-FROM nginx:1.15.7
+FROM nginx:1.24.0
 
 RUN apt-get update && apt-get install -y wget && \
 	apt-get autoclean && apt-get clean && apt-get autoremove && rm -rf /var/cache/apt/
