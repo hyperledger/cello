@@ -141,5 +141,8 @@
     "src/**/*.less",
     "config/**/*.js*",
     "scripts/**/*.js"
-  ]
+  ],
+  "resolutions": {
+    "mockjs/commander": "^8.2.0"
+  }
 }
