@@ -574,11 +574,11 @@ class NodeViewSet(viewsets.ViewSet):
                         LOG.info("Retry to stop/delete container %d time(s).", i + 1)
                         try:
                             response = agent.stop()
-                            if response != True:
+                            if response is not True:
                                 LOG.error("Failed when agent stops/deletes container: %s", response)
                                 continue
                             response = agent.delete()
-                            if response != True:
+                            if response is not True:
                                 LOG.error("Failed when agent stops/deletes container: %s", response)
                                 continue
                             res = True
