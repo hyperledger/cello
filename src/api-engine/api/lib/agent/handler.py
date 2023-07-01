@@ -71,4 +71,5 @@ class AgentHandler(object):
         try:
             return self._agent.get()
         except Exception as e:
+            LOG.error(e)
             return False
