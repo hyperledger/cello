@@ -1,7 +1,7 @@
 version: '3.2'
 services:
   test-dashboard:
-    image: node:12.6.0-slim
+    image: node:14.17
     volumes:
       - $ROOT_PATH/src/dashboard:/dashboard
     working_dir: /dashboard
