@@ -36,6 +36,13 @@ Environmental preparation:
 
 If environment is prepared, then we can start cello service.
 
+* Set local storage environment variable, e.g. Use current path as storage path
+
+  ```bash
+  $  export CELLO_PATH=$(pwd)/opt/cello  
+  ```
+
+
 * Start service locally
 
   ```bash
