@@ -245,4 +245,4 @@ src/dashboard/lambda/mock/index.js
 .config.old
 
 # Cello local storage
-/opt/cello
+/opt

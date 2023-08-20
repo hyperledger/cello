@@ -2,7 +2,7 @@ import os
 from api.config import FABRIC_CFG
 
 
-class BasicEnv:
+class Command:
     def __init__(self, version, **kwargs):
         self.version = version
         # Setting environment variables according to user input. Recommended main settings: CORE_PEER_LOCALMSPID、

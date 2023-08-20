@@ -4,11 +4,11 @@
 import os
 import json
 import subprocess
-from api.lib.peer.basicEnv import BasicEnv
+from api.lib.peer.command import Command
 from api.config import FABRIC_TOOL, FABRIC_CFG
 
 
-class ChainCode(BasicEnv):
+class ChainCode(Command):
     def __init__(self, version="2.2.0", peer=FABRIC_TOOL, **kwargs):
         self.peer = peer + "/peer"
         super(ChainCode, self).__init__(version, **kwargs)
@@ -39,7 +39,8 @@ class ChainCode(BasicEnv):
         :return: 0 means success.
         """
         try:
-            res = os.system("{} lifecycle chaincode install {}".format(self.peer, cc_targz))
+            res = os.system(
+                "{} lifecycle chaincode install {}".format(self.peer, cc_targz))
             res = res >> 8
         except Exception as e:
             err_msg = "install chaincode failed for {}!".format(e)
@@ -158,7 +159,8 @@ class ChainCode(BasicEnv):
 
         try:
             res = subprocess.Popen("{} lifecycle chaincode queryapproved --output json --channelID {}"
-                                   " --name {}".format(self.peer, channel_name, cc_name),
+                                   " --name {}".format(self.peer,
+                                                       channel_name, cc_name),
                                    shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             stdout, stderr = res.communicate()
             return_code = res.returncode
@@ -220,7 +222,8 @@ class ChainCode(BasicEnv):
                     stderr = str(stderr, encoding="utf-8")
                     return return_code, stderr
         except Exception as e:
-            err_msg = "lifecycle_check_commit_readiness failed for {}!".format(e)
+            err_msg = "lifecycle_check_commit_readiness failed for {}!".format(
+                e)
             raise Exception(err_msg)
 
     def lifecycle_commit(self, orderer_url, orderer_tls_rootcert, channel_name, cc_name, chaincode_version,
@@ -279,7 +282,8 @@ class ChainCode(BasicEnv):
         """
         try:
             res = subprocess.Popen("{} lifecycle chaincode querycommitted --channelID {} "
-                                   "--output json --name {}".format(self.peer, channel_name, cc_name),
+                                   "--output json --name {}".format(
+                                       self.peer, channel_name, cc_name),
                                    shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             stdout, stderr = res.communicate()
             return_code = res.returncode
