@@ -14,9 +14,9 @@ if [[ "$RUN_MODE" == "server" ]]; then
   python manage.py create_user \
     --username ${ADMIN_USERNAME:-admin} \
     --password ${ADMIN_PASSWORD:-pass} \
-    --email ${ADMIN_EMAIL:-admin@cello} \
+    --email ${ADMIN_EMAIL:-admin@cello.com} \
     --is_superuser \
-    --role operator
+    --role admin
   if [[ "$DEBUG" == "True" ]]; then # For dev, use pure Django directly
     python manage.py runserver 0.0.0.0:8080;
   else # For production, use uwsgi in front
