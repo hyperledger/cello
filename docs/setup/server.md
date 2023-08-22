@@ -65,7 +65,22 @@ As Docker Compose V1 will reach its [end of life](https://www.docker.com/blog/an
       $ sudo mkdir /opt/cello
       
       # Then go to Docker Desktop -> Preferences... -> Resources -> File Sharing
-      # Add the path /opt/cello into the File Sharing list, apply the change and restrt Docker Desktop
+      # Add the path /opt/cello into the File Sharing list, apply the change and restart Docker Desktop
+      ```
+
+  * Operation not permitted when using Docker Desktop
+    * Error message:
+      ```bash
+      Error response from daemon: 
+      error while creating mount source path '/opt/cello/pgdata': mkdir /opt/cello/pgdata: permission denied
+      make: *** [start-docker-compose] Error 1
+      ```
+    * Solution:
+      ```bash
+      $ sudo chmod -R 777 /opt/cello
+      
+      # Then go to Docker Desktop -> Preferences... -> General -> Choose file sharing implementation for your containers
+      # Choose osxfs, apply the change and restart Docker Desktop
       ```
 
 ### 3.2 Unable to register
