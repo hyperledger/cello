@@ -1,6 +1,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
+
 from .serializers import (
     LoginBody,
     LoginSuccessBody,
@@ -10,6 +11,7 @@ from api.config import CELLO_HOME
 from api.common import ok, err
 from api.utils import zip_dir
 from api.lib.pki import CryptoGen, CryptoConfig
+
 from api.routes.general.serializers import (
     RegisterBody,
     RegisterResponse,
@@ -31,7 +33,9 @@ from rest_framework_simplejwt.tokens import (
     RefreshToken,
     AccessToken,
 )
-
+from rest_framework_simplejwt.exceptions import (
+    TokenError
+)
 LOG = logging.getLogger(__name__)
 
 
@@ -129,7 +133,8 @@ class CelloTokenObtainPairView(TokenObtainPairView):
             user = authenticate(
                 request,
                 username=serializer.validated_data['email'],
-                password=serializer.validated_data['password'])
+                password=serializer.validated_data['password'],
+            )
             if user is not None:
                 refresh = RefreshToken.for_user(user)
                 data = {
@@ -148,19 +153,26 @@ class CelloTokenVerifyView(TokenVerifyView):
     def post(self, request, *args, **kwargs):
         serializer = TokenVerifyRequest(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            access_token = AccessToken(
-                token=serializer.validated_data["token"],
-            )
-            user = UserProfile.objects.get(pk=access_token['user_id'])
-            if user is not None:
-                data = {
-                    'token': str(access_token.token),
-                    'user': user
-
-                }
-                response = LoginSuccessBody(instance=data)
-                return Response(
-                    data=ok(response.data),
-                    status=200,
+            try:
+                access_token = AccessToken(
+                    token=serializer.validated_data["token"],
                 )
+                user = UserProfile.objects.get(pk=access_token['user_id'])
+                if user is not None:
+                    data = {
+                        'token': str(access_token.token),
+                        'user': user,
+                    }
+                    response = LoginSuccessBody(instance=data)
+                    return Response(
+                        data=ok(response.data),
+                        status=200,
+                    )
+            except TokenError:
+                LOG.warn("invalid token error")
+                return Response(
+                    data=err(msg="invalid token"),
+                    status=401
+                )
+
         return super().post(request, *args, **kwargs)
