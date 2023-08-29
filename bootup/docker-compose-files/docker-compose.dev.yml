@@ -32,7 +32,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - /opt/cello/pgdata:/var/lib/postgresql/data
+      - ${CELLO_STORAGE_PATH:-/opt/cello}/pgdata:/var/lib/postgresql/data
     networks:
       - cello-net
 
@@ -54,10 +54,11 @@ services:
       - DEBUG=True
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
       - FABRIC_LOGGING_SPEC=INFO
+      - API_ENGINE_ADMIN_EMAIL=admin@cello.com
     ports:
       - "8080:8080"
     volumes:
-      - /opt/cello:/opt/cello
+      - ${CELLO_STORAGE_PATH:-/opt/cello}:/opt/cello
     networks:
       - cello-net
 
@@ -74,7 +75,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - DOCKER_URL=unix://var/run/docker.sock
-      - STORAGE_PATH=/opt/hyperledger
+      - STORAGE_PATH=${CELLO_STORAGE_PATH:-/opt/cello}/hyperledger
     networks:
       - cello-net
 
