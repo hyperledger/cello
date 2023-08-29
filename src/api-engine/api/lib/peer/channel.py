@@ -4,11 +4,11 @@
 import os
 import json
 import subprocess
-from api.lib.peer.basicEnv import BasicEnv
+from api.lib.peer.command import Command
 from api.config import FABRIC_TOOL
 
 
-class Channel(BasicEnv):
+class Channel(Command):
     """Call CMD to perform channel create, join and other related operations"""
 
     def __init__(self, version="2.2.0", peer=FABRIC_TOOL, **kwargs):
@@ -85,7 +85,7 @@ class Channel(BasicEnv):
                 "{}".format(option),
                 "-c",
                 channel
-                                       ])
+            ])
         except Exception as e:
             err_msg = "fetch a specified block failed {}!".format(e)
             raise Exception(err_msg)

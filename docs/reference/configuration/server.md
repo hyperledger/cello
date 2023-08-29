@@ -68,7 +68,7 @@ all related configuration variable is written in ==.makerc/api-engine==.
 
     **default**: `admin@cello.com`
     
-    **description**: {>>Default operator email of api engine, who have the maximum rights.<<}
+    **description**: {>>Default admin email of api engine, who have the maximum rights.<<}
     
     **usage**:
     ```bash
