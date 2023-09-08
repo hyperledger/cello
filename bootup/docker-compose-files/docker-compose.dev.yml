@@ -60,6 +60,8 @@ services:
       - /opt/cello:/opt/cello
     networks:
       - cello-net
+    depends_on:
+    - cello-postgres
 
   # cello docker agent may deploy to an individual server. This cofig only serves development purpose.
   cello-docker-agent:
