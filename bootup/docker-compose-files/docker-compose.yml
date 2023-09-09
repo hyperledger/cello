@@ -27,7 +27,7 @@ services:
     - UWSGI_SERVER_HOST=api-engine
     - URL_PREFIX=${CONFIG_API_ENGINE_WEBROOT}
     volumes:
-      - /opt/cello/api-engine/media:/var/www/media
+    - /opt/cello/api-engine/media:/var/www/media
 
   postgres-server:
     image: postgres:11.1
@@ -73,6 +73,8 @@ services:
     volumes:
     - /var/run/docker.sock:/var/run/docker.sock
     - /opt/cello/api-engine/media:/var/www/media
+    depends_on:
+    - postgres-server
 
 
   api-engine-tasks:
@@ -97,15 +99,17 @@ services:
     - DOCKER_HOST=$API_DOCKER_HOST
     - RUN_MODE=task
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+    - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+    - postgres-server
 
   dashboard:
     image: hyperledger/cello-dashboard
     container_name: cello-dashboard
     links:
-      - nginx
+    - nginx
     environment:
-      - API_PROXY=http://nginx:80/engine
-      - SERVICE_PORT=$API_ENGINE_SERVICE_PORT
+    - API_PROXY=http://nginx:80/engine
+    - SERVICE_PORT=$API_ENGINE_SERVICE_PORT
     ports:
-      - "${DASHBOARD_SERVICE_PORT}:80"
+    - "${DASHBOARD_SERVICE_PORT}:80"
