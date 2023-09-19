@@ -79,7 +79,6 @@ export default {
       const response = yield call(deleteNode, payload);
       if (callback) {
         callback({
-          payload,
           ...response,
         });
       }

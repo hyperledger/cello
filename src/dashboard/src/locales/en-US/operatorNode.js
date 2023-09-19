@@ -22,6 +22,7 @@ export default {
   'app.operator.node.delete.confirm':
     'Deleting node {name} may cause abnormality in the blockchain network. Confirm delete?',
   'app.operator.node.delete.success': 'Delete Node Successful.',
+  'app.operator.node.delete.fail': 'Delete Node Failed.',
   'app.operator.node.download.success': 'Download Node Config File Successful.',
   'app.operator.node.upload.success': 'Upload Node Config File Successful.',
   'app.operator.node.joinChannel.success': 'Join Channel Successful',

@@ -427,15 +427,25 @@ class Index extends PureComponent {
     });
   };
 
-  deleteCallBack = () => {
+  deleteCallBack = res => {
     const { intl } = this.props;
-    message.success(
-      intl.formatMessage({
-        id: 'app.operator.node.delete.success',
-        defaultMessage: 'Delete Node Successful.',
-      })
-    );
-    this.queryNodeList();
+
+    if (res.status === 'successful') {
+      message.success(
+        intl.formatMessage({
+          id: 'app.operator.node.delete.success',
+          defaultMessage: 'Delete Node Successful.',
+        })
+      );
+      this.queryNodeList();
+    } else {
+      message.error(
+        intl.formatMessage({
+          id: 'app.operator.node.delete.fail',
+          defaultMessage: 'Delete Node Failed.',
+        })
+      );
+    }
   };
 
   handleDeleteNode = row => {
