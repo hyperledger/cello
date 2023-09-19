@@ -21,6 +21,7 @@ export default {
   'app.operator.node.delete.title': '删除节点',
   'app.operator.node.delete.confirm': '删除节点 {name} 可能导致区块链网络异常，是否确认删除？',
   'app.operator.node.delete.success': '删除节点成功。',
+  'app.operator.node.delete.fail': '删除节点失败。',
   'app.operator.node.download.success': '下载节点配置文件成功。',
   'app.operator.node.upload.success': '上传节点配置文件成功。',
   'app.operator.node.joinChannel.success': '加入通道成功。',
