@@ -1,9 +1,10 @@
-import { listChainCode, uploadChainCode } from '@/services/chaincode';
+import { listChainCode, uploadChainCode, listNode, installChainCode } from '@/services/chaincode';
 
 export default {
   namespace: 'chainCode',
 
   state: {
+    nodes: [],
     chainCodes: [],
     pagination: {
       total: 0,
@@ -36,6 +37,21 @@ export default {
         callback(response);
       }
     },
+    *listNode({ payload }, { call, put }) {
+      const response = yield call(listNode, payload);
+      yield put({
+        type: 'save',
+        payload: {
+          nodes: response.data.data,
+        },
+      });
+    },
+    *installChainCode({ payload, callback }, { call }) {
+      const response = yield call(installChainCode, payload);
+      if (callback) {
+        callback(response);
+      }
+    },
   },
   reducers: {
     save(state, { payload }) {
@@ -46,6 +62,7 @@ export default {
     },
     clear() {
       return {
+        nodes: [],
         chainCodes: [],
         pagination: {
           total: 0,
