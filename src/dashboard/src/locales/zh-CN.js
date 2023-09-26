@@ -7,15 +7,15 @@ import login from './zh-CN/login';
 import menu from './zh-CN/menu';
 import pwa from './zh-CN/pwa';
 import component from './zh-CN/component';
-import operatorOrganization from './zh-CN/operatorOrganization';
+import Organization from './zh-CN/Organization';
 import operatorUser from './zh-CN/operatorUser';
 import form from './zh-CN/form';
-import operatorAgent from './zh-CN/operatorAgent';
-import operatorNode from './zh-CN/operatorNode';
+import Agent from './zh-CN/Agent';
+import Node from './zh-CN/Node';
 import fabricCa from './zh-CN/fabric/ca';
-import operatorNetwork from './zh-CN/operatorNetwork';
-import operatorChannel from './zh-CN/operatorChannel';
-import operatorChainCode from './zh-CN/operatorChaincode';
+import Network from './zh-CN/Network';
+import Channel from './zh-CN/Channel';
+import ChainCode from './zh-CN/Chaincode';
 
 export default {
   'navBar.lang': '语言',
@@ -32,13 +32,13 @@ export default {
   ...menu,
   ...pwa,
   ...component,
-  ...operatorOrganization,
-  ...operatorAgent,
+  ...Organization,
+  ...Agent,
   ...operatorUser,
   ...form,
-  ...operatorNode,
+  ...Node,
   ...fabricCa,
-  ...operatorNetwork,
-  ...operatorChannel,
-  ...operatorChainCode,
+  ...Network,
+  ...Channel,
+  ...ChainCode,
 };
