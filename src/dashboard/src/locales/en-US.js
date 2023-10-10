@@ -7,15 +7,15 @@ import login from './en-US/login';
 import menu from './en-US/menu';
 import pwa from './en-US/pwa';
 import component from './en-US/component';
-import operatorOrganization from './en-US/operatorOrganization';
-import operatorUser from './en-US/operatorUser';
+import Organization from './en-US/Organization';
+import User from './en-US/operatorUser';
 import form from './en-US/form';
-import operatorAgent from './en-US/operatorAgent';
-import operatorNode from './en-US/operatorNode';
+import Agent from './en-US/Agent';
+import Node from './en-US/Node';
 import fabricCa from './en-US/fabric/ca';
-import operatorNetwork from './en-US/operatorNetwork';
-import operatorChannel from './en-US/operatorChannel';
-import operatorChainCode from './en-US/operatorChaincode';
+import Network from './en-US/Network';
+import Channel from './en-US/Channel';
+import ChainCode from './en-US/Chaincode';
 
 export default {
   'navBar.lang': 'Languages',
@@ -32,13 +32,13 @@ export default {
   ...menu,
   ...pwa,
   ...component,
-  ...operatorOrganization,
-  ...operatorAgent,
-  ...operatorUser,
+  ...Organization,
+  ...Agent,
+  ...User,
   ...form,
-  ...operatorNode,
+  ...Node,
   ...fabricCa,
-  ...operatorNetwork,
-  ...operatorChannel,
-  ...operatorChainCode,
+  ...Network,
+  ...Channel,
+  ...ChainCode,
 };

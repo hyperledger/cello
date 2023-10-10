@@ -1,7 +1,17 @@
 import React, { PureComponent } from 'react';
 import classNames from 'classnames';
 import { Menu } from 'antd';
-import { EyeFilled, DashboardFilled } from '@ant-design/icons';
+import {
+  EyeOutlined,
+  DashboardFilled,
+  TeamOutlined,
+  DesktopOutlined,
+  NodeIndexOutlined,
+  ApartmentOutlined,
+  DeploymentUnitOutlined,
+  FunctionOutlined,
+  UserOutlined,
+} from '@ant-design/icons';
 import { Link } from 'umi';
 import { urlToList } from '../_utils/pathTools';
 import { getMenuMatches } from './SiderMenuUtils';
@@ -11,8 +21,15 @@ import { getMenuMatches } from './SiderMenuUtils';
 
 const { SubMenu } = Menu;
 const menus = {
-  eye: <EyeFilled />,
+  eye: <EyeOutlined />,
   dashboard: <DashboardFilled />,
+  team: <TeamOutlined />,
+  node: <NodeIndexOutlined />,
+  network: <ApartmentOutlined />,
+  channel: <DeploymentUnitOutlined />,
+  chaincode: <FunctionOutlined />,
+  user: <UserOutlined />,
+  agent: <DesktopOutlined />,
 };
 
 // Allow menu.js config icon as string or ReactNode
