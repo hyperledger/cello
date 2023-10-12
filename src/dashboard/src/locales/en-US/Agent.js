@@ -6,7 +6,7 @@ export default {
   'app.agent.form.new.title': 'New Agent',
   'app.agent.form.update.title': 'Update Agent',
   'app.agent.form.name.label': 'Agent Name',
-  'app.agent.form.name.required': 'Please input organization name',
+  'app.agent.form.name.required': 'Please input agent name',
   'app.agent.create.success': 'Create agent {name} success.',
   'app.agent.create.fail': 'Create agent {name} failed',
   'app.agent.update.success': 'Update agent {name} success.',

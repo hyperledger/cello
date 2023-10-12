@@ -16,7 +16,7 @@ export default {
   'app.channel.form.update.fail': '更新通道配置失败',
   'app.channel.form.update.header.title': '更新通道',
   'app.channel.form.update.orgType': 'Org类型',
-  'app.channel.update.required.orgType': '请选择Org类型',
+  'app.channel.form.update.required.orgType': '请选择Org类型',
   'app.channel.form.update.mspId': 'MSP ID',
   'app.channel.form.update.checkMSPId': '请输入MSP ID',
   'app.channel.form.update.file': '通道配置文件',

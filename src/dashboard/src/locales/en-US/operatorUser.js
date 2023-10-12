@@ -8,7 +8,7 @@ export default {
   'app.user.table.header.organization': 'Organization',
   'app.user.role.user': 'User',
   'app.user.role.operator': 'Operator',
-  'app.user.role.administrator': 'Administrator',
+  'app.user.role.admin': 'Administrator',
   'app.user.form.new.title': 'New User',
   'app.user.form.update.title': 'Update User',
   'app.user.form.name.label': 'User Name',
