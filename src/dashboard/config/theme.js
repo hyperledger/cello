@@ -33,5 +33,5 @@ module.exports = {
   'alert-text-color': '#152935',
   'alert-close-color': '#152935',
   'table-expanded-row-bg': '#20343e',
-  'font-size-base': '12px',
+  'font-size-base': '16px',
 };
