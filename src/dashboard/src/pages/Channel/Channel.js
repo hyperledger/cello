@@ -4,7 +4,7 @@
 import React, { PureComponent, Fragment } from 'react';
 import { connect, injectIntl, useIntl } from 'umi';
 import { Card, Button, Modal, message, Divider, Input, Select, Form, Tag, Upload } from 'antd';
-import { PlusOutlined, UploadOutlined } from '@ant-design/icons';
+import { PlusOutlined, UploadOutlined, DeploymentUnitOutlined } from '@ant-design/icons';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import StandardTable from '@/components/StandardTable';
 import styles from './styles.less';
@@ -548,10 +548,15 @@ class Channel extends PureComponent {
     ];
     return (
       <PageHeaderWrapper
-        title={intl.formatMessage({
-          id: 'app.channel.title',
-          defaultMessage: 'Channel Management',
-        })}
+        title={
+          <span>
+            {<DeploymentUnitOutlined style={{ marginRight: 15 }} />}
+            {intl.formatMessage({
+              id: 'app.channel.title',
+              defaultMessage: 'Channel Management',
+            })}
+          </span>
+        }
       >
         <Card bordered={false}>
           <div className={styles.tableList}>

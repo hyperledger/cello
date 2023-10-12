@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import { connect, useIntl, injectIntl } from 'umi';
 import { Card, Button, message, List, Badge, Row, Col, Modal, Form, Select, Input } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined, DesktopOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import { getAuthority } from '@/utils/authority';
@@ -394,10 +394,15 @@ class Agent extends PureComponent {
 
     return (
       <PageHeaderWrapper
-        title={intl.formatMessage({
-          id: 'app.agent.title',
-          defaultMessage: 'Agent Management',
-        })}
+        title={
+          <span>
+            {<DesktopOutlined style={{ marginRight: 15 }} />}
+            {intl.formatMessage({
+              id: 'app.agent.title',
+              defaultMessage: 'Agent Management',
+            })}
+          </span>
+        }
       >
         <Card bordered={false}>
           <div className={styles.tableList}>
