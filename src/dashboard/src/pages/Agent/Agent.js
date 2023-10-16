@@ -68,8 +68,8 @@ const ApplyAgentForm = props => {
             {
               required: true,
               message: intl.formatMessage({
-                id: 'app.newAgent.required.Name',
-                defaultMessage: 'Please input name.',
+                id: 'app.agent.form.name.required',
+                defaultMessage: 'Please input agent name',
               }),
             },
           ]}

@@ -8,7 +8,7 @@ export default {
   'app.user.table.header.organization': '组织',
   'app.user.role.user': '普通用户',
   'app.user.role.operator': '系统管理员',
-  'app.user.role.administrator': '管理员',
+  'app.user.role.admin': '管理员',
   'app.user.form.new.title': '新建用户',
   'app.user.form.update.title': '更新用户',
   'app.user.form.name.label': '用户名',
