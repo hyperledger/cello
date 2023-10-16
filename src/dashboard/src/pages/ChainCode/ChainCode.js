@@ -4,7 +4,7 @@
 import React, { PureComponent, Fragment } from 'react';
 import { connect, injectIntl, useIntl } from 'umi';
 import { Card, Button, Modal, Input, Upload, Divider, message } from 'antd';
-import { PlusOutlined, UploadOutlined } from '@ant-design/icons';
+import { PlusOutlined, UploadOutlined, FunctionOutlined } from '@ant-design/icons';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import StandardTable from '@/components/StandardTable';
 import { Form, Select } from 'antd/lib/index';
@@ -391,10 +391,15 @@ class ChainCode extends PureComponent {
     ];
     return (
       <PageHeaderWrapper
-        title={intl.formatMessage({
-          id: 'app.chainCode.title',
-          defaultMessage: 'Chain code management',
-        })}
+        title={
+          <span>
+            {<FunctionOutlined style={{ marginRight: 15 }} />}
+            {intl.formatMessage({
+              id: 'app.chainCode.title',
+              defaultMessage: 'Chain code Management',
+            })}
+          </span>
+        }
       >
         <Card bordered={false}>
           <div className={styles.tableList}>

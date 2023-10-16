@@ -15,7 +15,7 @@ import {
   Menu,
   AutoComplete,
 } from 'antd';
-import { DownOutlined, PlusOutlined } from '@ant-design/icons';
+import { DownOutlined, PlusOutlined, UserOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import isEmail from 'validator/lib/isEmail';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
@@ -571,10 +571,15 @@ class UserManagement extends PureComponent {
     );
     return (
       <PageHeaderWrapper
-        title={intl.formatMessage({
-          id: 'app.user.title',
-          defaultMessage: 'User Management',
-        })}
+        title={
+          <span>
+            {<UserOutlined style={{ marginRight: 15 }} />}
+            {intl.formatMessage({
+              id: 'app.user.title',
+              defaultMessage: 'User Management',
+            })}
+          </span>
+        }
       >
         <Card bordered={false}>
           <div className={styles.tableList}>

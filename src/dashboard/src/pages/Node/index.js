@@ -18,7 +18,7 @@ import {
   Badge,
   Upload,
 } from 'antd';
-import { DownOutlined, PlusOutlined } from '@ant-design/icons';
+import { DownOutlined, PlusOutlined, NodeIndexOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import StandardTable from '@/components/StandardTable';
@@ -814,10 +814,15 @@ class Index extends PureComponent {
 
     return (
       <PageHeaderWrapper
-        title={intl.formatMessage({
-          id: 'app.node.title',
-          defaultMessage: 'Node Management',
-        })}
+        title={
+          <span>
+            {<NodeIndexOutlined style={{ marginRight: 15 }} />}
+            {intl.formatMessage({
+              id: 'app.node.title',
+              defaultMessage: 'Node Management',
+            })}
+          </span>
+        }
       >
         <Card bordered={false}>
           <div className={styles.tableList}>

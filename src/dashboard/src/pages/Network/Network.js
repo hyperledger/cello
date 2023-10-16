@@ -4,7 +4,7 @@
 import React, { PureComponent, Fragment } from 'react';
 import { connect, injectIntl, history } from 'umi';
 import { Card, Button, Modal, message, Divider } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined, ApartmentOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import StandardTable from '@/components/StandardTable';
@@ -151,10 +151,15 @@ class Network extends PureComponent {
     ];
     return (
       <PageHeaderWrapper
-        title={intl.formatMessage({
-          id: 'app.network.title',
-          defaultMessage: 'Network Management',
-        })}
+        title={
+          <span>
+            {<ApartmentOutlined style={{ marginRight: 15 }} />}
+            {intl.formatMessage({
+              id: 'app.network.title',
+              defaultMessage: 'Network Management',
+            })}
+          </span>
+        }
       >
         <Card bordered={false}>
           <div className={styles.tableList}>
