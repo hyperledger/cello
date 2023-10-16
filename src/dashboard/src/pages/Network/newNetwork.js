@@ -14,7 +14,7 @@ const { Option } = Select;
 }))
 class CreateNetwork extends React.Component {
   clickCancel = () => {
-    history.push('/operator/network');
+    history.push('/network');
   };
 
   submitCallback = data => {
@@ -31,7 +31,7 @@ class CreateNetwork extends React.Component {
           }
         )
       );
-      history.push('/operator/network');
+      history.push('/network');
     } else {
       message.error(
         intl.formatMessage(
