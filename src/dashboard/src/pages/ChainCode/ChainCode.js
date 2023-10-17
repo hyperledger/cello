@@ -100,7 +100,7 @@ const UploadChainCode = props => {
         <FormItem
           {...formItemLayout}
           label={intl.formatMessage({
-            id: 'app.operator.chainCode.form.create.file',
+            id: 'app.chainCode.form.create.file',
             defaultMessage: 'Package',
           })}
           name="chaincodePackage"
@@ -109,7 +109,7 @@ const UploadChainCode = props => {
             {
               required: true,
               message: intl.formatMessage({
-                id: 'app.operator.chainCode.form.create.fileSelect',
+                id: 'app.chainCode.form.create.fileSelect',
                 defaultMessage: 'Please select the chaincode package',
               }),
             },
@@ -120,7 +120,7 @@ const UploadChainCode = props => {
             <Button disabled={!!newFile}>
               <UploadOutlined />
               {intl.formatMessage({
-                id: 'app.operator.chainCode.form.create.fileSelect',
+                id: 'app.chainCode.form.create.fileSelect',
                 defaultMessage: 'Please select the chaincode package',
               })}
             </Button>
@@ -129,7 +129,7 @@ const UploadChainCode = props => {
         <FormItem
           {...formItemLayout}
           label={intl.formatMessage({
-            id: 'app.operator.chainCode.form.create.description',
+            id: 'app.chainCode.form.create.description',
             defaultMessage: 'Description',
           })}
           name="description"
@@ -142,7 +142,7 @@ const UploadChainCode = props => {
         >
           <Input
             placeholder={intl.formatMessage({
-              id: 'app.operator.chainCode.form.create.description',
+              id: 'app.chainCode.form.create.description',
               defaultMessage: 'Chaincode Description',
             })}
           />
@@ -268,7 +268,7 @@ class ChainCode extends PureComponent {
             }}
           >
             {intl.formatMessage({
-              id: 'app.operator.chainCode.table.operate.delete',
+              id: 'app.chainCode.table.operate.delete',
               defaultMessage: 'Delete',
             })}
           </a>
@@ -280,7 +280,7 @@ class ChainCode extends PureComponent {
       <Dropdown overlay={menu}>
         <a>
           {intl.formatMessage({
-            id: 'app.operator.node.table.operation.more',
+            id: 'app.node.table.operation.more',
             defaultMessage: 'More',
           })}{' '}
           <DownOutlined />
@@ -291,7 +291,7 @@ class ChainCode extends PureComponent {
     const columns = [
       {
         title: intl.formatMessage({
-          id: 'app.operator.chainCode.table.header.packageID',
+          id: 'app.chainCode.table.header.packageID',
           defaultMessage: 'PackageID',
         }),
         dataIndex: 'packageID',
@@ -313,7 +313,7 @@ class ChainCode extends PureComponent {
       },
       {
         title: intl.formatMessage({
-          id: 'app.operator.chainCode.table.header.description',
+          id: 'app.chainCode.table.header.description',
           defaultMessage: 'Description',
         }),
         dataIndex: 'description',
@@ -335,14 +335,14 @@ class ChainCode extends PureComponent {
             <Divider type="vertical" />
             <a>
               {intl.formatMessage({
-                id: 'app.operator.chainCode.table.operate.approve',
+                id: 'app.chainCode.table.operate.approve',
                 defaultMessage: 'Approve',
               })}
             </a>
             <Divider type="vertical" />
             <a>
               {intl.formatMessage({
-                id: 'app.operator.chainCode.table.operate.commit',
+                id: 'app.chainCode.table.operate.commit',
                 defaultMessage: 'Commit',
               })}
             </a>
