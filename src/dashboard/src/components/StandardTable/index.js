@@ -64,7 +64,7 @@ class StandardTable extends PureComponent {
 
   render() {
     const { selectedRowKeys, needTotalList } = this.state;
-    const { data = {}, rowKey, intl, ...rest } = this.props;
+    const { data = {}, disableSelect, rowKey, intl, ...rest } = this.props;
     const { list = [], pagination } = data;
 
     const paginationProps = {
@@ -95,48 +95,50 @@ class StandardTable extends PureComponent {
 
     return (
       <div className={styles.standardTable}>
-        <div className={styles.tableAlert}>
-          <Alert
-            message={
-              <Fragment>
-                {intl.formatMessage({
-                  id: 'component.standardTable.selected',
-                  defaultMessage: 'Selected',
-                })}
-                <a style={{ fontWeight: 600 }}>{selectedRowKeys.length}</a>{' '}
-                {intl.formatMessage({
-                  id: 'component.standardTable.item',
-                  defaultMessage: 'Item',
-                })}
-                &nbsp;&nbsp;
-                {needTotalList.map(item => (
-                  <span style={{ marginLeft: 8 }} key={item.dataIndex}>
-                    {item.title}
-                    {intl.formatMessage({
-                      id: 'component.standardTable.total',
-                      defaultMessage: 'Total',
-                    })}{' '}
-                    &nbsp;
-                    <span style={{ fontWeight: 600 }}>
-                      {item.render ? item.render(item.total) : item.total}
-                    </span>
-                  </span>
-                ))}
-                <a onClick={this.cleanSelectedKeys} style={{ marginLeft: 24 }}>
+        {!disableSelect && (
+          <div className={styles.tableAlert}>
+            <Alert
+              message={
+                <Fragment>
                   {intl.formatMessage({
-                    id: 'component.standardTable.clean',
-                    defaultMessage: 'Clean',
+                    id: 'component.standardTable.selected',
+                    defaultMessage: 'Selected',
                   })}
-                </a>
-              </Fragment>
-            }
-            type="info"
-            showIcon
-          />
-        </div>
+                  <a style={{ fontWeight: 600 }}>{selectedRowKeys.length}</a>{' '}
+                  {intl.formatMessage({
+                    id: 'component.standardTable.item',
+                    defaultMessage: 'Item',
+                  })}
+                  &nbsp;&nbsp;
+                  {needTotalList.map(item => (
+                    <span style={{ marginLeft: 8 }} key={item.dataIndex}>
+                      {item.title}
+                      {intl.formatMessage({
+                        id: 'component.standardTable.total',
+                        defaultMessage: 'Total',
+                      })}{' '}
+                      &nbsp;
+                      <span style={{ fontWeight: 600 }}>
+                        {item.render ? item.render(item.total) : item.total}
+                      </span>
+                    </span>
+                  ))}
+                  <a onClick={this.cleanSelectedKeys} style={{ marginLeft: 24 }}>
+                    {intl.formatMessage({
+                      id: 'component.standardTable.clean',
+                      defaultMessage: 'Clean',
+                    })}
+                  </a>
+                </Fragment>
+              }
+              type="info"
+              showIcon
+            />
+          </div>
+        )}
         <Table
           rowKey={rowKey || 'key'}
-          rowSelection={rowSelection}
+          rowSelection={!disableSelect && rowSelection}
           dataSource={list}
           pagination={paginationProps}
           onChange={this.handleTableChange}
