@@ -7,6 +7,12 @@
 | Yuanmao Zhu | zhuyuanmao | yuanmao@ualberta.ca |
 | Xichen Pan | xichen1 | xichen.pan@gmail.com  |
 
+## Release Managers
+
+| Name | GitHub | Email |
+|---|---|---|
+| Yang Feng | fengyangsy | fengyang.09186@h3c.com |
+
 ## Retired Maintainers
 
 | Name | GitHub | Email |
