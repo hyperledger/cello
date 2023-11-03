@@ -258,14 +258,11 @@ class NodeStatusSerializer(NodeIDSerializer, serializers.ModelSerializer):
 
 
 class NodeCreateBody(serializers.ModelSerializer):
-    num = serializers.IntegerField(help_text="number of node")
-
     class Meta:
         model = Node
         fields = (
             "name",
             "type",
-            "num",
         )
         extra_kwargs = {
             "name": {"required": True},
