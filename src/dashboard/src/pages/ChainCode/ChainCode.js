@@ -8,6 +8,7 @@ import { PlusOutlined, UploadOutlined, FunctionOutlined, DownOutlined } from '@a
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import StandardTable from '@/components/StandardTable';
 import { Form } from 'antd/lib/index';
+import ApproveForm from '@/pages/ChainCode/forms/ApproveForm';
 import styles from './styles.less';
 
 const FormItem = Form.Item;
@@ -156,6 +157,7 @@ const UploadChainCode = props => {
   chainCode,
   loadingChainCodes: loading.effects['chainCode/listChainCode'],
   uploading: loading.effects['chainCode/uploadChainCode'],
+  approving: loading.effects['chainCode/approveChainCode'],
 }))
 class ChainCode extends PureComponent {
   state = {
@@ -163,6 +165,7 @@ class ChainCode extends PureComponent {
     formValues: {},
     newFile: '',
     modalVisible: false,
+    approveModalVisible: false,
   };
 
   componentDidMount() {
@@ -214,6 +217,12 @@ class ChainCode extends PureComponent {
     });
   };
 
+  handleApproveModalVisible = visible => {
+    this.setState({
+      approveModalVisible: !!visible,
+    });
+  };
+
   handleUpload = (values, callback) => {
     const { dispatch } = this.props;
     const formData = new FormData();
@@ -240,12 +249,13 @@ class ChainCode extends PureComponent {
   };
 
   render() {
-    const { selectedRows, modalVisible, newFile } = this.state;
+    const { selectedRows, modalVisible, newFile, approveModalVisible } = this.state;
     const {
       chainCode: { chainCodes, paginations },
       loadingChainCodes,
       intl,
       uploading,
+      approving,
     } = this.props;
 
     const formProps = {
@@ -256,6 +266,15 @@ class ChainCode extends PureComponent {
       uploading,
       newFile,
       setFile: this.setFile,
+      intl,
+    };
+
+    const approveFormProps = {
+      approveModalVisible,
+      handleApproveModalVisible: this.handleApproveModalVisible,
+      fetchChainCodes: this.fetchChainCodes,
+      approving,
+      selectedRows: [],
       intl,
     };
 
@@ -333,7 +352,7 @@ class ChainCode extends PureComponent {
               })}
             </a>
             <Divider type="vertical" />
-            <a>
+            <a onClick={() => this.handleApproveModalVisible(true)}>
               {intl.formatMessage({
                 id: 'app.chainCode.table.operate.approve',
                 defaultMessage: 'Approve',
@@ -402,6 +421,7 @@ class ChainCode extends PureComponent {
             />
           </div>
         </Card>
+        <ApproveForm {...approveFormProps} />
         <UploadChainCode {...formProps} />
       </PageHeaderWrapper>
     );
