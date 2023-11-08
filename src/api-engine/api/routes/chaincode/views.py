@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 import os
-import zipfile
+import tempfile, shutil, tarfile, json
 
 from drf_yasg.utils import swagger_auto_schema
 from api.config import FABRIC_CHAINCODE_STORE
@@ -92,76 +92,74 @@ class ChainCodeViewSet(viewsets.ViewSet):
     def package(self, request):
         serializer = ChainCodePackageBody(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            name = serializer.validated_data.get("name")
-            version = serializer.validated_data.get("version")
-            language = serializer.validated_data.get("language")
-            md5 = serializer.validated_data.get("md5")
             file = serializer.validated_data.get("file")
-            id = make_uuid()
-
+            description = serializer.validated_data.get("description")
+            uuid = make_uuid()
+            fd, temp_path = tempfile.mkstemp()
             try:
-                file_path = os.path.join(FABRIC_CHAINCODE_STORE, id)
-                if not os.path.exists(file_path):
-                    os.makedirs(file_path)
-                fileziped = os.path.join(file_path, file.name)
-                with open(fileziped, 'wb') as f:
+                # try to calculate packageid
+                with open(fd, 'wb') as f:
                     for chunk in file.chunks():
                         f.write(chunk)
-                    f.close()
-                zipped_file = zipfile.ZipFile(fileziped)
-                for filename in zipped_file.namelist():
-                    zipped_file.extract(filename, file_path)
-
-                # When there is go.mod in the chain code, execute the go mod vendor command to obtain dependencies.
-                chaincode_path = file_path
-                found = False
-                for _, dirs, _ in os.walk(file_path):
-                    if found:
-                        break
-                    elif dirs:
-                        for each in dirs:
-                            chaincode_path += "/" + each
-                            if os.path.exists(chaincode_path + "/go.mod"):
-                                cwd = os.getcwd()
-                                print("cwd:", cwd)
-                                os.chdir(chaincode_path)
-                                os.system("go mod vendor")
-                                found = True
-                                os.chdir(cwd)
-                                break
-                # if can not find go.mod, use the dir after extract zipped_file
-                if not found:
-                    for _, dirs, _ in os.walk(file_path):
-                        chaincode_path = file_path + "/" + dirs[0]
-                        break
 
                 org = request.user.organization
                 qs = Node.objects.filter(type="peer", organization=org)
                 if not qs.exists():
-                    raise ResourceNotFound
+                    return Response(
+                        err("At least 1 peer node is required for the chaincode package upload."), 
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
                 peer_node = qs.first()
                 envs = init_env_vars(peer_node, org)
-
                 peer_channel_cli = PeerChainCode("v2.2.0", **envs)
-                res = peer_channel_cli.lifecycle_package(
-                    name, version, chaincode_path, language)
-                os.system("rm -rf {}/*".format(file_path))
-                os.system("mv {}.tar.gz {}".format(name, file_path))
-                if res != 0:
-                    return Response(err("package chaincode failed."), status=status.HTTP_400_BAD_REQUEST)
+                return_code, content = peer_channel_cli.lifecycle_calculatepackageid(temp_path)
+                if (return_code != 0):
+                    return Response(
+                        err("Calculate packageid failed for {}.".format(content)), 
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                packageid = content.strip()
+
+                # check if packageid exists
+                cc = ChainCode.objects.filter(package_id=packageid)
+                if cc.exists():
+                    return Response(
+                        err("Packageid {} already exists.".format(packageid)), 
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                # try to save chaincode package
+                ccpackage_path = os.path.join(FABRIC_CHAINCODE_STORE, packageid)
+                if not os.path.exists(ccpackage_path):
+                    os.makedirs(ccpackage_path)
+                # tared_file = tarfile.TarFile(temp_path)
+                with tarfile.open(temp_path) as tared_file:
+                    tared_file.extractall(ccpackage_path)
+
+                with open(os.path.join(ccpackage_path, "metadata.json"), 'r') as f:
+                    metadata = json.load(f)
+                    language = metadata["type"]
+                    label = metadata["label"]
+
+                os.system("rm -rf {}/*".format(ccpackage_path))
+
+                ccpackage = os.path.join(ccpackage_path, file.name)
+                shutil.copy(temp_path, ccpackage)
                 chaincode = ChainCode(
-                    id=id,
-                    name=name,
-                    version=version,
+                    id=uuid,
+                    package_id=packageid,
                     language=language,
                     creator=org.name,
-                    md5=md5
+                    label=label,
+                    description=description,
                 )
                 chaincode.save()
             except Exception as e:
                 return Response(
                     err(e.args), status=status.HTTP_400_BAD_REQUEST
                 )
+            finally:
+                os.remove(temp_path)
             return Response(
                 ok("success"), status=status.HTTP_200_OK
             )
