@@ -330,6 +330,10 @@ class NodeOperationSerializer(serializers.Serializer):
 class NodeConfigFileSerializer(serializers.ModelSerializer):
     files = serializers.FileField()
 
+    class Meta:
+        model = Node
+        fields = ("files",)
+
 # class NodeFileCreateSerializer(serializers.ModelSerializer):
 #     def to_form_paras(self):
 #         custom_paras = to_form_paras(self)
