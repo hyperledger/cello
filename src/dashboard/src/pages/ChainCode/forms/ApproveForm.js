@@ -31,14 +31,14 @@ const ApproveForm = props => {
     if (response.status !== 'successful') {
       message.error(
         intl.formatMessage({
-          id: 'app.operator.chainCode.form.approve.fail',
+          id: 'app.chainCode.form.approve.fail',
           defaultMessage: 'Approve chaincode failed',
         })
       );
     } else {
       message.success(
         intl.formatMessage({
-          id: 'app.operator.chainCode.form.approve.success',
+          id: 'app.chainCode.form.approve.success',
           defaultMessage: 'Approve chaincode succeed',
         })
       );
@@ -92,7 +92,7 @@ const ApproveForm = props => {
     <Modal
       destroyOnClose
       title={intl.formatMessage({
-        id: 'app.operator.chainCode.form.approve.header.title',
+        id: 'app.chainCode.form.approve.header.title',
         defaultMessage: 'Approve Chaincode',
       })}
       confirmLoading={approving}
@@ -104,7 +104,7 @@ const ApproveForm = props => {
         <FormItem
           {...formItemLayout}
           label={intl.formatMessage({
-            id: 'app.operator.chainCode.form.approve.channel',
+            id: 'app.chainCode.form.approve.channel',
             defaultMessage: 'Please select channel',
           })}
           name="channel"
@@ -112,7 +112,7 @@ const ApproveForm = props => {
             {
               required: true,
               message: intl.formatMessage({
-                id: 'app.operator.chainCode.form.approve.channel',
+                id: 'app.chainCode.form.approve.channel',
                 defaultMessage: 'Please select channel',
               }),
             },
@@ -129,7 +129,7 @@ const ApproveForm = props => {
         <FormItem
           {...formItemLayout}
           label={intl.formatMessage({
-            id: 'app.operator.chainCode.form.approve.specifyName',
+            id: 'app.chainCode.form.approve.specifyName',
             defaultMessage: 'Name for chaincode',
           })}
           name="name"
@@ -137,7 +137,7 @@ const ApproveForm = props => {
             {
               required: true,
               message: intl.formatMessage({
-                id: 'app.operator.chainCode.form.approve.specifyName',
+                id: 'app.chainCode.form.approve.specifyName',
                 defaultMessage: 'Name for chaincode',
               }),
             },
@@ -145,7 +145,7 @@ const ApproveForm = props => {
         >
           <Input
             placeholder={intl.formatMessage({
-              id: 'app.operator.chainCode.form.approve.name',
+              id: 'app.chainCode.form.approve.name',
               defaultMessage: 'Name',
             })}
           />
@@ -153,7 +153,7 @@ const ApproveForm = props => {
         <FormItem
           {...formItemLayout}
           label={intl.formatMessage({
-            id: 'app.operator.chainCode.form.initFlag',
+            id: 'app.chainCode.form.initFlag',
             defaultMessage: '--init-required flag',
           })}
           name="initFlag"
