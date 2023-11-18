@@ -126,7 +126,8 @@ class NodeViewSet(viewsets.ViewSet):
                 nodes = Node.objects.filter(**query_filter)
                 p = Paginator(nodes, per_page)
                 nodes = p.page(page)
-                response = NodeListSerializer({"total": p.count, "data": nodes})
+                response = NodeListSerializer(
+                    {"total": p.count, "data": nodes})
                 return Response(data=ok(response.data), status=status.HTTP_200_OK)
         except Exception as e:
             return Response(
@@ -276,51 +277,45 @@ class NodeViewSet(viewsets.ViewSet):
             if serializer.is_valid(raise_exception=True):
                 node_name = serializer.validated_data.get("name")
                 node_type = serializer.validated_data.get("type")
-                num = serializer.validated_data.get("num")
                 organization = request.user.organization
 
                 agent = organization.agent.get()
                 if agent:
                     nodes = Node.objects.filter(
-                        name=node_name + "0", organization=organization, type=node_type)
+                        name=node_name, organization=organization, type=node_type)
                     if nodes:
                         raise ResourceExists
                 else:
                     raise NoResource
-                for n in range(num):
+                urls = "{}.{}".format(node_name, organization.name)
+                nodes = {
+                    "type": node_type,
+                    "Specs": [node_name]
+                }
+                CryptoConfig(organization.name).update(nodes)
+                CryptoGen(organization.name).extend()
+                self._generate_config(node_type, organization.name, node_name)
+                msp, tls, cfg = self._conversion_msp_tls_cfg(
+                    node_type, organization.name, node_name)
+                node = Node(
+                    name=node_name,
+                    organization=organization,
+                    urls=urls,
+                    type=node_type,
+                    msp=msp,
+                    tls=tls,
+                    agent=agent,
+                    config_file=cfg
+                )
+                node.save()
 
-                    name = node_name + str(n)
-
-                    urls = "{}.{}".format(name, organization.name)
-                    nodes = {
-                        "type": node_type,
-                        "Specs": [name]
-                    }
-                    CryptoConfig(organization.name).update(nodes)
-                    CryptoGen(organization.name).extend()
-                    self._generate_config(node_type, organization.name, name)
-                    msp, tls, cfg = self._conversion_msp_tls_cfg(
-                        node_type, organization.name, name)
-
-                    node = Node(
-                        name=name,
-                        organization=organization,
-                        urls=urls,
-                        type=node_type,
-                        msp=msp,
-                        tls=tls,
-                        agent=agent,
-                        config_file=cfg
-                    )
-                    node.save()
-
-                    self._set_port(node_type, node, agent)
-                    if node.organization.network:
-                        try:
-                            threading.Thread(
-                                target=self._start_node, args=(node.id,)).start()
-                        except Exception as e:
-                            raise e
+                self._set_port(node_type, node, agent)
+                if node.organization.network:
+                    try:
+                        threading.Thread(
+                            target=self._start_node, args=(node.id,)).start()
+                    except Exception as e:
+                        raise e
 
                 response = NodeIDSerializer(data=node.__dict__)
                 if response.is_valid(raise_exception=True):
@@ -571,19 +566,23 @@ class NodeViewSet(viewsets.ViewSet):
                     # try to stop/delete container 3 times
                     # TODO: optimize the retry logic
                     for i in range(3):
-                        LOG.info("Retry to stop/delete container %d time(s).", i + 1)
+                        LOG.info(
+                            "Retry to stop/delete container %d time(s).", i + 1)
                         try:
                             response = agent.stop()
                             if response is not True:
-                                LOG.error("Failed when agent stops/deletes container: %s", response)
+                                LOG.error(
+                                    "Failed when agent stops/deletes container: %s", response)
                                 continue
                             response = agent.delete()
                             if response is not True:
-                                LOG.error("Failed when agent stops/deletes container: %s", response)
+                                LOG.error(
+                                    "Failed when agent stops/deletes container: %s", response)
                                 continue
                             res = True
                         except Exception as e:
-                            LOG.error("Exception when agent stops/deletes container: %s", e)
+                            LOG.error(
+                                "Exception when agent stops/deletes container: %s", e)
                             continue
                         break
                 if res:
