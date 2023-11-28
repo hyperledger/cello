@@ -39,6 +39,12 @@ class ChainCodeViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated, ]
 
     def _read_cc_pkg(self, pk, filename, ccpackage_path):
+        """
+        read and extract chaincode package meta info
+        :pk: chaincode id
+        :filename: uploaded chaincode package filename
+        :ccpackage_path: chaincode package path
+        """
         try:
             meta_path = os.path.join(ccpackage_path, "metadata.json")
             # extract metadata file
