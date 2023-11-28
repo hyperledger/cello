@@ -31,11 +31,36 @@ from api.routes.chaincode.serializers import (
     ChaincodeListResponse
 )
 from api.common import ok, err
+import threading
 
 
 class ChainCodeViewSet(viewsets.ViewSet):
     """Class represents Channel related operations."""
     permission_classes = [IsAuthenticated, ]
+
+    def _read_cc_pkg(self, pk, filename, ccpackage_path):
+        try:
+            meta_path = os.path.join(ccpackage_path, "metadata.json")
+            # extract metadata file
+            with tarfile.open(os.path.join(ccpackage_path, filename)) as tared_file:
+                metadata_file = tared_file.getmember("metadata.json")
+                tared_file.extract(metadata_file, path=ccpackage_path)
+
+            with open(meta_path, 'r') as f:
+                metadata = json.load(f)
+                language = metadata["type"]
+                label = metadata["label"]
+
+            if os.path.exists(meta_path):
+                os.remove(meta_path)
+
+            chaincode = ChainCode.objects.get(id=pk)
+            chaincode.language = language
+            chaincode.label = label
+            chaincode.save()
+
+        except Exception as e:
+            raise e
 
     @swagger_auto_schema(
         query_serializer=PageQuerySerializer,
@@ -88,15 +113,15 @@ class ChainCodeViewSet(viewsets.ViewSet):
             {status.HTTP_201_CREATED: ChainCodeIDSerializer}
         ),
     )
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'], url_path="chaincodeRepo")
     def package(self, request):
         serializer = ChainCodePackageBody(data=request.data)
         if serializer.is_valid(raise_exception=True):
             file = serializer.validated_data.get("file")
             description = serializer.validated_data.get("description")
             uuid = make_uuid()
-            fd, temp_path = tempfile.mkstemp()
             try:
+                fd, temp_cc_path = tempfile.mkstemp()
                 # try to calculate packageid
                 with open(fd, 'wb') as f:
                     for chunk in file.chunks():
@@ -106,16 +131,16 @@ class ChainCodeViewSet(viewsets.ViewSet):
                 qs = Node.objects.filter(type="peer", organization=org)
                 if not qs.exists():
                     return Response(
-                        err("At least 1 peer node is required for the chaincode package upload."), 
+                        err("at least 1 peer node is required for the chaincode package upload."), 
                         status=status.HTTP_400_BAD_REQUEST
                     )
                 peer_node = qs.first()
                 envs = init_env_vars(peer_node, org)
                 peer_channel_cli = PeerChainCode("v2.2.0", **envs)
-                return_code, content = peer_channel_cli.lifecycle_calculatepackageid(temp_path)
+                return_code, content = peer_channel_cli.lifecycle_calculatepackageid(temp_cc_path)
                 if (return_code != 0):
                     return Response(
-                        err("Calculate packageid failed for {}.".format(content)), 
+                        err("calculate packageid failed for {}.".format(content)), 
                         status=status.HTTP_400_BAD_REQUEST
                     )
                 packageid = content.strip()
@@ -124,45 +149,41 @@ class ChainCodeViewSet(viewsets.ViewSet):
                 cc = ChainCode.objects.filter(package_id=packageid)
                 if cc.exists():
                     return Response(
-                        err("Packageid {} already exists.".format(packageid)), 
+                        err("package with id {} already exists.".format(packageid)), 
                         status=status.HTTP_400_BAD_REQUEST
                     )
 
-                # try to save chaincode package
-                ccpackage_path = os.path.join(FABRIC_CHAINCODE_STORE, packageid)
-                if not os.path.exists(ccpackage_path):
-                    os.makedirs(ccpackage_path)
-                # tared_file = tarfile.TarFile(temp_path)
-                with tarfile.open(temp_path) as tared_file:
-                    tared_file.extractall(ccpackage_path)
-
-                with open(os.path.join(ccpackage_path, "metadata.json"), 'r') as f:
-                    metadata = json.load(f)
-                    language = metadata["type"]
-                    label = metadata["label"]
-
-                os.system("rm -rf {}/*".format(ccpackage_path))
-
-                ccpackage = os.path.join(ccpackage_path, file.name)
-                shutil.copy(temp_path, ccpackage)
                 chaincode = ChainCode(
                     id=uuid,
                     package_id=packageid,
-                    language=language,
                     creator=org.name,
-                    label=label,
                     description=description,
                 )
                 chaincode.save()
+
+                # save chaincode package locally
+                ccpackage_path = os.path.join(FABRIC_CHAINCODE_STORE, packageid)
+                if not os.path.exists(ccpackage_path):
+                    os.makedirs(ccpackage_path)
+                ccpackage = os.path.join(ccpackage_path, file.name)
+                shutil.copy(temp_cc_path, ccpackage)
+
+                # start thread to read package meta info, update db
+                try:
+                    threading.Thread(target=self._read_cc_pkg,
+                                        args=(uuid, file.name, ccpackage_path)).start()
+                except Exception as e:
+                    raise e
+
+                return Response(
+                    ok("success"), status=status.HTTP_200_OK
+                )
             except Exception as e:
                 return Response(
                     err(e.args), status=status.HTTP_400_BAD_REQUEST
                 )
             finally:
-                os.remove(temp_path)
-            return Response(
-                ok("success"), status=status.HTTP_200_OK
-            )
+                os.remove(temp_cc_path)
 
     @swagger_auto_schema(
         method="post",

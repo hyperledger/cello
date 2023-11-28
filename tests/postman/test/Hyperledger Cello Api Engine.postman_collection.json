@@ -2817,6 +2817,57 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Upload Chaincode Package",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "JWT {{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "mycc.tar.gz"
+						},
+						{
+							"key": "description",
+							"value": "CC Description",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8080/api/v1/chaincodes/chaincodeRepo",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"chaincodes",
+						"chaincodeRepo"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"event": [
@@ -2847,6 +2898,11 @@
 		{
 			"key": "webRoot",
 			"value": "api/v1"
+		},
+		{
+			"key": "token",
+			"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzAxMTQ0NjIyLCJpYXQiOjE3MDExNDEwMjIsImp0aSI6ImQyOGZjNTAzZWQxODRkYTg4MWNjMTRhYjA4ZWI1MTIwIiwidXNlcl9pZCI6IjRmNjViYjNhLTdhZmQtNDdjZi1iODE1LTk2ZDY0NWQ2OGYxNyJ9.gAMBXqJwtPcO2tCKJ_4wgl34qAEddiGSsJ5r5CRluU8",
+			"type": "string"
 		}
 	]
 }

@@ -809,14 +809,8 @@ class ChainCode(models.Model):
         editable=False,
         unique=True
     )
-    name = models.CharField(
-        help_text="name of chainCode", max_length=128
-    )
     label = models.CharField(
         help_text="label of chainCode", max_length=128
-    )
-    version = models.CharField(
-        help_text="version of chainCode", max_length=128
     )
     creator = models.CharField(
         help_text="creator of chainCode", max_length=128
