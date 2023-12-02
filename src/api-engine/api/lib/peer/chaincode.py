@@ -373,3 +373,25 @@ class ChainCode(Command):
         except Exception as e:
             err_msg = "query failed for {}!".format(e)
             raise Exception(err_msg)
+
+    def lifecycle_calculatepackageid(self, cc_path):
+        """
+        calculate the chaincode packageid.
+        :param cc_path: where the chaincode package is
+        :return: calculated packageid
+        """
+        try:
+            res = subprocess.Popen("{} lifecycle chaincode calculatepackageid {} "
+                        .format(self.peer, cc_path),
+                        shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            stdout, stderr = res.communicate()
+            return_code = res.returncode
+            if return_code == 0:
+                content = str(stdout, encoding="utf-8")
+                return return_code, content
+            else:
+                stderr = str(stderr, encoding="utf-8")
+                return return_code, stderr
+        except Exception as e:
+            err_msg = "calculated chaincode packageid failed for {}!".format(e)
+            raise Exception(err_msg)

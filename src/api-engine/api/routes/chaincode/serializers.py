@@ -6,7 +6,7 @@ from api.config import FABRIC_CHAINCODE_STORE
 
 from api.models import ChainCode
 from api.common.serializers import ListResponseSerializer
-import hashlib
+import os
 
 
 def upload_to(instance, filename):
@@ -18,25 +18,20 @@ class ChainCodeIDSerializer(serializers.Serializer):
 
 
 class ChainCodePackageBody(serializers.Serializer):
-    name = serializers.CharField(max_length=128, required=True)
-    version = serializers.CharField(max_length=128, required=True)
-    language = serializers.CharField(max_length=128, required=True)
-    md5 = serializers.CharField(max_length=128, required=True)
     file = serializers.FileField()
 
+    description = serializers.CharField(max_length=128, required=False)
+
     def validate(self, attrs):
-        md5_get = self.md5_for_file(attrs["file"])
-        if md5_get != attrs["md5"]:
-            raise serializers.ValidationError("md5 not same.")
+        extension_get = self.extension_for_file(attrs["file"])
+        if not extension_get:
+            raise serializers.ValidationError("unsupported package type")
         return super().validate(attrs)
 
     @staticmethod
-    def md5_for_file(chunks):
-        md5 = hashlib.md5()
-        for data in chunks:
-            md5.update(data)
-        return md5.hexdigest()
-
+    def extension_for_file(file):
+            extension = file.name.endswith('.tar.gz')
+            return extension
 
 class ChainCodeNetworkSerializer(serializers.Serializer):
     id = serializers.UUIDField(help_text="Network ID")

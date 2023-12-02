@@ -804,11 +804,13 @@ class ChainCode(models.Model):
         editable=False,
         unique=True
     )
-    name = models.CharField(
-        help_text="name of chainCode", max_length=128
+    package_id = models.CharField(
+        help_text="package_id of chainCode", max_length=128,
+        editable=False,
+        unique=True
     )
-    version = models.CharField(
-        help_text="version of chainCode", max_length=128
+    label = models.CharField(
+        help_text="label of chainCode", max_length=128
     )
     creator = models.CharField(
         help_text="creator of chainCode", max_length=128
@@ -816,8 +818,8 @@ class ChainCode(models.Model):
     language = models.CharField(
         help_text="language of chainCode", max_length=128
     )
-    md5 = models.CharField(
-        help_text="md5 of chainCode", max_length=128
+    description = models.CharField(
+        help_text="description of chainCode", max_length=128, blank=True, null=True
     )
     create_ts = models.DateTimeField(
         help_text="Create time of chainCode", auto_now_add=True
