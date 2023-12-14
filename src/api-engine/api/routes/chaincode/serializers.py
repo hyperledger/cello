@@ -51,7 +51,7 @@ class ChainCodeResponseSerializer(ChainCodeIDSerializer, serializers.ModelSerial
 
     class Meta:
         model = ChainCode
-        fields = ("id", "name", "version", "creator", "language", "create_ts", "md5")
+        fields = ("id", "package_id", "label", "creator", "language", "create_ts", "description")
 
 
 class ChaincodeListResponse(ListResponseSerializer):

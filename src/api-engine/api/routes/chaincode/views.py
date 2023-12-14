@@ -95,12 +95,12 @@ class ChainCodeViewSet(viewsets.ViewSet):
                 chanincodes_list = [
                     {
                         "id": chaincode.id,
-                        "name": chaincode.name,
-                        "version": chaincode.version,
+                        "package_id": chaincode.package_id,
+                        "label": chaincode.label,
                         "creator": chaincode.creator,
                         "language": chaincode.language,
                         "create_ts": chaincode.create_ts,
-                        "md5": chaincode.md5,
+                        "description": chaincode.description,
                     }
                     for chaincode in chaincodes_pages
                 ]
