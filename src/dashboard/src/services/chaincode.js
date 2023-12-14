@@ -12,3 +12,10 @@ export async function uploadChainCode(params) {
     body: params,
   });
 }
+
+export async function installChainCode(params) {
+  return request('/api/v1/chaincodes/installation', {
+    method: 'POST',
+    body: params,
+  });
+}
