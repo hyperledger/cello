@@ -1,4 +1,4 @@
-import { listChainCode, uploadChainCode } from '@/services/chaincode';
+import { listChainCode, uploadChainCode, installChainCode } from '@/services/chaincode';
 
 export default {
   namespace: 'chainCode',
@@ -32,6 +32,12 @@ export default {
     },
     *uploadChainCode({ payload, callback }, { call }) {
       const response = yield call(uploadChainCode, payload);
+      if (callback) {
+        callback(response);
+      }
+    },
+    *installChainCode({ payload, callback }, { call }) {
+      const response = yield call(installChainCode, payload);
       if (callback) {
         callback(response);
       }
