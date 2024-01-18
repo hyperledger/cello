@@ -1,3 +1,4 @@
+import React from 'react';
 import { extend } from 'umi-request';
 import { notification } from 'antd';
 import { history } from 'umi';
@@ -25,8 +26,13 @@ const codeMessage = {
  * 异常处理程序
  */
 const errorHandler = error => {
-  const { response = {} } = error;
-  const errortext = codeMessage[response.status] || response.statusText;
+  const { response, data } = error;
+  const errortext = (
+    <>
+      {codeMessage[response.status] || response.statusText} <br />
+      {data.msg[0]}
+    </>
+  );
   const { status, url } = response;
   let verifyUserFail = false;
 

@@ -27,7 +27,7 @@ Jinja2==2.11.3
 jsonpointer==2.0
 jsonschema==3.2.0
 kubernetes==11.0.0
-MarkupSafe==1.1.1
+MarkupSafe==2.0.1
 oauthlib==3.1.0
 packaging==20.4
 pathtools==0.1.2
