@@ -13,9 +13,10 @@ export async function uploadChainCode(params) {
   });
 }
 
-export async function installChainCode(params) {
-  return request('/api/v1/chaincodes/installation', {
-    method: 'POST',
-    body: params,
-  });
-}
+// export async function listApprovedChaincode(params) {
+//   // const { channelName, orgName } = params;
+//   // return request(`/api/v1/approvedChaincodeDefinitions/${channel_name}/${org_name}`);
+//   return {
+//     chaincode_names: []
+//   };
+// }
