@@ -9,8 +9,8 @@ import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import StandardTable from '@/components/StandardTable';
 import { Form } from 'antd/lib/index';
 import ApproveForm from '@/pages/ChainCode/forms/ApproveForm';
+import CommitForm from './forms/CommitForm';
 import styles from './styles.less';
-import InstallForm from './forms/InstallForm';
 
 const FormItem = Form.Item;
 
@@ -159,6 +159,7 @@ const UploadChainCode = props => {
   loadingChainCodes: loading.effects['chainCode/listChainCode'],
   uploading: loading.effects['chainCode/uploadChainCode'],
   approving: loading.effects['chainCode/approveChainCode'],
+  committing: loading.effects['chainCode/commitChainCode'],
 }))
 class ChainCode extends PureComponent {
   state = {
@@ -166,8 +167,8 @@ class ChainCode extends PureComponent {
     formValues: {},
     newFile: '',
     modalVisible: false,
-    installModalVisible: false,
     approveModalVisible: false,
+    commitModalVisible: false,
   };
 
   componentDidMount() {
@@ -219,21 +220,15 @@ class ChainCode extends PureComponent {
     });
   };
 
-  handleInstallModalVisible = visible => {
-    this.setState({
-      installModalVisible: !!visible,
-    });
-  };
-
   handleApproveModalVisible = visible => {
     this.setState({
       approveModalVisible: !!visible,
     });
   };
 
-  setOperatedRow = row => {
+  handleCommitModalVisible = visible => {
     this.setState({
-      operatedRow: row,
+      commitModalVisible: !!visible,
     });
   };
 
@@ -254,21 +249,6 @@ class ChainCode extends PureComponent {
     });
   };
 
-  handleInstall = (values, callback) => {
-    const { dispatch } = this.props;
-    const { operatedRow } = this.state;
-    const { node } = values;
-    const formData = new FormData();
-    formData.append('peer_uuid', node);
-    formData.append('chaincode_package', operatedRow.package_id);
-
-    dispatch({
-      type: 'chainCode/installChainCode',
-      payload: formData,
-      callback,
-    });
-  };
-
   onUploadChainCode = () => {
     this.handleModalVisible(true);
   };
@@ -283,16 +263,15 @@ class ChainCode extends PureComponent {
       modalVisible,
       newFile,
       approveModalVisible,
-      installModalVisible,
-      operatedRow,
+      commitModalVisible,
     } = this.state;
     const {
       chainCode: { chainCodes, paginations },
       loadingChainCodes,
       intl,
       uploading,
-      installing,
       approving,
+      committing,
     } = this.props;
 
     const formProps = {
@@ -306,20 +285,20 @@ class ChainCode extends PureComponent {
       intl,
     };
 
-    const installFormProps = {
-      installModalVisible,
-      handleInstallModalVisible: this.handleInstallModalVisible,
-      fetchChainCodes: this.fetchChainCodes,
-      installing,
-      operatedRow,
-      handleInstall: this.handleInstall,
-    };
-
     const approveFormProps = {
       approveModalVisible,
       handleApproveModalVisible: this.handleApproveModalVisible,
       fetchChainCodes: this.fetchChainCodes,
       approving,
+      selectedRows: [],
+      intl,
+    };
+
+    const commitFormProps = {
+      commitModalVisible,
+      handleCommitModalVisible: this.handleCommitModalVisible,
+      fetchChainCodes: this.fetchChainCodes,
+      committing,
       selectedRows: [],
       intl,
     };
@@ -359,7 +338,7 @@ class ChainCode extends PureComponent {
           id: 'app.chainCode.table.header.packageID',
           defaultMessage: 'PackageID',
         }),
-        dataIndex: 'package_id',
+        dataIndex: 'packageID',
         ellipsis: true,
       },
       {
@@ -391,12 +370,7 @@ class ChainCode extends PureComponent {
         // eslint-disable-next-line no-unused-vars
         render: (text, record) => (
           <Fragment>
-            <a
-              onClick={() => {
-                this.handleInstallModalVisible(true);
-                this.setOperatedRow(record);
-              }}
-            >
+            <a>
               {intl.formatMessage({
                 id: 'app.chainCode.table.operate.install',
                 defaultMessage: 'Install',
@@ -410,7 +384,7 @@ class ChainCode extends PureComponent {
               })}
             </a>
             <Divider type="vertical" />
-            <a>
+            <a onClick={() => this.handleCommitModalVisible(true)}>
               {intl.formatMessage({
                 id: 'app.chainCode.table.operate.commit',
                 defaultMessage: 'Commit',
@@ -425,14 +399,7 @@ class ChainCode extends PureComponent {
     // TODO: remove dummy data after API is connected
     const dummyList = [
       {
-        package_id: 'cc1v1:cc7bb5f50a53c207f68d37e9423c32f968083282e5ffac00d41ffc5768dc1873',
-        description: 'chaincode demo',
-        version: 'v1',
-        language: 'golang',
-        approve: false,
-      },
-      {
-        package_id: 'cc2v1:cc7bb5f50a53c207f68d37e9423c32f968083282e5ffac00d41ffc5768dc1873',
+        packageID: 'cc1v1:cc7bb5f50a53c207f68d37e9423c32f968083282e5ffac00d41ffc5768dc1873',
         description: 'chaincode demo',
         version: 'v1',
         language: 'golang',
@@ -479,9 +446,9 @@ class ChainCode extends PureComponent {
             />
           </div>
         </Card>
-        <InstallForm {...installFormProps} />
-        <ApproveForm {...approveFormProps} />
         <UploadChainCode {...formProps} />
+        <ApproveForm {...approveFormProps} />
+        <CommitForm {...commitFormProps} />
       </PageHeaderWrapper>
     );
   }
