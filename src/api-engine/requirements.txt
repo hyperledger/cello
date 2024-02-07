@@ -7,7 +7,7 @@ chardet==3.0.4
 coreapi==2.3.3
 coreschema==0.0.4
 defusedxml==0.6.0
-Django==3.1.14
+Django==3.2.24
 django-allauth==0.41.0
 django-cors-headers==3.5.0
 django-extensions==2.2.9
