@@ -1,4 +1,4 @@
-asgiref==3.3.1
+asgiref==3.3.2
 attrs==20.3.0
 cachetools==4.1.1
 celery==5.2.6
