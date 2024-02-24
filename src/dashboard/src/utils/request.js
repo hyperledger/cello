@@ -30,7 +30,7 @@ const errorHandler = error => {
   const errortext = (
     <>
       {codeMessage[response.status] || response.statusText} <br />
-      {data.msg[0]}
+      {data && data.msg && Array.isArray(data.msg) && data.msg.length > 0 && data.msg[0]}
     </>
   );
   const { status, url } = response;
