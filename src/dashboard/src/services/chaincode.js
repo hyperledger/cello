@@ -7,7 +7,7 @@ export async function listChainCode(params) {
 }
 
 export async function uploadChainCode(params) {
-  return request('/api/v1/chaincodes/package', {
+  return request('/api/v1/chaincodes/chaincodeRepo', {
     method: 'POST',
     body: params,
   });

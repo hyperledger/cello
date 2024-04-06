@@ -105,7 +105,7 @@ const UploadChainCode = props => {
             id: 'app.chainCode.form.create.file',
             defaultMessage: 'Package',
           })}
-          name="chaincodePackage"
+          name="file"
           getValueFromEvent={normFile}
           rules={[
             {
