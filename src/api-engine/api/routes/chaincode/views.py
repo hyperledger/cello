@@ -32,6 +32,7 @@ from api.routes.chaincode.serializers import (
 )
 from api.common import ok, err
 import threading
+import hashlib
 
 
 class ChainCodeViewSet(viewsets.ViewSet):
@@ -61,6 +62,7 @@ class ChainCodeViewSet(viewsets.ViewSet):
                 os.remove(meta_path)
 
             chaincode = ChainCode.objects.get(id=pk)
+            chaincode.package_id = chaincode.package_id
             chaincode.language = language
             chaincode.label = label
             chaincode.save()
@@ -133,23 +135,48 @@ class ChainCodeViewSet(viewsets.ViewSet):
                     for chunk in file.chunks():
                         f.write(chunk)
 
+                with tarfile.open(temp_cc_path, "r:gz") as tar:
+                    # Locate the metadata file
+                    metadata_file = None
+                    for member in tar.getmembers():
+                        if member.name.endswith("metadata.json"):
+                            metadata_file = member
+                            break
+                    
+                    if metadata_file is not None:
+                        # Extract the metadata file
+                        metadata_content = tar.extractfile(metadata_file).read().decode("utf-8")
+                        metadata = json.loads(metadata_content)
+                        label = metadata.get("label")
+                    else:
+                        return Response(
+                            err("Metadata file not found in the chaincode package."), status=status.HTTP_400_BAD_REQUEST
+                        )
+
                 org = request.user.organization
-                qs = Node.objects.filter(type="peer", organization=org)
-                if not qs.exists():
-                    return Response(
-                        err("at least 1 peer node is required for the chaincode package upload."), 
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
-                peer_node = qs.first()
-                envs = init_env_vars(peer_node, org)
-                peer_channel_cli = PeerChainCode("v2.2.0", **envs)
-                return_code, content = peer_channel_cli.lifecycle_calculatepackageid(temp_cc_path)
-                if (return_code != 0):
-                    return Response(
-                        err("calculate packageid failed for {}.".format(content)), 
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
-                packageid = content.strip()
+                # qs = Node.objects.filter(type="peer", organization=org)
+                # if not qs.exists():
+                #     return Response(
+                #         err("at least 1 peer node is required for the chaincode package upload."), 
+                #         status=status.HTTP_400_BAD_REQUEST
+                #     )
+                # peer_node = qs.first()
+                # envs = init_env_vars(peer_node, org)
+                # peer_channel_cli = PeerChainCode("v2.2.0", **envs)
+                # return_code, content = peer_channel_cli.lifecycle_calculatepackageid(temp_cc_path)
+                # if (return_code != 0):
+                #     return Response(
+                #         err("calculate packageid failed for {}.".format(content)), 
+                #         status=status.HTTP_400_BAD_REQUEST
+                #     )
+                # packageid = content.strip()
+
+                # manually calculate the package id
+                sha256_hash = hashlib.sha256()
+                with open(temp_cc_path, "rb") as f:
+                    for byte_block in iter(lambda: f.read(4096), b""):
+                        sha256_hash.update(byte_block)
+                packageid = label + ":" + sha256_hash.hexdigest()
 
                 # check if packageid exists
                 cc = ChainCode.objects.filter(package_id=packageid)
