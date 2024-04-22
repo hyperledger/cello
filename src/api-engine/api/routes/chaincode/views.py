@@ -62,7 +62,7 @@ class ChainCodeViewSet(viewsets.ViewSet):
                 os.remove(meta_path)
 
             chaincode = ChainCode.objects.get(id=pk)
-            chaincode.package_id = label + ":" + chaincode.package_id
+            chaincode.package_id = chaincode.package_id
             chaincode.language = language
             chaincode.label = label
             chaincode.save()
@@ -135,6 +135,22 @@ class ChainCodeViewSet(viewsets.ViewSet):
                     for chunk in file.chunks():
                         f.write(chunk)
 
+                with tarfile.open(temp_cc_path, "r:gz") as tar:
+                    # Locate the metadata file
+                    metadata_file = None
+                    for member in tar.getmembers():
+                        if member.name.endswith("metadata.json"):
+                            metadata_file = member
+                            break
+                    
+                    if metadata_file is not None:
+                        # Extract the metadata file
+                        metadata_content = tar.extractfile(metadata_file).read().decode("utf-8")
+                        metadata = json.loads(metadata_content)
+                        label = metadata.get("label")
+                    else:
+                        print("Metadata file not found in the chaincode package.")
+
                 org = request.user.organization
                 # qs = Node.objects.filter(type="peer", organization=org)
                 # if not qs.exists():
@@ -158,7 +174,7 @@ class ChainCodeViewSet(viewsets.ViewSet):
                 with open(temp_cc_path, "rb") as f:
                     for byte_block in iter(lambda: f.read(4096), b""):
                         sha256_hash.update(byte_block)
-                packageid = sha256_hash.hexdigest()
+                packageid = label + ":" + sha256_hash.hexdigest()
 
                 # check if packageid exists
                 cc = ChainCode.objects.filter(package_id=packageid)
