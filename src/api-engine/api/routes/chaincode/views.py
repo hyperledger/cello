@@ -149,7 +149,9 @@ class ChainCodeViewSet(viewsets.ViewSet):
                         metadata = json.loads(metadata_content)
                         label = metadata.get("label")
                     else:
-                        print("Metadata file not found in the chaincode package.")
+                        return Response(
+                            err("Metadata file not found in the chaincode package."), status=status.HTTP_400_BAD_REQUEST
+                        )
 
                 org = request.user.organization
                 # qs = Node.objects.filter(type="peer", organization=org)
