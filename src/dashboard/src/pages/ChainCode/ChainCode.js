@@ -338,7 +338,7 @@ class ChainCode extends PureComponent {
           id: 'app.chainCode.table.header.packageID',
           defaultMessage: 'PackageID',
         }),
-        dataIndex: 'packageID',
+        dataIndex: 'package_id',
         ellipsis: true,
       },
       {
@@ -397,15 +397,6 @@ class ChainCode extends PureComponent {
       },
     ];
     // TODO: remove dummy data after API is connected
-    const dummyList = [
-      {
-        packageID: 'cc1v1:cc7bb5f50a53c207f68d37e9423c32f968083282e5ffac00d41ffc5768dc1873',
-        description: 'chaincode demo',
-        version: 'v1',
-        language: 'golang',
-        approve: false,
-      },
-    ];
     const dummyPagination = {
       total: 0,
       current: 1,
@@ -437,7 +428,7 @@ class ChainCode extends PureComponent {
               rowKey="id"
               // TODO: remove length check after API is connected
               data={{
-                list: chainCodes.length !== 0 ? chainCodes : dummyList,
+                list: chainCodes,
                 pagination: chainCodes.length !== 0 ? paginations : dummyPagination,
               }}
               columns={columns}
