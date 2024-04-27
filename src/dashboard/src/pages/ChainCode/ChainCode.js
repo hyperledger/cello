@@ -228,7 +228,7 @@ class ChainCode extends PureComponent {
     if (visible) {
       this.fetchNodes();
       this.setState({
-        chainCodeName: record.packageID,
+        chainCodeName: record.package_id,
       });
     }
     this.setState({
@@ -245,6 +245,23 @@ class ChainCode extends PureComponent {
   handleCommitModalVisible = visible => {
     this.setState({
       commitModalVisible: !!visible,
+    });
+  };
+
+  handleInstall = (values, callback) => {
+    const { dispatch } = this.props;
+    const formData = new FormData();
+
+    Object.keys(values)
+      .filter(key => !(key === 'description' && !values[key])) // filter out empty description
+      .forEach(key => {
+        formData.append(key, values[key]);
+      });
+
+    dispatch({
+      type: 'chainCode/installChainCode',
+      payload: formData,
+      callback,
     });
   };
 
@@ -308,6 +325,7 @@ class ChainCode extends PureComponent {
       installModalVisible,
       handleInstallModalVisible: this.handleInstallModalVisible,
       fetchChainCodes: this.fetchChainCodes,
+      handleInstall: this.handleInstall,
       installing,
       chainCodeName,
       nodes,
