@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { injectIntl, useIntl } from 'umi';
-import { Modal, message, Select, Form, Tag } from 'antd';
+import { Modal, message, Select, Form, Tag, Input } from 'antd';
 import { listNode } from '@/services/node';
 import styles from '../styles.less';
 
@@ -17,6 +17,7 @@ const InstallForm = props => {
     installing,
     fetchChainCodes,
     handleInstall,
+    chainCodeName,
   } = props;
 
   useEffect(() => {
@@ -101,6 +102,26 @@ const InstallForm = props => {
       onCancel={() => handleInstallModalVisible(false)}
     >
       <Form onFinish={onFinish} form={form} preserve={false}>
+        <FormItem
+          {...formItemLayout}
+          label={intl.formatMessage({
+            id: 'app.chainCode.form.install.chainCodeName',
+            defaultMessage: 'Chaincode name:',
+          })}
+          name="id"
+          initialValue={chainCodeName}
+          rules={[
+            {
+              required: true,
+              message: intl.formatMessage({
+                id: 'app.chainCode.form.install.chainCodeName',
+                defaultMessage: 'Chaincode name:',
+              }),
+            },
+          ]}
+        >
+          <Input disabled />
+        </FormItem>
         <FormItem
           {...formItemLayout}
           label={intl.formatMessage({
