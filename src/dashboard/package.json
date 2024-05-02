@@ -111,7 +111,7 @@
     "eslint-plugin-markdown": "^2.2.0",
     "eslint-plugin-react": "^7.12.4",
     "faker": "^4.1.0",
-    "gh-pages": "^2.0.1",
+    "gh-pages": "^6.1.1",
     "husky": "^4.2.5",
     "jest-puppeteer": "^4.1.0",
     "jsdom-global": "^3.0.2",
