@@ -14,7 +14,7 @@ django-extensions==2.2.9
 django-filter==2.4.0
 django-rest-auth==0.9.5
 djangorestframework==3.11.2
-djangorestframework-simplejwt==5.2.2
+djangorestframework-simplejwt==5.3.1
 docker==4.2.0
 drf-yasg==1.17.1
 flex==6.14.1
@@ -48,7 +48,7 @@ rsa==4.7
 ruamel.yaml==0.16.12
 ruamel.yaml.clib==0.2.2
 six==1.16.0
-sqlparse==0.4.4
+sqlparse==0.5.0
 strict-rfc3339==0.7
 swagger-spec-validator==2.5.0
 uritemplate==3.0.1
