@@ -1,2 +1,2 @@
 kubernetes<=9.0.0
-requests<=2.22.0
+requests<=2.32.0
