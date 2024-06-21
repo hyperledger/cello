@@ -13,10 +13,10 @@ django-cors-headers==3.5.0
 django-extensions==2.2.9
 django-filter==2.4.0
 django-rest-auth==0.9.5
-djangorestframework==3.11.2
+djangorestframework==3.15.1
 djangorestframework-simplejwt==5.3.1
 docker==4.2.0
-drf-yasg==1.17.1
+drf-yasg==1.21.7
 flex==6.14.1
 google-auth==1.23.0
 holdup==1.8.0
@@ -29,7 +29,7 @@ jsonschema==3.2.0
 kubernetes==11.0.0
 MarkupSafe==2.0.1
 oauthlib==3.1.0
-packaging==20.4
+packaging==21.0
 pathtools==0.1.2
 psycopg2-binary==2.8.4
 pyasn1==0.4.8
