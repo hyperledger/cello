@@ -18,5 +18,6 @@ func (s *server) Start() {
 	grouter.GET("/channels", routers.GetChannel)
 	grouter.PUT("/channels", routers.UpdateChannel)
 	grouter.POST("/channels", routers.CreateChannel)
+	grouter.POST("/configtx", routers.SignConfigTx)
 	grouter.Run("localhost:8080")
 }

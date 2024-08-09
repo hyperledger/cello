@@ -27,3 +27,7 @@ func CreateChannel(c *gin.Context) {
 func UpdateChannel(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, nil)
 }
+
+func SignConfigTx(c *gin.Context) {
+	c.IndentedJSON(http.StatusOK, nil)
+}
