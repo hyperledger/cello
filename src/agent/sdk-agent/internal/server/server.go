@@ -15,7 +15,8 @@ func NewServer() server {
 
 func (s *server) Start() {
 	grouter := gin.Default()
-	grouter.GET("/networks", routers.GetNetworks)
-
+	grouter.GET("/channels", routers.GetChannel)
+	grouter.PUT("/channels", routers.UpdateChannel)
+	grouter.POST("/channels", routers.CreateChannel)
 	grouter.Run("localhost:8080")
 }
