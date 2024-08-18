@@ -15,7 +15,7 @@ func NewServer() server {
 
 func (s *server) Start() {
 	grouter := gin.Default()
-	grouter.GET("/channels", routers.GetChannel)
+	grouter.GET("/channels", routers.GetChannels)
 	grouter.PUT("/channels", routers.UpdateChannel)
 	grouter.POST("/channels", routers.CreateChannel)
 	grouter.POST("/channels/:chain_id/signature", routers.SignConfigTx)

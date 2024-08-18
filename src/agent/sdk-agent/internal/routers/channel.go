@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetChannel(c *gin.Context) {
+func GetChannels(c *gin.Context) {
 	id := c.Query("channel_id")
 	if id == "" {
 		channels := []string{"Channel 1", "Channel 2", "Channel 3"}
