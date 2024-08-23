@@ -92,6 +92,7 @@
     "@types/history": "^4.7.2",
     "@types/react": "^16.8.1",
     "@types/react-dom": "^16.0.11",
+    "glob": "^9.0.0",
     "@umijs/preset-react": "^1.2.2",
     "antd-pro-merge-less": "^1.0.0",
     "antd-theme-webpack-plugin": "^1.2.0",
@@ -143,6 +144,7 @@
     "scripts/**/*.js"
   ],
   "resolutions": {
-    "mockjs/commander": "^8.2.0"
+    "mockjs/commander": "^8.2.0",
+    "glob": "^9.0.0"
   }
 }
