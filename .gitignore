@@ -251,4 +251,4 @@ src/dashboard/lambda/mock/index.js
 
 # Local Netlify folder
 .netlify
-src/dashboard/deno.lock
+deno.lock
