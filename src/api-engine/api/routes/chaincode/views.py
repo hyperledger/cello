@@ -162,7 +162,7 @@ class ChainCodeViewSet(viewsets.ViewSet):
                 #     )
                 # peer_node = qs.first()
                 # envs = init_env_vars(peer_node, org)
-                # peer_channel_cli = PeerChainCode("v2.2.0", **envs)
+                # peer_channel_cli = PeerChainCode("v2.5.9", **envs)
                 # return_code, content = peer_channel_cli.lifecycle_calculatepackageid(temp_cc_path)
                 # if (return_code != 0):
                 #     return Response(
@@ -241,7 +241,7 @@ class ChainCodeViewSet(viewsets.ViewSet):
             peer_node = qs.first()
             envs = init_env_vars(peer_node, org)
 
-            peer_channel_cli = PeerChainCode("v2.2.0", **envs)
+            peer_channel_cli = PeerChainCode("v2.5.9", **envs)
             res = peer_channel_cli.lifecycle_install(cc_targz)
             if res != 0:
                 return Response(err("install chaincode failed."), status=status.HTTP_400_BAD_REQUEST)
@@ -270,7 +270,7 @@ class ChainCodeViewSet(viewsets.ViewSet):
             envs = init_env_vars(peer_node, org)
 
             timeout = "5s"
-            peer_channel_cli = PeerChainCode("v2.2.0", **envs)
+            peer_channel_cli = PeerChainCode("v2.5.9", **envs)
             res, installed_chaincodes = peer_channel_cli.lifecycle_query_installed(
                 timeout)
             if res != 0:
@@ -300,7 +300,7 @@ class ChainCodeViewSet(viewsets.ViewSet):
             envs = init_env_vars(peer_node, org)
 
             timeout = "5s"
-            peer_channel_cli = PeerChainCode("v2.2.0", **envs)
+            peer_channel_cli = PeerChainCode("v2.5.9", **envs)
             res = peer_channel_cli.lifecycle_get_installed_package(timeout)
             if res != 0:
                 return Response(err("get installed package failed."), status=status.HTTP_400_BAD_REQUEST)
@@ -352,7 +352,7 @@ class ChainCodeViewSet(viewsets.ViewSet):
                 peer_node = qs.first()
                 envs = init_env_vars(peer_node, org)
 
-                peer_channel_cli = PeerChainCode("v2.2.0", **envs)
+                peer_channel_cli = PeerChainCode("v2.5.9", **envs)
                 code, content = peer_channel_cli.lifecycle_approve_for_my_org(orderer_url, orderer_tls_root_cert, channel_name,
                                                                               chaincode_name, chaincode_version, policy, sequence)
                 if code != 0:
@@ -384,7 +384,7 @@ class ChainCodeViewSet(viewsets.ViewSet):
             channel_name = request.data.get("channel_name")
             cc_name = request.data.get("chaincode_name")
 
-            peer_channel_cli = PeerChainCode("v2.2.0", **envs)
+            peer_channel_cli = PeerChainCode("v2.5.9", **envs)
             code, content = peer_channel_cli.lifecycle_query_approved(
                 channel_name, cc_name)
             if code != 0:
@@ -438,7 +438,7 @@ class ChainCodeViewSet(viewsets.ViewSet):
                 peer_node = qs.first()
                 envs = init_env_vars(peer_node, org)
 
-                peer_channel_cli = PeerChainCode("v2.2.0", **envs)
+                peer_channel_cli = PeerChainCode("v2.5.9", **envs)
                 code, content = peer_channel_cli.lifecycle_check_commit_readiness(orderer_url, orderer_tls_root_cert,
                                                                                   channel_name, chaincode_name,
                                                                                   chaincode_version, policy, sequence)
@@ -507,7 +507,7 @@ class ChainCodeViewSet(viewsets.ViewSet):
                     peer_address_list.append(peer_address)
                     peer_root_certs.append(peer_tls_cert)
 
-                peer_channel_cli = PeerChainCode("v2.2.0", **envs)
+                peer_channel_cli = PeerChainCode("v2.5.9", **envs)
                 code = peer_channel_cli.lifecycle_commit(orderer_url, orderer_tls_root_cert, channel_name,
                                                          chaincode_name, chaincode_version, policy,
                                                          peer_address_list, peer_root_certs, sequence)
@@ -539,7 +539,7 @@ class ChainCodeViewSet(viewsets.ViewSet):
                 raise ResourceNotFound
             peer_node = qs.first()
             envs = init_env_vars(peer_node, org)
-            peer_channel_cli = PeerChainCode("v2.2.0", **envs)
+            peer_channel_cli = PeerChainCode("v2.5.9", **envs)
             code, chaincodes_commited = peer_channel_cli.lifecycle_query_committed(
                 channel_name, chaincode_name)
             if code != 0:

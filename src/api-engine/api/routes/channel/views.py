@@ -147,7 +147,7 @@ class ChannelViewSet(viewsets.ViewSet):
                 ordering_node = Node.objects.get(id=orderers[0])
                 peer_node = Node.objects.get(id=peers[0])
                 envs = init_env_vars(peer_node, org)
-                peer_channel_cli = PeerChannel("v2.2.0", **envs)
+                peer_channel_cli = PeerChannel("v2.5.9", **envs)
                 peer_channel_cli.create(
                     channel=name,
                     orderer_url="{}.{}:{}".format(
@@ -312,7 +312,7 @@ class ChannelViewSet(viewsets.ViewSet):
                     env = {
                         "FABRIC_CFG_PATH": "{}/{}/peers/{}/".format(dir_node, org.name, node.name + "." + org.name),
                     }
-                    cli = PeerChannel("v2.2.0", **env)
+                    cli = PeerChannel("v2.5.9", **env)
                     cli.signconfigtx(
                         channel.get_channel_artifacts_path(CFG_DELTA_ENV_PB))
                     LOG.info("Peers to send the update transaction success")
@@ -343,7 +343,7 @@ class ChannelViewSet(viewsets.ViewSet):
             env = {
                 "FABRIC_CFG_PATH": "{}/{}/peers/{}/".format(dir_node, org.name, node.name + "." + org.name),
             }
-            peer_channel_cli = PeerChannel("v2.2.0", **env)
+            peer_channel_cli = PeerChannel("v2.5.9", **env)
             peer_channel_cli.fetch(option="config", channel=channel.name)
 
             # Decode latest config block into json
@@ -407,7 +407,7 @@ def join_peers(envs, block_path):
     :param block_path: Path to file containing genesis block
     """
     # Join the peers to the channel.
-    peer_channel_cli = PeerChannel("v2.2.0", **envs)
+    peer_channel_cli = PeerChannel("v2.5.9", **envs)
     peer_channel_cli.join(
         block_file=block_path
     )

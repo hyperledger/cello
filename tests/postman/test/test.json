@@ -7,6 +7,62 @@
 	},
 	"item": [
 		{
+			"name": "Register Admin",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "register admin",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"var responseBody = pm.response.json();",
+							"pm.environment.set(\"orgID\", responseBody.data.id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "accept",
+						"name": "accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"email\": \"admin@163.com\",\n\t\"password\": \"123...\",\n\t\"orgName\": \"org1.cello.com\"\n}"
+				},
+				"url": {
+					"raw": "localhost:8080/api/v1/register",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"register"
+					]
+				},
+				"description": "Register Admin"
+			},
+			"response": []
+		},
+		{
 			"name": "Login Admin",
 			"event": [
 				{
@@ -18,8 +74,8 @@
 							"    pm.response.to.have.status(200);",
 							"});",
 							"",
-							"var jsonData = pm.response.json();",
-							"pm.environment.set(\"token\", jsonData.token);"
+							"var responseBody = pm.response.json();",
+							"pm.environment.set(\"token\", responseBody.data.token);"
 						],
 						"type": "text/javascript"
 					}
@@ -33,21 +89,30 @@
 						"name": "Content-Type",
 						"value": "application/json",
 						"type": "text"
+					},
+					{
+						"key": "accept",
+						"name": "accept",
+						"value": "application/json",
+						"type": "text"
 					}
+
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"username\": \"admin\",\n\t\"password\": \"pass\"\n}"
+					"raw": "{\n\t\"email\": \"admin@163.com\",\n\t\"password\": \"123...\"\n}"
 				},
 				"url": {
-					"raw": "{{apiServer}}{{webRoot}}/auth/login/",
+					"raw": "localhost:8080/api/v1/login",
+					"protocol": "http",
 					"host": [
-						"{{apiServer}}{{webRoot}}"
+						"localhost"
 					],
+					"port": "8080",
 					"path": [
-						"auth",
-						"login",
-						""
+						"api",
+						"v1",
+						"login"
 					]
 				},
 				"description": "Login Admin"
@@ -55,12 +120,12 @@
 			"response": []
 		},
 		{
-			"name": "List Agents",
+			"name": "Verify Token",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
-						"id": "2493c5e9-eaf2-4689-a6ec-59080e571783",
+						"id": "token-verify",
 						"exec": [
 							"pm.test(\"Status code is 200\", function () {",
 							"    pm.response.to.have.status(200);",
@@ -71,57 +136,6 @@
 				}
 			],
 			"request": {
-				"auth": {
-					"type": "noauth"
-				},
-				"method": "GET",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "JWT {{token}}",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "{{apiServer}}{{webRoot}}/agents",
-					"host": [
-						"{{apiServer}}{{webRoot}}"
-					],
-					"path": [
-						"agents"
-					]
-				},
-				"description": "List Agents"
-			},
-			"response": []
-		},
-		{
-			"name": "Create Organization",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "a0f5e8df-9ce8-44e6-ad23-2f0899ce594a",
-						"exec": [
-							"pm.test(\"Status code is 201\", function () {",
-							"    pm.response.to.have.status(201);",
-							"});",
-							"",
-							"var jsonData = pm.response.json();",
-							"pm.environment.set(\"orgID\", jsonData.id);"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"auth": {
-					"type": "noauth"
-				},
 				"method": "POST",
 				"header": [
 					{
@@ -131,138 +145,30 @@
 						"type": "text"
 					},
 					{
-						"key": "Authorization",
-						"value": "JWT {{token}}",
+						"key": "accept",
+						"name": "accept",
+						"value": "application/json",
 						"type": "text"
 					}
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"name\": \"{{orgName}}\"\n}"
+					"raw": "{\n\t\"token\": \"{{token}}\"\n}"
 				},
 				"url": {
-					"raw": "{{apiServer}}{{webRoot}}/organizations",
+					"raw": "localhost:8080/api/v1/token-verify",
+					"protocol": "http",
 					"host": [
-						"{{apiServer}}{{webRoot}}"
+						"localhost"
 					],
+					"port": "8080",
 					"path": [
-						"organizations"
+						"api",
+						"v1",
+						"token-verify"
 					]
 				},
-				"description": "Create Organization"
-			},
-			"response": []
-		},
-		{
-			"name": "Retrieve Organization",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "a0f5e8df-9ce8-44e6-ad23-2f0899ce594a",
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});",
-							"",
-							"pm.test(\"Test is right org\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var orgName = pm.environment.get(\"orgName\");",
-							"",
-							"    tests[\"Name is right\"] = jsonData.name === orgName;",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"auth": {
-					"type": "noauth"
-				},
-				"method": "GET",
-				"header": [
-					{
-						"key": "Content-Type",
-						"name": "Content-Type",
-						"type": "text",
-						"value": "application/json"
-					},
-					{
-						"key": "Authorization",
-						"value": "JWT {{token}}",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "{{apiServer}}{{webRoot}}/organizations/{{orgID}}",
-					"host": [
-						"{{apiServer}}{{webRoot}}"
-					],
-					"path": [
-						"organizations",
-						"{{orgID}}"
-					]
-				},
-				"description": "Retrieve Organization"
-			},
-			"response": []
-		},
-		{
-			"name": "Create Admin with organization",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "a0f5e8df-9ce8-44e6-ad23-2f0899ce594a",
-						"exec": [
-							"pm.test(\"Status code is 201\", function () {",
-							"    pm.response.to.have.status(201);",
-							"});",
-							"",
-							"var jsonData = pm.response.json();",
-							"pm.environment.set(\"operatorID\", jsonData.id);"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"auth": {
-					"type": "noauth"
-				},
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"name": "Content-Type",
-						"type": "text",
-						"value": "application/json"
-					},
-					{
-						"key": "Authorization",
-						"value": "JWT {{token}}",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n\t\"username\": \"{{operatorName}}\",\n\t\"organization\": \"{{orgID}}\",\n\t\"role\": \"administrator\",\n\t\"password\": \"{{operatorPassword}}\",\n\t\"email\": \"{{operatorEmail}}\"\n}"
-				},
-				"url": {
-					"raw": "{{apiServer}}{{webRoot}}/users",
-					"host": [
-						"{{apiServer}}{{webRoot}}"
-					],
-					"path": [
-						"users"
-					]
-				},
-				"description": "Create Admin with organization"
+				"description": "Verify Token"
 			},
 			"response": []
 		},
@@ -272,14 +178,14 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "5fb7881e-27c4-4420-bebb-9c9a604ef129",
+						"id": "create agent",
 						"exec": [
 							"pm.test(\"Status code is 201\", function () {",
 							"    pm.response.to.have.status(201);",
 							"});",
 							"",
-							"var jsonData = pm.response.json();",
-							"pm.environment.set(\"agentID\", jsonData.id);"
+							"var responseBody = pm.response.json();",
+							"pm.environment.set(\"agentID\", responseBody.data.id);"
 						],
 						"type": "text/javascript"
 					}
@@ -293,25 +199,37 @@
 				"header": [
 					{
 						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "accept",
+						"name": "accept",
 						"value": "application/json",
 						"type": "text"
 					},
 					{
 						"key": "Authorization",
+						"name": "Authorization",
 						"value": "JWT {{token}}",
 						"type": "text"
 					}
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"name\": \"{{k8sAgentName}}\",\n\t\"worker_api\": \"{{k8sAgentWorkerApi}}\",\n\t\"capacity\": {{agentCapacity}},\n\t\"node_capacity\": {{nodeCapacity}},\n\t\"log_level\": \"info\",\n\t\"type\": \"kubernetes\",\n\t\"schedulable\": true,\n\t\"k8s_config\": {\n\t\t\"credential_type\": \"cert_key\",\n\t\t\"enable_ssl\": false,\n\t\t\"nfs_server\": \"{{k8sNfsServer}}\",\n\t\t\"cert\": \"cert\",\n\t\t\"key\": \"key\"\n\t}\n}"
+					"raw": "{\n\t\"name\": \"agent\",\n\t\"type\": \"docker\",\n\t\"urls\": \"http://192.168.1.38:5001\"\n}"
 				},
 				"url": {
-					"raw": "{{apiServer}}{{webRoot}}/agents",
+					"raw": "localhost:8080/api/v1/agents",
+					"protocol": "http",
 					"host": [
-						"{{apiServer}}{{webRoot}}"
+						"localhost"
 					],
+					"port": "8080",
 					"path": [
+						"api",
+						"v1",
 						"agents"
 					]
 				},
@@ -320,27 +238,19 @@
 			"response": []
 		},
 		{
-			"name": "Retrieve Agent",
+			"name": "Create Orderer Nodes",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
-						"id": "269f857f-7e26-417d-a4b0-dec87aac3853",
+						"id": "Create Orderer Nodes",
 						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
 							"});",
 							"",
-							"pm.test(\"Test is right agent\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var agentName = pm.environment.get(\"k8sAgentName\");",
-							"    var agentCapacity = parseInt(pm.environment.get(\"agentCapacity\"));",
-							"    var k8sAgentWorkerApi = pm.environment.get(\"k8sAgentWorkerApi\");",
-							"",
-							"    tests[\"Name is right\"] = jsonData.name === agentName;",
-							"    tests[\"Capacity is right\"] = jsonData.capacity === agentCapacity;",
-							"    tests[\"Worker api is right\"] = jsonData.worker_api === k8sAgentWorkerApi;",
-							"});"
+							"var responseBody = pm.response.json();",
+							"pm.environment.set(\"ordererID\", responseBody.data.id);"
 						],
 						"type": "text/javascript"
 					}
@@ -350,98 +260,62 @@
 				"auth": {
 					"type": "noauth"
 				},
-				"method": "GET",
-				"header": [
-					{
-						"key": "Content-Type",
-						"type": "text",
-						"value": "application/json"
-					},
-					{
-						"key": "Authorization",
-						"value": "JWT {{token}}",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "{{apiServer}}{{webRoot}}/agents/{{agentID}}",
-					"host": [
-						"{{apiServer}}{{webRoot}}"
-					],
-					"path": [
-						"agents",
-						"{{agentID}}"
-					]
-				},
-				"description": "Retrieve Agent"
-			},
-			"response": []
-		},
-		{
-			"name": "Auth Operator",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "62366c1c-74bf-4f81-ae81-f5da3c17eabb",
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});",
-							"",
-							"var jsonData = pm.response.json();",
-							"pm.environment.set(\"operatorToken\", jsonData.token);"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
 				"method": "POST",
 				"header": [
 					{
 						"key": "Content-Type",
+						"name": "Content-Type",
 						"value": "application/json",
 						"type": "text"
+					},
+					{
+						"key": "accept",
+						"name": "accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"name": "Authorization",
+						"value": "JWT {{token}}",
+						"type": "text"
 					}
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"username\": \"{{operatorName}}\",\n\t\"password\": \"{{operatorPassword}}\"\n}"
+					"raw": "{\n\t\"name\": \"orderer\",\n\t\"num\": \"1\",\n\t\"type\": \"orderer\"\n}"
 				},
 				"url": {
-					"raw": "{{apiServer}}{{webRoot}}/auth/login/",
+					"raw": "localhost:8080/api/v1/nodes",
+					"protocol": "http",
 					"host": [
-						"{{apiServer}}{{webRoot}}"
+						"localhost"
 					],
+					"port": "8080",
 					"path": [
-						"auth",
-						"login",
-						""
+						"api",
+						"v1",
+						"nodes"
 					]
 				},
-				"description": "Auth Operator"
+				"description": "Create Orderer Nodes"
 			},
 			"response": []
 		},
 		{
-			"name": "Apply agent with operator token",
+			"name": "Create Peer Nodes",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
-						"id": "62366c1c-74bf-4f81-ae81-f5da3c17eabb",
+						"id": "Create Peer Nodes",
 						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
 							"});",
 							"",
-							"var jsonData = pm.response.json();",
-							"pm.environment.set(\"appliedAgentID\", jsonData.id);"
+							"var responseBody = pm.response.json();",
+							"pm.environment.set(\"peerID\", responseBody.data.id);"
 						],
 						"type": "text/javascript"
 					}
@@ -455,295 +329,41 @@
 				"header": [
 					{
 						"key": "Content-Type",
-						"type": "text",
-						"value": "application/json"
-					},
-					{
-						"key": "Authorization",
-						"value": "JWT {{operatorToken}}",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n\t\"type\": \"kubernetes\",\n\t\"capacity\": {{agentCapacity}}\n}"
-				},
-				"url": {
-					"raw": "{{apiServer}}{{webRoot}}/agents/organization",
-					"host": [
-						"{{apiServer}}{{webRoot}}"
-					],
-					"path": [
-						"agents",
-						"organization"
-					]
-				},
-				"description": "Apply agent with operator token"
-			},
-			"response": []
-		},
-		{
-			"name": "Retrieve Agent with operator token",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "269f857f-7e26-417d-a4b0-dec87aac3853",
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});",
-							"",
-							"pm.test(\"Test is right agent\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    var agentID = pm.environment.get(\"appliedAgentID\");",
-							"",
-							"    tests[\"ID is right\"] = jsonData.id === agentID;",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"auth": {
-					"type": "noauth"
-				},
-				"method": "GET",
-				"header": [
-					{
-						"key": "Content-Type",
-						"type": "text",
-						"value": "application/json"
-					},
-					{
-						"key": "Authorization",
-						"value": "JWT {{operatorToken}}",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "{{apiServer}}{{webRoot}}/agents/{{agentID}}",
-					"host": [
-						"{{apiServer}}{{webRoot}}"
-					],
-					"path": [
-						"agents",
-						"{{agentID}}"
-					]
-				},
-				"description": "Retrieve Agent with operator token"
-			},
-			"response": []
-		},
-		{
-			"name": "Release Agent with operator token",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "269f857f-7e26-417d-a4b0-dec87aac3853",
-						"exec": [
-							"pm.test(\"Status code is 204\", function () {",
-							"    pm.response.to.have.status(204);",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"auth": {
-					"type": "noauth"
-				},
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "Content-Type",
-						"type": "text",
-						"value": "application/json"
-					},
-					{
-						"key": "Authorization",
-						"value": "JWT {{operatorToken}}",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "{{apiServer}}{{webRoot}}/agents/{{agentID}}/organization",
-					"host": [
-						"{{apiServer}}{{webRoot}}"
-					],
-					"path": [
-						"agents",
-						"{{agentID}}",
-						"organization"
-					]
-				},
-				"description": "Release agent with operator token"
-			},
-			"response": []
-		},
-		{
-			"name": "Delete Agent",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "269f857f-7e26-417d-a4b0-dec87aac3853",
-						"exec": [
-							"pm.test(\"Status code is 204\", function () {",
-							"    pm.response.to.have.status(204);",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"auth": {
-					"type": "noauth"
-				},
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "Content-Type",
-						"type": "text",
-						"value": "application/json"
-					},
-					{
-						"key": "Authorization",
-						"value": "JWT {{token}}",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "{{apiServer}}{{webRoot}}/agents/{{agentID}}",
-					"host": [
-						"{{apiServer}}{{webRoot}}"
-					],
-					"path": [
-						"agents",
-						"{{agentID}}"
-					]
-				},
-				"description": "Delete Agent"
-			},
-			"response": []
-		},
-		{
-			"name": "Delete User",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "a0f5e8df-9ce8-44e6-ad23-2f0899ce594a",
-						"exec": [
-							"pm.test(\"Status code is 204\", function () {",
-							"    pm.response.to.have.status(204);",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"auth": {
-					"type": "noauth"
-				},
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "Content-Type",
 						"name": "Content-Type",
-						"type": "text",
-						"value": "application/json"
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "accept",
+						"name": "accept",
+						"value": "application/json",
+						"type": "text"
 					},
 					{
 						"key": "Authorization",
+						"name": "Authorization",
 						"value": "JWT {{token}}",
 						"type": "text"
 					}
 				],
 				"body": {
 					"mode": "raw",
-					"raw": ""
+					"raw": "{\n\t\"name\": \"peer\",\n\t\"num\": \"1\",\n\t\"type\": \"peer\"\n}"
 				},
 				"url": {
-					"raw": "{{apiServer}}{{webRoot}}/users/{{operatorID}}",
+					"raw": "localhost:8080/api/v1/nodes",
+					"protocol": "http",
 					"host": [
-						"{{apiServer}}{{webRoot}}"
+						"localhost"
 					],
+					"port": "8080",
 					"path": [
-						"users",
-						"{{operatorID}}"
+						"api",
+						"v1",
+						"nodes"
 					]
 				},
-				"description": "Delete User"
-			},
-			"response": []
-		},
-		{
-			"name": "Delete Organization",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "a0f5e8df-9ce8-44e6-ad23-2f0899ce594a",
-						"exec": [
-							"pm.test(\"Status code is 204\", function () {",
-							"    pm.response.to.have.status(204);",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"auth": {
-					"type": "noauth"
-				},
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "Content-Type",
-						"name": "Content-Type",
-						"type": "text",
-						"value": "application/json"
-					},
-					{
-						"key": "Authorization",
-						"value": "JWT {{token}}",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "{{apiServer}}{{webRoot}}/organizations/{{orgID}}",
-					"host": [
-						"{{apiServer}}{{webRoot}}"
-					],
-					"path": [
-						"organizations",
-						"{{orgID}}"
-					]
-				},
-				"description": "Delete Organization"
+				"description": "Create Peer Nodes"
 			},
 			"response": []
 		}

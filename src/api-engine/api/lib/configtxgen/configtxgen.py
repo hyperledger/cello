@@ -8,7 +8,7 @@ from api.config import CELLO_HOME, FABRIC_TOOL
 class ConfigTxGen:
     """Class represents cryptotxgen."""
 
-    def __init__(self, network, filepath=CELLO_HOME, configtxgen=FABRIC_TOOL, version="2.2.0"):
+    def __init__(self, network, filepath=CELLO_HOME, configtxgen=FABRIC_TOOL, version="2.5.9"):
         """init CryptoGen
                 param:
                     network: network's name

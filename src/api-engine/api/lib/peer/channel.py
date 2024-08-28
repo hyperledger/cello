@@ -11,7 +11,7 @@ from api.config import FABRIC_TOOL
 class Channel(Command):
     """Call CMD to perform channel create, join and other related operations"""
 
-    def __init__(self, version="2.2.0", peer=FABRIC_TOOL, **kwargs):
+    def __init__(self, version="2.5.9", peer=FABRIC_TOOL, **kwargs):
         self.peer = peer + "/peer"
         super(Channel, self).__init__(version, **kwargs)
 

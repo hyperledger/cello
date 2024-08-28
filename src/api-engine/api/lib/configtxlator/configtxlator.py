@@ -10,7 +10,7 @@ class ConfigTxLator:
     Class represents configtxlator CLI.
     """
 
-    def __init__(self, configtxlator=FABRIC_TOOL, version="2.2.0"):
+    def __init__(self, configtxlator=FABRIC_TOOL, version="2.5.9"):
         self.configtxlator = configtxlator + "/configtxlator"
         self.version = version
 
