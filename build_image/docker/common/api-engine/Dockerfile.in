@@ -2,7 +2,7 @@ FROM python:3.8
 
 # Install software
 RUN apt-get update \
-	&& apt-get install -y gettext-base graphviz libgraphviz-dev \
+	&& apt-get install -y gettext-base graphviz libgraphviz-dev vim \
 	&& apt-get autoclean \
 	&& apt-get clean \
 	&& apt-get autoremove && rm -rf /var/cache/apt/
@@ -10,13 +10,12 @@ RUN apt-get update \
 # Set the working dir
 WORKDIR /var/www/server
 
+# Install compiled code tools from Artifactory and copy it to opt folder.
+RUN curl -L --retry 5 --retry-delay 3 "https://github.com/hyperledger/fabric/releases/download/v2.5.9/hyperledger-fabric-linux-amd64-2.5.9.tar.gz" | tar xz -C /opt/
+
 # Copy source code to the working dir
 COPY src/api-engine ./
 COPY template/node  /opt/node
-
-# Install compiled code tools from Artifactory and copy it to opt folder.
-RUN curl "https://hyperledger.jfrog.io/artifactory/fabric-binaries/hyperledger-fabric-linux-amd64-2.2-stable.tar.gz?archiveType=gzip" > bin.tar.gz \
-	&& tar -xzvf bin.tar.gz -C /opt/
 
 # Install python dependencies
 RUN	pip3 install -r requirements.txt
