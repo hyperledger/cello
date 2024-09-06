@@ -57,8 +57,8 @@ class CryptoGen:
         """
         try:
             command = [
-                self.cryptogen, 
-                "extend", 
+                self.cryptogen,
+                "extend",
                 "--input={}/{}/{}".format(self.filepath, self.name, input),
                 "--config={}/{}/{}".format(self.filepath, self.name, config)
             ]
