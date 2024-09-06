@@ -3,4 +3,4 @@ initial-json:
 
 test-api:
 	@$(MAKE) initial-json
-	bash test.sh || (echo "test api failed $$?"; exit 1)
+	bash ${ROOT_PATH}/tests/postman/test.sh || (echo "test api failed $$?"; exit 1)
