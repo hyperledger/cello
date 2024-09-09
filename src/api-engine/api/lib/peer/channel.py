@@ -5,13 +5,13 @@ import os
 import json
 import subprocess
 from api.lib.peer.command import Command
-from api.config import FABRIC_TOOL
+from api.config import FABRIC_TOOL, FABRIC_VERSION
 
 
 class Channel(Command):
     """Call CMD to perform channel create, join and other related operations"""
 
-    def __init__(self, version="2.5.9", peer=FABRIC_TOOL, **kwargs):
+    def __init__(self, version=FABRIC_VERSION, peer=FABRIC_TOOL, **kwargs):
         self.peer = peer + "/peer"
         super(Channel, self).__init__(version, **kwargs)
 

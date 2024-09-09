@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 from subprocess import call
-from api.config import CELLO_HOME, FABRIC_TOOL
+from api.config import CELLO_HOME, FABRIC_TOOL, FABRIC_VERSION
 
 import logging
 LOG = logging.getLogger(__name__)
@@ -11,7 +11,7 @@ LOG = logging.getLogger(__name__)
 class CryptoGen:
     """Class represents crypto-config tool."""
 
-    def __init__(self, name, filepath=CELLO_HOME, cryptogen=FABRIC_TOOL, version="2.5.9"):
+    def __init__(self, name, filepath=CELLO_HOME, cryptogen=FABRIC_TOOL, version=FABRIC_VERSION):
         """init CryptoGen
                 param:
                     name: organization's name

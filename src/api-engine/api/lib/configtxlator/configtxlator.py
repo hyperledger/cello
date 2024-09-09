@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 from subprocess import call, run
-from api.config import FABRIC_TOOL
+from api.config import FABRIC_TOOL, FABRIC_VERSION
 
 
 class ConfigTxLator:
@@ -10,7 +10,7 @@ class ConfigTxLator:
     Class represents configtxlator CLI.
     """
 
-    def __init__(self, configtxlator=FABRIC_TOOL, version="2.5.9"):
+    def __init__(self, configtxlator=FABRIC_TOOL, version=FABRIC_VERSION):
         self.configtxlator = configtxlator + "/configtxlator"
         self.version = version
 
