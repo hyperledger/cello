@@ -1,10 +1,10 @@
-FROM node:14.17
+FROM node:20.15
 
 WORKDIR /usr/src/app/
 USER root
 RUN mkdir -p /usr/src/app && cd /usr/src/app
 COPY src/dashboard /usr/src/app
-RUN yarn --network-timeout 600000 && yarn run build
+RUN export NODE_OPTIONS=--openssl-legacy-provider && yarn --network-timeout 600000 && yarn run build
 
 FROM nginx:1.15.12
 COPY --from=0 /usr/src/app/dist /usr/share/nginx/html
