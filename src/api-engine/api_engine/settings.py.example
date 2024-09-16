@@ -240,3 +240,5 @@ SIMPLE_JWT = {
     'TOKEN_TYPE_CLAIM': 'token_type',
     'TOKEN_USER_CLASS': 'rest_framework_simplejwt.models.TokenUser',
 }
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

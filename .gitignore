@@ -248,3 +248,7 @@ src/dashboard/lambda/mock/index.js
 # Cello local storage
 /**/opt/*
 /**/cello/*
+
+# Local Netlify folder
+.netlify
+deno.lock

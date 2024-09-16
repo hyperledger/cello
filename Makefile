@@ -223,7 +223,7 @@ docker-rest-agent:
 	docker build -t hyperledger/cello-agent-docker:latest -f build_image/docker/agent/docker-rest-agent/Dockerfile.in ./ --build-arg pip=$(PIP) --platform linux/$(ARCH)
 
 fabric:
-	docker image pull yeasy/hyperledger-fabric:2.2.0
+	docker build -t hyperledger/fabric:2.5.9 -f build_image/docker/cello-hlf/Dockerfile build_image/docker/cello-hlf/
 
 dashboard:
 	docker build -t hyperledger/cello-dashboard:latest -f build_image/docker/common/dashboard/Dockerfile.in ./
