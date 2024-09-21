@@ -2,13 +2,16 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 from subprocess import call
-from api.config import CELLO_HOME, FABRIC_TOOL
+from api.config import CELLO_HOME, FABRIC_TOOL, FABRIC_VERSION
+
+import logging
+LOG = logging.getLogger(__name__)
 
 
 class ConfigTxGen:
     """Class represents cryptotxgen."""
 
-    def __init__(self, network, filepath=CELLO_HOME, configtxgen=FABRIC_TOOL, version="2.2.0"):
+    def __init__(self, network, filepath=CELLO_HOME, configtxgen=FABRIC_TOOL, version=FABRIC_VERSION):
         """init CryptoGen
                 param:
                     network: network's name
@@ -22,7 +25,7 @@ class ConfigTxGen:
         self.filepath = filepath
         self.version = version
 
-    def genesis(self, profile="TwoOrgsOrdererGenesis", channelid="testchainid", outputblock="genesis.block"):
+    def genesis(self, profile="", channelid="", outputblock="genesis.block"):
         """generate gensis
                 param:
                     profile: profile
@@ -31,27 +34,18 @@ class ConfigTxGen:
                 return:
         """
         try:
-            call([self.configtxgen, "-configPath", "{}/{}/".format(self.filepath, self.network),
-                  "-profile", "{}".format(profile),
-                  "-outputBlock", "{}/{}/{}".format(self.filepath, self.network, outputblock),
-                  "-channelID", "{}".format(channelid)])
-        except Exception as e:
-            err_msg = "configtxgen genesis fail! "
-            raise Exception(err_msg + str(e))
+            command = [
+                self.configtxgen,
+                "-configPath", "{}/{}/".format(self.filepath, self.network),
+                "-profile", "{}".format(profile),
+                "-outputBlock", "{}/{}/{}".format(self.filepath, self.network, outputblock),
+                "-channelID", "{}".format(channelid)
+            ]
 
-    def channeltx(self, profile, channelid, outputCreateChannelTx="channel.tx"):
-        """generate anchorpeer
-                param:
-                    profile: profile
-                    channelid: channelid
-                    outputblock: outputblock
-                return:
-        """
-        try:
-            call([self.configtxgen, "-configPath", "{}/{}/".format(self.filepath, self.network),
-                  "-profile", "{}".format(profile),
-                  "-outputCreateChannelTx", "{}/{}/{}".format(self.filepath, self.network, "channel-artifacts/" + outputCreateChannelTx),
-                  "-channelID", "{}".format(channelid)])
+            LOG.info("Running command: " + " ".join(command))
+
+            call(command)
+
         except Exception as e:
             err_msg = "configtxgen genesis fail! "
             raise Exception(err_msg + str(e))
@@ -65,7 +59,3 @@ class ConfigTxGen:
                 return:
         """
         pass
-
-
-if __name__ == "__main__":
-    ConfigTxGen("net").channeltx("testchannel", "testchannel")
