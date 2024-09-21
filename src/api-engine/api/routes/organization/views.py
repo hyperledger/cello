@@ -231,7 +231,6 @@ class OrganizationViewSet(viewsets.ViewSet):
             args.update(
                 {"General_LocalMSPID": "{}OrdererMSP".format(org.capitalize())})
             args.update({"General_TLS_Enabled": True})
-            args.update({"General_BootstrapFile": "genesis.block"})
 
             a = NodeConfig(org)
             a.orderer(node, **args)

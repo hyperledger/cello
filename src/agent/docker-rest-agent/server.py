@@ -37,7 +37,6 @@ def create_node():
     env = {
     'HLF_NODE_MSP': request.form.get('msp'),
     'HLF_NODE_TLS':request.form.get('tls'),
-    'HLF_NODE_BOOTSTRAP_BLOCK':request.form.get('bootstrap_block'),
     'HLF_NODE_PEER_CONFIG':request.form.get('peer_config_file'),
     'HLF_NODE_ORDERER_CONFIG':request.form.get('orderer_config_file'),
     'platform': 'linux/amd64',
@@ -72,9 +71,6 @@ def create_node():
             'FABRIC_LOGGING_SPEC':'DEBUG',
             'ORDERER_GENERAL_LISTENADDRESS': '0.0.0.0',
             'ORDERER_GENERAL_LISTENPORT': '7050',
-            'ORDERER_GENERAL_GENESISMETHOD':'file',
-            'ORDERER_GENERAL_LOCALMSPDIR': '/etc/hyperledger/fabric/msp',
-            'ORDERER_GENERAL_GENESISFILE': '/etc/hyperledger/fabric/genesis.block',
             'ORDERER_GENERAL_TLS_ENABLED': 'true',
             'ORDERER_GENERAL_TLS_PRIVATEKEY':'/etc/hyperledger/fabric/tls/server.key',
             'ORDERER_GENERAL_TLS_CERTIFICATE':'/etc/hyperledger/fabric/tls/server.crt',
@@ -82,6 +78,15 @@ def create_node():
             'ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE': '/etc/hyperledger/fabric/tls/server.crt',
             'ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY': '/etc/hyperledger/fabric/tls/server.key',
             'ORDERER_GENERAL_CLUSTER_ROOTCAS': '[/etc/hyperledger/fabric/tls/ca.crt]',
+            'ORDERER_GENERAL_LOCALMSPDIR': '/etc/hyperledger/fabric/msp',
+            'ORDERER_GENERAL_LOCALMSPID': 'OrdererMSP',
+
+            "ORDERER_ADMIN_LISTENADDRESS": "0.0.0.0:7053",
+            "ORDERER_ADMIN_TLS_ENABLED": "true",
+            "ORDERER_ADMIN_TLS_CERTIFICATE": "/etc/hyperledger/fabric/tls/server.crt",
+            "ORDERER_ADMIN_TLS_PRIVATEKEY": "/etc/hyperledger/fabric/tls/server.key",
+            "ORDERER_ADMIN_TLS_CLIENTROOTCAS": "[/etc/hyperledger/fabric/tls/ca.crt]",
+            "ORDERER_ADMIN_TLS_CLIENTAUTHREQUIRED": "true"
         }
         env.update(order_envs)
     try:

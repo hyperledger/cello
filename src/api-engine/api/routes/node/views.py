@@ -417,11 +417,8 @@ class NodeViewSet(viewsets.ViewSet):
             a = NodeConfig(org)
             a.peer(node, **args)
         else:
-            args.update({"General_ListenPort": 7050})
-            args.update(
-                {"General_LocalMSPID": "{}OrdererMSP".format(org.capitalize())})
-            args.update({"General_TLS_Enabled": True})
-            args.update({"General_BootstrapFile": "genesis.block"})
+            args.update({"General_BootstrapMethod": "none"})
+            args.update({"ChannelParticipation_Enabled": True})
 
             a = NodeConfig(org)
             a.orderer(node, **args)
@@ -458,7 +455,6 @@ class NodeViewSet(viewsets.ViewSet):
             info["config_file"] = node.config_file
             info["type"] = node.type
             info["name"] = "{}.{}".format(node.name, org_name)
-            info["bootstrap_block"] = network.genesisblock
             info["urls"] = agent.urls
             info["network_type"] = network.type
             info["agent_type"] = agent.type
