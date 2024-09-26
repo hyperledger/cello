@@ -252,3 +252,7 @@ src/dashboard/lambda/mock/index.js
 # Local Netlify folder
 .netlify
 deno.lock
+
+# test postman
+tests/postman/env.json
+tests/postman/junitResult.xml

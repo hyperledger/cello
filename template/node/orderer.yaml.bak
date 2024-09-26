@@ -13,21 +13,31 @@
 ################################################################################
 General:
     # Listen address: The IP on which to bind to listen.
-    ListenAddress: 0.0.0.0
+    ListenAddress: 127.0.0.1
 
     # Listen port: The port on which to bind to listen.
     ListenPort: 7050
 
     # TLS: TLS settings for the GRPC server.
     TLS:
+        # Require server-side TLS
         Enabled: false
         # PrivateKey governs the file location of the private key of the TLS certificate.
         PrivateKey: tls/server.key
         # Certificate governs the file location of the server TLS certificate.
         Certificate: tls/server.crt
+        # RootCAs contains a list of additional root certificates used for verifying certificates
+        # of other orderer nodes during outbound connections.
+        # It is not required to be set, but can be used to augment the set of TLS CA certificates
+        # available from the MSPs of each channel’s configuration.
         RootCAs:
           - tls/ca.crt
+        # Require client certificates / mutual TLS for inbound connections.
         ClientAuthRequired: false
+        # If mutual TLS is enabled, ClientRootCAs contains a list of additional root certificates
+        # used for verifying certificates of client connections.
+        # It is not required to be set, but can be used to augment the set of TLS CA certificates
+        # available from the MSPs of each channel’s configuration.
         ClientRootCAs:
     # Keepalive settings for the GRPC server.
     Keepalive:
@@ -40,18 +50,30 @@ General:
         # ServerTimeout is the duration the server waits for a response from
         # a client before closing the connection.
         ServerTimeout: 20s
+
+    # Since all nodes should be consistent it is recommended to keep
+    # the default value of 100MB for MaxRecvMsgSize & MaxSendMsgSize
+    # Max message size in bytes the GRPC server and client can receive
+    MaxRecvMsgSize: 104857600
+    # Max message size in bytes the GRPC server and client can send
+    MaxSendMsgSize: 104857600
+
     # Cluster settings for ordering service nodes that communicate with other ordering service nodes
     # such as Raft based ordering service.
     Cluster:
         # SendBufferSize is the maximum number of messages in the egress buffer.
         # Consensus messages are dropped if the buffer is full, and transaction
         # messages are waiting for space to be freed.
-        SendBufferSize: 10
+        SendBufferSize: 100
+
         # ClientCertificate governs the file location of the client TLS certificate
         # used to establish mutual TLS connections with other ordering service nodes.
+        # If not set, the server General.TLS.Certificate is re-used.
         ClientCertificate:
         # ClientPrivateKey governs the file location of the private key of the client TLS certificate.
+        # If not set, the server General.TLS.PrivateKey is re-used.
         ClientPrivateKey:
+
         # The below 4 properties should be either set together, or be unset together.
         # If they are set, then the orderer node uses a separate listener for intra-cluster
         # communication. If they are unset, then the general orderer listener is used.
@@ -310,7 +332,7 @@ Operations:
 
 ################################################################################
 #
-#   Metrics  Configuration
+#   Metrics Configuration
 #
 #   - This configures metrics collection for the orderer
 #
@@ -334,26 +356,54 @@ Metrics:
       # The prefix is prepended to all emitted statsd metrics
       Prefix:
 
+################################################################################
+#
+#   Admin Configuration
+#
+#   - This configures the admin server endpoint for the orderer
+#
+################################################################################
+Admin:
+    # host and port for the admin server
+    ListenAddress: 127.0.0.1:9443
+
+    # TLS configuration for the admin endpoint
+    TLS:
+        # TLS enabled
+        Enabled: false
+
+        # Certificate is the location of the PEM encoded TLS certificate
+        Certificate:
+
+        # PrivateKey points to the location of the PEM-encoded key
+        PrivateKey:
+
+        # Most admin service endpoints require client authentication when TLS
+        # is enabled. ClientAuthRequired requires client certificate authentication
+        # at the TLS layer to access all resources.
+        #
+        # NOTE: When TLS is enabled, the admin endpoint requires mutual TLS. The
+        # orderer will panic on startup if this value is set to false.
+        ClientAuthRequired: true
+
+        # Paths to PEM encoded ca certificates to trust for client authentication
+        ClientRootCAs: []
 
 ################################################################################
 #
 #   Channel participation API Configuration
 #
 #   - This provides the channel participation API configuration for the orderer.
-#   - Channel participation uses the same ListenAddress and TLS settings of the
-#     Operations service.
+#   - Channel participation uses the ListenAddress and TLS settings of the Admin
+#     service.
 #
 ################################################################################
 ChannelParticipation:
     # Channel participation API is enabled.
     Enabled: false
 
-    # Permanently remove storage resources when a channel is removed.
-    # Defines the default behavior of channel removal.
-    RemoveStorage: false
-
     # The maximum size of the request body when joining a channel.
-    #MaxRequestBodySize: 1 MB
+    MaxRequestBodySize: 1 MB
 
 
 ################################################################################
