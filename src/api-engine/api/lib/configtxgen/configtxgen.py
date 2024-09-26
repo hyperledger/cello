@@ -2,13 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 from subprocess import call
-from api.config import CELLO_HOME, FABRIC_TOOL
+from api.config import CELLO_HOME, FABRIC_TOOL, FABRIC_VERSION
 
 
 class ConfigTxGen:
     """Class represents cryptotxgen."""
 
-    def __init__(self, network, filepath=CELLO_HOME, configtxgen=FABRIC_TOOL, version="2.2.0"):
+    def __init__(self, network, filepath=CELLO_HOME, configtxgen=FABRIC_TOOL, version=FABRIC_VERSION):
         """init CryptoGen
                 param:
                     network: network's name

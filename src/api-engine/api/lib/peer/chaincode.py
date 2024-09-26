@@ -5,11 +5,11 @@ import os
 import json
 import subprocess
 from api.lib.peer.command import Command
-from api.config import FABRIC_TOOL, FABRIC_CFG
+from api.config import FABRIC_TOOL, FABRIC_CFG, FABRIC_VERSION
 
 
 class ChainCode(Command):
-    def __init__(self, version="2.2.0", peer=FABRIC_TOOL, **kwargs):
+    def __init__(self, version=FABRIC_VERSION, peer=FABRIC_TOOL, **kwargs):
         self.peer = peer + "/peer"
         super(ChainCode, self).__init__(version, **kwargs)
 

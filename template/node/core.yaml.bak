@@ -25,7 +25,7 @@ peer:
     # The endpoint this peer uses to listen for inbound chaincode connections.
     # If this is commented-out, the listen address is selected to be
     # the peer's address (see below) with port 7052
-    chaincodeListenAddress: 0.0.0.0:7052
+    # chaincodeListenAddress: 0.0.0.0:7052
 
     # The endpoint the chaincode for this peer uses to connect to the peer.
     # If this is not specified, the chaincodeListenAddress address is selected.
@@ -33,7 +33,7 @@ peer:
     # peer address (see below). If specified peer address is invalid then it
     # will fallback to the auto detected IP (local IP) regardless of the peer
     # addressAutoDetect value.
-    chaincodeAddress: 0.0.0.0:7052
+    # chaincodeAddress: 0.0.0.0:7052
 
     # When used as peer config, this represents the endpoint to other peers
     # in the same organization. For peers in other organization, see
@@ -45,6 +45,21 @@ peer:
     # This case is useful for docker containers.
     # When set to true, will override peer address.
     addressAutoDetect: false
+
+    # Settings for the Peer's gateway server.
+    gateway:
+        # Whether the gateway is enabled for this Peer.
+        enabled: true
+        # endorsementTimeout is the duration the gateway waits for a response
+        # from other endorsing peers before returning a timeout error to the client.
+        endorsementTimeout: 30s
+        # broadcastTimeout is the duration the gateway waits for a response
+        # from ordering nodes before returning a timeout error to the client.
+        broadcastTimeout: 30s
+        # dialTimeout is the duration the gateway waits for a connection
+        # to other network nodes.
+        dialTimeout: 2m
+
 
     # Keepalive settings for peer server and clients
     keepalive:
@@ -166,7 +181,7 @@ peer:
         # Message expiration factor for alive messages
         msgExpirationFactor: 20
         # This is an endpoint that is published to peers outside of the organization.
-        # If this isn't set, the peer will not be known to other organizations.
+        # If this isn't set, the peer will not be known to other organizations and will not be exposed via service discovery.
         externalEndpoint:
         # Leader election service configuration
         election:
@@ -228,9 +243,15 @@ peer:
         # Gossip state transfer related configuration
         state:
             # indicates whenever state transfer is enabled or not
-            # default value is true, i.e. state transfer is active
+            # default value is false, i.e. state transfer is active
             # and takes care to sync up missing blocks allowing
-            # lagging peer to catch up to speed with rest network
+            # lagging peer to catch up to speed with rest network.
+            # Keep in mind that when peer.gossip.useLeaderElection is true
+            # and there are several peers in the organization,
+            # or peer.gossip.useLeaderElection is false alongside with
+            # peer.gossip.orgleader being false, the peer's ledger may lag behind
+            # the rest of the peers and will never catch up due to state transfer
+            # being disabled.
             enabled: false
             # checkInterval interval to check whether peer is lagging behind enough to
             # request blocks via state transfer from another peer.
@@ -253,26 +274,31 @@ peer:
     tls:
         # Require server-side TLS
         enabled:  false
-        # Require client certificates / mutual TLS.
+        # Require client certificates / mutual TLS for inbound connections.
         # Note that clients that are not configured to use a certificate will
         # fail to connect to the peer.
         clientAuthRequired: false
         # X.509 certificate used for TLS server
         cert:
             file: tls/server.crt
-        # Private key used for TLS server (and client if clientAuthEnabled
-        # is set to true
+        # Private key used for TLS server
         key:
             file: tls/server.key
-        # Trusted root certificate chain for tls.cert
+        # rootcert.file represents the trusted root certificate chain used for verifying certificates
+        # of other nodes during outbound connections.
+        # It is not required to be set, but can be used to augment the set of TLS CA certificates
+        # available from the MSPs of each channel’s configuration.
         rootcert:
             file: tls/ca.crt
-        # Set of root certificate authorities used to verify client certificates
+        # If mutual TLS is enabled, clientRootCAs.files contains a list of additional root certificates
+        # used for verifying certificates of client connections.
+        # It augments the set of TLS CA certificates available from the MSPs of each channel’s configuration.
+        # Minimally, set your organization's TLS CA root certificate so that the peer can receive join channel requests.
         clientRootCAs:
             files:
               - tls/ca.crt
-        # Private key used for TLS when making client connections.  If
-        # not set, peer.tls.key.file will be used instead
+        # Private key used for TLS when making client connections.
+        # If not set, peer.tls.key.file will be used instead
         clientKey:
             file:
         # X.509 certificate used for TLS when making client connections.
@@ -290,6 +316,7 @@ peer:
     # Path on the file system where peer will store data (eg ledger). This
     # location must be access control protected to prevent unintended
     # modification that might corrupt the peer operations.
+    # The path may be relative to FABRIC_CFG_PATH or an absolute path.
     fileSystemPath: /var/hyperledger/production
 
     # BCCSP (Blockchain crypto provider): Select which crypto implementation or
@@ -317,8 +344,13 @@ peer:
             Pin:
             Hash:
             Security:
+            SoftwareVerify:
+            Immutable:
+            AltID:
+            KeyIds:
 
     # Path on the file system where peer will find MSP local configurations
+    # The path may be relative to FABRIC_CFG_PATH or an absolute path.
     mspConfigPath: msp
 
     # Identifier of the local MSP
@@ -337,14 +369,21 @@ peer:
 
     # Delivery service related config
     deliveryclient:
+        # Enables this peer to disseminate blocks it pulled from the ordering service
+        # via gossip.
+        # Note that 'gossip.state.enabled' controls point to point block replication
+        # of blocks committed in the past.
+        blockGossipEnabled: true
         # It sets the total time the delivery service may spend in reconnection
-        # attempts until its retry logic gives up and returns an error
+        # attempts until its retry logic gives up and returns an error,
+        # ignored if peer is a static leader
         reconnectTotalTimeThreshold: 3600s
 
         # It sets the delivery service <-> ordering service node connection timeout
         connTimeout: 3s
 
-        # It sets the delivery service maximal delay between consecutive retries
+        # It sets the delivery service maximal delay between consecutive retries.
+        # Time between retries will have exponential backoff until hitting this threshold.
         reConnectBackoffThreshold: 3600s
 
         # A list of orderer endpoint addresses which should be overridden
@@ -451,6 +490,15 @@ peer:
             endorserService: 2500
             # deliverService limits concurrent event listeners registered to deliver service for blocks and transaction events.
             deliverService: 2500
+            # gatewayService limits concurrent requests to gateway service that handles the submission and evaluation of transactions.
+            gatewayService: 500
+
+    # Since all nodes should be consistent it is recommended to keep
+    # the default value of 100MB for MaxRecvMsgSize & MaxSendMsgSize
+    # Max message size in bytes GRPC server and client can receive
+    maxRecvMsgSize: 104857600
+    # Max message size in bytes GRPC server and client can send
+    maxSendMsgSize: 104857600
 
 ###############################################################################
 #
@@ -463,6 +511,8 @@ vm:
     # unix:///var/run/docker.sock
     # http://localhost:2375
     # https://localhost:2376
+    # If you utilize external chaincode builders and don't need the default Docker chaincode builder,
+    # the endpoint should be unconfigured so that the peer's Docker health checker doesn't get registered.
     endpoint: unix:///var/run/docker.sock
 
     # settings for docker vms
@@ -546,12 +596,15 @@ chaincode:
     # List of directories to treat as external builders and launchers for
     # chaincode. The external builder detection processing will iterate over the
     # builders in the order specified below.
-    externalBuilders: []
-        # - path: /path/to/directory
-        #   name: descriptive-builder-name
-        #   propagateEnvironment:
-        #      - ENVVAR_NAME_TO_PROPAGATE_FROM_PEER
-        #      - GOPROXY
+    # If you don't need to fallback to the default Docker builder, also unconfigure vm.endpoint above.
+    # To override this property via env variable use CORE_CHAINCODE_EXTERNALBUILDERS: [{name: x, path: dir1}, {name: y, path: dir2}]
+    # The path must be an absolute path.
+    externalBuilders:
+       - name: ccaas_builder
+         path: /opt/hyperledger/ccaas_builder
+         propagateEnvironment:
+           - CHAINCODE_AS_A_SERVICE_BUILDER_CONFIG
+
 
     # The maximum duration to wait for the chaincode build and install process
     # to complete.
@@ -588,8 +641,6 @@ chaincode:
         _lifecycle: enable
         cscc: enable
         lscc: enable
-        escc: enable
-        vscc: enable
         qscc: enable
 
     # Logging section for the chaincode container
@@ -646,14 +697,6 @@ ledger:
        internalQueryLimit: 1000
        # Limit on the number of records per CouchDB bulk update batch
        maxBatchUpdateSize: 1000
-       # Warm indexes after every N blocks.
-       # This option warms any indexes that have been
-       # deployed to CouchDB after every N blocks.
-       # A value of 1 will warm indexes after every block commit,
-       # to ensure fast selector queries.
-       # Increasing the value may improve write efficiency of peer and CouchDB,
-       # but may degrade query response time.
-       warmIndexesAfterNBlocks: 1
        # Create the _global_changes system database
        # This is optional.  Creating the global changes database will require
        # additional system resources to track changes and maintain the database
@@ -678,6 +721,27 @@ ledger:
     # the minimum duration (in milliseconds) between writing
     # two consecutive db batches for converting the ineligible missing data entries to eligible missing data entries
     collElgProcDbBatchesInterval: 1000
+    # The missing data entries are classified into two categories:
+    # (1) prioritized
+    # (2) deprioritized
+    # Initially, all missing data are in the prioritized list. When the
+    # reconciler is unable to fetch the missing data from other peers,
+    # the unreconciled missing data would be moved to the deprioritized list.
+    # The reconciler would retry deprioritized missing data after every
+    # deprioritizedDataReconcilerInterval (unit: minutes). Note that the
+    # interval needs to be greater than the reconcileSleepInterval
+    deprioritizedDataReconcilerInterval: 60m
+    # The frequency to purge private data (in number of blocks).
+    # Private data is purged from the peer's private data store based on
+    # the collection property blockToLive or an explicit chaincode call to PurgePrivateData().
+    purgeInterval: 100
+    # Whether to log private data keys purged from private data store (INFO level) when explicitly purged via chaincode
+    purgedKeyAuditLogging: true
+
+  snapshots:
+    # Path on the file system where peer will store ledger snapshots
+    # The path must be an absolute path.
+    rootDir: /var/hyperledger/production/snapshots
 
 ###############################################################################
 #
@@ -694,6 +758,7 @@ operations:
         enabled: false
 
         # path to PEM encoded server certificate for the operations server
+        # The paths in this section may be relative to FABRIC_CFG_PATH or an absolute path.
         cert:
             file:
 
