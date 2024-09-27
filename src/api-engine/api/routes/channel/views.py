@@ -386,17 +386,26 @@ def init_env_vars(node, org):
     dir_node = "{}/{}/crypto-config/peerOrganizations".format(
         CELLO_HOME, org_name)
 
-    envs = {
-        "CORE_PEER_TLS_ENABLED": "true",
-        # "Org1.cello.comMSP"
-        "CORE_PEER_LOCALMSPID": "{}MSP".format(org_name.capitalize()),
-        "CORE_PEER_TLS_ROOTCERT_FILE": "{}/{}/peers/{}/tls/ca.crt".format(dir_node, org_name, node.name + "." + org_name),
-        "CORE_PEER_ADDRESS": "{}:{}".format(
-            node.name + "." + org_name, str(7051)),
-        "CORE_PEER_MSPCONFIGPATH": "{}/{}/users/Admin@{}/msp".format(dir_node, org_name, org_name),
-        "FABRIC_CFG_PATH": "{}/{}/peers/{}/".format(dir_node, org_name, node.name + "." + org_name),
-        "ORDERER_CA": "{}/msp/tlscacerts/tlsca.{}-cert.pem".format(dir_certificate, org_domain)
-    }
+    envs = {}
+
+    if(node.type == "orderer"):
+        envs = {
+            "ORDERER_CA": "{}/msp/tlscacerts/tlsca.{}-cert.pem".format(dir_certificate, org_domain),
+            "ORDERER_ADMIN_TLS_SIGN_CERT": "{}/orderers/{}/tls/server.crt".format(dir_certificate, node.name + "." + org_domain),
+            "ORDERER_ADMIN_TLS_PRIVATE_KEY": "{}/orderers/{}/tls/server.key".format(dir_certificate, node.name + "." + org_domain)
+        }
+    elif(node.type == "peer"):
+        envs = {
+            "CORE_PEER_TLS_ENABLED": "true",
+            "CORE_PEER_LOCALMSPID": "{}MSP".format(org_name.capitalize()),
+            "CORE_PEER_TLS_ROOTCERT_FILE": "{}/{}/peers/{}/tls/ca.crt".format(dir_node, org_name, node.name + "." + org_name),
+            "CORE_PEER_MSPCONFIGPATH": "{}/{}/users/Admin@{}/msp".format(dir_node, org_name, org_name),
+            "CORE_PEER_ADDRESS": "{}:{}".format(
+                node.name + "." + org_name, str(7051)),
+
+            "FABRIC_CFG_PATH": "{}/{}/peers/{}/".format(dir_node, org_name, node.name + "." + org_name)
+        }
+
     return envs
 
 
