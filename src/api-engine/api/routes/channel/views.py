@@ -10,7 +10,6 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.permissions import IsAuthenticated
-#
 
 from drf_yasg.utils import swagger_auto_schema
 
@@ -318,7 +317,7 @@ class ChannelViewSet(viewsets.ViewSet):
                     env = {
                         "FABRIC_CFG_PATH": "{}/{}/peers/{}/".format(dir_node, org.name, node.name + "." + org.name),
                     }
-                    cli = PeerChannel("v2.2.0", **env)
+                    cli = PeerChannel(**env)
                     cli.signconfigtx(
                         channel.get_channel_artifacts_path(CFG_DELTA_ENV_PB))
                     LOG.info("Peers to send the update transaction success")
@@ -349,7 +348,7 @@ class ChannelViewSet(viewsets.ViewSet):
             env = {
                 "FABRIC_CFG_PATH": "{}/{}/peers/{}/".format(dir_node, org.name, node.name + "." + org.name),
             }
-            peer_channel_cli = PeerChannel("v2.2.0", **env)
+            peer_channel_cli = PeerChannel(**env)
             peer_channel_cli.fetch(option="config", channel=channel.name)
 
             # Decode latest config block into json
@@ -413,7 +412,7 @@ def join_peers(envs, block_path):
     :param block_path: Path to file containing genesis block
     """
     # Join the peers to the channel.
-    peer_channel_cli = PeerChannel("v2.2.0", **envs)
+    peer_channel_cli = PeerChannel(**envs)
     peer_channel_cli.join(
         block_file=block_path
     )

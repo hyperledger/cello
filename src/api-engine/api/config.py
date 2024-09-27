@@ -12,3 +12,5 @@ FABRIC_ORDERER_CFG = "/opt/node/orderer.yaml.bak"
 FABRIC_CA_CFG = "/opt/node/ca.yaml.bak"
 
 FABRIC_CHAINCODE_STORE = "/opt/cello/chaincode"
+
+FABRIC_VERSION = "2.5.9"
