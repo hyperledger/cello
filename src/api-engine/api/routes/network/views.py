@@ -177,7 +177,7 @@ class NetworkViewSet(viewsets.ViewSet):
             if serializer.is_valid(raise_exception=True):
                 name = serializer.validated_data.get("name")
                 consensus = serializer.validated_data.get("consensus")
-                # database = serializer.validated_data.get("database")
+                database = serializer.validated_data.get("database")
 
                 try:
                     if Network.objects.get(name=name):
@@ -189,24 +189,8 @@ class NetworkViewSet(viewsets.ViewSet):
                     raise ResourceExists(
                         detail="Network exists for the organization")
 
-                orderers = []
-                peers = []
-                orderers.append({"name": org.name, "hosts": []})
-                peers.append({"name": org.name, "hosts": []})
-                nodes = Node.objects.filter(organization=org)
-                for node in nodes:
-                    if node.type == "peer":
-                        peers[0]["hosts"].append({"name": node.name})
-                    elif node.type == "orderer":
-                        orderers[0]["hosts"].append({"name": node.name})
-
-                ConfigTX(name).create(consensus=consensus,
-                                      orderers=orderers, peers=peers)
-                ConfigTxGen(name).genesis()
-
-                block = self._genesis2base64(name)
                 network = Network(
-                    name=name, consensus=consensus, genesisblock=block)
+                    name=name, consensus=consensus, database=database)
                 network.save()
                 org.network = network
                 org.save()
