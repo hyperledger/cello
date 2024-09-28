@@ -132,7 +132,6 @@ class NetworkViewSet(viewsets.ViewSet):
             info["config_file"] = node.config_file
             info["type"] = node.type
             info["name"] = "{}.{}".format(node.name, org_name)
-            info["bootstrap_block"] = network.genesisblock
             info["urls"] = agent.urls
             info["network_type"] = network.type
             info["agent_type"] = agent.type
