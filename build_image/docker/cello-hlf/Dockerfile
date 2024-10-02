@@ -22,12 +22,12 @@
 # Data is stored under /var/hyperledger/production
 
 FROM golang:1.22
-LABEL maintainer "Baohua Yang <yeasy.github.com>"
+LABEL maintainer="Baohua Yang <yeasy.github.com>"
 
 # Orderer, peer, ca, operation api
 EXPOSE 7050 7051 7054 8443 9443
 
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 
 # Only useful for this Dockerfile
 ENV FABRIC_ROOT=$GOPATH/src/github.com/hyperledger/fabric \
