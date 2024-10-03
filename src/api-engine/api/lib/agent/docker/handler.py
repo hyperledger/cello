@@ -38,10 +38,9 @@ class DockerAgent(AgentBase):
             data = {
                 'msp': info.get("msp")[2:-1],
                 'tls': info.get("tls")[2:-1],
-                'bootstrap_block': info.get("bootstrap_block")[2:-1],
                 'peer_config_file': info.get("config_file")[2:-1],
                 'orderer_config_file': info.get("config_file")[2:-1],
-                'img': 'yeasy/hyperledger-fabric:2.2.0',
+                'img': 'hyperledger/fabric:2.5.9',
                 'cmd': 'bash /tmp/init.sh "peer node start"' if info.get("type") == "peer" else 'bash /tmp/init.sh "orderer"',
                 'name': info.get("name"),
                 'type': info.get("type"),

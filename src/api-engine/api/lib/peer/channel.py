@@ -6,25 +6,33 @@ import json
 import subprocess
 from api.lib.peer.command import Command
 from api.config import FABRIC_TOOL, FABRIC_VERSION
+import logging
 
+LOG = logging.getLogger(__name__)
 
 class Channel(Command):
     """Call CMD to perform channel create, join and other related operations"""
 
     def __init__(self, version=FABRIC_VERSION, peer=FABRIC_TOOL, **kwargs):
         self.peer = peer + "/peer"
+        self.osnadmin = peer + "/osnadmin"
         super(Channel, self).__init__(version, **kwargs)
 
-    def create(self, channel, orderer_url, channel_tx, output_block, time_out="90s"):
+    def create(self, channel, orderer_url, block_path, time_out="90s"):
         try:
             res = 0x100
+            command = ""
+
             if os.getenv("CORE_PEER_TLS_ENABLED") == "false" or os.getenv("CORE_PEER_TLS_ENABLED") is None:
-                res = os.system("{} channel create -c {} -o {} -f {} --outputBlock {} --timeout {}"
-                                .format(self.peer, channel, orderer_url, channel_tx, output_block, time_out))
+                command = "{} channel join --channelID {} --config-block {} -o {}".format(self.osnadmin, channel, block_path, orderer_url)
             else:
                 ORDERER_CA = os.getenv("ORDERER_CA")
-                res = os.system("{} channel create -c {} -o {} -f {} --outputBlock {} --timeout {} --tls --cafile {}"
-                                .format(self.peer, channel, orderer_url, channel_tx, output_block, time_out, ORDERER_CA))
+                ORDERER_ADMIN_TLS_SIGN_CERT = os.getenv("ORDERER_ADMIN_TLS_SIGN_CERT")
+                ORDERER_ADMIN_TLS_PRIVATE_KEY = os.getenv("ORDERER_ADMIN_TLS_PRIVATE_KEY")
+                command = "{} channel join --channelID {} --config-block {} -o {} --ca-file {} --client-cert {} --client-key {}".format(self.osnadmin, channel, block_path, orderer_url, ORDERER_CA, ORDERER_ADMIN_TLS_SIGN_CERT, ORDERER_ADMIN_TLS_PRIVATE_KEY)
+
+            LOG.info(f"Running command: {command}")
+            res = os.system(command)
 
             # The return value of os.system is not the result of executing the program. It is a 16 bit number,
             #  and its high bit is the return code
@@ -106,16 +114,19 @@ class Channel(Command):
         res = res >> 8
         return res
 
-    def join(self, block_file):
+    def join(self, block_path):
         """
         Joins the peer to a channel.
         params:
-            block_file: Path to file containing genesis block.
+            block_path: Path to file containing genesis block.
         """
         try:
-            res = os.system(
-                "{} channel join -b {} ".format(self.peer, block_file)
-            )
+            command = "{} channel join -b {} ".format(self.peer, block_path)
+
+            LOG.info(f"Running command: {command}")
+
+            res = os.system(command)
+
         except Exception as e:
             err_msg = "join the peer to a channel failed. {}".format(e)
             raise Exception(err_msg)

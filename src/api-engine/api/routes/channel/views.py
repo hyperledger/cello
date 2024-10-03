@@ -10,7 +10,6 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.permissions import IsAuthenticated
-#
 
 from drf_yasg.utils import swagger_auto_schema
 
@@ -137,28 +136,34 @@ class ChannelViewSet(viewsets.ViewSet):
                     if p.status != "running":
                         raise NoResource
 
-                ConfigTX(org.network.name).createChannel(name, [org.name])
-                ConfigTxGen(org.network.name).channeltx(
-                    profile=name, channelid=name, outputCreateChannelTx="{}.tx".format(name))
-                tx_path = "{}/{}/channel-artifacts/{}.tx".format(
-                    CELLO_HOME, org.network.name, name)
-                block_path = "{}/{}/channel-artifacts/{}.block".format(
+                _orderers = []
+                _peers = []
+                _orderers.append({"name": org.name, "hosts": []})
+                _peers.append({"name": org.name, "hosts": []})
+                nodes = Node.objects.filter(organization=org)
+                for node in nodes:
+                    if node.type == "peer":
+                        _peers[0]["hosts"].append({"name": node.name})
+                    elif node.type == "orderer":
+                        _orderers[0]["hosts"].append({"name": node.name})
+
+                ConfigTX(org.network.name).create(name, org.network.consensus, _orderers, _peers)
+                ConfigTxGen(org.network.name).genesis(profile=name, channelid=name, outputblock="{}.block".format(name))
+
+                block_path = "{}/{}/{}.block".format(
                     CELLO_HOME, org.network.name, name)
                 ordering_node = Node.objects.get(id=orderers[0])
-                peer_node = Node.objects.get(id=peers[0])
-                envs = init_env_vars(peer_node, org)
+                envs = init_env_vars(ordering_node, org)
                 peer_channel_cli = PeerChannel(**envs)
                 peer_channel_cli.create(
                     channel=name,
                     orderer_url="{}.{}:{}".format(
-                        ordering_node.name, org.name.split(".", 1)[1], str(7050)),
-                    channel_tx=tx_path,
-                    output_block=block_path
+                        ordering_node.name, org.name.split(".", 1)[1], str(7053)),
+                    block_path=block_path
                 )
                 for i in range(len(peers)):
                     peer_node = Node.objects.get(id=peers[i])
                     envs = init_env_vars(peer_node, org)
-                    # envs["CORE_PEER_LOCALMSPID"] = '{}MSP'.format(peer_node.name.split(".")[0].capitalize()) #Org1MSP
                     join_peers(envs, block_path)
 
                 channel = Channel(
@@ -386,17 +391,26 @@ def init_env_vars(node, org):
     dir_node = "{}/{}/crypto-config/peerOrganizations".format(
         CELLO_HOME, org_name)
 
-    envs = {
-        "CORE_PEER_TLS_ENABLED": "true",
-        # "Org1.cello.comMSP"
-        "CORE_PEER_LOCALMSPID": "{}MSP".format(org_name.capitalize()),
-        "CORE_PEER_TLS_ROOTCERT_FILE": "{}/{}/peers/{}/tls/ca.crt".format(dir_node, org_name, node.name + "." + org_name),
-        "CORE_PEER_ADDRESS": "{}:{}".format(
-            node.name + "." + org_name, str(7051)),
-        "CORE_PEER_MSPCONFIGPATH": "{}/{}/users/Admin@{}/msp".format(dir_node, org_name, org_name),
-        "FABRIC_CFG_PATH": "{}/{}/peers/{}/".format(dir_node, org_name, node.name + "." + org_name),
-        "ORDERER_CA": "{}/msp/tlscacerts/tlsca.{}-cert.pem".format(dir_certificate, org_domain)
-    }
+    envs = {}
+
+    if(node.type == "orderer"):
+        envs = {
+            "ORDERER_CA": "{}/msp/tlscacerts/tlsca.{}-cert.pem".format(dir_certificate, org_domain),
+            "ORDERER_ADMIN_TLS_SIGN_CERT": "{}/orderers/{}/tls/server.crt".format(dir_certificate, node.name + "." + org_domain),
+            "ORDERER_ADMIN_TLS_PRIVATE_KEY": "{}/orderers/{}/tls/server.key".format(dir_certificate, node.name + "." + org_domain)
+        }
+    elif(node.type == "peer"):
+        envs = {
+            "CORE_PEER_TLS_ENABLED": "true",
+            "CORE_PEER_LOCALMSPID": "{}MSP".format(org_name.capitalize()),
+            "CORE_PEER_TLS_ROOTCERT_FILE": "{}/{}/peers/{}/tls/ca.crt".format(dir_node, org_name, node.name + "." + org_name),
+            "CORE_PEER_MSPCONFIGPATH": "{}/{}/users/Admin@{}/msp".format(dir_node, org_name, org_name),
+            "CORE_PEER_ADDRESS": "{}:{}".format(
+                node.name + "." + org_name, str(7051)),
+
+            "FABRIC_CFG_PATH": "{}/{}/peers/{}/".format(dir_node, org_name, node.name + "." + org_name)
+        }
+
     return envs
 
 
