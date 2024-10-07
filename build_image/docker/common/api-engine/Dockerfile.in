@@ -23,7 +23,7 @@ RUN	pip3 install -r requirements.txt
 # Add uwsgi configuration file
 COPY build_image/docker/common/api-engine/server.ini /etc/uwsgi/apps-enabled/
 
-ENV RUN_MODE server
+ENV RUN_MODE=server
 
 COPY build_image/docker/common/api-engine/entrypoint.sh /
-CMD bash /entrypoint.sh
+CMD ["bash", "/entrypoint.sh"]
