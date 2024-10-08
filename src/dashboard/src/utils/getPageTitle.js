@@ -9,7 +9,7 @@ export const matchParamsPath = (pathname, breadcrumbNameMap) => {
     const { regexp } = pathToRegexp(key);
     return regexp.test(pathname);
   });
-  
+
   return breadcrumbNameMap[pathKey];
 };
 
