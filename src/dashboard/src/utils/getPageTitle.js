@@ -1,11 +1,15 @@
 import { formatMessage } from 'umi';
-import pathToRegexp from 'path-to-regexp';
+import { pathToRegexp } from 'path-to-regexp';
 import isEqual from 'lodash/isEqual';
 import memoizeOne from 'memoize-one';
 import { menu, title } from '../defaultSettings';
 
 export const matchParamsPath = (pathname, breadcrumbNameMap) => {
-  const pathKey = Object.keys(breadcrumbNameMap).find(key => pathToRegexp(key).test(pathname));
+  const pathKey = Object.keys(breadcrumbNameMap).find(key => {
+    const { regexp } = pathToRegexp(key);
+    return regexp.test(pathname);
+  });
+  
   return breadcrumbNameMap[pathKey];
 };
 
