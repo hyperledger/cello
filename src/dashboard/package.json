@@ -71,7 +71,7 @@
     "numeral": "^2.0.6",
     "nzh": "^1.0.4",
     "omit.js": "^1.0.0",
-    "path-to-regexp": "^8.1.0",
+    "path-to-regexp": "^8.2.0",
     "prop-types": "^15.6.2",
     "qs": "^6.6.0",
     "rc-animate": "^2.6.0",

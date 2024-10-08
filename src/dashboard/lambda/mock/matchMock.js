@@ -1,4 +1,4 @@
-const pathToRegexp = require('path-to-regexp');
+const { pathToRegexp } = require('path-to-regexp');
 const bodyParser = require('body-parser');
 
 const mockFile = require('./index');
@@ -47,11 +47,11 @@ function normalizeConfig(config) {
     const handler = config[key];
     const { method, path } = parseKey(key);
     const keys = [];
-    const re = pathToRegexp(path, keys);
+    const { regexp } = pathToRegexp(path, keys);
     memo.push({
       method,
       path,
-      re,
+      regexp,
       keys,
       handler: createHandler(method, path, handler),
     });
@@ -83,9 +83,9 @@ function matchMock(req) {
   }
   // eslint-disable-next-line no-restricted-syntax
   for (const mock of mockData) {
-    const { method, re, keys } = mock;
+    const { method, regexp, keys } = mock;
     if (method === exceptMethod) {
-      const match = re.exec(req.path);
+      const match = regexp.exec(req.path);
       if (match) {
         const params = {};
 
@@ -104,7 +104,7 @@ function matchMock(req) {
     }
   }
 
-  return mockData.filter(({ method, re }) => method === exceptMethod && re.test(exceptPath))[0];
+  return mockData.filter(({ method, regexp }) => method === exceptMethod && regexp.test(exceptPath))[0];
 }
 module.exports = (req, res, next) => {
   const match = matchMock(req);
