@@ -30,7 +30,7 @@ services:
     - /opt/cello/api-engine/media:/var/www/media
 
   postgres-server:
-    image: postgres:11.1
+    image: postgres:12.0
     hostname: cello-postgres-server
     container_name: cello-postgres-server
     restart: always
