@@ -21,7 +21,7 @@
 # Workdir is set to $GOPATH/src/github.com/hyperledger/fabric
 # Data is stored under /var/hyperledger/production
 
-FROM golang:1.22
+FROM golang:1.23.1
 LABEL maintainer="Baohua Yang <yeasy.github.com>"
 
 # Orderer, peer, ca, operation api
