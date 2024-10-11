@@ -1,5 +1,5 @@
 import React from 'react';
-import pathToRegexp from 'path-to-regexp';
+import { pathToRegexp } from 'path-to-regexp';
 import { Link, formatMessage } from 'umi';
 import { urlToList } from '../_utils/pathTools';
 import { menu } from '../../defaultSettings';
@@ -33,7 +33,8 @@ export const getBreadcrumb = (breadcrumbNameMap, url) => {
   let breadcrumb = breadcrumbNameMap[url];
   if (!breadcrumb) {
     Object.keys(breadcrumbNameMap).forEach(item => {
-      if (pathToRegexp(item).test(url)) {
+      const { regexp } = pathToRegexp(item);
+      if (regexp.test(url)) {
         breadcrumb = breadcrumbNameMap[item];
       }
     });

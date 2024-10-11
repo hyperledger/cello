@@ -1,5 +1,5 @@
 import React from 'react';
-import pathToRegexp from 'path-to-regexp';
+import { pathToRegexp } from 'path-to-regexp';
 import { connect, Redirect } from 'umi';
 import Authorized from '@/utils/Authorized';
 import { getAuthority } from '@/utils/authority';
@@ -12,7 +12,8 @@ function AuthComponent({ children, location, routerData }) {
     let authorities;
     routeData.forEach(route => {
       // match prefix
-      if (pathToRegexp(`${route.path}(.*)`).test(path)) {
+      const { regexp } = pathToRegexp(`${route.path}(.*)`);
+      if (regexp.test(path)) {
         authorities = route.authority || authorities;
 
         // get children authority recursively
