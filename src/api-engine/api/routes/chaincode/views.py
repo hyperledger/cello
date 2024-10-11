@@ -162,7 +162,7 @@ class ChainCodeViewSet(viewsets.ViewSet):
                 #     )
                 # peer_node = qs.first()
                 # envs = init_env_vars(peer_node, org)
-                # peer_channel_cli = PeerChainCode("v2.5.9", **envs)
+                # peer_channel_cli = PeerChainCode("v2.5.10", **envs)
                 # return_code, content = peer_channel_cli.lifecycle_calculatepackageid(temp_cc_path)
                 # if (return_code != 0):
                 #     return Response(
