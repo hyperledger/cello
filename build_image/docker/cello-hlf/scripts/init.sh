@@ -5,7 +5,7 @@
 # It will read the following env variables
 # HLF_NODE_MSP: store a base64 encoded zipped "msp" path
 # HLF_NODE_TLS: store a base64 encoded zipped "tls" path
-# HLF_NODE_BOOTSTRAP_BLOCK: store a base64 encoded zipped bootstrap block, which is no longer needed for HLF 2.5.9 or higher versions
+# HLF_NODE_BOOTSTRAP_BLOCK: store a base64 encoded zipped bootstrap block, which is no longer needed for HLF 2.5.10 or higher versions
 # HLF_NODE_PEER_CONFIG: store a base64 encoded zipped peer configuration file (core.yaml)
 # HLF_NODE_ORDERER_CONFIG: store a base64 encoded zipped orderer configuration file (orderer.yaml)
 

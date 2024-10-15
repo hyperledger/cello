@@ -423,5 +423,5 @@ def join_peers(envs, block_path):
     # Join the peers to the channel.
     peer_channel_cli = PeerChannel(**envs)
     peer_channel_cli.join(
-        block_file=block_path
+        block_path=block_path
     )

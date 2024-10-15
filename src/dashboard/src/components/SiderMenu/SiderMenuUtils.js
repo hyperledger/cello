@@ -1,4 +1,4 @@
-import pathToRegexp from 'path-to-regexp';
+import { pathToRegexp } from 'path-to-regexp';
 import { urlToList } from '../_utils/pathTools';
 
 /**
@@ -20,7 +20,8 @@ export const getFlatMenuKeys = menuData => {
 export const getMenuMatches = (flatMenuKeys, path) =>
   flatMenuKeys.filter(item => {
     if (item) {
-      return pathToRegexp(item).test(path);
+      const { regexp } = pathToRegexp(item);
+      return regexp.test(path);
     }
     return false;
   });

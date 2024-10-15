@@ -11,7 +11,7 @@ RUN apt-get update \
 WORKDIR /var/www/server
 
 # Install compiled code tools from Artifactory and copy it to opt folder.
-RUN curl -L --retry 5 --retry-delay 3 "https://github.com/hyperledger/fabric/releases/download/v2.5.9/hyperledger-fabric-linux-amd64-2.5.9.tar.gz" | tar xz -C /opt/
+RUN curl -L --retry 5 --retry-delay 3 "https://github.com/hyperledger/fabric/releases/download/v2.5.10/hyperledger-fabric-linux-amd64-2.5.10.tar.gz" | tar xz -C /opt/
 
 # Copy source code to the working dir
 COPY src/api-engine ./
@@ -23,7 +23,7 @@ RUN	pip3 install -r requirements.txt
 # Add uwsgi configuration file
 COPY build_image/docker/common/api-engine/server.ini /etc/uwsgi/apps-enabled/
 
-ENV RUN_MODE server
+ENV RUN_MODE=server
 
 COPY build_image/docker/common/api-engine/entrypoint.sh /
-CMD bash /entrypoint.sh
+CMD ["bash", "/entrypoint.sh"]

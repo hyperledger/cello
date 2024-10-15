@@ -27,19 +27,9 @@ class ConfigTX:
         self.filepath = filepath
         self.network = network
         self.template = load_configtx(template_path)
-        # self.orderer = {'BatchTimeout': '2s',
-        #                 'OrdererType': "etcdraft",
-        #                 'BatchSize': {'AbsoluteMaxBytes': '98 MB',
-        #                               'MaxMessageCount': 2000,
-        #                               'PreferredMaxBytes': '10 MB'}} if not orderer else orderer
-        # self.raft_option = {'TickInterval': "600ms",
-        #                     'ElectionTick': 10,
-        #                     'HeartbeatTick': 1,
-        #                     'MaxInflightBlocks': 5,
-        #                     'SnapshotIntervalSize': "20 MB"} if not raft_option else raft_option
 
-    def create(self, consensus, orderers, peers, orderer_cfg=None, application=None, option=None):
-        """create the cryptotx.yaml
+    def create(self, name, consensus, orderers, peers, orderer_cfg=None, application=None, option=None):
+        """create the configtx.yaml
                 param:
                     consensus:consensus
                     orderers:the list of orderer
@@ -101,24 +91,24 @@ class ConfigTX:
             Application=ApplicationCapabilities
         )
         Application = deepcopy(ApplicationDefaults)
-        Application["Capabilities"] = Capabilities["Application"]
         Orderer = deepcopy(OrdererDefaults)
         Orderer["Addresses"] = deepcopy(OrdererAddress)
-        Orderer["Policies"] = dict(
-                Readers=dict(Type="ImplicitMeta", Rule="ANY Readers"),
-                Writers=dict(Type="ImplicitMeta", Rule="ANY Writers"),
-                Admins=dict(Type="ImplicitMeta", Rule="MAJORITY Admins"),
-                BlockValidation=dict(Type="ImplicitMeta", Rule="ANY Writers")
-                 )
-        Orderer["EtcdRaft"]["Consenters"] = deepcopy(Consenters)
         Channel = deepcopy(ChannelDefaults)
+        Application["Capabilities"] = Capabilities["Application"]
         Channel["Capabilities"] = Capabilities["Channel"]
+        Orderer["Capabilities"] = Capabilities["Orderer"]
+        Orderer["OrdererType"] = consensus
+        Orderer["EtcdRaft"]["Consenters"] = deepcopy(Consenters)
+
         Profiles = {}
-        Profiles["TwoOrgsOrdererGenesis"] = deepcopy(Channel)
-        Profiles["TwoOrgsOrdererGenesis"]["Orderer"] = deepcopy(Orderer)
-        Profiles["TwoOrgsOrdererGenesis"]["Orderer"]["Organizations"] = OrdererOrganizations
-        Profiles["TwoOrgsOrdererGenesis"]["Orderer"]["Capabilities"] = Capabilities["Orderer"]
-        Profiles["TwoOrgsOrdererGenesis"]["Consortiums"] = {'SampleConsortium': {'Organizations': deepcopy(PeerOrganizations)}}
+        Profiles[name] = deepcopy(Channel)
+        Profiles[name]["Orderer"] = deepcopy(Orderer)
+        Profiles[name]["Application"] = deepcopy(Application)
+        Profiles[name]["Capabilities"] = Capabilities["Channel"]
+        Profiles[name]["Orderer"]["Capabilities"] = Capabilities["Orderer"]
+        Profiles[name]["Application"]["Capabilities"] = Capabilities["Application"]
+        Profiles[name]["Orderer"]["Organizations"] = OrdererOrganizations
+        Profiles[name]["Application"]["Organizations"] = PeerOrganizations
 
         configtx = dict(
             Organizations=Organizations,
@@ -145,8 +135,8 @@ class ConfigTX:
                 configtx = yaml.load(f, Loader=yaml.FullLoader)
                 Profiles = configtx["Profiles"]
                 Channel = configtx["Channel"]
+                Orderer = configtx["Orderer"]
                 Application = configtx["Application"]
-                Capabilities = configtx["Capabilities"]["Application"]
                 PeerOrganizations = []
                 for org in configtx["Organizations"]:
                     for item in organizations:
@@ -155,10 +145,8 @@ class ConfigTX:
                 if PeerOrganizations == []:
                     raise Exception("can't find organnization")
                 Profiles[name] = deepcopy(Channel)
-                Profiles[name]["Consortium"] = "SampleConsortium"
-                Profiles[name]["Application"] = deepcopy(Application)
-                Profiles[name]["Application"]["Organizations"] = deepcopy(PeerOrganizations)
-                Profiles[name]["Application"]["Capabilities"] = deepcopy(Capabilities)
+                Profiles[name]["Orderer"] = Orderer
+                Profiles[name]["Application"] = Application
 
             with open('{}/{}/{}'.format(self.filepath, self.network, "configtx.yaml"), 'w', encoding='utf-8') as f:
                 yaml.safe_dump(configtx, f, sort_keys=False)
