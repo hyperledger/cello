@@ -38,10 +38,6 @@ stages:
                   dockerfile: "build_image/docker/common/nginx/Dockerfile.in"
                 - imagename: "hyperledger/cello-dashboard"
                   dockerfile: "build_image/docker/common/dashboard/Dockerfile.in"
-          # - name: ansibleagent
-          #   images:
-          #   - imagename: "hyperledger/cello-ansible-agent"
-          #     dockerfile: "build_image/docker/agent/ansible/Dockerfile.in"
 #     - name: fabricoperator
 #       images:
 #       - imagename: "hyperledger/cello-k8s-operator-agent"
