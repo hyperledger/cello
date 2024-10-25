@@ -150,21 +150,32 @@ class ChannelViewSet(viewsets.ViewSet):
                 ConfigTX(org.network.name).create(name, org.network.consensus, _orderers, _peers)
                 ConfigTxGen(org.network.name).genesis(profile=name, channelid=name, outputblock="{}.block".format(name))
 
-                block_path = "{}/{}/{}.block".format(
-                    CELLO_HOME, org.network.name, name)
+                # osnadmin channel join
                 ordering_node = Node.objects.get(id=orderers[0])
                 envs = init_env_vars(ordering_node, org)
                 peer_channel_cli = PeerChannel(**envs)
                 peer_channel_cli.create(
                     channel=name,
-                    orderer_url="{}.{}:{}".format(
+                    orderer_admin_url="{}.{}:{}".format(
                         ordering_node.name, org.name.split(".", 1)[1], str(7053)),
-                    block_path=block_path
+                    block_path="{}/{}/{}.block".format(
+                        CELLO_HOME, org.network.name, name)
                 )
+
+                # peer channel join
                 for i in range(len(peers)):
                     peer_node = Node.objects.get(id=peers[i])
                     envs = init_env_vars(peer_node, org)
-                    join_peers(envs, block_path)
+                    join_peers(envs, "{}/{}/{}.block".format(
+                        CELLO_HOME, org.network.name, name))
+
+                # peer channel fetch
+                peer_node = Node.objects.get(id=peers[0])
+                envs = init_env_vars(peer_node, org)
+                peer_channel_cli = PeerChannel(**envs)
+                peer_channel_cli.fetch(block_path="{}/{}/config_block.pb".format(CELLO_HOME, org.network.name), 
+                                       channel=name, orderer_general_url="{}.{}:{}".format(
+                                           ordering_node.name, org.name.split(".", 1)[1], str(7050)))
 
                 channel = Channel(
                     name=name,
@@ -395,7 +406,8 @@ def init_env_vars(node, org):
 
     if(node.type == "orderer"):
         envs = {
-            "ORDERER_CA": "{}/msp/tlscacerts/tlsca.{}-cert.pem".format(dir_certificate, org_domain),
+            "CORE_PEER_TLS_ENABLED": "true",
+            "ORDERER_CA": "{}/orderers/{}/msp/tlscacerts/tlsca.{}-cert.pem".format(dir_certificate, node.name + "." + org_domain, org_domain),
             "ORDERER_ADMIN_TLS_SIGN_CERT": "{}/orderers/{}/tls/server.crt".format(dir_certificate, node.name + "." + org_domain),
             "ORDERER_ADMIN_TLS_PRIVATE_KEY": "{}/orderers/{}/tls/server.key".format(dir_certificate, node.name + "." + org_domain)
         }

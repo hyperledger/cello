@@ -18,20 +18,20 @@ class Channel(Command):
         self.osnadmin = peer + "/osnadmin"
         super(Channel, self).__init__(version, **kwargs)
 
-    def create(self, channel, orderer_url, block_path, time_out="90s"):
+    def create(self, channel, orderer_admin_url, block_path, time_out="90s"):
         try:
             res = 0x100
             command = ""
 
             if os.getenv("CORE_PEER_TLS_ENABLED") == "false" or os.getenv("CORE_PEER_TLS_ENABLED") is None:
-                command = "{} channel join --channelID {} --config-block {} -o {}".format(self.osnadmin, channel, block_path, orderer_url)
+                command = "{} channel join --channelID {} --config-block {} -o {}".format(self.osnadmin, channel, block_path, orderer_admin_url)
             else:
                 ORDERER_CA = os.getenv("ORDERER_CA")
                 ORDERER_ADMIN_TLS_SIGN_CERT = os.getenv("ORDERER_ADMIN_TLS_SIGN_CERT")
                 ORDERER_ADMIN_TLS_PRIVATE_KEY = os.getenv("ORDERER_ADMIN_TLS_PRIVATE_KEY")
-                command = "{} channel join --channelID {} --config-block {} -o {} --ca-file {} --client-cert {} --client-key {}".format(self.osnadmin, channel, block_path, orderer_url, ORDERER_CA, ORDERER_ADMIN_TLS_SIGN_CERT, ORDERER_ADMIN_TLS_PRIVATE_KEY)
+                command = "{} channel join --channelID {} --config-block {} -o {} --ca-file {} --client-cert {} --client-key {}".format(self.osnadmin, channel, block_path, orderer_admin_url, ORDERER_CA, ORDERER_ADMIN_TLS_SIGN_CERT, ORDERER_ADMIN_TLS_PRIVATE_KEY)
 
-            LOG.info(f"Running command: {command}")
+            LOG.info(f"{command}")
             res = os.system(command)
 
             # The return value of os.system is not the result of executing the program. It is a 16 bit number,
@@ -78,7 +78,7 @@ class Channel(Command):
         res = res >> 8
         return res
 
-    def fetch(self, option, channel):
+    def fetch(self, block_path, channel, orderer_general_url):
         """
         Fetch a specified block, writing it to a file e.g. <channelID>.block.
         params:
@@ -86,14 +86,19 @@ class Channel(Command):
             channel: channel id.
         """
         try:
-            res = subprocess.call(args=[
-                self.peer,
-                "channel",
-                "fetch",
-                "{}".format(option),
-                "-c",
-                channel
-            ])
+            res = 0x100
+            command = ""
+            if os.getenv("CORE_PEER_TLS_ENABLED") == "false" or os.getenv("CORE_PEER_TLS_ENABLED") is None:
+                command = "{} channel fetch config {} -o {} -c {}".format(self.peer, block_path, orderer_general_url, channel)
+            else:
+                ORDERER_CA = os.getenv("ORDERER_CA")
+                orderer_address = orderer_general_url.split(":")[0]
+                command = "{} channel fetch config {} -o {} --ordererTLSHostnameOverride {} -c {} --tls --cafile {}".format(self.peer, block_path, orderer_general_url, orderer_address, channel, ORDERER_CA)
+
+            LOG.info(f"{command}")
+            res = os.system(command)
+
+            res = res >> 8
         except Exception as e:
             err_msg = "fetch a specified block failed {}!".format(e)
             raise Exception(err_msg)
@@ -123,7 +128,7 @@ class Channel(Command):
         try:
             command = "{} channel join -b {} ".format(self.peer, block_path)
 
-            LOG.info(f"Running command: {command}")
+            LOG.info(f"{command}")
 
             res = os.system(command)
 
