@@ -14,7 +14,6 @@ import {
   Form,
   Input,
   Select,
-  InputNumber,
   Badge,
   Upload,
 } from 'antd';
@@ -216,8 +215,7 @@ const CreateNode = props => {
   };
 
   const onFinish = values => {
-    const msg = { ...values, num: parseInt(values.num, 10) };
-    handleCreate(msg, createCallback);
+    handleCreate(values, createCallback);
   };
 
   const formItemLayout = {
@@ -295,33 +293,6 @@ const CreateNode = props => {
           ]}
         >
           <Select defaultActiveFirstOption={false}>{typeOptions}</Select>
-        </FormItem>
-        <FormItem
-          {...formItemLayout}
-          label={intl.formatMessage({
-            id: 'app.node.new.num',
-            defaultMessage: 'Number',
-          })}
-          name="num"
-          initialValue="1"
-          rules={[
-            {
-              required: true,
-              message: intl.formatMessage({
-                id: 'app.node.new.numCheck',
-                defaultMessage: 'Please enter the number of nodes',
-              }),
-            },
-          ]}
-        >
-          <InputNumber
-            placeholder={intl.formatMessage({
-              id: 'app.node.new.num',
-              defaultMessage: 'Number',
-            })}
-            min={1}
-            style={{ width: '100%' }}
-          />
         </FormItem>
       </Form>
     </Modal>
