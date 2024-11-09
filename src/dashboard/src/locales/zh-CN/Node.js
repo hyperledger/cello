@@ -33,8 +33,6 @@ export default {
   'app.node.new.nameCheck': '请输入名称',
   'app.node.new.type': '类型',
   'app.node.new.typeCheck': '请请选择类型',
-  'app.node.new.num': '数量',
-  'app.node.new.numCheck': '请输入数量',
   'app.node.new.createSuccess': '创建节点成功',
   'app.node.new.createFail': '创建节点失败',
   'app.node.new.inputBasic.form.networkType.label': '网络类型',

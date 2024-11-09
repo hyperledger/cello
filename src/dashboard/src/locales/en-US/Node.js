@@ -34,8 +34,6 @@ export default {
   'app.node.new.nameCheck': 'Please enter node name',
   'app.node.new.type': 'Type',
   'app.node.new.typeCheck': 'Please select a type',
-  'app.node.new.num': 'Number',
-  'app.node.new.numCheck': 'Please enter the number of nodes',
   'app.node.new.createSuccess': 'Create node succeed',
   'app.node.new.createFail': 'Create node failed',
   'app.node.new.inputBasic.form.networkType.label': 'Network Type',
