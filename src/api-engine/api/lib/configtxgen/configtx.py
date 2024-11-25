@@ -51,13 +51,13 @@ class ConfigTX:
         Consenters = []
 
         for orderer in orderers:
-            OrdererMSP = orderer["name"].capitalize() + "Orderer"
-            OrdererOrg = dict(Name=orderer["name"].split(".")[0].capitalize() + "Orderer",
-                              ID='{}MSP'.format(OrdererMSP),
+            OrdererMSP = "OrdererMSP"
+            OrdererOrg = dict(Name="Orderer",
+                              ID= OrdererMSP,
                               MSPDir='{}/{}/crypto-config/ordererOrganizations/{}/msp'.format(self.filepath, orderer["name"], orderer['name'].split(".", 1)[1]),
-                              Policies=dict(Readers=dict(Type="Signature", Rule="OR('{}MSP.member')".format(OrdererMSP)),
-                              Writers=dict(Type="Signature", Rule="OR('{}MSP.member')".format(OrdererMSP)),
-                              Admins=dict(Type="Signature", Rule="OR('{}MSP.admin')".format(OrdererMSP)))
+                              Policies=dict(Readers=dict(Type="Signature", Rule="OR('{}.member')".format(OrdererMSP)),
+                              Writers=dict(Type="Signature", Rule="OR('{}.member')".format(OrdererMSP)),
+                              Admins=dict(Type="Signature", Rule="OR('{}.admin')".format(OrdererMSP)))
                               )
             for host in orderer['hosts']:
                 OrdererAddress.append('{}.{}:{}'.format(host['name'], orderer['name'].split(".", 1)[1], 7050))
@@ -74,15 +74,14 @@ class ConfigTX:
         PeerOrganizations = []
 
         for peer in peers:
-            PeerMSP = peer["name"].capitalize()
-            PeerOrganizations.append(dict(Name=peer["name"].split(".")[0].capitalize(),
-                                          ID='{}MSP'.format(PeerMSP),
+            PeerMSP = peer['name'].split(".", 1)[0].capitalize() + "MSP"
+            PeerOrganizations.append(dict(Name=peer['name'].split(".", 1)[0].capitalize(),
+                                          ID=PeerMSP,
                                           MSPDir='{}/{}/crypto-config/peerOrganizations/{}/msp'.format(self.filepath, peer['name'], peer['name']),
-                                          # AnchorPeers=[{'Port': peer["hosts"][0]["port"], 'Host': '{}.{}'.format(peer["hosts"][0]["name"],peer["name"])}],
-                                          Policies=dict(Readers=dict(Type="Signature", Rule="OR('{}MSP.member')".format(PeerMSP)),
-                                                        Writers=dict(Type="Signature", Rule="OR('{}MSP.member')".format(PeerMSP)),
-                                                        Admins=dict(Type="Signature", Rule="OR('{}MSP.admin')".format(PeerMSP)),
-                                                        Endorsement=dict(Type="Signature", Rule="OR('{}MSP.member')".format(PeerMSP)))
+                                          Policies=dict(Readers=dict(Type="Signature", Rule="OR('{}.admin', '{}.peer', '{}.client')".format(PeerMSP, PeerMSP, PeerMSP)),
+                                                        Writers=dict(Type="Signature", Rule="OR('{}.admin', '{}.client')".format(PeerMSP, PeerMSP)),
+                                                        Admins=dict(Type="Signature", Rule="OR('{}.admin')".format(PeerMSP)),
+                                                        Endorsement=dict(Type="Signature", Rule="OR('{}.peer')".format(PeerMSP)))
                                           ))
         Organizations = OrdererOrganizations + PeerOrganizations
         Capabilities = dict(

@@ -1,72 +1,65 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-from subprocess import call
 from api.config import CELLO_HOME, FABRIC_TOOL, FABRIC_VERSION
 
+import subprocess
 import logging
 LOG = logging.getLogger(__name__)
 
 
-class CryptoGen:
-    """Class represents crypto-config tool."""
+class ConfigTxGen:
+    """Class represents cryptotxgen."""
 
-    def __init__(self, name, filepath=CELLO_HOME, cryptogen=FABRIC_TOOL, version=FABRIC_VERSION):
+    def __init__(self, network, filepath=CELLO_HOME, configtxgen=FABRIC_TOOL, version=FABRIC_VERSION):
         """init CryptoGen
                 param:
-                    name: organization's name
-                    cryptogen: tool path
+                    network: network's name
+                    configtxgen: tool path
                     version: version
                     filepath: cello's working directory
                 return:
         """
-        self.cryptogen = cryptogen + "/cryptogen"
+        self.network = network
+        self.configtxgen = configtxgen + "/configtxgen"
         self.filepath = filepath
         self.version = version
-        self.name = name
 
-    def generate(self, output="crypto-config", config="crypto-config.yaml"):
-        """Generate key material
+    def genesis(self, profile="", channelid="", outputblock="genesis.block"):
+        """generate gensis
                 param:
-                    output: The output directory in which to place artifacts
-                    config: The configuration template to use
+                    profile: profile
+                    channelid: channelid
+                    outputblock: outputblock
                 return:
         """
         try:
             command = [
-                self.cryptogen,
-                "generate",
-                "--output={}/{}/{}".format(self.filepath, self.name, output),
-                "--config={}/{}/{}".format(self.filepath, self.name, config)
+                self.configtxgen,
+                "-configPath", "{}/{}/".format(self.filepath, self.network),
+                "-profile", "{}".format(profile),
+                "-outputBlock", "{}/{}/{}".format(self.filepath, self.network, outputblock),
+                "-channelID", "{}".format(channelid)
             ]
 
-            LOG.info("Running command: " + " ".join(command))
+            LOG.info(" ".join(command))
 
-            call(command)
+            subprocess.run(command, check=True)
+
+        except subprocess.CalledProcessError as e:
+            err_msg = "configtxgen genesis fail! "
+            raise Exception(err_msg+str(e))
 
         except Exception as e:
-            err_msg = "cryptogen generate fail for {}!".format(e)
-            raise Exception(err_msg)
+            err_msg = "configtxgen genesis fail! "
+            raise Exception(err_msg + str(e))
 
-    def extend(self, input="crypto-config", config="crypto-config.yaml"):
-        """Extend existing network
+    def anchorpeer(self, profile, channelid, outputblock):
+        """set anchorpeer
                 param:
-                    input: The input directory in which existing network place
-                    config: The configuration template to use
+                    profile: profile
+                    channelid: channelid
+                    outputblock: outputblock
                 return:
         """
-        try:
-            command = [
-                self.cryptogen,
-                "extend",
-                "--input={}/{}/{}".format(self.filepath, self.name, input),
-                "--config={}/{}/{}".format(self.filepath, self.name, config)
-            ]
-
-            LOG.info("Running command: " + " ".join(command))
-
-            call(command)
-
-        except Exception as e:
-            err_msg = "cryptogen extend fail for {}!".format(e)
-            raise Exception(err_msg)
+        pass

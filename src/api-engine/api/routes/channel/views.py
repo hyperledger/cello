@@ -126,57 +126,30 @@ class ChannelViewSet(viewsets.ViewSet):
 
             try:
                 org = request.user.organization
-                # Check if nodes are running
-                for i in range(len(orderers)):
-                    o = Node.objects.get(id=orderers[i])
-                    if o.status != "running":
-                        raise NoResource
-                for i in range(len(peers)):
-                    p = Node.objects.get(id=peers[i])
-                    if p.status != "running":
-                        raise NoResource
+                orderer_nodes = Node.objects.filter(id__in=orderers)
+                peer_nodes = Node.objects.filter(id__in=peers)
 
-                _orderers = []
-                _peers = []
-                _orderers.append({"name": org.name, "hosts": []})
-                _peers.append({"name": org.name, "hosts": []})
-                nodes = Node.objects.filter(organization=org)
-                for node in nodes:
-                    if node.type == "peer":
-                        _peers[0]["hosts"].append({"name": node.name})
-                    elif node.type == "orderer":
-                        _orderers[0]["hosts"].append({"name": node.name})
+                # validate if all nodes are running
+                validate_nodes(orderer_nodes)
+                validate_nodes(peer_nodes)
+
+                # assemble transaction config
+                _orderers, _peers = assemble_transaction_config(org)
 
                 ConfigTX(org.network.name).create(name, org.network.consensus, _orderers, _peers)
                 ConfigTxGen(org.network.name).genesis(profile=name, channelid=name, outputblock="{}.block".format(name))
 
                 # osnadmin channel join
                 ordering_node = Node.objects.get(id=orderers[0])
-                envs = init_env_vars(ordering_node, org)
-                peer_channel_cli = PeerChannel(**envs)
-                peer_channel_cli.create(
-                    channel=name,
-                    orderer_admin_url="{}.{}:{}".format(
-                        ordering_node.name, org.name.split(".", 1)[1], str(7053)),
-                    block_path="{}/{}/{}.block".format(
-                        CELLO_HOME, org.network.name, name)
-                )
+                osn_channel_join(name, ordering_node, org)
 
                 # peer channel join
-                for i in range(len(peers)):
-                    peer_node = Node.objects.get(id=peers[i])
-                    envs = init_env_vars(peer_node, org)
-                    join_peers(envs, "{}/{}/{}.block".format(
-                        CELLO_HOME, org.network.name, name))
+                peer_channel_join(name, peers, org)
 
-                # peer channel fetch
-                peer_node = Node.objects.get(id=peers[0])
-                envs = init_env_vars(peer_node, org)
-                peer_channel_cli = PeerChannel(**envs)
-                peer_channel_cli.fetch(block_path="{}/{}/config_block.pb".format(CELLO_HOME, org.network.name), 
-                                       channel=name, orderer_general_url="{}.{}:{}".format(
-                                           ordering_node.name, org.name.split(".", 1)[1], str(7050)))
+                # set anchor peer
+                set_anchor_peer(name, org, peers, ordering_node)
 
+                # save channel to db
                 channel = Channel(
                     name=name,
                     network=org.network
@@ -184,6 +157,8 @@ class ChannelViewSet(viewsets.ViewSet):
                 channel.save()
                 channel.organizations.add(org)
                 channel.orderers.add(ordering_node)
+
+                # serialize and return channel id
                 response = ChannelIDSerializer(data=channel.__dict__)
                 if response.is_valid(raise_exception=True):
                     return Response(
@@ -387,6 +362,94 @@ class ChannelViewSet(viewsets.ViewSet):
         except ObjectDoesNotExist:
             raise ResourceNotFound
 
+def validate_nodes(nodes):
+        """
+        validate if all nodes are running
+        :param nodes: list of nodes
+        :return: none
+        """
+        for node in nodes:
+            if node.status != "running":
+                raise NoResource("Node {} is not running".format(node.name))
+
+def assemble_transaction_config(org):
+    """
+    Assemble transaction config for the channel.
+    :param org: Organization object.
+    :return: _orderers, _peers
+    """
+    _orderers = [{"name": org.name, "hosts": []}]
+    _peers = [{"name": org.name, "hosts": []}]
+    nodes = Node.objects.filter(organization=org)
+    for node in nodes:
+        if node.type == "peer":
+            _peers[0]["hosts"].append({"name": node.name})
+        elif node.type == "orderer":
+            _orderers[0]["hosts"].append({"name": node.name})
+
+    return _orderers, _peers
+
+
+def osn_channel_join(name, ordering_node, org):
+    """
+    Join ordering node to the channel.
+    :param ordering_node: Node object
+    :param org: Organization object.
+    :param channel_name: Name of the channel.
+    :return: none
+    """
+    envs = init_env_vars(ordering_node, org)
+    peer_channel_cli = PeerChannel(**envs)
+    peer_channel_cli.create(
+        channel=name,
+        orderer_admin_url="{}.{}:{}".format(
+        ordering_node.name, org.name.split(".", 1)[1], str(7053)),
+        block_path="{}/{}/{}.block".format(
+        CELLO_HOME, org.network.name, name)
+    )
+
+def peer_channel_join(name, peers, org):
+    """
+    Join peer nodes to the channel.
+    :param peers: list of Node objects
+    :param org: Organization object.
+    :param channel_name: Name of the channel.
+    :return: none
+    """
+    for i in range(len(peers)):
+        peer_node = Node.objects.get(id=peers[i])
+        envs = init_env_vars(peer_node, org)
+        peer_channel_cli = PeerChannel(**envs)
+        peer_channel_cli.join(
+            block_path="{}/{}/{}.block".format(
+                CELLO_HOME, org.network.name, name)
+        )
+
+def set_anchor_peer(name, org, peers, ordering_node):
+    """
+    Set anchor peer for the channel.
+    :param org: Organization object.
+    :param peers: list of Node objects
+    :return: none
+    """
+    peer_channel_fetch(name, org, peers, ordering_node)
+
+
+def peer_channel_fetch(name, org, peers, ordering_node):
+    """
+    Fetch the channel block from the orderer.
+    :param peers: list of Node objects
+    :param org: Organization object.
+    :param channel_name: Name of the channel.
+    :return: none
+    """
+    peer_node = Node.objects.get(id=peers[0])
+    envs = init_env_vars(peer_node, org)
+    peer_channel_cli = PeerChannel(**envs)
+    peer_channel_cli.fetch(block_path="{}/{}/config_block.pb".format(CELLO_HOME, org.network.name),
+                            channel=name, orderer_general_url="{}.{}:{}".format(
+                               ordering_node.name, org.name.split(".", 1)[1], str(7050)))
+
 
 def init_env_vars(node, org):
     """
@@ -414,26 +477,12 @@ def init_env_vars(node, org):
     elif(node.type == "peer"):
         envs = {
             "CORE_PEER_TLS_ENABLED": "true",
-            "CORE_PEER_LOCALMSPID": "{}MSP".format(org_name.capitalize()),
+            "CORE_PEER_LOCALMSPID": "{}MSP".format(org_name.split(".")[0].capitalize()),
             "CORE_PEER_TLS_ROOTCERT_FILE": "{}/{}/peers/{}/tls/ca.crt".format(dir_node, org_name, node.name + "." + org_name),
             "CORE_PEER_MSPCONFIGPATH": "{}/{}/users/Admin@{}/msp".format(dir_node, org_name, org_name),
             "CORE_PEER_ADDRESS": "{}:{}".format(
                 node.name + "." + org_name, str(7051)),
-
             "FABRIC_CFG_PATH": "{}/{}/peers/{}/".format(dir_node, org_name, node.name + "." + org_name)
         }
 
     return envs
-
-
-def join_peers(envs, block_path):
-    """
-    Join peer nodes to the channel.
-    :param envs: environments variables for peer CLI.
-    :param block_path: Path to file containing genesis block
-    """
-    # Join the peers to the channel.
-    peer_channel_cli = PeerChannel(**envs)
-    peer_channel_cli.join(
-        block_path=block_path
-    )
