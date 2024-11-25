@@ -5,6 +5,8 @@ import logging
 import os
 import ast
 
+logging.basicConfig(level=logging.INFO)
+
 app = Flask(__name__)
 PASS_CODE = 'OK'
 FAIL_CODE = 'Fail'
@@ -52,7 +54,7 @@ def create_node():
             'CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE': 'cello-net',
             'FABRIC_LOGGING_SPEC': 'INFO',
             'CORE_PEER_TLS_ENABLED': 'true',
-            'CORE_PEER_PROFILE_ENABLED': 'true',
+            'CORE_PEER_PROFILE_ENABLED': 'false',
             'CORE_PEER_TLS_CERT_FILE': '/etc/hyperledger/fabric/tls/server.crt',
             'CORE_PEER_TLS_KEY_FILE': '/etc/hyperledger/fabric/tls/server.key',
             'CORE_PEER_TLS_ROOTCERT_FILE': '/etc/hyperledger/fabric/tls/ca.crt',
@@ -63,14 +65,19 @@ def create_node():
             'CORE_PEER_CHAINCODELISTENADDRESS':'0.0.0.0:7052',
             'CORE_PEER_GOSSIP_BOOTSTRAP': node_name+":7051",
             'CORE_PEER_GOSSIP_EXTERNALENDPOINT': node_name+":7051",
-            'CORE_OPERATIONS_LISTENADDRESS': '0.0.0.0:17051'
+            'CORE_PEER_LOCALMSPID': node_name.split('.')[1].capitalize()+'MSP',
+            'CORE_PEER_MSPCONFIGPATH': '/etc/hyperledger/fabric/msp',
+            'CORE_OPERATIONS_LISTENADDRESS': node_name+":9444",
+            'CORE_METRICS_PROVIDER': 'prometheus'
         }
         env.update(peer_envs)
     else:
         order_envs = {  
-            'FABRIC_LOGGING_SPEC':'DEBUG',
+            'FABRIC_LOGGING_SPEC':'INFO',
             'ORDERER_GENERAL_LISTENADDRESS': '0.0.0.0',
             'ORDERER_GENERAL_LISTENPORT': '7050',
+            'ORDERER_GENERAL_LOCALMSPID': 'OrdererMSP',
+            'ORDERER_GENERAL_LOCALMSPDIR': '/etc/hyperledger/fabric/msp',
             'ORDERER_GENERAL_TLS_ENABLED': 'true',
             'ORDERER_GENERAL_TLS_PRIVATEKEY':'/etc/hyperledger/fabric/tls/server.key',
             'ORDERER_GENERAL_TLS_CERTIFICATE':'/etc/hyperledger/fabric/tls/server.crt',
@@ -78,15 +85,17 @@ def create_node():
             'ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE': '/etc/hyperledger/fabric/tls/server.crt',
             'ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY': '/etc/hyperledger/fabric/tls/server.key',
             'ORDERER_GENERAL_CLUSTER_ROOTCAS': '[/etc/hyperledger/fabric/tls/ca.crt]',
-            'ORDERER_GENERAL_LOCALMSPDIR': '/etc/hyperledger/fabric/msp',
-            'ORDERER_GENERAL_LOCALMSPID': 'OrdererMSP',
+            "ORDERER_GENERAL_BOOTSTRAPMETHOD": "none",
+            "ORDERER_CHANNELPARTICIPATION_ENABLED": "true",
 
-            "ORDERER_ADMIN_LISTENADDRESS": "0.0.0.0:7053",
             "ORDERER_ADMIN_TLS_ENABLED": "true",
             "ORDERER_ADMIN_TLS_CERTIFICATE": "/etc/hyperledger/fabric/tls/server.crt",
             "ORDERER_ADMIN_TLS_PRIVATEKEY": "/etc/hyperledger/fabric/tls/server.key",
+            "ORDERER_ADMIN_TLS_ROOTCAS": "[/etc/hyperledger/fabric/tls/ca.crt]",
             "ORDERER_ADMIN_TLS_CLIENTROOTCAS": "[/etc/hyperledger/fabric/tls/ca.crt]",
-            "ORDERER_ADMIN_TLS_CLIENTAUTHREQUIRED": "true"
+            "ORDERER_ADMIN_LISTENADDRESS": "0.0.0.0:7053",
+            "ORDERER_OPERATIONS_LISTENADDRESS": node_name+":9443",
+            "ORDERER_METRICS_PROVIDER": "prometheus"
         }
         env.update(order_envs)
     try:
@@ -117,6 +126,7 @@ def create_node():
     res['data']['public-grpc'] = '127.0.0.1:7050' # TODO: read the info from config file
     res['data']['public-raft'] = '127.0.0.1:7052'
     res['msg'] = 'node created'
+
     return jsonify(res)
 
 @app.route('/api/v1/nodes/<id>', methods=['GET', 'POST'])

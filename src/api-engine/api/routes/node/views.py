@@ -59,9 +59,10 @@ from api.config import (
 )
 from api.utils.node_config import NodeConfig
 from api.lib.agent import AgentHandler
+from api.lib.peer.channel import Channel as PeerChannel
 from api.utils.port_picker import set_ports_mapping, find_available_ports
 from api.common import ok, err
-from api.routes.channel.views import init_env_vars, join_peers
+from api.routes.channel.views import init_env_vars
 
 LOG = logging.getLogger(__name__)
 
@@ -346,12 +347,17 @@ class NodeViewSet(viewsets.ViewSet):
             set_ports_mapping(
                 node.id,
                 [{"internal": 7051, "external": ports[0]}, {
-                    "internal": 7053, "external": ports[1]}],
+                    "internal": 9444, "external": ports[1]}],
                 True)
         else:
-            ports = find_available_ports(ip, node.id, agent.id, 1)
+            # unify the port mapping for orderer
+            ports = find_available_ports(ip, node.id, agent.id, 3)
             set_ports_mapping(
-                node.id, [{"internal": 7050, "external": ports[0]}], True)
+                node.id,
+                [{"internal": 7050, "external": ports[0]}, {
+                    "internal": 7053, "external": ports[1]}, {
+                        "internal": 9443, "external": ports[2]}],
+            True)
 
     def _conversion_msp_tls_cfg(self, type, org, node):
         """
@@ -394,7 +400,7 @@ class NodeViewSet(viewsets.ViewSet):
 
     def _generate_config(self, type, org, node):
         """
-        generate config for node
+        generate config for node (core.yaml, orderer.yaml)
 
         :param org: organization name
         :param type: node type
@@ -405,20 +411,41 @@ class NodeViewSet(viewsets.ViewSet):
         """
         args = {}
         if type == "peer":
-            args.update({"peer_id": "{}.{}".format(node, org)})
-            args.update({"peer_address": "{}.{}:{}".format(node, org, 7051)})
-            args.update(
-                {"peer_gossip_externalEndpoint": "{}.{}:{}".format(node, org, 7051)})
-            args.update(
-                {"peer_chaincodeAddress": "{}.{}:{}".format(node, org, 7052)})
             args.update({"peer_tls_enabled": True})
-            args.update({"peer_localMspId": "{}MSP".format(org.capitalize())})
+            args.update({"operations_listenAddress": node + "." + org + ":9444"})
+            args.update({"peer_address": node + "." + org + ":7051"})
+            args.update({"peer_gossip_bootstrap": node + "." + org + ":7051"})
+            args.update({"peer_gossip_externalEndpoint": node + "." + org + ":7051"})
+            args.update({"peer_id": node + "." + org})
+            args.update({"peer_localMspId": org.capitalize() + "MSP"})
+            args.update({"peer_mspConfigPath": "/etc/hyperledger/fabric/msp"})
+            args.update({"peer_tls_cert_file": "/etc/hyperledger/fabric/tls/server.crt"})
+            args.update({"peer_tls_key_file": "/etc/hyperledger/fabric/tls/server.key"})
+            args.update({"peer_tls_rootcert_file": "/etc/hyperledger/fabric/tls/ca.crt"})
+            args.update({"vm_docker_hostConfig_NetworkMode": "cello_net"})
+            args.update({"vm_endpoint": 'unix:///host/var/run/docker.sock'})
 
             a = NodeConfig(org)
             a.peer(node, **args)
         else:
-            args.update({"General_BootstrapMethod": "none"})
+            args.update({"Admin_TLS_Enabled": True})
+            args.update({"Admin_ListenAddress": "0.0.0.0:7053"})
+            args.update({"Admin_TLS_Certificate": "/etc/hyperledger/fabric/tls/server.crt"})
+            args.update({"Admin_TLS_PrivateKey": "/etc/hyperledger/fabric/tls/server.key"})
             args.update({"ChannelParticipation_Enabled": True})
+            args.update({"General_Cluster_ClientCertificate": "/etc/hyperledger/fabric/tls/server.crt"})
+            args.update({"General_Cluster_ClientPrivateKey": "/etc/hyperledger/fabric/tls/server.key"})
+            args.update({"General_ListenAddress": "0.0.0.0"})
+            args.update({"General_ListenPort": 7050})
+            args.update({"General_LocalMSPID": "OrdererMSP"})
+            args.update({"General_LocalMSPDir": "/etc/hyperledger/fabric/msp"})
+            args.update({"General_TLS_Enabled": True})
+            args.update({"General_TLS_Certificate": "/etc/hyperledger/fabric/tls/server.crt"})
+            args.update({"General_TLS_PrivateKey": "/etc/hyperledger/fabric/tls/server.key"})
+            args.update({"General_TLS_RootCAs": "[/etc/hyperledger/fabric/tls/ca.crt]"})
+            args.update({"General_BootstrapMethod": "none"})
+            args.update({"Metrics_Provider": "prometheus"})
+            args.update({"Operations_ListenAddress": node + "." + org.split(".", 1)[1] + ":9443"})
 
             a = NodeConfig(org)
             a.orderer(node, **args)
@@ -809,7 +836,9 @@ class NodeViewSet(viewsets.ViewSet):
             with open(block_path, 'wb+') as f:
                 for chunk in uploaded_block_file.chunks():
                     f.write(chunk)
-            join_peers(envs, block_path)
+            peer_channel_cli = PeerChannel(**envs)
+            peer_channel_cli.join(
+                block_path)
             os.remove(block_path)
             return Response(status=status.HTTP_202_ACCEPTED)
         except Exception as e:

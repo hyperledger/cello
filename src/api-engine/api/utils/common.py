@@ -118,6 +118,10 @@ def zip_dir(dirpath, outFullName):
         for filename in filenames:
             zdir.write(os.path.join(path, filename),
                        os.path.join(fpath, filename))
+        # zip empty folder
+        for dirname in dirnames:
+            zdir.write(os.path.join(path, dirname),
+                       os.path.join(fpath, dirname))
     zdir.close()
 
 
