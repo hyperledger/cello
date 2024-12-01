@@ -40,7 +40,7 @@ class CryptoGen:
                 "--config={}/{}/{}".format(self.filepath, self.name, config)
             ]
 
-            LOG.info("Running command: " + " ".join(command))
+            LOG.info(" ".join(command))
 
             call(command)
 
@@ -63,7 +63,7 @@ class CryptoGen:
                 "--config={}/{}/{}".format(self.filepath, self.name, config)
             ]
 
-            LOG.info("Running command: " + " ".join(command))
+            LOG.info(" ".join(command))
 
             call(command)
 

@@ -1,9 +1,9 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-from subprocess import call
 from api.config import CELLO_HOME, FABRIC_TOOL, FABRIC_VERSION
 
+import subprocess
 import logging
 LOG = logging.getLogger(__name__)
 
@@ -42,9 +42,13 @@ class ConfigTxGen:
                 "-channelID", "{}".format(channelid)
             ]
 
-            LOG.info("Running command: " + " ".join(command))
+            LOG.info(" ".join(command))
 
-            call(command)
+            subprocess.run(command, check=True)
+
+        except subprocess.CalledProcessError as e:
+            err_msg = "configtxgen genesis fail! "
+            raise Exception(err_msg+str(e))
 
         except Exception as e:
             err_msg = "configtxgen genesis fail! "

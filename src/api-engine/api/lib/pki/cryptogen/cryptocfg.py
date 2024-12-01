@@ -59,7 +59,7 @@ class CryptoConfig:
                 else:
                     template = dict(Count=orderernum)
                     org.append(dict(Domain=self.name.split(".", 1)[1],
-                                    Name=self.name.split(".")[0].capitalize() + item,
+                                    Name=item,
                                     CA=ca,
                                     Specs=specs,
                                     EnableNodeOUs=self.enablenodeous,
@@ -89,6 +89,7 @@ class CryptoConfig:
                     orgs = network['OrdererOrgs']
 
                 for org in orgs:
+                    # org["Template"]["Count"] += 1
                     specs = org["Specs"]
                     for host in org_info["Specs"]:
                         specs.append(dict(Hostname=host))
