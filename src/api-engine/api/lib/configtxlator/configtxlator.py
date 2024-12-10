@@ -60,13 +60,8 @@ class ConfigTxLator:
             
             LOG.info(" ".join(command))
 
-            res = run(command,
-                      capture_output=True)  
+            call(command)
 
-            if res.returncode == 0 :
-                return res.stdout
-            else:
-                return res.stderr
         except Exception as e:
             err_msg = "configtxlator proto decode fail! "
             raise Exception(err_msg + str(e))

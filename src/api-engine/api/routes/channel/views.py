@@ -18,7 +18,7 @@ from django.core.paginator import Paginator
 
 from api.config import CELLO_HOME
 from api.common.serializers import PageQuerySerializer
-from api.utils.common import with_common_response, parse_block_file, to_dict
+from api.utils.common import with_common_response, parse_block_file, to_dict, json_filter, json_add_anchor_peer, json_create_envelope
 from api.lib.configtxgen import ConfigTX, ConfigTxGen
 from api.lib.jq.jq import JQ
 from api.lib.peer.channel import Channel as PeerChannel
@@ -148,7 +148,8 @@ class ChannelViewSet(viewsets.ViewSet):
                 peer_channel_join(name, peers, org)
 
                 # set anchor peer
-                set_anchor_peer(name, org, peers, ordering_node)
+                anchor_peer = Node.objects.get(id=peers[0])
+                set_anchor_peer(name, org, anchor_peer, ordering_node)
 
                 # save channel to db
                 channel = Channel(
@@ -426,33 +427,55 @@ def peer_channel_join(name, peers, org):
                 CELLO_HOME, org.network.name, name)
         )
 
-def set_anchor_peer(name, org, peers, ordering_node):
+def set_anchor_peer(name, org, anchor_peer, ordering_node):
     """
     Set anchor peer for the channel.
     :param org: Organization object.
-    :param peers: list of Node objects
+    :param anchor_peer: Anchor peer node
+    :param ordering_node: Orderer node
     :return: none
     """
-    org_msp = '{}MSP'.format(org.name.split(".", 1)[0].capitalize())
+    org_msp = '{}'.format(org.name.split(".", 1)[0].capitalize())
     channel_artifacts_path = "{}/{}".format(CELLO_HOME, org.network.name)
-    peer_channel_fetch(name, org, peers, ordering_node)
+    
+    # Fetch the channel block from the orderer
+    peer_channel_fetch(name, org, anchor_peer, ordering_node)
 
-    ConfigTxLator().proto_encode(
+    # Decode block to JSON
+    ConfigTxLator().proto_decode(
         input="{}/config_block.pb".format(channel_artifacts_path),
         type="common.Block",
         output="{}/config_block.json".format(channel_artifacts_path),
     )
-
-    JQ().filter(
+    
+    # Get the config data from the block
+    json_filter(
         input="{}/config_block.json".format(channel_artifacts_path),
         output="{}/config.json".format(channel_artifacts_path),
         expression=".data.data[0].payload.data.config"
     )
 
-    JQ().filter(
+    # add anchor peer config
+    anchor_peer_config = {
+        "AnchorPeers": {
+            "mod_policy": "Admins",
+            "value": {
+                "anchor_peers": [
+                    {
+                        "host": anchor_peer.name + "." + org.name,
+                        "port": 7051
+                    }
+                ]
+            },
+            "version": 0
+        }
+    }
+
+    json_add_anchor_peer(
         input="{}/config.json".format(channel_artifacts_path),
         output="{}/modified_config.json".format(channel_artifacts_path),
-        expression=".channel_group.groups.Application.groups.{}.values += {{AnchorPeers:{{mod_policy: Admins,value:{{anchor_peers:[{{host: {},port: {}}}]}},version: 0}}}}".format(org_msp, peers[0].name, str(7051))
+        anchor_peer_config=anchor_peer_config,
+        org_msp=org_msp
     )
 
     ConfigTxLator().proto_encode(
@@ -480,10 +503,11 @@ def set_anchor_peer(name, org, peers, ordering_node):
         output="{}/config_update.json".format(channel_artifacts_path),
     )
 
-    JQ().filter(
-        input=".",
+    # Create config update envelope
+    json_create_envelope(
+        input="{}/config_update.json".format(channel_artifacts_path),
         output="{}/config_update_in_envelope.json".format(channel_artifacts_path),
-        expression=""
+        channel=name
     )
 
     ConfigTxLator().proto_encode(
@@ -492,30 +516,40 @@ def set_anchor_peer(name, org, peers, ordering_node):
         output="{}/config_update_in_envelope.pb".format(channel_artifacts_path),
     )
 
-    envs = init_env_vars(ordering_node, org)
+    # Update the channel of anchor peer
+    peer_channel_update(name, org, anchor_peer, ordering_node, channel_artifacts_path)
+
+
+def peer_channel_fetch(name, org, anchor_peer, ordering_node):
+    """
+    Fetch the channel block from the orderer.
+    :param anchor_peer: Anchor peer node
+    :param org: Organization object.
+    :param channel_name: Name of the channel.
+    :return: none
+    """
+    envs = init_env_vars(anchor_peer, org)
+    peer_channel_cli = PeerChannel(**envs)
+    peer_channel_cli.fetch(block_path="{}/{}/config_block.pb".format(CELLO_HOME, org.network.name),
+                            channel=name, orderer_general_url="{}.{}:{}".format(
+                               ordering_node.name, org.name.split(".", 1)[1], str(7050)))
+
+def peer_channel_update(name, org, anchor_peer, ordering_node, channel_artifacts_path):
+    """
+    Update the channel.
+    :param anchor_peer: Anchor peer node
+    :param org: Organization object.
+    :param channel_name: Name of the channel.
+    :return: none
+    """
+    envs = init_env_vars(anchor_peer, org)
     peer_channel_cli = PeerChannel(**envs)
     peer_channel_cli.update(
         channel=name,
         channel_tx="{}/config_update_in_envelope.pb".format(channel_artifacts_path),
         orderer_url="{}.{}:{}".format(
-        ordering_node.name, org.name.split(".", 1)[1], str(7050)),
+            ordering_node.name, org.name.split(".", 1)[1], str(7050)),
     )
-
-
-def peer_channel_fetch(name, org, peers, ordering_node):
-    """
-    Fetch the channel block from the orderer.
-    :param peers: list of Node objects
-    :param org: Organization object.
-    :param channel_name: Name of the channel.
-    :return: none
-    """
-    peer_node = Node.objects.get(id=peers[0])
-    envs = init_env_vars(peer_node, org)
-    peer_channel_cli = PeerChannel(**envs)
-    peer_channel_cli.fetch(block_path="{}/{}/config_block.pb".format(CELLO_HOME, org.network.name),
-                            channel=name, orderer_general_url="{}.{}:{}".format(
-                               ordering_node.name, org.name.split(".", 1)[1], str(7050)))
 
 
 def init_env_vars(node, org):
