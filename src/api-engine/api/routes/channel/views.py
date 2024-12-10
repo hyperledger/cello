@@ -20,6 +20,7 @@ from api.config import CELLO_HOME
 from api.common.serializers import PageQuerySerializer
 from api.utils.common import with_common_response, parse_block_file, to_dict
 from api.lib.configtxgen import ConfigTX, ConfigTxGen
+from api.lib.jq.jq import JQ
 from api.lib.peer.channel import Channel as PeerChannel
 from api.lib.configtxlator.configtxlator import ConfigTxLator
 from api.exceptions import (
@@ -432,7 +433,73 @@ def set_anchor_peer(name, org, peers, ordering_node):
     :param peers: list of Node objects
     :return: none
     """
+    org_msp = '{}MSP'.format(org.name.split(".", 1)[0].capitalize())
+    channel_artifacts_path = "{}/{}".format(CELLO_HOME, org.network.name)
     peer_channel_fetch(name, org, peers, ordering_node)
+
+    ConfigTxLator().proto_encode(
+        input="{}/config_block.pb".format(channel_artifacts_path),
+        type="common.Block",
+        output="{}/config_block.json".format(channel_artifacts_path),
+    )
+
+    JQ().filter(
+        input="{}/config_block.json".format(channel_artifacts_path),
+        output="{}/config.json".format(channel_artifacts_path),
+        expression=".data.data[0].payload.data.config"
+    )
+
+    JQ().filter(
+        input="{}/config.json".format(channel_artifacts_path),
+        output="{}/modified_config.json".format(channel_artifacts_path),
+        expression=".channel_group.groups.Application.groups.{}.values += {{AnchorPeers:{{mod_policy: Admins,value:{{anchor_peers:[{{host: {},port: {}}}]}},version: 0}}}}".format(org_msp, peers[0].name, str(7051))
+    )
+
+    ConfigTxLator().proto_encode(
+        input="{}/config.json".format(channel_artifacts_path),
+        type="common.Config",
+        output="{}/config.pb".format(channel_artifacts_path),
+    )
+
+    ConfigTxLator().proto_encode(
+        input="{}/modified_config.json".format(channel_artifacts_path),
+        type="common.Config",
+        output="{}/modified_config.pb".format(channel_artifacts_path),
+    )
+
+    ConfigTxLator().compute_update(
+        original="{}/config.pb".format(channel_artifacts_path),
+        updated="{}/modified_config.pb".format(channel_artifacts_path),
+        channel_id=name,
+        output="{}/config_update.pb".format(channel_artifacts_path),
+    )
+
+    ConfigTxLator().proto_decode(
+        input="{}/config_update.pb".format(channel_artifacts_path),
+        type="common.ConfigUpdate",
+        output="{}/config_update.json".format(channel_artifacts_path),
+    )
+
+    JQ().filter(
+        input=".",
+        output="{}/config_update_in_envelope.json".format(channel_artifacts_path),
+        expression=""
+    )
+
+    ConfigTxLator().proto_encode(
+        input="{}/config_update_in_envelope.json".format(channel_artifacts_path),
+        type="common.Envelope",
+        output="{}/config_update_in_envelope.pb".format(channel_artifacts_path),
+    )
+
+    envs = init_env_vars(ordering_node, org)
+    peer_channel_cli = PeerChannel(**envs)
+    peer_channel_cli.update(
+        channel=name,
+        channel_tx="{}/config_update_in_envelope.pb".format(channel_artifacts_path),
+        orderer_url="{}.{}:{}".format(
+        ordering_node.name, org.name.split(".", 1)[1], str(7050)),
+    )
 
 
 def peer_channel_fetch(name, org, peers, ordering_node):
