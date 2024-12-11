@@ -20,7 +20,6 @@ from api.config import CELLO_HOME
 from api.common.serializers import PageQuerySerializer
 from api.utils.common import with_common_response, parse_block_file, to_dict, json_filter, json_add_anchor_peer, json_create_envelope
 from api.lib.configtxgen import ConfigTX, ConfigTxGen
-from api.lib.jq.jq import JQ
 from api.lib.peer.channel import Channel as PeerChannel
 from api.lib.configtxlator.configtxlator import ConfigTxLator
 from api.exceptions import (
