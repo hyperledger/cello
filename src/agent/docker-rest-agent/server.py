@@ -46,7 +46,8 @@ def create_node():
     port_map = ast.literal_eval(request.form.get("port_map"))
     volumes = [        
         '{}/fabric/{}:/etc/hyperledger/fabric'.format(storage_path, node_name),
-        '{}/production/{}:/var/hyperledger/production'.format(storage_path, node_name)
+        '{}/production/{}:/var/hyperledger/production'.format(storage_path, node_name),
+        '/var/run/docker.sock:/host/var/run/docker.sock'
     ]
     if request.form.get('type') == "peer":
         peer_envs = {

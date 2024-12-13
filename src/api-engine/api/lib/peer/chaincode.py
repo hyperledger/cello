@@ -6,7 +6,9 @@ import json
 import subprocess
 from api.lib.peer.command import Command
 from api.config import FABRIC_TOOL, FABRIC_CFG, FABRIC_VERSION
+import logging
 
+LOG = logging.getLogger(__name__)
 
 class ChainCode(Command):
     def __init__(self, version=FABRIC_VERSION, peer=FABRIC_TOOL, **kwargs):
@@ -39,8 +41,13 @@ class ChainCode(Command):
         :return: 0 means success.
         """
         try:
-            res = os.system(
-                "{} lifecycle chaincode install {}".format(self.peer, cc_targz))
+            command = [
+                self.peer,
+                "lifecycle", "chaincode", "install",
+                cc_targz
+            ]
+            LOG.info(" ".join(command))
+            res = os.system(" ".join(command))
             res = res >> 8
         except Exception as e:
             err_msg = "install chaincode failed for {}!".format(e)

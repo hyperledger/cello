@@ -20,7 +20,7 @@ from django.core.paginator import Paginator
 
 from api.lib.peer.chaincode import ChainCode as PeerChainCode
 from api.common.serializers import PageQuerySerializer
-from api.utils.common import with_common_response
+from api.utils.common import with_common_response, init_env_vars
 from api.exceptions import ResourceNotFound
 
 from api.routes.chaincode.serializers import (
@@ -33,7 +33,9 @@ from api.routes.chaincode.serializers import (
 from api.common import ok, err
 import threading
 import hashlib
+import logging
 
+LOG = logging.getLogger(__name__)
 
 class ChainCodeViewSet(viewsets.ViewSet):
     """Class represents Channel related operations."""
@@ -239,8 +241,9 @@ class ChainCodeViewSet(viewsets.ViewSet):
             if not qs.exists():
                 raise ResourceNotFound
             peer_node = qs.first()
-            envs = init_env_vars(peer_node, org)
+            LOG.info("peer_node: {}".format(peer_node))
 
+            envs = init_env_vars(peer_node, org)
             peer_channel_cli = PeerChainCode(**envs)
             res = peer_channel_cli.lifecycle_install(cc_targz)
             if res != 0:
@@ -551,31 +554,3 @@ class ChainCodeViewSet(viewsets.ViewSet):
         return Response(
             ok(chaincodes_commited), status=status.HTTP_200_OK
         )
-
-
-def init_env_vars(node, org):
-    """
-    Initialize environment variables for peer channel CLI.
-    :param node: Node object
-    :param org: Organization object.
-    :return env: dict
-    """
-    org_name = org.name
-    org_domain = org_name.split(".", 1)[1]
-    dir_certificate = "{}/{}/crypto-config/ordererOrganizations/{}".format(
-        CELLO_HOME, org_name, org_domain)
-    dir_node = "{}/{}/crypto-config/peerOrganizations".format(
-        CELLO_HOME, org_name)
-
-    envs = {
-        "CORE_PEER_TLS_ENABLED": "true",
-        # "Org1.cello.comMSP"
-        "CORE_PEER_LOCALMSPID": "{}MSP".format(org_name.capitalize()),
-        "CORE_PEER_TLS_ROOTCERT_FILE": "{}/{}/peers/{}/tls/ca.crt".format(dir_node, org_name, node.name + "." + org_name),
-        "CORE_PEER_ADDRESS": "{}:{}".format(
-            node.name + "." + org_name, str(7051)),
-        "CORE_PEER_MSPCONFIGPATH": "{}/{}/users/Admin@{}/msp".format(dir_node, org_name, org_name),
-        "FABRIC_CFG_PATH": "{}/{}/peers/{}/".format(dir_node, org_name, node.name + "." + org_name),
-        "ORDERER_CA": "{}/msp/tlscacerts/tlsca.{}-cert.pem".format(dir_certificate, org_domain)
-    }
-    return envs
