@@ -13,7 +13,10 @@ from api.common.serializers import BadResponseSerializer
 import uuid
 from zipfile import ZipFile
 from json import loads
+import json
+import logging
 
+LOG = logging.getLogger(__name__)
 
 def make_uuid():
     return str(uuid.uuid4())
@@ -153,3 +156,109 @@ def parse_block_file(data):
 
 def to_dict(data):
     return loads(data)
+
+
+def json_filter(input, output, expression):
+    """
+    Process JSON data using path expression similar to jq
+    
+    Args:
+        input (str): JSON data or file path to JSON
+        output (str): Path expression like ".data.data[0].payload.data.config"
+    
+    Returns:
+        dict: Processed JSON data
+    """
+    # if json_data is a file path, read the file
+    if isinstance(input, str):
+        with open(input, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+    else:
+        data = input
+        
+    # parse the path expression
+    path_parts = expression.strip('.').split('.')
+    result = data
+    
+    for part in path_parts:
+        # handle array index, like data[0]
+        if '[' in part and ']' in part:
+            array_name = part.split('[')[0]
+            index = int(part.split('[')[1].split(']')[0])
+            result = result[array_name][index]
+        else:
+            result = result[part]
+            
+    with open(output, 'w', encoding='utf-8') as f:
+        json.dump(result, f, sort_keys=False, indent=4)
+
+    LOG.info("jq {} {} -> {}".format(expression, input, output))
+
+def json_add_anchor_peer(input, output, anchor_peer_config, org_msp):
+    """
+    Add anchor peer to the organization
+
+    Args:
+        input (str): JSON data or file path to JSON
+        output (str): Path expression like ".data.data[0].payload.data.config"
+        expression (str): Anchor peer data
+    """
+    # if json_data is a file path, read the file
+    if isinstance(input, str):
+        with open(input, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+    else:
+        data = input
+        
+    if "groups" not in data["channel_group"]:
+        data["channel_group"]["groups"] = {}
+    if "Application" not in data["channel_group"]["groups"]:
+        data["channel_group"]["groups"]["Application"] = {"groups": {}}
+    if org_msp not in data["channel_group"]["groups"]["Application"]["groups"]:
+        data["channel_group"]["groups"]["Application"]["groups"][org_msp] = {"values": {}}
+        
+    data["channel_group"]["groups"]["Application"]["groups"][org_msp]["values"].update(anchor_peer_config)
+            
+    with open(output, 'w', encoding='utf-8') as f:
+        json.dump(data, f, sort_keys=False, indent=4)
+    
+    LOG.info("jq '.channel_group.groups.Application.groups.Org1MSP.values += ... ' {} -> {}".format(input, output))
+
+def json_create_envelope(input, output, channel):
+    """
+    Create a config update envelope structure
+    
+    Args:
+        input (str): Path to the config update JSON file
+        output (str): Path to save the envelope JSON
+        channel (str): Name of the channel
+    """
+    try:
+        # Read the config update file
+        with open(input, 'r', encoding='utf-8') as f:
+            config_update = json.load(f)
+            
+        # Create the envelope structure
+        envelope = {
+            "payload": {
+                "header": {
+                    "channel_header": {
+                        "channel_id": channel,
+                        "type": 2
+                    }
+                },
+                "data": {
+                    "config_update": config_update
+                }
+            }
+        }
+        
+        # Write the envelope to output file
+        with open(output, 'w', encoding='utf-8') as f:
+            json.dump(envelope, f, sort_keys=False, indent=4)
+            
+        LOG.info("echo 'payload ... ' | jq . > {}".format(output))
+            
+    except Exception as e:
+        LOG.error("Failed to create config update envelope: {}".format(str(e)))
+        raise

@@ -87,12 +87,25 @@ class Channel(Command):
             orderer_url: Ordering service endpoint.
         """
         try:
-            res = os.system("{} channel update -c {}  -f {} -o {}"
-                            .format(self.peer, channel, channel_tx, orderer_url))
+            ORDERER_CA = os.getenv("ORDERER_CA")
+
+            command = [
+                self.peer,
+                "channel", "update",
+                "-f", channel_tx,
+                "-c", channel,
+                "-o", orderer_url,
+                "--ordererTLSHostnameOverride", orderer_url.split(":")[0],
+                "--tls",
+                "--cafile", ORDERER_CA
+            ]
+            LOG.info(" ".join(command))
+
+            res = subprocess.run(command, check=True)
+
         except Exception as e:
             err_msg = "update channel failed for {}!".format(e)
             raise Exception(err_msg)
-        res = res >> 8
         return res
 
     def fetch(self, block_path, channel, orderer_general_url, max_retries=5, retry_interval=1):

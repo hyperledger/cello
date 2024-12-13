@@ -4,6 +4,8 @@
 from subprocess import call, run
 from api.config import FABRIC_TOOL, FABRIC_VERSION
 
+import logging
+LOG = logging.getLogger(__name__)
 
 class ConfigTxLator:
     """
@@ -24,17 +26,21 @@ class ConfigTxLator:
             output: A file to write the output to.
         """
         try:
-            call([self.configtxlator,
-                  "proto_encode",
-                  "--input={}".format(input),
-                  "--type={}".format(type),
-                  "--output={}".format(output),
-                  ])
+            command = [self.configtxlator,
+                       "proto_encode",
+                       "--input={}".format(input),
+                       "--type={}".format(type),
+                       "--output={}".format(output),
+                       ]
+            
+            LOG.info(" ".join(command))
+
+            call(command)
         except Exception as e:
             err_msg = "configtxlator proto decode fail! "
             raise Exception(err_msg + str(e))
 
-    def proto_decode(self, input, type):
+    def proto_decode(self, input, type, output):
         """
         Converts a proto message to JSON.
 
@@ -45,16 +51,17 @@ class ConfigTxLator:
             config
         """
         try:
-            res = run([self.configtxlator,
+            command = [self.configtxlator,
                        "proto_decode",
                        "--type={}".format(type),
                        "--input={}".format(input),
-                       ],
-                      capture_output=True)
-            if res.returncode == 0 :
-                return res.stdout
-            else:
-                return res.stderr
+                       "--output={}".format(output),
+                       ]
+            
+            LOG.info(" ".join(command))
+
+            call(command)
+
         except Exception as e:
             err_msg = "configtxlator proto decode fail! "
             raise Exception(err_msg + str(e))
@@ -71,13 +78,17 @@ class ConfigTxLator:
             output: A file to write the JSON document to.
         """
         try:
-            call([self.configtxlator,
-                  "compute_update",
-                  "--original={}".format(original),
-                  "--updated={}".format(updated),
-                  "--channel_id={}".format(channel_id),
-                  "--output={}".format(output),
-                  ])
+            command = [self.configtxlator,
+                       "compute_update",
+                       "--original={}".format(original),
+                       "--updated={}".format(updated),
+                       "--channel_id={}".format(channel_id),
+                       "--output={}".format(output),
+                       ]
+            
+            LOG.info(" ".join(command))
+
+            call(command)
         except Exception as e:
             err_msg = "configtxlator compute update fail! "
             raise Exception(err_msg + str(e))
