@@ -241,7 +241,6 @@ class ChainCodeViewSet(viewsets.ViewSet):
             if not qs.exists():
                 raise ResourceNotFound
             peer_node = qs.first()
-            LOG.info("peer_node: {}".format(peer_node))
 
             envs = init_env_vars(peer_node, org)
             peer_channel_cli = PeerChainCode(**envs)
