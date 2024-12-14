@@ -18,7 +18,7 @@ from django.core.paginator import Paginator
 
 from api.config import CELLO_HOME
 from api.common.serializers import PageQuerySerializer
-from api.utils.common import with_common_response, parse_block_file, to_dict, json_filter, json_add_anchor_peer, json_create_envelope
+from api.utils.common import with_common_response, parse_block_file, to_dict, json_filter, json_add_anchor_peer, json_create_envelope, init_env_vars
 from api.lib.configtxgen import ConfigTX, ConfigTxGen
 from api.lib.peer.channel import Channel as PeerChannel
 from api.lib.configtxlator.configtxlator import ConfigTxLator
@@ -549,40 +549,3 @@ def peer_channel_update(name, org, anchor_peer, ordering_node, channel_artifacts
         orderer_url="{}.{}:{}".format(
             ordering_node.name, org.name.split(".", 1)[1], str(7050)),
     )
-
-
-def init_env_vars(node, org):
-    """
-    Initialize environment variables for peer channel CLI.
-    :param node: Node object
-    :param org: Organization object.
-    :return env: dict
-    """
-    org_name = org.name
-    org_domain = org_name.split(".", 1)[1]
-    dir_certificate = "{}/{}/crypto-config/ordererOrganizations/{}".format(
-        CELLO_HOME, org_name, org_domain)
-    dir_node = "{}/{}/crypto-config/peerOrganizations".format(
-        CELLO_HOME, org_name)
-
-    envs = {}
-
-    if(node.type == "orderer"):
-        envs = {
-            "CORE_PEER_TLS_ENABLED": "true",
-            "ORDERER_CA": "{}/orderers/{}/msp/tlscacerts/tlsca.{}-cert.pem".format(dir_certificate, node.name + "." + org_domain, org_domain),
-            "ORDERER_ADMIN_TLS_SIGN_CERT": "{}/orderers/{}/tls/server.crt".format(dir_certificate, node.name + "." + org_domain),
-            "ORDERER_ADMIN_TLS_PRIVATE_KEY": "{}/orderers/{}/tls/server.key".format(dir_certificate, node.name + "." + org_domain)
-        }
-    elif(node.type == "peer"):
-        envs = {
-            "CORE_PEER_TLS_ENABLED": "true",
-            "CORE_PEER_LOCALMSPID": "{}MSP".format(org_name.split(".")[0].capitalize()),
-            "CORE_PEER_TLS_ROOTCERT_FILE": "{}/{}/peers/{}/tls/ca.crt".format(dir_node, org_name, node.name + "." + org_name),
-            "CORE_PEER_MSPCONFIGPATH": "{}/{}/users/Admin@{}/msp".format(dir_node, org_name, org_name),
-            "CORE_PEER_ADDRESS": "{}:{}".format(
-                node.name + "." + org_name, str(7051)),
-            "FABRIC_CFG_PATH": "{}/{}/peers/{}/".format(dir_node, org_name, node.name + "." + org_name)
-        }
-
-    return envs
