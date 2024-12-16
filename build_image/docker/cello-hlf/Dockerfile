@@ -82,6 +82,11 @@ RUN mkdir -p /var/hyperledger/production \
         /chaincode/input \
         /chaincode/output
 
+# set apt source to Tsinghua mirror
+# RUN echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian bookworm main contrib non-free" > /etc/apt/sources.list && \
+#         echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian bookworm-updates main contrib non-free" >> /etc/apt/sources.list && \
+#         echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian-security bookworm-security main contrib non-free" >> /etc/apt/sources.list
+
 # Install development dependencies
 RUN apt-get update \
         && apt-get install -y apt-utils python3-dev \
