@@ -1,6 +1,6 @@
 ![Cello](docs/images/favicon.png)
 
-![Build Status](https://github.com/hyperledger/cello/actions/workflows/docker-image.yml/badge.svg)
+[![Build Status](https://github.com/hyperledger/cello/actions/workflows/docker-image.yml/badge.svg)](https://github.com/hyperledger/cello/actions/workflows/docker-image.yml)
 
 Hyperledger Cello is a blockchain provision and operation system, which helps manage blockchain networks in an efficient way.
 
